@@ -1,0 +1,14 @@
+{
+  "APP_ENV": "development",
+  "API_BASE_URL": "http://localhost:3000/v1",
+  "LOCAL_MODE": "true",
+  "TENANT_ID": "northstar-oman",
+  "COMPANY_NAME": "Northstar Logistics LLC",
+  "PRODUCT_NAME": "Northstar People",
+  "DEFAULT_LOCALE": "en",
+  "TENANT_TIMEZONE": "Asia/Muscat",
+  "CURRENCY_CODE": "OMR",
+  "COUNTRY_CODE": "OM",
+  "SUPPORT_EMAIL": "people@northstar.om",
+  "BRAND_COLOR": "1E2329"
+}

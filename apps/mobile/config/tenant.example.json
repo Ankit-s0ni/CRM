@@ -1,0 +1,14 @@
+{
+  "APP_ENV": "production",
+  "API_BASE_URL": "https://api.example.com/v1",
+  "LOCAL_MODE": "false",
+  "TENANT_ID": "client-slug",
+  "COMPANY_NAME": "Client Company LLC",
+  "PRODUCT_NAME": "Client People",
+  "DEFAULT_LOCALE": "ar",
+  "TENANT_TIMEZONE": "Asia/Muscat",
+  "CURRENCY_CODE": "OMR",
+  "COUNTRY_CODE": "OM",
+  "SUPPORT_EMAIL": "people@example.com",
+  "BRAND_COLOR": "1E2329"
+}

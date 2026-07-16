@@ -47,6 +47,24 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>The front camera performs liveness and face verification for attendance punches.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location confirms office or field attendance while you use the app.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>AttendanceVerification</key>
+		<string>Precise location is needed to confirm that an attendance punch is within the approved workplace boundary.</string>
+	</dict>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>During an active field shift, scheduled location pings support route and attendance records. Tracking stops at check-out.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>During an active field shift, scheduled location pings support route and attendance records.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
