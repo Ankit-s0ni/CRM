@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Office Locations &amp; Geofence Editor | IndigoHR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f2ff",
+                    "primary-container": "#4f46e5",
+                    "primary": "#3525cd",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-tint": "#4d44e3",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "on-primary-container": "#dad7ff",
+                    "outline-variant": "#c7c4d8",
+                    "secondary-container": "#7cf994",
+                    "secondary": "#006e2d",
+                    "on-secondary-fixed-variant": "#005320",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "on-background": "#1b1b24",
+                    "surface-container-highest": "#e4e1ee",
+                    "secondary-fixed-dim": "#62df7d",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "inverse-on-surface": "#f3effc",
+                    "on-primary-fixed": "#00106a",
+                    "tertiary": "#703a00",
+                    "surface-container-high": "#eae6f4",
+                    "tertiary-container": "#934e00",
+                    "surface-variant": "#e4e1ee",
+                    "primary-fixed": "#e2dfff",
+                    "on-error-container": "#93000a",
+                    "background": "#fcf8ff",
+                    "outline": "#777587",
+                    "surface": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "on-surface": "#1b1b24",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-surface-variant": "#464555",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#2f1500",
+                    "on-tertiary-container": "#ffd2b1",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dcd8e5",
+                    "inverse-surface": "#302f39",
+                    "surface-container": "#f0ecf9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "base": "8px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "gutter": "24px",
+                    "2xl": "48px",
+                    "md": "16px",
+                    "container-max": "1440px",
+                    "3xl": "64px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(199, 196, 216, 0.4); }
+        .sidebar-active-indicator { width: 4px; height: 100%; position: absolute; left: 0; background-color: #3525cd; }
+        .map-container { position: relative; overflow: hidden; border-radius: 0.75rem; }
+        .geofence-circle { pointer-events: none; border: 2px dashed #3525cd; background: rgba(53, 37, 205, 0.1); border-radius: 50%; position: absolute; transition: width 0.1s ease, height 0.1s ease; transform: translate(-50%, -50%); }
+        .map-pin { position: absolute; transform: translate(-50%, -100%); cursor: grab; z-index: 10; color: #3525cd; }
+        .radius-handle { position: absolute; width: 12px; height: 12px; background: white; border: 2px solid #3525cd; border-radius: 50%; cursor: ew-resize; z-index: 20; transform: translate(-50%, -50%); }
+    </style>
+</head>
+<body class="text-on-background">
+<!-- Navigation Shell -->
+<aside class="flex flex-col h-screen fixed left-0 top-0 z-40 bg-inverse-surface dark:bg-surface-container-lowest w-sidebar-width border-r border-outline-variant shadow-md">
+<div class="px-lg py-xl flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-surface-container-lowest dark:text-primary">IndigoHR</span>
+</div>
+<nav class="flex-1 px-sm">
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md border-l-4 border-primary bg-primary/10 text-primary-fixed-dim font-bold transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_view_month</span>
+<span class="font-label-md text-label-md">Roster</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-label-md text-label-md">Attendance</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+</aside>
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-gutter z-30">
+<div class="flex items-center gap-lg w-1/2">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Admin Central</span>
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-body-sm" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 hover:bg-surface-container-high transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container ml-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a female administrator in her late 30s with a confident expression. She is wearing corporate attire in a modern, brightly lit office environment with soft indigo accents. The visual style is high-end corporate photography, clean and professional, matching a modern SaaS brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAX5h0US7dn1y0wfj9hibJd49W3wFFQV6smBDERCsNdXHbi3n412ZJ_nKdKqu0NZZF7ga-KynkaFTJVaUS5Z-ht54SUs_SVwzDICpD-EojXP4D9BUDixujbQPNDveu-iLDWMsRaYeD7RFuQVJJj8n-Qf8wDpFRbo_GWBH41x02WQ1B5BI9gdlUAE8Td4rixQecfpop69O5oHISAF53s5mYsl0IDY1gJDykMCdnrza3WQtU93VVdhqL1dI-OKU5vXyw6C2k9ukyycw"/>
+</div>
+</div>
+</header>
+<main class="ml-sidebar-width pt-16 min-h-screen">
+<div class="max-w-container-max mx-auto p-gutter space-y-lg">
+<!-- Page Header -->
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Office Locations &amp; Geofence</h1>
+<p class="text-body-md text-on-surface-variant">Manage physical office sites and define virtual boundaries for employee clock-ins.</p>
+</div>
+<button class="flex items-center gap-xs px-lg py-md bg-primary text-on-primary font-label-md text-label-md rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                    Add office
+                </button>
+</div>
+<!-- Editor Section: Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left: Interactive Map -->
+<div class="lg:col-span-7 flex flex-col gap-md">
+<div class="map-container flex-1 min-h-[500px] bg-surface-container shadow-sm border border-outline-variant relative">
+<!-- Simulated Map Background -->
+<div class="absolute inset-0 grayscale opacity-40 pointer-events-none" data-alt="A detailed satellite-style map view of Muscat, Oman, featuring urban structures, coastal lines, and mountain terrain. The map is presented in a modern, clean UI aesthetic with muted colors and clear street indicators. It serves as a background for a geographic interface in a high-trust administrative application." data-location="Muscat" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAi5xjdzxn3lvKXweQmLAodpRXdCJFLYyVKqs7Ye3bckXwxA_B4AREcsyYRN8PNYOxUZbYPilYFOu7_9EyVvHy_aa7qwiv3oFrS8FjjIYibvVUzhnwSt6Yx-mMrHcyh3yLegJUC3yt3Uf5wDc5qQlA1nMj_r6hpkFsZbeRxnlQrDuOQLRrV_fFYpe_Bz-yJSgCuPXpzZVPizqWtfnam8XeWSWJn1RejyT2_sWwGWaMtuBnwvtkey1gBcjYHmQN5Ub-A5zDqjd8-Ag')"></div>
+<!-- Map Grid Overlay -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: linear-gradient(#ccc 1px, transparent 1px), linear-gradient(90deg, #ccc 1px, transparent 1px); background-size: 40px 40px;"></div>
+<!-- Interactive Geofence Editor -->
+<div class="absolute inset-0" id="map-interaction-layer">
+<!-- Center Pin -->
+<div class="map-pin" id="map-pin">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<!-- Circle -->
+<div class="geofence-circle" id="geofence-circle" style="left: 50%; top: 50%; width: 300px; height: 300px;"></div>
+<!-- Radius Handle -->
+<div class="radius-handle" id="radius-handle" style="left: calc(50% + 150px); top: 50%;"></div>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-4 right-4 flex flex-col gap-2">
+<button class="w-10 h-10 bg-surface-container-lowest shadow-md rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container-high border border-outline-variant"><span class="material-symbols-outlined">add</span></button>
+<button class="w-10 h-10 bg-surface-container-lowest shadow-md rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container-high border border-outline-variant"><span class="material-symbols-outlined">remove</span></button>
+</div>
+<div class="absolute top-4 left-4 bg-surface-container-lowest/90 px-md py-sm rounded-lg shadow-md border border-outline-variant backdrop-blur-sm">
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface">Precision Radius:</span>
+<span class="font-headline-sm text-headline-sm text-primary" id="radius-display">150 m</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Configuration Form -->
+<div class="lg:col-span-5 flex flex-col gap-lg">
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-md border border-outline-variant space-y-md">
+<div class="flex items-center gap-sm pb-sm border-b border-outline-variant">
+<span class="material-symbols-outlined text-primary">edit_location_alt</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Office Configuration</h2>
+</div>
+<!-- Form Content -->
+<div class="space-y-md">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-xs">Office Name</label>
+<input class="w-full p-md bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:outline-none text-body-md" type="text" value="Muscat Hub"/>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-xs">Search Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-md bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary text-body-md" placeholder="Start typing address..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-xs">Latitude</label>
+<div class="p-md bg-surface-container-highest border border-outline-variant rounded-lg text-body-sm font-mono text-on-surface">23.5880° N</div>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-xs">Longitude</label>
+<div class="p-md bg-surface-container-highest border border-outline-variant rounded-lg text-body-sm font-mono text-on-surface">58.3829° E</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Geofence Radius (m)</label>
+<span class="text-primary font-bold">50 - 500m</span>
+</div>
+<input class="w-full h-2 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" id="radius-slider" max="500" min="50" type="range" value="150"/>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-xs">Timezone</label>
+<select class="w-full p-md bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary text-body-md">
+<option>(GMT+04:00) Gulf Standard Time - Muscat</option>
+<option>(GMT+05:30) India Standard Time</option>
+<option>(GMT+00:00) Western European Time</option>
+</select>
+</div>
+<!-- IP Repeater -->
+<div>
+<div class="flex justify-between items-center mb-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Office Network IPs</label>
+<button class="text-primary font-label-md flex items-center gap-xs hover:underline"><span class="material-symbols-outlined text-sm">add_circle</span> Add Row</button>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center gap-sm">
+<input class="flex-1 p-sm bg-surface-container-low border border-outline-variant rounded-lg text-body-sm font-mono" type="text" value="203.0.113.42/32"/>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="flex items-center gap-sm">
+<input class="flex-1 p-sm bg-surface-container-low border border-outline-variant rounded-lg text-body-sm font-mono" type="text" value="198.51.100.0/24"/>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Meta Info -->
+<div class="pt-md mt-md border-t border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">group</span>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant leading-none">Assigned Employees</p>
+<p class="text-headline-sm font-headline-sm text-on-surface">142</p>
+</div>
+</div>
+<a class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline" href="#">
+                                    Manage <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<button class="w-full py-md bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-container transition-colors shadow-sm">Save Configuration</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Offices List Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Registered Offices</h3>
+<div class="flex items-center gap-md">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined">filter_list</span></button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined">download</span></button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant">
+<th class="px-lg py-md font-label-md text-label-md uppercase tracking-wider">Office Name</th>
+<th class="px-lg py-md font-label-md text-label-md uppercase tracking-wider">Coordinates</th>
+<th class="px-lg py-md font-label-md text-label-md uppercase tracking-wider">Radius</th>
+<th class="px-lg py-md font-label-md text-label-md uppercase tracking-wider">Status</th>
+<th class="px-lg py-md font-label-md text-label-md uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<p class="font-label-md text-label-md text-on-surface">Muscat Hub</p>
+<p class="text-body-sm text-on-surface-variant">Way 2801, Al Azaiba, Muscat</p>
+</td>
+<td class="px-lg py-md font-mono text-body-sm text-on-surface-variant">23.58N, 58.38E</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-primary/10 text-primary font-bold rounded-full text-label-sm">150m</span>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-secondary-container text-on-secondary-container font-bold rounded-full text-label-sm">Active</span>
+</td>
+<td class="px-lg py-md text-right space-x-2">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<p class="font-label-md text-label-md text-on-surface">Bengaluru Tech Park</p>
+<p class="text-body-sm text-on-surface-variant">Outer Ring Rd, Marathahalli</p>
+</td>
+<td class="px-lg py-md font-mono text-body-sm text-on-surface-variant">12.92N, 77.68E</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-primary/10 text-primary font-bold rounded-full text-label-sm">300m</span>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-secondary-container text-on-secondary-container font-bold rounded-full text-label-sm">Active</span>
+</td>
+<td class="px-lg py-md text-right space-x-2">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<p class="font-label-md text-label-md text-on-surface">Mumbai Financial District</p>
+<p class="text-body-sm text-on-surface-variant">BKC, Bandra East, Mumbai</p>
+</td>
+<td class="px-lg py-md font-mono text-body-sm text-on-surface-variant">19.05N, 72.83E</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-primary/10 text-primary font-bold rounded-full text-label-sm">100m</span>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-surface-container-highest text-on-surface-variant font-bold rounded-full text-label-sm">Offline</span>
+</td>
+<td class="px-lg py-md text-right space-x-2">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Interactive Geofence Syncing Logic
+        const radiusSlider = document.getElementById('radius-slider');
+        const radiusDisplay = document.getElementById('radius-display');
+        const geofenceCircle = document.getElementById('geofence-circle');
+        const radiusHandle = document.getElementById('radius-handle');
+        const mapPin = document.getElementById('map-pin');
+        const mapInteractionLayer = document.getElementById('map-interaction-layer');
+
+        function updateGeofence(radius) {
+            const size = radius * 2; // Rough mapping for visualization
+            geofenceCircle.style.width = `${size}px`;
+            geofenceCircle.style.height = `${size}px`;
+            radiusDisplay.textContent = `${radius} m`;
+            
+            // Positioning radius handle on the edge
+            radiusHandle.style.left = `calc(50% + ${radius}px)`;
+        }
+
+        radiusSlider.addEventListener('input', (e) => {
+            updateGeofence(e.target.value);
+        });
+
+        // Micro-interactions for dragging (Visual Simulation)
+        let isDraggingPin = false;
+        mapPin.addEventListener('mousedown', () => isDraggingPin = true);
+        window.addEventListener('mouseup', () => isDraggingPin = false);
+
+        mapInteractionLayer.addEventListener('mousemove', (e) => {
+            if (isDraggingPin) {
+                const rect = mapInteractionLayer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                mapPin.style.left = `${x}px`;
+                mapPin.style.top = `${y}px`;
+                
+                geofenceCircle.style.left = `${x}px`;
+                geofenceCircle.style.top = `${y}px`;
+                
+                const radius = parseInt(radiusSlider.value);
+                radiusHandle.style.left = `${x + radius}px`;
+                radiusHandle.style.top = `${y}px`;
+            }
+        });
+
+        // Initialize state
+        updateGeofence(150);
+    </script>
+</body></html>

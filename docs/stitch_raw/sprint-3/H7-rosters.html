@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR - Roster Planner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#62df7d",
+                        "surface-container-low": "#f5f2ff",
+                        "secondary-container": "#7cf994",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd8e5",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-primary-fixed": "#0f0069",
+                        "inverse-on-surface": "#f3effc",
+                        "primary": "#3525cd",
+                        "on-surface": "#1b1b24",
+                        "on-primary-container": "#dad7ff",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fcf8ff",
+                        "surface-container-high": "#eae6f4",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d44e3",
+                        "inverse-surface": "#302f39",
+                        "secondary": "#006e2d",
+                        "outline": "#777587",
+                        "surface": "#fcf8ff",
+                        "on-tertiary-container": "#ffd2b1",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0ecf9",
+                        "on-secondary-container": "#007230",
+                        "background": "#fcf8ff",
+                        "primary-container": "#4f46e5",
+                        "primary-fixed": "#e2dfff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#703a00",
+                        "tertiary-container": "#934e00",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-secondary-fixed": "#002109",
+                        "surface-container-highest": "#e4e1ee",
+                        "surface-variant": "#e4e1ee",
+                        "on-secondary-fixed-variant": "#005320",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed": "#7ffc97",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1b1b24"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "container-max": "1440px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "3xl": "64px",
+                        "sm": "8px",
+                        "2xl": "48px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .grid-roster { display: grid; grid-template-columns: 240px repeat(7, 1fr); }
+        .shift-chip { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .shift-chip:hover { transform: translateY(-2px); cursor: grab; }
+        .conflict-glow { box-shadow: 0 0 0 2px #ba1a1a inset; }
+        .empty-cell-hint { color: #464555; opacity: 0.2; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+        .modal-overlay { backdrop-filter: blur(4px); background-color: rgba(27, 27, 36, 0.4); }
+    </style>
+</head>
+<body class="text-on-background">
+<!-- Side Navigation -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-inverse-surface border-r border-outline-variant shadow-md flex flex-col py-lg z-50">
+<div class="px-lg mb-2xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary-fixed">IndigoHR</h1>
+<p class="text-surface-variant font-label-md">Mumbai Office</p>
+</div>
+<nav class="flex-1 flex flex-col gap-xs px-md">
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-primary-fixed-dim bg-primary-container/20 border-l-4 border-primary-fixed-dim font-bold" href="#">
+<span class="material-symbols-outlined">calendar_view_month</span>
+<span class="font-label-md">Roster</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-md">Attendance</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md">Reports</span>
+</a>
+</nav>
+<div class="mt-auto px-md space-y-xs">
+<button class="w-full bg-primary-container text-on-primary-container py-md px-lg rounded-xl font-label-md font-bold mb-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
+                Add New Employee
+            </button>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-lg text-surface-variant hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-surface-container-high flex justify-between items-center px-lg z-40 shadow-sm">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-96 group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container border-none rounded-full pl-xl py-xs text-body-sm focus:ring-2 focus:ring-primary" placeholder="Search employees, shifts, or departments..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-xs rounded-full hover:bg-surface-container-high transition-all active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-high transition-all active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-xs"></div>
+<div class="flex items-center gap-md">
+<div class="text-right">
+<p class="text-body-sm font-bold text-on-surface">Rajesh Kumar</p>
+<p class="text-label-sm text-on-surface-variant">HR Lead</p>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of an HR manager with a warm smile, wearing business casual attire. The lighting is bright and clear, reflecting a modern corporate office environment with soft-focus background elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBujueMLM2KbfNif2dgzu1FqxZefxs8eJdUY0rDiC3wNwNnbTkXwwDvmExLA6boyx2BeBhdIj9PCJOWK75IA6rps3xnMknB0xAwIxdOtCsSb4fT5HhQ_2unVEJ4SKwassypAsDn9lJsYK8gL1FAB_mQlV9-XBRKqHUjgpRUxV9H3v5_r4h9-srns8iiUw3rXag-rsorCK4Si67LZPurDvLwzryLTSr37-kPGrZZdX0Z838EGi21EYmw19UUDL1Ujub8UwcMbtaSJA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] pt-16 min-h-screen bg-background">
+<div class="p-lg max-w-container-max mx-auto">
+<!-- Toolbar -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-surface-container-high mb-lg flex flex-wrap items-center justify-between gap-lg">
+<div class="flex items-center gap-lg">
+<div class="flex items-center bg-surface-container rounded-lg p-xs border border-outline-variant">
+<button class="p-xs hover:bg-surface-container-high rounded transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<span class="px-md font-label-md text-on-surface">Oct 23 - Oct 29, 2023</span>
+<button class="p-xs hover:bg-surface-container-high rounded transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+<select class="bg-surface border border-outline-variant rounded-lg text-body-sm px-md py-xs focus:ring-primary focus:border-primary">
+<option>All Departments</option>
+<option>Engineering</option>
+<option>Support</option>
+<option>Sales</option>
+</select>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs text-primary font-label-md hover:underline decoration-2 underline-offset-4">
+<span class="material-symbols-outlined text-body-sm">upload_file</span>
+                        CSV Import
+                    </button>
+<button class="flex items-center gap-xs px-md py-xs bg-surface border border-outline text-on-surface rounded-lg hover:bg-surface-container-high transition-all active:scale-95 font-label-md">
+<span class="material-symbols-outlined text-body-md">content_copy</span>
+                        Copy last week
+                    </button>
+<button class="flex items-center gap-xs px-lg py-xs bg-primary text-on-primary rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95 font-label-md" onclick="document.getElementById('bulkModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-body-md">group_add</span>
+                        Bulk assign
+                    </button>
+</div>
+</div>
+<!-- Roster Grid Content -->
+<div class="flex gap-lg h-[calc(100vh-280px)]">
+<!-- Sidebar: Employee List -->
+<div class="w-64 bg-surface-container-lowest rounded-xl border border-surface-container-high shadow-sm overflow-hidden flex flex-col">
+<div class="p-md border-b border-surface-container-high bg-surface-container-low">
+<h3 class="font-label-md text-on-surface mb-xs">Team Members</h3>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-xs top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-md pl-lg pr-xs py-1 text-label-sm" placeholder="Find employee..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar p-xs space-y-sm">
+<!-- Dept: Engineering -->
+<div class="py-xs">
+<h4 class="text-label-sm uppercase tracking-wider text-outline px-md mb-xs">Engineering</h4>
+<div class="space-y-xs">
+<div class="flex items-center gap-md p-xs hover:bg-surface-container rounded-lg cursor-pointer transition-colors group">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold text-xs">AA</div>
+<div class="flex-1">
+<p class="text-label-md text-on-surface truncate">Arjun Adani</p>
+<p class="text-[10px] text-outline">Sr. Developer</p>
+</div>
+</div>
+<div class="flex items-center gap-md p-xs hover:bg-surface-container rounded-lg cursor-pointer transition-colors group">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary font-bold text-xs">SN</div>
+<div class="flex-1">
+<p class="text-label-md text-on-surface truncate">Sneha Nair</p>
+<p class="text-[10px] text-outline">QA Lead</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Dept: Support -->
+<div class="py-xs">
+<h4 class="text-label-sm uppercase tracking-wider text-outline px-md mb-xs">Customer Support</h4>
+<div class="space-y-xs">
+<div class="flex items-center gap-md p-xs hover:bg-surface-container rounded-lg cursor-pointer transition-colors group">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary font-bold text-xs">RP</div>
+<div class="flex-1">
+<p class="text-label-md text-on-surface truncate">Rohan Patil</p>
+<p class="text-[10px] text-outline">Lead Associate</p>
+</div>
+</div>
+<div class="flex items-center gap-md p-xs hover:bg-surface-container rounded-lg cursor-pointer transition-colors group">
+<div class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center text-error font-bold text-xs">KD</div>
+<div class="flex-1">
+<p class="text-label-md text-on-surface truncate">Kriti Desai</p>
+<p class="text-[10px] text-outline">Associate</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Roster Calendar -->
+<div class="flex-1 bg-surface-container-lowest rounded-xl border border-surface-container-high shadow-sm flex flex-col overflow-hidden">
+<!-- Calendar Header -->
+<div class="grid grid-cols-[200px_repeat(7,1fr)] bg-surface-container border-b border-surface-container-high">
+<div class="p-lg border-r border-surface-container-high flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline">info</span>
+<span class="font-label-sm text-outline">INTERACTION HINT: DRAG BLOCKS TO ASSIGN</span>
+</div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold">Mon 23</p></div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold">Tue 24</p></div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold">Wed 25</p></div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold">Thu 26</p></div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold">Fri 27</p></div>
+<div class="p-md text-center border-r border-surface-container-high"><p class="text-label-sm font-bold text-on-surface-variant">Sat 28</p></div>
+<div class="p-md text-center"><p class="text-label-sm font-bold text-on-surface-variant">Sun 29</p></div>
+</div>
+<!-- Calendar Body -->
+<div class="flex-1 overflow-y-auto">
+<!-- Employee Row 1 -->
+<div class="grid grid-cols-[200px_repeat(7,1fr)] border-b border-surface-container-high hover:bg-surface-container-lowest transition-colors">
+<div class="p-lg border-r border-surface-container-high flex flex-col">
+<span class="font-label-md text-on-surface">Arjun Adani</span>
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">Day Shift Preference</span>
+</div>
+<div class="p-sm border-r border-surface-container-high relative group">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary-container text-on-primary-container rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>DAY</span>
+<span class="opacity-80">09:00 - 18:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-lowest relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary-container text-on-primary-container rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>DAY</span>
+<span class="opacity-80">09:00 - 18:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-lowest relative flex items-center justify-center">
+<span class="empty-cell-hint">default: Day</span>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary-container text-on-primary-container rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>DAY</span>
+<span class="opacity-80">09:00 - 18:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative group">
+<div class="conflict-glow absolute inset-sm rounded-lg z-0"></div>
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary-container text-on-primary-container rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between relative z-10">
+<span>DAY</span>
+<span class="opacity-80">09:00 - 18:00</span>
+</div>
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-xs bg-error text-on-error text-[10px] px-md py-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-30">
+                                    overlaps approved leave
+                                </div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+<div class="p-sm bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+</div>
+<!-- Employee Row 2 -->
+<div class="grid grid-cols-[200px_repeat(7,1fr)] border-b border-surface-container-high hover:bg-surface-container-lowest">
+<div class="p-lg border-r border-surface-container-high flex flex-col">
+<span class="font-label-md text-on-surface">Sneha Nair</span>
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">Fixed Evening</span>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary text-on-primary rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>EVENING</span>
+<span class="opacity-80">14:00 - 23:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary text-on-primary rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>EVENING</span>
+<span class="opacity-80">14:00 - 23:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary text-on-primary rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>EVENING</span>
+<span class="opacity-80">14:00 - 23:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary text-on-primary rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>EVENING</span>
+<span class="opacity-80">14:00 - 23:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-primary text-on-primary rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>EVENING</span>
+<span class="opacity-80">14:00 - 23:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+<div class="p-sm bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+</div>
+<!-- Employee Row 3 -->
+<div class="grid grid-cols-[200px_repeat(7,1fr)] border-b border-surface-container-high hover:bg-surface-container-lowest">
+<div class="p-lg border-r border-surface-container-high flex flex-col">
+<span class="font-label-md text-on-surface">Rohan Patil</span>
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">Night Ops</span>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-inverse-surface text-surface rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>NIGHT</span>
+<span class="opacity-80">22:00 - 07:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-inverse-surface text-surface rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>NIGHT</span>
+<span class="opacity-80">22:00 - 07:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-inverse-surface text-surface rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>NIGHT</span>
+<span class="opacity-80">22:00 - 07:00</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high bg-surface-container-low flex items-center justify-center">
+<div class="w-full h-full min-h-[48px] bg-outline-variant/30 text-on-surface-variant rounded-lg p-xs text-[11px] font-bold flex flex-col items-center justify-center">
+<span>OFF</span>
+</div>
+</div>
+<div class="p-sm border-r border-surface-container-high relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-inverse-surface text-surface rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>NIGHT</span>
+<span class="opacity-80">22:00 - 07:00</span>
+</div>
+</div>
+<div class="p-sm relative">
+<div class="shift-chip w-full h-full min-h-[48px] bg-inverse-surface text-surface rounded-lg p-xs text-[11px] font-bold shadow-sm flex flex-col justify-between">
+<span>NIGHT</span>
+<span class="opacity-80">22:00 - 07:00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Legend -->
+<div class="px-lg py-md border-t border-surface-container-high flex items-center gap-xl bg-surface-container-low">
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 bg-primary-container rounded-sm"></div>
+<span class="text-label-sm">Day Shift</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 bg-primary rounded-sm"></div>
+<span class="text-label-sm">Evening Shift</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 bg-inverse-surface rounded-sm"></div>
+<span class="text-label-sm">Night Shift</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 bg-outline-variant rounded-sm"></div>
+<span class="text-label-sm">Weekly Off</span>
+</div>
+<div class="flex items-center gap-xs ml-auto text-error font-bold">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="text-label-sm">1 Conflict Detected</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bulk Assign Modal -->
+<div class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-lg" id="bulkModal">
+<div class="bg-surface-container-lowest w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-surface-container-high animate-in fade-in zoom-in duration-200">
+<div class="p-lg bg-surface-container flex justify-between items-center">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">group_add</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Bulk Assign Shifts</h2>
+</div>
+<button class="p-xs hover:bg-surface-container-high rounded-full transition-colors" onclick="document.getElementById('bulkModal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-lg grid grid-cols-2 gap-lg">
+<div class="col-span-2">
+<label class="font-label-md text-on-surface mb-xs block">Select Employees</label>
+<div class="flex flex-wrap gap-xs p-md border border-outline-variant rounded-lg bg-surface">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-md py-xs rounded-full text-label-sm flex items-center gap-xs">
+                            Arjun Adani <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-md py-xs rounded-full text-label-sm flex items-center gap-xs">
+                            Sneha Nair <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<button class="text-primary font-label-sm">+ Add More</button>
+</div>
+</div>
+<div>
+<label class="font-label-md text-on-surface mb-xs block">Select Shift Type</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg p-md text-body-sm">
+<option>Day Shift (09:00 - 18:00)</option>
+<option>Evening Shift (14:00 - 23:00)</option>
+<option>Night Shift (22:00 - 07:00)</option>
+<option>Weekly Off</option>
+</select>
+</div>
+<div>
+<label class="font-label-md text-on-surface mb-xs block">Date Range</label>
+<div class="flex items-center gap-xs border border-outline-variant rounded-lg p-md bg-surface">
+<input class="border-none p-0 text-body-sm focus:ring-0 flex-1" type="date"/>
+<span class="text-outline">to</span>
+<input class="border-none p-0 text-body-sm focus:ring-0 flex-1" type="date"/>
+</div>
+</div>
+<div class="col-span-2 flex items-center gap-md">
+<input class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" id="skipHolidays" type="checkbox"/>
+<label class="font-label-md text-on-surface" for="skipHolidays">Skip public holidays and approved leaves</label>
+</div>
+</div>
+<div class="p-lg bg-surface-container-low flex justify-end gap-md">
+<button class="px-xl py-md font-label-md text-on-surface hover:bg-surface-container transition-colors rounded-xl" onclick="document.getElementById('bulkModal').classList.add('hidden')">Cancel</button>
+<button class="px-2xl py-md font-label-md font-bold text-on-primary bg-primary rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all">Apply Shifts</button>
+</div>
+</div>
+</div>
+<script>
+        // Micro-interactions and interactive logic
+        document.querySelectorAll('.shift-chip').forEach(chip => {
+            chip.addEventListener('dragstart', (e) => {
+                e.target.style.opacity = '0.5';
+            });
+            chip.addEventListener('dragend', (e) => {
+                e.target.style.opacity = '1';
+            });
+        });
+
+        // Simple modal close on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('bulkModal');
+            if (event.target == modal) {
+                modal.classList.add('hidden');
+            }
+        }
+    </script>
+</body></html>

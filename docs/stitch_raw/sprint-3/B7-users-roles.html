@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Users &amp; Roles</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .drawer-open {
+            transform: translateX(0);
+        }
+        .drawer-closed {
+            transform: translateX(100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(228, 225, 238, 0.5);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#fcf8ff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e4e1ee",
+                      "primary": "#3525cd",
+                      "on-primary-container": "#dad7ff",
+                      "surface-container-low": "#f5f2ff",
+                      "surface-container": "#f0ecf9",
+                      "outline-variant": "#c7c4d8",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#4d44e3",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#007230",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "inverse-on-surface": "#f3effc",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-dim": "#dcd8e5",
+                      "secondary-fixed": "#7ffc97",
+                      "on-primary-fixed": "#0f0069",
+                      "on-background": "#1b1b24",
+                      "secondary-fixed-dim": "#62df7d",
+                      "primary-container": "#4f46e5",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "on-primary": "#ffffff",
+                      "secondary": "#006e2d",
+                      "on-tertiary-fixed": "#2f1500",
+                      "tertiary": "#703a00",
+                      "on-secondary-fixed-variant": "#005320",
+                      "surface-variant": "#e4e1ee",
+                      "primary-fixed": "#e2dfff",
+                      "on-surface-variant": "#464555",
+                      "surface": "#fcf8ff",
+                      "on-tertiary-container": "#ffd2b1",
+                      "on-surface": "#1b1b24",
+                      "on-secondary-fixed": "#002109",
+                      "outline": "#777587",
+                      "inverse-surface": "#302f39",
+                      "tertiary-container": "#934e00",
+                      "background": "#fcf8ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#eae6f4",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "inverse-primary": "#c3c0ff",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#7cf994"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "12px",
+                      "xl": "16px",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "3xl": "64px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "2xl": "48px",
+                      "container-max": "1440px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "sidebar-width": "280px",
+                      "base": "8px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest shadow-md flex flex-col z-40">
+<div class="px-lg py-xl">
+<h1 class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest dark:text-primary">IndigoHR</h1>
+<p class="text-surface-variant font-label-md text-label-md opacity-80">Mumbai Office</p>
+</div>
+<nav class="flex-1 px-md space-y-xs">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-primary-fixed dark:text-primary border-l-4 border-primary-fixed dark:border-primary bg-primary/10 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Org Structure</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+</nav>
+<div class="mt-auto p-lg border-t border-white/10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Corporate headshot of a professional HR administrator with a warm smile, wearing a professional blazer. High-end studio lighting on a neutral background, conveying reliability and expertise in a modern Indian tech hub environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJwlwbBAW80W9iVL0F7bYxrkHovQOXuQAxGrxGayuSg6qrNGluiQ2SGkuj2asDeqvJogBi8FuixFFcpi5yIDmhfw7HwsLnFHOutqLWh6KTeRloWrL-5YZv2Thr0j0rJb-yCTNbu8pM5BimaRibaZ766iBMPzQx_dDKJmGLD4dE3Mw7JreEfaN_VihpzAAnWYckPK1TeZNT5O9wuNsvodqzdd8_aMAi7i2GE_QHplzVUbj2Dpay3gkeBzBcojNdTnETq4giDeW0Lg"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-surface-container-lowest">Ananya Iyer</span>
+<span class="text-xs text-surface-variant">Admin</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-[280px] min-h-screen flex flex-col relative">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center h-16 px-lg bg-surface dark:bg-surface-dim shadow-sm z-30">
+<div class="flex items-center gap-xl">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">IndigoHR Admin</h2>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary font-body-sm text-body-sm" placeholder="Search employees or roles..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:text-primary transition-opacity"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-opacity"><span class="material-symbols-outlined">help</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-opacity"><span class="material-symbols-outlined">apps</span></button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs cursor-pointer">AI</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="p-xl space-y-xl max-w-[1440px]">
+<!-- Header Section -->
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Users &amp; Access Control</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage organization members and their system-level permissions.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-primary-container transition-all shadow-sm" onclick="toggleDrawer(true)">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+                    Invite user
+                </button>
+</div>
+<!-- Users Table Card -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container-highest">
+<div class="px-lg py-md border-b border-surface-container-highest flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm">Active Directory</h4>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg font-label-sm text-label-sm flex items-center gap-1 hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> Filter
+                        </button>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg font-label-sm text-label-sm flex items-center gap-1 hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">download</span> Export
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<tr>
+<th class="px-lg py-4 font-semibold">USER</th>
+<th class="px-lg py-4 font-semibold">EMAIL</th>
+<th class="px-lg py-4 font-semibold">ROLES</th>
+<th class="px-lg py-4 font-semibold">STATUS</th>
+<th class="px-lg py-4 font-semibold">LAST LOGIN</th>
+<th class="px-lg py-4 font-semibold text-right">ACTION</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary/10">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a young professional with dark hair and glasses, set against a clean, minimal office backdrop. The lighting is natural and bright, matching a professional HRMS interface aesthetics with soft shadows and high clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBruL6cBg5REUbLqErdjCjo9YGFUFYMewM7LkDLNVujH-VlU5LX6cTn8rSZYKF37gohrBpeSwrPB8ha86HKWt2OMX1Sd-3z3OGsNbDbbFpIGSk_GLZhkbHplOIhIInwVJp6e-c8ZnlnzvIRppeSbPmkDb_OvZ6zYowY_VQBsf43XUolHquewdwR-Pu8tm9JPMDlx8lG5b70Uvfw2sHPLeOzfpJzTx1Ypx4AyPo3zR9Rkw4_30Ja3vIZmW0RqP3GFqdtg5FYGXD2dQ"/>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold">Rajesh Kumar</div>
+<div class="text-xs text-on-surface-variant">Senior Engineer</div>
+</div>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">rajesh.k@indigohr.com</td>
+<td class="px-lg py-4">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant text-[11px] font-bold uppercase tracking-wider">Business Admin</span>
+</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 text-secondary">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-label-sm text-label-sm">Active</span>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">2 mins ago</td>
+<td class="px-lg py-4 text-right">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-outline">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-tertiary-fixed">
+<img class="w-full h-full object-cover" data-alt="A professional woman of South Asian descent in her 30s, dressed in a corporate attire. The background is a blurred office setting with high-end glass partitions and warm wood accents. Professional, clean, and trustworthy visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSXrNrDxuPzBZzrH78quYsrsav3nS-8xY0H524bQdLMar2cuXSSLb_3W9u9eEXgE5Bsqk89RncIxg3D3-8KW25S20Klg84iZ4el6CtLr80MRpMbsXE1Z8OzV5485jniAf5dXgu_oXVabgA2eNl6fLycz0SgDaqTnXHls6xTnIdYffNtxysXC_tqmL9xdpEgvLHl-XU1nOj4bWE-O79wT5Tunz5bQs0IA6zTqECgoRGgt2ORf6SvP1_YwbVSb8Ar7aE-faoR4pmcA"/>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold">Priya Sharma</div>
+<div class="text-xs text-on-surface-variant">Talent Acquisition</div>
+</div>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">priya.s@indigohr.com</td>
+<td class="px-lg py-4">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider">HR Manager</span>
+</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 text-secondary">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-label-sm text-label-sm">Active</span>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">Yesterday, 4:12 PM</td>
+<td class="px-lg py-4 text-right">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-outline">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="Portrait of a male executive in a white shirt, professional and approachable. The scene is bright with a focus on high-fidelity details, representing a modern workplace in a bustling metropolis like Bengaluru. Corporate and reliable feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAW6QLZ0OhZWtFtv8fV2KyYEZU7yVaVyECGyeOzb_Ec56dsfDblg9keoJ4eVri9GOWYZmaN_w0BAfik-BWxN13MeGIzMAj5-3lLmqHIwJZPSbzXbyOaIomyBt_axXkHy5kuOzmG1dabZvkiD1F2QG8guyFlxbBB6Xk_XteUQdcGJndP0ibwV94iFHamAVD26MnkMbY-__52HqylPDhKHM3-ujJJeV0gyMx6wylSslba69HnwrARcDSOg4OEmlUnRbF96rZk9qnreA"/>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold">Vikram Malhotra</div>
+<div class="text-xs text-on-surface-variant">Team Lead</div>
+</div>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">v.malhotra@indigohr.com</td>
+<td class="px-lg py-4">
+<div class="flex gap-1">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider">Team Lead</span>
+</div>
+</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 text-outline">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="font-label-sm text-label-sm">Offline</span>
+</div>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm">3 days ago</td>
+<td class="px-lg py-4 text-right">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-outline">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-lg py-4 bg-surface-container/30 border-t border-surface-container-highest flex justify-between items-center font-label-sm text-label-sm text-on-surface-variant">
+<span>Showing 1-10 of 208 users</span>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-1 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</section>
+<!-- Roles Summary Section -->
+<section class="space-y-md">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Roles Architecture</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+<!-- Business Admin -->
+<div class="bg-surface-container-low p-lg rounded-xl border border-primary/20 hover:shadow-lg transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-primary">security</span>
+</div>
+<h5 class="font-label-md text-label-md font-bold text-primary mb-1 uppercase tracking-wider">Business Admin</h5>
+<p class="font-headline-md text-headline-md mb-2">2 <span class="text-on-surface-variant text-body-md font-normal">users</span></p>
+<p class="text-xs text-on-surface-variant mb-4 leading-relaxed">Full system access including billing, payroll, and security settings.</p>
+<a class="text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1 hover:underline" href="#">
+                            Edit permissions <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<!-- HR Manager -->
+<div class="bg-surface-container-low p-lg rounded-xl border border-surface-container-highest hover:shadow-lg transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-on-surface">badge</span>
+</div>
+<h5 class="font-label-md text-label-md font-bold text-on-surface-variant mb-1 uppercase tracking-wider">HR Manager</h5>
+<p class="font-headline-md text-headline-md mb-2">4 <span class="text-on-surface-variant text-body-md font-normal">users</span></p>
+<p class="text-xs text-on-surface-variant mb-4 leading-relaxed">Access to employee records, attendance, and leave requests.</p>
+<a class="text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1 hover:underline" href="#">
+                            Edit permissions <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<!-- Team Lead -->
+<div class="bg-surface-container-low p-lg rounded-xl border border-surface-container-highest hover:shadow-lg transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-on-surface">groups</span>
+</div>
+<h5 class="font-label-md text-label-md font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Team Lead</h5>
+<p class="font-headline-md text-headline-md mb-2">12 <span class="text-on-surface-variant text-body-md font-normal">users</span></p>
+<p class="text-xs text-on-surface-variant mb-4 leading-relaxed">Management of direct reports, leave approvals, and appraisals.</p>
+<a class="text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1 hover:underline" href="#">
+                            Edit permissions <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<!-- Employee -->
+<div class="bg-surface-container-low p-lg rounded-xl border border-surface-container-highest hover:shadow-lg transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-on-surface">person</span>
+</div>
+<h5 class="font-label-md text-label-md font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Employee</h5>
+<p class="font-headline-md text-headline-md mb-2">190 <span class="text-on-surface-variant text-body-md font-normal">users</span></p>
+<p class="text-xs text-on-surface-variant mb-4 leading-relaxed">Basic self-service access for payslips and personal info.</p>
+<a class="text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1 hover:underline" href="#">
+                            Edit permissions <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+</div>
+</section>
+</div>
+<!-- Invite User Side Drawer -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] hidden transition-opacity" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+<aside class="fixed right-0 top-0 h-full w-[440px] bg-white shadow-2xl z-[70] transform drawer-closed transition-transform duration-300 ease-in-out flex flex-col" id="userDrawer">
+<div class="p-lg border-b border-surface-container-highest flex justify-between items-center">
+<div>
+<h3 class="font-headline-sm text-headline-sm">Invite New User</h3>
+<p class="text-xs text-on-surface-variant">Send an invitation to join IndigoHR</p>
+</div>
+<button class="p-2 hover:bg-surface-container rounded-full" onclick="toggleDrawer(false)"><span class="material-symbols-outlined">close</span></button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg space-y-xl">
+<!-- Form Group -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Work Email Address</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md" placeholder="e.g. employee@indigohr.com" type="email"/>
+</div>
+<!-- Multi-select Roles -->
+<div class="space-y-md">
+<label class="font-label-md text-label-md text-on-surface-variant">Assign Roles</label>
+<div class="space-y-sm">
+<!-- Role Item -->
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<input class="mt-1 w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="font-label-md text-label-md font-bold group-hover:text-primary transition-colors">Business Admin</div>
+<p class="text-xs text-on-surface-variant">Full administrative access, including billing and system settings.</p>
+</div>
+</label>
+<!-- Role Item -->
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<input class="mt-1 w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="font-label-md text-label-md font-bold group-hover:text-primary transition-colors">HR Manager</div>
+<p class="text-xs text-on-surface-variant">Operational HR access, employee profiles, but no billing control.</p>
+</div>
+</label>
+<!-- Role Item -->
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<input class="mt-1 w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<div class="font-label-md text-label-md font-bold group-hover:text-primary transition-colors">Team Lead</div>
+<p class="text-xs text-on-surface-variant">Access to team management and performance review modules.</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Invite Details -->
+<div class="p-md bg-primary-fixed/20 rounded-lg border border-primary/10">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-xs text-primary leading-relaxed">The user will receive an email with a secure link to set up their account password. The link expires in 48 hours.</p>
+</div>
+</div>
+</div>
+<div class="p-lg border-t border-surface-container-highest bg-surface-container-lowest flex gap-md">
+<button class="flex-1 px-lg py-2.5 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors" onclick="toggleDrawer(false)">Cancel</button>
+<button class="flex-1 px-lg py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-shadow shadow-md">Send Invitation</button>
+</div>
+</aside>
+</main>
+<script>
+        function toggleDrawer(isOpen) {
+            const drawer = document.getElementById('userDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (isOpen) {
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            } else {
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+    </script>
+</body></html>

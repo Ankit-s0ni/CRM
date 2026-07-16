@@ -4,6 +4,7 @@
 
 **Status:** Complete
 **Completed:** July 17, 2026
+**Reverified:** July 17, 2026 - API/web type checks and all 5 Sprint 2 platform e2e suites (7 tests) passed against PostgreSQL on port 5433.
 **Depends on:** Sprint 1 tenant/auth/RLS foundation
 **Primary references:** roadmap Phase 0 and Phase 6.2; feature sections 1.1, 1.3 and 1.4; Stitch S1-S4/S9-S11
 **Sprint exit:** The CRM owner can authenticate with MFA, create and manage tenants, control modules, inspect global/tenant audit trails, impersonate safely, and monitor core system health before attendance modules expand.

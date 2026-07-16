@@ -79,6 +79,9 @@ describe('Auth flow integration', () => {
       await adminPrisma.role.deleteMany({
         where: { tenantId },
       });
+      await adminPrisma.policyAssignment.deleteMany({ where: { tenantId } });
+      await adminPrisma.attendancePolicy.deleteMany({ where: { tenantId } });
+      await adminPrisma.shift.deleteMany({ where: { tenantId } });
       await adminPrisma.tenantSettings.deleteMany({
         where: { tenantId },
       });
@@ -128,6 +131,15 @@ describe('Auth flow integration', () => {
     });
 
     expect(provisionedTenant?.settings).toBeTruthy();
+    expect(
+      await adminPrisma.policyAssignment.count({
+        where: { tenantId, scope: 'TENANT_DEFAULT' },
+      }),
+    ).toBe(1);
+    expect(
+      await adminPrisma.attendancePolicy.count({ where: { tenantId } }),
+    ).toBe(1);
+    expect(await adminPrisma.shift.count({ where: { tenantId } })).toBe(1);
     expect(provisionedSubscription).toMatchObject({
       seatCount: 100,
       plan: { name: 'Starter Trial' },

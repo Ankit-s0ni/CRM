@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Holiday Calendar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#62df7d",
+                    "surface-container-low": "#f5f2ff",
+                    "secondary-container": "#7cf994",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dcd8e5",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-surface-variant": "#464555",
+                    "on-tertiary-fixed": "#2f1500",
+                    "on-primary-fixed": "#0f0069",
+                    "inverse-on-surface": "#f3effc",
+                    "primary": "#3525cd",
+                    "on-surface": "#1b1b24",
+                    "on-primary-container": "#dad7ff",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-container-high": "#eae6f4",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#4d44e3",
+                    "inverse-surface": "#302f39",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "surface": "#fcf8ff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#f0ecf9",
+                    "on-secondary-container": "#007230",
+                    "background": "#fcf8ff",
+                    "primary-container": "#4f46e5",
+                    "primary-fixed": "#e2dfff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#703a00",
+                    "tertiary-container": "#934e00",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-secondary-fixed": "#002109",
+                    "surface-container-highest": "#e4e1ee",
+                    "surface-variant": "#e4e1ee",
+                    "on-secondary-fixed-variant": "#005320",
+                    "inverse-primary": "#c3c0ff",
+                    "secondary-fixed": "#7ffc97",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1b1b24"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "12px",
+                    "xl": "16px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "container-max": "1440px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "sm": "8px",
+                    "2xl": "48px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(53, 1fr); gap: 4px; }
+        .calendar-cell { width: 12px; height: 12px; border-radius: 2px; }
+        .holiday-active { background-color: #3525cd; }
+        .holiday-inactive { background-color: #e4e1ee; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #dcd8e5; border-radius: 10px; }
+        .modal-overlay { background-color: rgba(27, 27, 36, 0.4); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Navigation Sidebar -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-inverse-surface border-r border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-2xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary-fixed">IndigoHR</h1>
+<p class="text-surface-variant font-label-md">Mumbai Office</p>
+</div>
+<nav class="flex-1 space-y-1 px-md">
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-primary-fixed-dim bg-primary-container/20 border-l-4 border-primary-fixed-dim rounded-r-lg" href="#">
+<span class="material-symbols-outlined">calendar_view_month</span>
+<span class="font-label-md">Roster</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-md">Attendance</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md">Reports</span>
+</a>
+</nav>
+<div class="mt-auto px-md space-y-1">
+<button class="w-full flex items-center justify-center gap-sm bg-primary-container text-on-primary-container py-md rounded-xl font-label-md hover:opacity-90 transition-opacity mb-lg">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                Add New Employee
+            </button>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-surface-variant hover:bg-primary-container/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-surface-container-high flex justify-between items-center px-lg z-40">
+<div class="flex items-center gap-lg">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-lg py-2 w-80 text-body-sm focus:ring-2 focus:ring-primary" placeholder="Search employee or policy..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-sm">
+<div class="text-right">
+<p class="font-label-md text-on-surface leading-none">Arjun Mehta</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">HR Admin</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-fixed" data-alt="Close up portrait of a professional HR administrator in a modern office, soft lighting, business attire, high quality digital photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMMBIi6yb_nDmqJDGokwjs4gtHgknOJRf7KR2giqQhKum6y5i4IlT8NsE7DjzX4H5YXbbMw3tPuEqmYl3-2DxDQq70JvQrvUs87nS6GmTm4DzukxxE1ftCtoNMHijwfpB3eJqBTB8OApTr6Nr_hRP377iRZEyvSnP1fjJnZ8a43gld004zE-M6l5srqx9Wgf7bVHdg7tRY3c3XbD4LDtXBj_pVZuDsvLgObBfv8gHdzi6cnO4IeO3AaEWfcNElwMLn91BvTpQvJw"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] pt-16 p-lg min-h-screen">
+<div class="max-w-container-max mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Holiday Calendar 2024</h2>
+<p class="text-body-md text-on-surface-variant">Manage organization-wide and location-specific public holidays.</p>
+</div>
+<div class="flex gap-md">
+<button class="flex items-center gap-sm px-lg py-md border border-outline text-primary font-label-md rounded-xl hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">download</span>
+                        Import National Presets
+                    </button>
+<button class="flex items-center gap-sm px-lg py-md bg-primary text-on-primary font-label-md rounded-xl hover:opacity-90 transition-opacity shadow-md" onclick="openModal()">
+<span class="material-symbols-outlined">add</span>
+                        Add Holiday
+                    </button>
+</div>
+</div>
+<!-- Heatmap Section -->
+<section class="bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-surface-container-high">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Yearly Distribution</h3>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 holiday-inactive rounded-sm"></div>
+<span class="text-label-sm text-on-surface-variant">Work Day</span>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 holiday-active rounded-sm"></div>
+<span class="text-label-sm text-on-surface-variant">Public Holiday</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar pb-md">
+<div class="calendar-grid min-w-[1000px]">
+<!-- Months labels placeholder -->
+<div class="col-span-full flex justify-between text-[10px] text-outline mb-sm px-1">
+<span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+</div>
+<!-- Generated Calendar Cells -->
+<script>
+                            const grid = document.querySelector('.calendar-grid');
+                            const holidays = [26, 68, 85, 110, 140, 227, 275, 305, 360]; // Example day numbers
+                            for(let i=0; i<371; i++) {
+                                const cell = document.createElement('div');
+                                cell.className = 'calendar-cell ' + (holidays.includes(i) ? 'holiday-active' : 'holiday-inactive');
+                                grid.appendChild(cell);
+                            }
+                        </script>
+</div>
+</div>
+</section>
+<!-- Table Section -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-high overflow-hidden">
+<div class="px-lg py-md border-b border-surface-container-high flex justify-between items-center bg-surface-bright">
+<h3 class="font-headline-sm text-headline-sm">Upcoming Holidays</h3>
+<div class="flex gap-sm">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-outline"><span class="material-symbols-outlined">filter_list</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-outline"><span class="material-symbols-outlined">sort</span></button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md">
+<th class="px-lg py-md">Date</th>
+<th class="px-lg py-md">Holiday Name</th>
+<th class="px-lg py-md">Scope</th>
+<th class="px-lg py-md">Created By</th>
+<th class="px-lg py-md"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high">
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="px-lg py-lg">
+<p class="font-label-md text-on-surface">Jan 26, 2024</p>
+<p class="text-body-sm text-on-surface-variant">Friday</p>
+</td>
+<td class="px-lg py-lg font-headline-sm text-on-surface">Republic Day</td>
+<td class="px-lg py-lg">
+<span class="px-md py-1 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm">All Offices</span>
+</td>
+<td class="px-lg py-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-xs">AM</div>
+<span class="text-body-sm">Arjun Mehta</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="px-lg py-lg">
+<p class="font-label-md text-on-surface">Mar 25, 2024</p>
+<p class="text-body-sm text-on-surface-variant">Monday</p>
+</td>
+<td class="px-lg py-lg font-headline-sm text-on-surface">Holi</td>
+<td class="px-lg py-lg">
+<span class="px-md py-1 rounded-full bg-tertiary-container/20 text-on-tertiary-container font-label-sm">Mumbai only</span>
+</td>
+<td class="px-lg py-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-bold text-xs">SK</div>
+<span class="text-body-sm">Sana Khan</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="px-lg py-lg">
+<p class="font-label-md text-on-surface">Nov 01, 2024</p>
+<p class="text-body-sm text-on-surface-variant">Friday</p>
+</td>
+<td class="px-lg py-lg font-headline-sm text-on-surface">Diwali</td>
+<td class="px-lg py-lg">
+<span class="px-md py-1 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm">All Offices</span>
+</td>
+<td class="px-lg py-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-xs">AM</div>
+<span class="text-body-sm">Arjun Mehta</span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-lg py-md border-t border-surface-container-high bg-surface-bright flex justify-between items-center">
+<span class="text-body-sm text-on-surface-variant">Showing 1-3 of 12 holidays</span>
+<div class="flex gap-sm">
+<button class="px-md py-1 border border-outline rounded-lg text-label-sm disabled:opacity-50" disabled="">Previous</button>
+<button class="px-md py-1 border border-outline rounded-lg text-label-sm hover:bg-surface-container-high transition-colors">Next</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center hidden" id="holidayModal">
+<div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+<div class="bg-surface-container-lowest w-full max-w-md rounded-xl shadow-2xl relative z-10 overflow-hidden scale-95 transition-transform duration-300 ease-out" id="modalContent">
+<div class="px-lg py-lg border-b border-surface-container-high flex justify-between items-center">
+<h3 class="font-headline-sm">Add New Holiday</h3>
+<button class="text-outline hover:text-on-surface transition-colors" onclick="closeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-lg space-y-lg">
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface">Holiday Name</label>
+<input class="w-full border border-outline rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="e.g. Independence Day" type="text"/>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface">Holiday Date</label>
+<input class="w-full border border-outline rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" type="date"/>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface mb-xs block">Holiday Scope</label>
+<div class="space-y-md">
+<label class="flex items-center gap-md cursor-pointer group">
+<input checked="" class="w-5 h-5 text-primary border-outline focus:ring-primary cursor-pointer" name="scope" onchange="toggleOfficeDropdown(false)" type="radio" value="tenant"/>
+<span class="text-body-md group-hover:text-primary transition-colors">Tenant-wide (All Offices)</span>
+</label>
+<label class="flex items-center gap-md cursor-pointer group">
+<input class="w-5 h-5 text-primary border-outline focus:ring-primary cursor-pointer" name="scope" onchange="toggleOfficeDropdown(true)" type="radio" value="office"/>
+<span class="text-body-md group-hover:text-primary transition-colors">Specific Office</span>
+</label>
+</div>
+</div>
+<div class="space-y-sm hidden opacity-0 transition-opacity duration-300" id="officeSelector">
+<label class="font-label-md text-on-surface">Select Office</label>
+<select class="w-full border border-outline rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-surface">
+<option>Mumbai - Headquarters</option>
+<option>Bengaluru - Tech Hub</option>
+<option>Gurugram - Sales Hub</option>
+<option>Chennai - Ops</option>
+</select>
+</div>
+</div>
+<div class="px-lg py-lg bg-surface-bright flex justify-end gap-md border-t border-surface-container-high">
+<button class="px-lg py-md text-primary font-label-md hover:bg-surface-container-high rounded-xl transition-all" onclick="closeModal()">Cancel</button>
+<button class="px-xl py-md bg-primary text-on-primary font-label-md rounded-xl hover:opacity-90 shadow-md transition-all" onclick="closeModal()">Save Holiday</button>
+</div>
+</div>
+</div>
+<script>
+        function openModal() {
+            const modal = document.getElementById('holidayModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('holidayModal');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function toggleOfficeDropdown(show) {
+            const dropdown = document.getElementById('officeSelector');
+            if(show) {
+                dropdown.classList.remove('hidden');
+                setTimeout(() => dropdown.classList.replace('opacity-0', 'opacity-100'), 10);
+            } else {
+                dropdown.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => dropdown.classList.add('hidden'), 300);
+            }
+        }
+    </script>
+</body></html>

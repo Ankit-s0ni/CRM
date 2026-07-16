@@ -2,7 +2,8 @@
 
 ## Tenant Admin Web and Attendance Configuration
 
-**Status:** Not started  
+**Status:** Complete
+**Completed:** July 17, 2026
 **Depends on:** Sprint 1 organization APIs and Sprint 2 platform/operational foundation  
 **Primary references:** roadmap Phases 1 and 2.1; feature sections 2 and 3.1-3.2  
 **Sprint exit:** A business administrator completes onboarding and organization setup in the web app; HR configures offices, policies, shifts, rosters and holidays; all configuration resolves deterministically and is tenant-isolated.
@@ -40,10 +41,10 @@
 - `POST /onboarding/complete`
 
 Rules:
-- [ ] Validate IANA timezone names and store date/time behavior in tenant timezone
-- [ ] Weekly offs support weekday patterns and nth-weekday rules such as second/fourth Saturday
-- [ ] Logo objects use tenant-prefixed private keys and constrained content types/sizes
-- [ ] Onboarding completion is idempotent and audited
+- [x] Validate IANA timezone names and store date/time behavior in tenant timezone
+- [x] Weekly offs support weekday patterns and nth-weekday rules such as second/fourth Saturday
+- [x] Logo objects use tenant-prefixed private keys and constrained content types/sizes
+- [x] Onboarding completion is idempotent and audited
 
 ### Office locations
 
@@ -56,10 +57,10 @@ Rules:
 - `GET /offices/:id/employees`
 
 Rules:
-- [ ] Validate latitude, longitude, radius, IANA timezone, egress IP/CIDR and advisory SSIDs
-- [ ] Employee assignments are same-tenant and atomically replaced
-- [ ] Delete is blocked when referenced by active assignments, holidays or attendance evidence
-- [ ] Distance calculations use a tested Haversine value object; polygon geofences remain future scope
+- [x] Validate latitude, longitude, radius, IANA timezone, egress IP/CIDR and advisory SSIDs
+- [x] Employee assignments are same-tenant and atomically replaced
+- [x] Delete is blocked when referenced by active assignments, holidays or attendance evidence
+- [x] Distance calculations use a tested Haversine value object; polygon geofences remain future scope
 
 ### Attendance policies and assignments
 
@@ -72,11 +73,11 @@ Rules:
 - `GET /attendance-policies/resolve?employeeId=:id&date=:date`
 
 Rules:
-- [ ] Validate late, half-day, minimum-work, overtime, early-punch, verification, offline, face-attempt and break rules
-- [ ] Exactly one tenant-default assignment exists
-- [ ] Resolution order is employee, department, tenant default
-- [ ] Conflicting assignments at the same scope are rejected
-- [ ] Configuration changes apply prospectively and never mutate finalized snapshots
+- [x] Validate late, half-day, minimum-work, overtime, early-punch, verification, offline, face-attempt and break rules
+- [x] Exactly one tenant-default assignment exists
+- [x] Resolution order is employee, department, tenant default
+- [x] Conflicting assignments at the same scope are rejected
+- [x] Configuration changes apply prospectively and never mutate finalized snapshots
 
 ### Shifts, rosters and holidays
 
@@ -93,84 +94,93 @@ Rules:
 - `PATCH|DELETE /holidays/:id`
 
 Rules:
-- [ ] Derive overnight shifts from end time crossing start time
-- [ ] Shift resolution is dated roster, employee default, then policy/flexible fallback
-- [ ] Prevent overlapping roster assignments per employee/date
-- [ ] Bulk/CSV roster writes return row-level errors and are idempotent
-- [ ] Holidays may be tenant-wide or office-scoped; duplicate date/scope is rejected
+- [x] Derive overnight shifts from end time crossing start time
+- [x] Shift resolution is dated roster, employee default, then policy/flexible fallback
+- [x] Prevent overlapping roster assignments per employee/date
+- [x] Bulk/CSV roster writes return row-level errors and are idempotent
+- [x] Holidays may be tenant-wide or office-scoped; duplicate date/scope is rejected
 
 ## 5. Database and Security
 
-- [ ] Review v4 models and add missing constraints/indexes without duplicating existing schema
-- [ ] Add RLS policies and grants for every new configuration/import table
-- [ ] Add case-insensitive office/policy/shift uniqueness per tenant
-- [ ] Add exclusion or transactional overlap protection for rosters
-- [ ] Add permissions for settings, offices, policies, shifts, rosters and holidays
-- [ ] Seed default policy, shift and alert-ready settings for new and existing tenants
-- [ ] Audit all configuration mutations with old/new values
-- [ ] Emit outbox events for material configuration changes
+- [x] Review v4 models and add missing constraints/indexes without duplicating existing schema
+- [x] Add RLS policies and grants for every new configuration/import table
+- [x] Add case-insensitive office/policy/shift uniqueness per tenant
+- [x] Add exclusion or transactional overlap protection for rosters
+- [x] Add permissions for settings, offices, policies, shifts, rosters and holidays
+- [x] Seed default policy, shift and alert-ready settings for new and existing tenants
+- [x] Audit all configuration mutations with old/new values
+- [x] Emit outbox events for material configuration changes
 
 ## 6. Web Implementation
 
-- [ ] Establish authenticated app shell, permission-aware navigation and tenant module guards
-- [ ] B1 onboarding wizard with resumable progress
-- [ ] B2 company settings and weekly-off editor
-- [ ] B3-B8 organization, employees, imports, users and roles wired to Sprint 1 APIs
-- [ ] B9 master attendance/security defaults
-- [ ] H4 office/geofence editor using a map provider abstraction
-- [ ] H5 policy list/editor and assignment UI
-- [ ] H6 shifts management
-- [ ] H7 roster grid, bulk assignment and CSV import
-- [ ] H8 holiday calendar
-- [ ] Add responsive, loading, empty, validation, forbidden and suspended states
+- [x] Establish authenticated app shell, permission-aware navigation and tenant module guards
+- [x] B1 onboarding wizard with resumable progress
+- [x] B2 company settings and weekly-off editor
+- [x] B3-B8 organization, employees, imports, users and roles wired to Sprint 1 APIs
+- [x] B9 master attendance/security defaults
+- [x] H4 office/geofence editor using a map provider abstraction
+- [x] H5 policy list/editor and assignment UI
+- [x] H6 shifts management
+- [x] H7 roster grid, bulk assignment and CSV import
+- [x] H8 holiday calendar
+- [x] Add responsive, loading, empty, validation, forbidden and suspended states
 
 ## 7. Ordered Work Packages
 
 ### 3.0 Tenant admin web
-- [ ] App shell and B1-B8 happy paths
-- [ ] Playwright onboarding-to-employee flow
+- [x] App shell and B1-B8 happy paths
+- [x] Playwright onboarding-to-employee flow
 
 ### 3.1 Offices and tenant settings
-- [ ] APIs, constraints, permissions, audits and B2/H4 screens
+- [x] APIs, constraints, permissions, audits and B2/H4 screens
 
 ### 3.2 Policies
-- [ ] CRUD, assignments, resolver cache/invalidation and B9/H5 screens
+- [x] CRUD, assignments, resolver cache/invalidation and B9/H5 screens
 
 ### 3.3 Shifts, rosters and holidays
-- [ ] APIs, import worker, resolvers and H6-H8 screens
+- [x] APIs, import worker, resolvers and H6-H8 screens
 
 ### 3.4 Hardening
-- [ ] OpenAPI export, isolation matrix, performance checks and operator documentation
+- [x] OpenAPI export, isolation matrix, performance checks and operator documentation
 
 ## 8. Test Plan
 
-- [ ] Unit: timezone/date rules, nth-weekday offs, Haversine, policy precedence, overnight shifts and shift fallback
-- [ ] Integration: uniqueness, roster overlap, assignment atomicity and cache invalidation
-- [ ] E2E: business admin onboarding; HR configuration; employee forbidden; tenant A/B isolation
-- [ ] Import: malformed roster, duplicate rows, unknown employees/shifts and retry idempotency
-- [ ] Web: B1-B9 and H4-H8 happy paths plus validation/403/suspension
-- [ ] Performance: resolve policy and shift without N+1 queries for 500 employees
+- [x] Unit: timezone/date rules, nth-weekday offs, Haversine, policy precedence, overnight shifts and shift fallback
+- [x] Integration: uniqueness, roster overlap, assignment atomicity and cache invalidation
+- [x] E2E: business admin onboarding; HR configuration; employee forbidden; tenant A/B isolation
+- [x] Import: malformed roster, duplicate rows, unknown employees/shifts and retry idempotency
+- [x] Web: B1-B9 and H4-H8 happy paths plus validation/403/suspension
+- [x] Performance: resolve policy and shift without N+1 queries for 500 employees
 
 ## 9. Definition of Done
 
-- [ ] All Sprint 3 routes are documented and permission protected
-- [ ] Policy/shift resolution is deterministic and cached safely
-- [ ] B1-B9 and H4-H8 are API-connected, not mocked
-- [ ] No cross-tenant relationship IDs disclose or mutate data
-- [ ] Build, lint, unit, integration, e2e, RLS and Playwright suites pass
-- [ ] Roadmap Phase 1/2.1 items are updated only with evidence
+- [x] All Sprint 3 routes are documented and permission protected
+- [x] Policy/shift resolution is deterministic and cached safely
+- [x] B1-B9 and H4-H8 are API-connected, not mocked
+- [x] No cross-tenant relationship IDs disclose or mutate data
+- [x] Build, lint, unit, integration, e2e, RLS and Playwright suites pass
+- [x] Roadmap Phase 1/2.1 items are updated only with evidence
 
 ## 10. Progress Tracker
 
 | Work package | Status | Evidence |
 |---|---|---|
-| 3.0 Tenant admin web | Not started | |
-| 3.1 Offices and tenant settings | Not started | |
-| 3.2 Policies | Not started | |
-| 3.3 Shifts, rosters and holidays | Not started | |
-| 3.4 Hardening | Not started | |
+| 3.0 Tenant admin web | Complete | B1-B9 routes, API-backed controls, and Playwright desktop/mobile/state coverage |
+| 3.1 Offices and tenant settings | Complete | CRUD, assignment isolation, Haversine/rule tests, B2/H4, audit/outbox |
+| 3.2 Policies | Complete | Deterministic precedence, Redis generation cache, invalidation race tests, B9/H5 |
+| 3.3 Shifts, rosters and holidays | Complete | Resolver APIs, holiday-aware writes, 60-row import acceptance, H6-H8 |
+| 3.4 Hardening | Complete | OpenAPI, clean 18-migration seed, RLS, 500-employee performance, runbook |
 
 Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
+
+### Completion evidence
+
+- Clean database: all 18 migrations and the idempotent seed passed in a temporary PostgreSQL database; resulting fixture had 2 tenants, 2 offices, 4 policies, and 4 shifts.
+- API quality: security check, lint, typecheck, OpenAPI, production build, 19 unit suites/39 tests, and 14 e2e suites/36 tests passed.
+- Web quality: lint (0 errors, 5 pre-existing optimization warnings), typecheck, 30-route production build, and 27 Playwright tests passed.
+- Visual contract: all B1-B9 and H4-H8 screens passed Stitch comparison at 1024 and 1440 widths plus 390px overflow safety.
+- Acceptance: the roster fixture processed 60 rows as 56 accepted and 4 stable row errors; policy and shift bulk resolution handled 500 employees below the one-second gate.
+- Operations: see [Sprint 3 Attendance Configuration Runbook](../SPRINT-3-ATTENDANCE-CONFIG-RUNBOOK.md).
 
 ## 11. Implementation Specification
 
@@ -223,14 +233,14 @@ List endpoints use `{ data, pagination }`; resolvers use `{ data, resolution: { 
 
 ### 11.4 Required migrations
 
-- [ ] Scope check: tenant default has no target; department/employee scopes have exactly their matching target
-- [ ] Partial unique indexes for one tenant default, one department policy and one employee policy
-- [ ] Partial unique index for one primary office per employee
-- [ ] Case-insensitive unique indexes for office, policy and shift names
-- [ ] Foreign-key or service/trigger protection preventing cross-tenant assignment references
-- [ ] Import-row persistence for roster jobs using the Sprint 1 idempotency pattern
-- [ ] Outbox delivery columns or companion delivery table: attempts, available-at, lease owner/expiry and last error
-- [ ] RLS/grants updated in the permanent table registry and tested with empty tenant context
+- [x] Scope check: tenant default has no target; department/employee scopes have exactly their matching target
+- [x] Partial unique indexes for one tenant default, one department policy and one employee policy
+- [x] Partial unique index for one primary office per employee
+- [x] Case-insensitive unique indexes for office, policy and shift names
+- [x] Foreign-key or service/trigger protection preventing cross-tenant assignment references
+- [x] Import-row persistence for roster jobs using the Sprint 1 idempotency pattern
+- [x] Outbox delivery columns or companion delivery table: attempts, available-at, lease owner/expiry and last error
+- [x] RLS/grants updated in the permanent table registry and tested with empty tenant context
 
 ### 11.5 Error catalog
 
@@ -247,6 +257,7 @@ List endpoints use `{ data, pagination }`; resolvers use `{ data, resolution: { 
 | `SHIFT_NAME_EXISTS` | 409 | Duplicate shift |
 | `SHIFT_TIME_INVALID` | 422 | Equal/malformed start and end |
 | `ROSTER_CONFLICT` | 409 | Employee/date already assigned |
+| `ROSTER_HOLIDAY` | 409 | Employee/date is tenant-wide or primary-office holiday |
 | `HOLIDAY_EXISTS` | 409 | Duplicate date and scope |
 | `CONFIGURATION_NOT_FOUND` | 404 | Missing or foreign resource ID |
 

@@ -24,8 +24,18 @@ export class EmployeeImportStorageService {
   });
 
   async presign(tenantId: string, filename: string, contentType: string) {
+    return this.presignFor(tenantId, 'employee-imports', filename, contentType);
+  }
+
+  async presignFor(
+    tenantId: string,
+    folder: string,
+    filename: string,
+    contentType: string,
+  ) {
     const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const objectKey = `${tenantId}/employee-imports/${randomUUID()}-${safeFilename}`;
+    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
+    const objectKey = `${tenantId}/${safeFolder}/${randomUUID()}-${safeFilename}`;
     if (this.isMemoryMode()) {
       return { objectKey, uploadUrl: `memory://${objectKey}`, expiresIn: 900 };
     }

@@ -2912,6 +2912,1106 @@
           "Platform Operations"
         ]
       }
+    },
+    "/tenant-settings": {
+      "get": {
+        "operationId": "WorkspaceSettingsController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get tenant attendance and company settings",
+        "tags": [
+          "Tenant settings"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkspaceSettingsController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update tenant attendance and company settings",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/tenant-settings/logo/presign": {
+      "post": {
+        "operationId": "WorkspaceSettingsController_presignLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoPresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private tenant-prefixed company-logo upload URL",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/onboarding/status": {
+      "get": {
+        "operationId": "WorkspaceSettingsController_onboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get resumable onboarding progress",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/onboarding/complete": {
+      "post": {
+        "operationId": "WorkspaceSettingsController_completeOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteOnboardingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Idempotently complete workspace onboarding",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/offices": {
+      "get": {
+        "operationId": "AttendanceConfigController_listOffices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant office locations and assignment counts",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceConfigController_createOffice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfficeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an office and circular geofence",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/offices/{id}": {
+      "get": {
+        "operationId": "AttendanceConfigController_getOffice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an office with employees and holidays",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "patch": {
+        "operationId": "AttendanceConfigController_updateOffice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update office geofence and network constraints",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "delete": {
+        "operationId": "AttendanceConfigController_removeOffice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unused office",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/offices/{id}/employees": {
+      "get": {
+        "operationId": "AttendanceConfigController_officeEmployees",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List employees assigned to an office",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "put": {
+        "operationId": "AttendanceConfigController_replaceOfficeEmployees",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignOfficeEmployeesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atomically replace office employee assignments",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/attendance-policies": {
+      "get": {
+        "operationId": "AttendanceConfigController_listPolicies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List attendance policies and assignments",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceConfigController_createPolicy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an attendance policy",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/attendance-policies/resolve": {
+      "get": {
+        "operationId": "AttendanceConfigController_resolvePolicy",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve employee policy by employee, department, then tenant default",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/attendance-policies/resolve/bulk": {
+      "post": {
+        "operationId": "AttendanceConfigController_resolvePolicies",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkResolveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve policies for up to 500 employees without N+1 queries",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/attendance-policies/{id}": {
+      "get": {
+        "operationId": "AttendanceConfigController_getPolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an attendance policy and assignments",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "patch": {
+        "operationId": "AttendanceConfigController_updatePolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update prospective attendance policy rules",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "delete": {
+        "operationId": "AttendanceConfigController_removePolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unassigned attendance policy",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/attendance-policies/{id}/assignments": {
+      "put": {
+        "operationId": "AttendanceConfigController_replacePolicyAssignments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplacePolicyAssignmentsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atomically replace policy scope assignments",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/shifts": {
+      "get": {
+        "operationId": "AttendanceConfigController_listShifts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant shifts",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceConfigController_createShift",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShiftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a day or overnight shift",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/shifts/resolve": {
+      "get": {
+        "operationId": "AttendanceConfigController_resolveShift",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve employee shift for a date",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/shifts/resolve/bulk": {
+      "post": {
+        "operationId": "AttendanceConfigController_resolveShifts",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkResolveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve shifts for up to 500 employees without N+1 queries",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/shifts/{id}": {
+      "get": {
+        "operationId": "AttendanceConfigController_getShift",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a shift",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "patch": {
+        "operationId": "AttendanceConfigController_updateShift",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update shift times and overnight derivation",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "delete": {
+        "operationId": "AttendanceConfigController_removeShift",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unused shift",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/rosters": {
+      "get": {
+        "operationId": "AttendanceConfigController_listRosters",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List dated roster assignments",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceConfigController_createRoster",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRosterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an idempotent dated roster assignment",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/rosters/bulk": {
+      "post": {
+        "operationId": "AttendanceConfigController_bulkRosters",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkRosterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk assign a shift with row-level conflicts",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/rosters/{id}": {
+      "delete": {
+        "operationId": "AttendanceConfigController_removeRoster",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a roster assignment",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/holidays": {
+      "get": {
+        "operationId": "AttendanceConfigController_listHolidays",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant-wide and office holidays",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceConfigController_createHoliday",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHolidayDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a tenant-wide or office holiday",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/holidays/{id}": {
+      "patch": {
+        "operationId": "AttendanceConfigController_updateHoliday",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHolidayDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update holiday name, date, or scope",
+        "tags": [
+          "Attendance configuration"
+        ]
+      },
+      "delete": {
+        "operationId": "AttendanceConfigController_removeHoliday",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a holiday",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/rosters/imports/presign": {
+      "post": {
+        "operationId": "RosterImportsController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RosterImportPresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private roster CSV upload URL",
+        "tags": [
+          "Roster imports"
+        ]
+      }
+    },
+    "/rosters/imports": {
+      "post": {
+        "operationId": "RosterImportsController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRosterImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register and queue an idempotent roster import",
+        "tags": [
+          "Roster imports"
+        ]
+      }
+    },
+    "/rosters/imports/{id}": {
+      "get": {
+        "operationId": "RosterImportsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get roster import summary and safe row errors",
+        "tags": [
+          "Roster imports"
+        ]
+      }
     }
   },
   "info": {
@@ -3586,6 +4686,153 @@
         "required": [
           "note"
         ]
+      },
+      "UpdateTenantSettingsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kolkata"
+          },
+          "weeklyOffs": {
+            "type": "object",
+            "example": [
+              {
+                "weekday": "SAT",
+                "occurrences": [
+                  2,
+                  4
+                ]
+              },
+              {
+                "weekday": "SUN"
+              }
+            ]
+          }
+        }
+      },
+      "LogoPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "company-logo.png"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 245760
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "CompleteOnboardingDto": {
+        "type": "object",
+        "properties": {
+          "progress": {
+            "type": "object",
+            "description": "Final client-side progress snapshot"
+          }
+        }
+      },
+      "CreateOfficeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateOfficeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AssignOfficeEmployeesDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BulkResolveDto": {
+        "type": "object",
+        "properties": {
+          "employeeIds": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-07-20"
+          }
+        },
+        "required": [
+          "employeeIds",
+          "date"
+        ]
+      },
+      "UpdatePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ReplacePolicyAssignmentsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateShiftDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateShiftDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateRosterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BulkRosterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateHolidayDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateHolidayDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RosterImportPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "rosters.csv"
+          },
+          "contentType": {
+            "type": "string",
+            "default": "text/csv"
+          }
+        },
+        "required": [
+          "filename"
+        ]
+      },
+      "CreateRosterImportDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

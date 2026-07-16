@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR Admin | Department &amp; Designation Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e4e1ee",
+                        "primary": "#3525cd",
+                        "on-primary-container": "#dad7ff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container": "#f0ecf9",
+                        "outline-variant": "#c7c4d8",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d44e3",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#007230",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-dim": "#dcd8e5",
+                        "secondary-fixed": "#7ffc97",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#1b1b24",
+                        "secondary-fixed-dim": "#62df7d",
+                        "primary-container": "#4f46e5",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary": "#ffffff",
+                        "secondary": "#006e2d",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary": "#703a00",
+                        "on-secondary-fixed-variant": "#005320",
+                        "surface-variant": "#e4e1ee",
+                        "primary-fixed": "#e2dfff",
+                        "on-surface-variant": "#464555",
+                        "surface": "#fcf8ff",
+                        "on-tertiary-container": "#ffd2b1",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed": "#002109",
+                        "outline": "#777587",
+                        "inverse-surface": "#302f39",
+                        "tertiary-container": "#934e00",
+                        "background": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6f4",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "inverse-primary": "#c3c0ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#7cf994"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "2xl": "48px",
+                        "container-max": "1440px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sidebar-width": "280px",
+                        "base": "8px",
+                        "md": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tree-line::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: #c7c4d8;
+        }
+        .node-hover:hover .action-buttons {
+            opacity: 1;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c7c4d8;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest shadow-md flex flex-col z-50">
+<div class="px-lg py-xl">
+<h1 class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest dark:text-primary">IndigoHR</h1>
+<p class="text-surface-variant font-label-sm text-label-sm opacity-70">Mumbai Office</p>
+</div>
+<nav class="flex-1 flex flex-col mt-md">
+<!-- Active Tab Logic: Org Structure is current context -->
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-primary-fixed dark:text-primary border-l-4 border-primary-fixed dark:border-primary bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+<span class="font-label-md text-label-md">Org Structure</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+</nav>
+<div class="p-lg border-t border-surface-variant/10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md text-surface-container-lowest truncate">Admin User</p>
+<p class="text-xs text-surface-variant/60 truncate">System Administrator</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col min-h-screen bg-surface-bright">
+<!-- TopNavBar Shell -->
+<header class="h-16 flex justify-between items-center px-lg bg-surface dark:bg-surface-dim shadow-sm sticky top-0 z-40">
+<div class="flex items-center gap-xl">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">IndigoHR Admin</h2>
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/20 font-label-md text-label-md w-64 transition-all" placeholder="Search departments..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-md cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-primary-container">
+<img class="w-full h-full object-cover rounded-full" data-alt="A professional headshot of a corporate HR administrator with a warm and confident expression, set against a blurred modern office background with soft lighting, matching the professional IndigoHR aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgxg0wbCfLtj6jh7tswg3luZOLaeBOX6C8f9DdLhW2Y_IklmxPAkJa8o4K9ew3r1_iMgMlvhDXgn4tfP6UwWYIX6h_cq71s7bEsxY8ZagDoUz6hpIsbjpSNsqv4whB6U0O6kTFXvZ4rOJ13EnPLxfa7BR1-BA3950DIriHEvWOscCDX_L2rxR8tQGlzloZjXSs66YQCJySJhf-ztvk2-pTIv4x9aHu8XJIGyd2JUjlX2LNaEep2gtIsFW6iQtqnT322r7_J085Hg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Builder Content -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Tree View -->
+<section class="w-2/5 border-r border-outline-variant flex flex-col bg-white overflow-hidden">
+<div class="p-lg flex justify-between items-center border-b border-outline-variant">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Organization Tree</h3>
+<button class="flex items-center gap-xs bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md hover:shadow-lg transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Department
+                    </button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg custom-scrollbar">
+<!-- Tree Root -->
+<div class="mb-md">
+<div class="flex items-center gap-sm group node-hover p-sm rounded-lg hover:bg-surface-container-low cursor-pointer">
+<span class="material-symbols-outlined text-outline transition-transform group-hover:rotate-90">chevron_right</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">apartment</span>
+<span class="font-label-md text-label-md font-bold">Acme Industries</span>
+<div class="ml-auto opacity-0 action-buttons flex gap-xs transition-opacity">
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">add_circle</span></button>
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">drag_indicator</span></button>
+</div>
+</div>
+<!-- Children -->
+<div class="ml-xl mt-xs relative space-y-1">
+<div class="tree-line"></div>
+<!-- Engineering -->
+<div class="flex items-center gap-sm group node-hover p-sm rounded-lg hover:bg-surface-container-low cursor-pointer">
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+<span class="material-symbols-outlined text-outline">account_tree</span>
+<div class="flex-1">
+<span class="font-label-md text-label-md">Engineering</span>
+<span class="text-xs text-outline ml-sm">24</span>
+</div>
+<div class="ml-auto opacity-0 action-buttons flex gap-xs transition-opacity">
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">add_circle</span></button>
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">drag_indicator</span></button>
+</div>
+</div>
+<!-- Operations -->
+<div class="flex items-center gap-sm group node-hover p-sm rounded-lg hover:bg-surface-container-low cursor-pointer">
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+<span class="material-symbols-outlined text-outline">account_tree</span>
+<div class="flex-1">
+<span class="font-label-md text-label-md">Operations</span>
+<span class="text-xs text-outline ml-sm">82</span>
+</div>
+<div class="ml-auto opacity-0 action-buttons flex gap-xs transition-opacity">
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">add_circle</span></button>
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">drag_indicator</span></button>
+</div>
+</div>
+<!-- Sales (Active) -->
+<div class="space-y-1">
+<div class="flex items-center gap-sm group node-hover p-sm rounded-lg bg-primary/5 ring-1 ring-primary/20 cursor-pointer">
+<span class="material-symbols-outlined text-primary rotate-90">chevron_right</span>
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<div class="flex-1">
+<span class="font-label-md text-label-md font-semibold text-primary">Sales</span>
+<span class="text-xs text-primary/60 ml-sm">34</span>
+</div>
+<div class="ml-auto flex gap-xs">
+<button class="p-xs text-primary"><span class="material-symbols-outlined text-[20px]">add_circle</span></button>
+<button class="p-xs text-primary"><span class="material-symbols-outlined text-[20px]">drag_indicator</span></button>
+</div>
+</div>
+<!-- Sales Children -->
+<div class="ml-xl relative space-y-1 mt-xs">
+<div class="tree-line"></div>
+<div class="flex items-center gap-sm group node-hover p-sm rounded-lg hover:bg-surface-container-low cursor-pointer">
+<span class="w-6 border-t border-outline-variant mr-xs"></span>
+<span class="material-symbols-outlined text-outline-variant">person_outline</span>
+<div class="flex-1">
+<span class="font-label-md text-label-md text-on-surface-variant">Field Executives</span>
+</div>
+<div class="ml-auto opacity-0 action-buttons flex gap-xs transition-opacity">
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">add_circle</span></button>
+<button class="p-xs hover:text-primary"><span class="material-symbols-outlined text-[20px]">drag_indicator</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Detail View -->
+<section class="flex-1 bg-surface-container-low overflow-y-auto p-2xl custom-scrollbar">
+<div class="max-w-[800px] mx-auto">
+<div class="bg-white rounded-xl shadow-sm border border-outline-variant p-2xl">
+<div class="flex justify-between items-start mb-2xl">
+<div>
+<nav class="flex items-center text-xs text-outline mb-sm font-label-sm">
+<span>Acme Industries</span>
+<span class="material-symbols-outlined text-[14px] mx-xs">chevron_right</span>
+<span class="text-primary font-bold">Sales</span>
+</nav>
+<h4 class="font-headline-md text-headline-md text-on-surface">Department Details</h4>
+</div>
+<div class="flex gap-md">
+<button class="px-md py-sm border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors">Discard</button>
+<button class="px-md py-sm bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:shadow-lg transition-all">Save Changes</button>
+</div>
+</div>
+<!-- Form Section -->
+<div class="grid grid-cols-1 gap-xl">
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Department Name</label>
+<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-md text-body-md" type="text" value="Sales"/>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Parent Department</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-bright border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-md text-body-md pr-10">
+<option>Acme Industries</option>
+<option>Operations</option>
+<option>None</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Designations Section -->
+<div class="space-y-md">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant">Designations</label>
+<button class="text-primary font-label-sm text-label-sm flex items-center gap-xs hover:underline">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                                        Add New Designation
+                                    </button>
+</div>
+<div class="flex flex-wrap gap-sm p-md bg-surface-container rounded-lg min-h-[100px] border border-outline-variant/50">
+<div class="flex items-center gap-xs bg-white px-md py-sm rounded-full border border-outline-variant shadow-sm group">
+<span class="font-label-md text-label-md">Field Executive</span>
+<button class="text-outline hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div class="flex items-center gap-xs bg-white px-md py-sm rounded-full border border-outline-variant shadow-sm group">
+<span class="font-label-md text-label-md">Area Manager</span>
+<button class="text-outline hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div class="flex items-center gap-xs bg-white px-md py-sm rounded-full border border-outline-variant shadow-sm group">
+<span class="font-label-md text-label-md">Sales Lead</span>
+<button class="text-outline hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div class="flex-1 min-w-[120px]">
+<input class="w-full bg-transparent border-none focus:ring-0 font-label-md text-label-md placeholder:text-outline/50 px-xs" placeholder="Type and press enter..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Members Preview -->
+<div class="space-y-md">
+<label class="font-label-md text-label-md text-on-surface-variant">Department Members (34)</label>
+<div class="flex items-center -space-x-3 overflow-hidden p-xs">
+<div class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a young professional smiling softly, wearing business casual attire. High-quality corporate photography, bright office background, part of the modern HRMS employee directory UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWj6LBRw0KocYmOs3cyQrBYYmkIIKn7v5C3Uoh0l9iEbkyx2fytKxHPmQ_EXO3vekArWQLP5IoidMk9H8Twktm3-f-xzIT54ZaiA8qK2Fmy_sHkQTA4_KY39JUq3cPwyFrhwxTGa_rGp56WgOf7ZYdrDS2YcrrcG1pAWtgq74PKDsg1wUhywoeFOJZu_yacil2AkIzWGP4_LZLQQ-_2HDmFpz-Of-TAg35RentUwzmNJPkiT72lBRChshMa4pVv3NJDh4Dm-7xJw"/>
+</div>
+<div class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Portrait of a South Asian female professional in her 30s, looking confidently at the camera. Clean, bright corporate aesthetics, minimalist office lighting, soft focus background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmAq4widHeITbe1tNMes5jsC0m-9DOYLKou1uA8MZuaZIHwGWyRytNtt99M3yzs0opRFr8wM5FIwz7C8cW7FgjORDm8DUleUQdJe5833PfECQEKNCIsA2akAZ7sBo4HtLLvoKybSTKiyq8xwUMkcZvnfSbriy2KiamBpas5lYdsVIjM5hqYhm2fq4-JDLszRIZwcrPOu3A0P-G28JMfd5vG3IxQIYPKhevhRMYPNshnrjIPSKz6uw3EO3zRMf-v8rBa0GcM3vd_A"/>
+</div>
+<div class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Candid headshot of a mature executive with spectacles, subtle graying hair, smiling warmly. Professional studio lighting, neutral gray background, modern professional vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9inmFTM602yOhRFaCantnwBorkiYyMLgyvVQQi_tl-tmN_TyLq9i96zW1DLhcnK0It-wEP-1lvGoMVhLSiZsBnCPETWBDZAxnE0VSQCwzo_UgczFDgdEm5ZxRULaNhT8ZnQ8YDa1ZJcjiZktaVBkvIRNmPDdsJyc8MdTz8Ax9jtyj25pG6qTX-gNbeQgB9TwsrzBXPTn7kpDCMgFoR6_SlKkQutzcIovXJTUsoBO_QvaFKLybiThj57igZizTCQalH5-eIHDwbg"/>
+</div>
+<div class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Cheerful female employee in a bright yellow blazer, professional profile photo for HR platform. Bright, airy composition, modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA57am8c0UQxYKV8CzW_s62IQvH7qqasZbuZz0r0dINm9hMOB1DElErKxGH0Bu-QiziyZHXLiMpIr5COtznJ2NQrZPG1knfWzGtVla9cJ_C1g0J5xyM5fqM-ACWe07UMFdGxNFGprMo9u6svPTVSbRhZy_jAze7gOlZ705aCsDtJY-AVhL3IUNNJ73ZXfT8MPC-1YlAsSNMNmYchIrXbgNRiU_DBzH31KOO8pW7IAFHN_JIqKYWybhSN_vLg_eGy9S_tqroS3eAeg"/>
+</div>
+<div class="w-10 h-10 rounded-full ring-2 ring-white flex items-center justify-center bg-primary text-on-primary font-label-sm text-[12px] cursor-pointer hover:bg-primary-container transition-colors">
+                                        +30
+                                    </div>
+</div>
+<button class="text-primary font-label-md text-label-md flex items-center gap-xs group">
+                                    View all members
+                                    <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Statistics Bento Grid -->
+<div class="mt-xl grid grid-cols-3 gap-lg">
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs uppercase tracking-wider">Turnover Rate</p>
+<div class="flex items-baseline gap-sm">
+<span class="font-headline-md text-headline-md text-primary">4.2%</span>
+<span class="text-secondary font-label-sm text-label-sm flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+                                    1.2%
+                                </span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs uppercase tracking-wider">Avg. Tenure</p>
+<div class="flex items-baseline gap-sm">
+<span class="font-headline-md text-headline-md text-primary">2.8y</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Years</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs uppercase tracking-wider">Cost Center</p>
+<div class="flex items-baseline gap-sm">
+<span class="font-headline-md text-headline-md text-primary">CC-402</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('.node-hover').forEach(node => {
+            node.addEventListener('click', () => {
+                // Clear existing active state
+                document.querySelectorAll('.bg-primary\\/5').forEach(el => {
+                    el.classList.remove('bg-primary/5', 'ring-1', 'ring-primary/20');
+                    el.querySelector('.text-primary')?.classList.replace('text-primary', 'text-outline');
+                });
+                
+                // Add active state to clicked
+                node.classList.add('bg-primary/5', 'ring-1', 'ring-primary/20');
+                const title = node.querySelector('.font-label-md');
+                if(title) title.classList.add('text-primary', 'font-semibold');
+            });
+        });
+
+        // Search highlight simulation
+        const searchInput = document.querySelector('input[placeholder="Search departments..."]');
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.font-label-md').forEach(el => {
+                if(val && el.innerText.toLowerCase().includes(val)) {
+                    el.closest('.node-hover').classList.add('ring-2', 'ring-primary/40');
+                } else {
+                    el.closest('.node-hover').classList.remove('ring-2', 'ring-primary/40');
+                }
+            });
+        });
+    </script>
+</body></html>

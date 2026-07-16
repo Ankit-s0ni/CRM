@@ -6,6 +6,7 @@ interface User {
   email: string;
   tenantId: string;
   workspace: string;
+  roles?: string[];
 }
 
 interface PendingAuthContext {
@@ -19,10 +20,12 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   pendingAuth: PendingAuthContext;
+  hasHydrated: boolean;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   setPendingAuth: (context: Partial<PendingAuthContext>) => void;
   clearPendingAuth: () => void;
   clearAuth: () => void;
+  setHasHydrated: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -36,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
         workspace: null,
         email: null,
       },
+      hasHydrated: false,
       setAuth: (user, accessToken, refreshToken) =>
         set({
           user,
@@ -69,9 +73,12 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           pendingAuth: state.pendingAuth,
         })),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
-      name: 'auth-storage', // saves to localStorage
+      name: 'auth-storage',
+      partialize: ({ user, accessToken, refreshToken, pendingAuth }) => ({ user, accessToken, refreshToken, pendingAuth }),
+      onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     }
   )
 );

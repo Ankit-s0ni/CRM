@@ -66,7 +66,7 @@ export function LoginForm() {
       
       setAuth(user, accessToken, refreshToken);
       clearPendingAuth();
-      router.push("/dashboard");
+      router.push("/app/onboarding");
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Invalid email or password");
 

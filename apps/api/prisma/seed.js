@@ -41,6 +41,16 @@ const permissions = [
   'billing.invoices.read',
   'billing.payment-methods.manage',
   'attendance.config.manage',
+  'attendance.offices.read',
+  'attendance.offices.manage',
+  'attendance.policies.read',
+  'attendance.policies.manage',
+  'attendance.shifts.read',
+  'attendance.shifts.manage',
+  'attendance.rosters.read',
+  'attendance.rosters.manage',
+  'attendance.holidays.read',
+  'attendance.holidays.manage',
   'attendance.records.read',
   'attendance.records.self.read',
   'attendance.approvals.manage',
@@ -172,7 +182,7 @@ async function seedPlatformIdentity() {
 
 const tenantSeeds = [
   {
-    companyName: 'Acme Corp',
+    companyName: 'Acme Logistics',
     subdomain: 'acme',
     email: 'admin@acme.com',
   },
@@ -199,6 +209,48 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     update: {},
     create: { tenantId: tenant.id },
   });
+
+  const defaultShift = await prisma.shift.upsert({
+    where: {
+      tenantId_name: { tenantId: tenant.id, name: 'Morning 09:00-18:00' },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Morning 09:00-18:00',
+      startTime: new Date('1970-01-01T09:00:00.000Z'),
+      endTime: new Date('1970-01-01T18:00:00.000Z'),
+      isOvernight: false,
+    },
+  });
+
+  const defaultPolicy = await prisma.attendancePolicy.upsert({
+    where: {
+      tenantId_name: { tenantId: tenant.id, name: 'Default Office' },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Default Office',
+    },
+  });
+  const defaultAssignment = await prisma.policyAssignment.findFirst({
+    where: { tenantId: tenant.id, scope: 'TENANT_DEFAULT' },
+  });
+  if (defaultAssignment) {
+    await prisma.policyAssignment.update({
+      where: { id: defaultAssignment.id },
+      data: { policyId: defaultPolicy.id },
+    });
+  } else {
+    await prisma.policyAssignment.create({
+      data: {
+        tenantId: tenant.id,
+        policyId: defaultPolicy.id,
+        scope: 'TENANT_DEFAULT',
+      },
+    });
+  }
 
   await prisma.tenantBillingProfile.upsert({
     where: { tenantId: tenant.id },
@@ -256,13 +308,24 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     });
   }
 
+  const tenantAdminPassword =
+    process.env.TENANT_ADMIN_PASSWORD ??
+    (process.env.NODE_ENV !== 'production' ? 'TenantAdmin123!' : '');
+  if (!tenantAdminPassword) {
+    throw new Error('TENANT_ADMIN_PASSWORD is required in production');
+  }
+  const tenantAdminPasswordHash = await argon2.hash(tenantAdminPassword);
   const user = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: seed.email } },
-    update: { status: 'ACTIVE', emailVerifiedAt: new Date() },
+    update: {
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      passwordHash: tenantAdminPasswordHash,
+    },
     create: {
       tenantId: tenant.id,
       email: seed.email,
-      passwordHash: 'dummy_hash',
+      passwordHash: tenantAdminPasswordHash,
       status: 'ACTIVE',
       emailVerifiedAt: new Date(),
     },
@@ -294,7 +357,216 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     },
   });
 
+  if (seed.subdomain === 'acme') {
+    await seedSprint3AcceptanceFixture(tenant.id, defaultShift.id);
+  }
+
   console.log(`Seeded ${tenant.companyName} (${tenant.subdomain})`);
+}
+
+async function seedSprint3AcceptanceFixture(tenantId, defaultShiftId) {
+  await prisma.tenantSettings.update({
+    where: { tenantId },
+    data: {
+      timezone: 'Asia/Kolkata',
+      weeklyOffs: [{ weekday: 'SAT', occurrences: [2, 4] }, 'SUN'],
+      workingDayStart: '09:00',
+      workingDayEnd: '18:00',
+    },
+  });
+
+  const departments = [];
+  for (const name of ['Operations', 'Sales', 'People']) {
+    let department = await prisma.department.findFirst({
+      where: { tenantId, parentDeptId: null, name },
+    });
+    department ??= await prisma.department.create({
+      data: { tenantId, name },
+    });
+    departments.push(department);
+  }
+
+  const designation = await prisma.designation.upsert({
+    where: { tenantId_name: { tenantId, name: 'Team Member' } },
+    update: {},
+    create: { tenantId, name: 'Team Member' },
+  });
+
+  const shifts = [];
+  for (const shift of [
+    { name: 'Morning 09:00-18:00', start: '09:00', end: '18:00' },
+    { name: 'Late 10:00-19:00', start: '10:00', end: '19:00' },
+    { name: 'Night 22:00-06:00', start: '22:00', end: '06:00' },
+  ]) {
+    shifts.push(
+      await prisma.shift.upsert({
+        where: { tenantId_name: { tenantId, name: shift.name } },
+        update: {},
+        create: {
+          tenantId,
+          name: shift.name,
+          startTime: new Date(`1970-01-01T${shift.start}:00.000Z`),
+          endTime: new Date(`1970-01-01T${shift.end}:00.000Z`),
+          isOvernight: shift.end < shift.start,
+        },
+      }),
+    );
+  }
+
+  const employees = [];
+  for (let index = 1; index <= 25; index += 1) {
+    employees.push(
+      await prisma.employee.upsert({
+        where: {
+          tenantId_employeeCode: {
+            tenantId,
+            employeeCode: `ACME-${String(index).padStart(3, '0')}`,
+          },
+        },
+        update: {
+          workType:
+            index <= 5 ? 'FIELD' : index <= 10 ? 'HYBRID' : 'OFFICE',
+          deptId: departments[(index - 1) % departments.length].id,
+          designationId: designation.id,
+          defaultShiftId: index % 7 === 0 ? shifts[1].id : defaultShiftId,
+        },
+        create: {
+          tenantId,
+          employeeCode: `ACME-${String(index).padStart(3, '0')}`,
+          fullName: `Acme Employee ${String(index).padStart(2, '0')}`,
+          workType: index <= 5 ? 'FIELD' : index <= 10 ? 'HYBRID' : 'OFFICE',
+          dateOfJoining: new Date('2026-01-01T00:00:00.000Z'),
+          deptId: departments[(index - 1) % departments.length].id,
+          designationId: designation.id,
+          defaultShiftId: index % 7 === 0 ? shifts[1].id : defaultShiftId,
+        },
+      }),
+    );
+  }
+
+  const offices = [];
+  for (const office of [
+    {
+      officeName: 'Bengaluru HQ',
+      latitude: 12.9716,
+      longitude: 77.5946,
+      radiusMeters: 100,
+      egressIps: ['203.0.113.10', '10.10.0.0/24'],
+      wifiSsids: ['Acme-BLR'],
+    },
+    {
+      officeName: 'Mumbai Hub',
+      latitude: 19.076,
+      longitude: 72.8777,
+      radiusMeters: 150,
+      egressIps: ['203.0.113.20', '10.20.0.0/24'],
+      wifiSsids: ['Acme-BOM'],
+    },
+  ]) {
+    offices.push(
+      await prisma.officeLocation.upsert({
+        where: {
+          tenantId_officeName: { tenantId, officeName: office.officeName },
+        },
+        update: office,
+        create: { tenantId, timezone: 'Asia/Kolkata', ...office },
+      }),
+    );
+  }
+
+  for (const [index, employee] of employees.entries()) {
+    const primaryOffice = offices[index % offices.length];
+    await prisma.employeeOfficeAssignment.upsert({
+      where: {
+        tenantId_employeeId_officeLocationId: {
+          tenantId,
+          employeeId: employee.id,
+          officeLocationId: primaryOffice.id,
+        },
+      },
+      update: { isPrimary: true },
+      create: {
+        tenantId,
+        employeeId: employee.id,
+        officeLocationId: primaryOffice.id,
+        isPrimary: true,
+      },
+    });
+    if (index < 5) {
+      const secondaryOffice = offices[(index + 1) % offices.length];
+      await prisma.employeeOfficeAssignment.upsert({
+        where: {
+          tenantId_employeeId_officeLocationId: {
+            tenantId,
+            employeeId: employee.id,
+            officeLocationId: secondaryOffice.id,
+          },
+        },
+        update: { isPrimary: false },
+        create: {
+          tenantId,
+          employeeId: employee.id,
+          officeLocationId: secondaryOffice.id,
+          isPrimary: false,
+        },
+      });
+    }
+  }
+
+  const fieldPolicy = await prisma.attendancePolicy.upsert({
+    where: { tenantId_name: { tenantId, name: 'Field Staff' } },
+    update: {},
+    create: {
+      tenantId,
+      name: 'Field Staff',
+      requireGeofence: false,
+      maxOfflineSyncHours: 72,
+    },
+  });
+  const nightPolicy = await prisma.attendancePolicy.upsert({
+    where: { tenantId_name: { tenantId, name: 'Night Shift' } },
+    update: {},
+    create: {
+      tenantId,
+      name: 'Night Shift',
+      lateAfterMinutes: 10,
+      requireFaceMatch: true,
+    },
+  });
+  await upsertPolicyScope(tenantId, fieldPolicy.id, {
+    scope: 'DEPARTMENT',
+    deptId: departments[1].id,
+  });
+  await upsertPolicyScope(tenantId, nightPolicy.id, {
+    scope: 'EMPLOYEE',
+    employeeId: employees[0].id,
+  });
+
+  await prisma.shift.deleteMany({
+    where: {
+      tenantId,
+      name: 'General 09:00-18:00',
+      defaultFor: { none: {} },
+      rosters: { none: {} },
+      appliedLogs: { none: {} },
+    },
+  });
+}
+
+async function upsertPolicyScope(tenantId, policyId, assignment) {
+  const existing = await prisma.policyAssignment.findFirst({
+    where: { tenantId, ...assignment },
+  });
+  if (existing) {
+    await prisma.policyAssignment.update({
+      where: { id: existing.id },
+      data: { policyId },
+    });
+  } else {
+    await prisma.policyAssignment.create({
+      data: { tenantId, policyId, ...assignment },
+    });
+  }
 }
 
 async function main() {

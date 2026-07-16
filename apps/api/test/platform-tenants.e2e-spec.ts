@@ -130,6 +130,9 @@ describe('Platform tenant lifecycle (e2e)', () => {
     await prisma.role.deleteMany({ where: { tenantId: id } });
     await prisma.tenantModule.deleteMany({ where: { tenantId: id } });
     await prisma.tenantSubscription.deleteMany({ where: { tenantId: id } });
+    await prisma.policyAssignment.deleteMany({ where: { tenantId: id } });
+    await prisma.attendancePolicy.deleteMany({ where: { tenantId: id } });
+    await prisma.shift.deleteMany({ where: { tenantId: id } });
     await prisma.tenantSettings.deleteMany({ where: { tenantId: id } });
     await prisma.tenant.delete({ where: { id } });
   }
@@ -237,6 +240,15 @@ describe('Platform tenant lifecycle (e2e)', () => {
     expect(created.invitation.debugInvitationToken).toHaveLength(64);
     expect(JSON.stringify(created)).not.toMatch(/password|passwordHash/i);
     expect(await prisma.user.count({ where: { tenantId } })).toBe(0);
+    expect(
+      await prisma.policyAssignment.count({
+        where: { tenantId, scope: 'TENANT_DEFAULT' },
+      }),
+    ).toBe(1);
+    expect(await prisma.attendancePolicy.count({ where: { tenantId } })).toBe(
+      1,
+    );
+    expect(await prisma.shift.count({ where: { tenantId } })).toBe(1);
 
     const storedInvitation = await prisma.verificationToken.findFirst({
       where: { tenantId, purpose: 'USER_INVITE' },

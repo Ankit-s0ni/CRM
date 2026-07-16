@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR - Employees List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for data heavy views */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e4e1ee;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777587;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e4e1ee",
+                        "primary": "#3525cd",
+                        "on-primary-container": "#dad7ff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container": "#f0ecf9",
+                        "outline-variant": "#c7c4d8",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d44e3",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#007230",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-dim": "#dcd8e5",
+                        "secondary-fixed": "#7ffc97",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#1b1b24",
+                        "secondary-fixed-dim": "#62df7d",
+                        "primary-container": "#4f46e5",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary": "#ffffff",
+                        "secondary": "#006e2d",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary": "#703a00",
+                        "on-secondary-fixed-variant": "#005320",
+                        "surface-variant": "#e4e1ee",
+                        "primary-fixed": "#e2dfff",
+                        "on-surface-variant": "#464555",
+                        "surface": "#fcf8ff",
+                        "on-tertiary-container": "#ffd2b1",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed": "#002109",
+                        "outline": "#777587",
+                        "inverse-surface": "#302f39",
+                        "tertiary-container": "#934e00",
+                        "background": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6f4",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "inverse-primary": "#c3c0ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#7cf994"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "8px",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "2xl": "48px",
+                        "container-max": "1440px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sidebar-width": "280px",
+                        "base": "8px",
+                        "md": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"],
+                        "headline-md": ["Inter"], "headline-lg": ["Inter"], "label-md": ["Inter"],
+                        "headline-sm": ["Inter"], "body-md": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest shadow-md flex flex-col z-50">
+<div class="px-lg py-xl flex flex-col gap-xs">
+<span class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest dark:text-primary">IndigoHR</span>
+<span class="font-label-sm text-label-sm text-surface-variant opacity-70">Mumbai Office</span>
+</div>
+<nav class="flex-1 mt-md">
+<div class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors cursor-pointer transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<!-- Active State: Employees -->
+<div class="flex items-center gap-md px-lg py-md text-primary-fixed dark:text-primary border-l-4 border-primary-fixed dark:border-primary bg-primary/10 transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined fill-icon" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-label-md">Employees</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors cursor-pointer transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Org Structure</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors cursor-pointer transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors cursor-pointer transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors cursor-pointer transition-all duration-150 ease-in-out">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</div>
+</nav>
+<div class="p-lg border-t border-surface-variant/10">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional corporate headshot of an HR administrator in a brightly lit Mumbai office, wearing a smart casual blazer. The background shows a modern workspace with soft focus, maintaining the high-trust corporate HRMS aesthetic with cool blue and white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN6vjOQLkIm34We6oRm6fTVj9DOKjTUPMzXcy2IZFizfF2Lf7sBGr9pjdEzm9Ab9H8cTYrnENQ72gwouTsZXC3ORokISx7Pgon-iDFp_15Ek1uZMPWUf_f89m2ljKITc0juN2IyNkR_S-B532PgEwpkGPKAFDCVDyc314jAJfuY2GBhQGe2Yo82tIQYwa7xeSt17FDyNaznUkUm8gEeFz3csLqyHrxzfxWzdLaCnJiaR82oQksLJNTkNGTiXn5pycmV5rH-XOlDw"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-surface-container-lowest">Admin User</span>
+<span class="text-[10px] text-surface-variant uppercase tracking-wider">Premium Plan</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-[280px] right-0 h-16 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-lg z-40">
+<div class="flex items-center gap-xl flex-1">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">IndigoHR Admin</h1>
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-11 pr-md py-sm bg-surface-container-low border-none rounded-lg font-body-sm focus:ring-2 focus:ring-primary/20" placeholder="Search employees, documents..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-opacity">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-opacity">help</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-opacity">apps</button>
+<div class="w-px h-6 bg-outline-variant"></div>
+<img class="w-8 h-8 rounded-full" data-alt="A small circular avatar profile image showing a professional woman with glasses, representative of an HR director in a tech hub like Bengaluru. The lighting is crisp and natural, highlighting a friendly yet authoritative professional persona consistent with a modern SaaS interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOuZJyjTddds0JX7KHPu4-Gm3L8FitbgkMjzpPjnmtR1LUZFuJTGb6Qnl65u8m6krhUAAaKcEfek7tU_nQ4vMJAk-DSkr8umMzbX4yeD6_SRbrcOSHkVsTuT-DWg5JK1yhm0CEg-wnRaPnwMnZfTLjLUZCR3prIyQBrDDl6BdBLia30SigE_ZBickGgV2lPk-mOQsbORqqqjZoLKj7XWJfbnSyG9v6Hcjoy0ndGAqEvPGu6bPCPcxE7EdkvmKb38jBg4own30cuw"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen bg-background">
+<!-- Amber Warning Banner -->
+<div class="bg-tertiary-fixed text-on-tertiary-fixed px-xl py-sm flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="font-label-md text-label-md">190 of 200 seats used — 95% of your plan limit. <span class="font-bold underline cursor-pointer">Upgrade plan</span></span>
+</div>
+<button class="material-symbols-outlined text-[18px] opacity-70">close</button>
+</div>
+<div class="p-xl max-w-[1440px] mx-auto">
+<!-- Header Toolbar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-lg mb-xl">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Employee Directory</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage and monitor your workforce across all locations.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-sm px-lg py-md border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">upload</span>
+                        Import CSV
+                    </button>
+<button class="flex items-center gap-sm px-lg py-md bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-md hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Add employee
+                    </button>
+</div>
+</div>
+<!-- Filters Area -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-md mb-lg flex flex-wrap items-center gap-md">
+<div class="flex items-center gap-sm bg-surface-container px-md py-sm rounded-lg border border-outline-variant/20">
+<span class="text-label-sm text-outline uppercase font-bold text-[10px]">Department</span>
+<select class="bg-transparent border-none p-0 font-label-md text-label-md focus:ring-0 cursor-pointer">
+<option>All Departments</option>
+<option>Sales</option>
+<option>Engineering</option>
+<option>HR & Admin</option>
+<option>Operations</option>
+</select>
+</div>
+<div class="flex items-center gap-sm bg-surface-container px-md py-sm rounded-lg border border-outline-variant/20">
+<span class="text-label-sm text-outline uppercase font-bold text-[10px]">Work Type</span>
+<select class="bg-transparent border-none p-0 font-label-md text-label-md focus:ring-0 cursor-pointer">
+<option>All Types</option>
+<option>Office</option>
+<option>Field</option>
+<option>Hybrid</option>
+</select>
+</div>
+<div class="flex items-center gap-sm bg-surface-container px-md py-sm rounded-lg border border-outline-variant/20">
+<span class="text-label-sm text-outline uppercase font-bold text-[10px]">Status</span>
+<select class="bg-transparent border-none p-0 font-label-md text-label-md focus:ring-0 cursor-pointer">
+<option>Active</option>
+<option>On Notice</option>
+<option>Terminated</option>
+</select>
+</div>
+<div class="ml-auto flex items-center gap-sm">
+<button class="p-sm hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-outline">filter_list</span>
+</button>
+<button class="p-sm hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-outline">download</span>
+</button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-variant/30 bg-surface-container-low/50">
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Employee</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Department</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Designation</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Work Type</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Manager</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider text-center">Face</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider text-center">Device</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Status</th>
+<th class="px-lg py-md w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A close-up professional headshot of Arjun Mehta, a young Indian male professional with a confident expression. He is wearing a clean white shirt. The image has a soft, studio-lit quality with a neutral gray background, fitting for an employee directory profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfwCPPmsvldHGaRLje_i82TlrLiolJiHTYIDUOBGu8KYY7uH8Ovg5tV38YerlWzCqFOHJ0pMMqmNcArspuIbDNiaPjAsQcDxukLReXLwlspMlj2uulHcMfdaM2cDDz9SYQaR7esfFE5P1J2Zetojsy7R6sDJTdPtup7FDWq-MhuWbINiUkQVszsHQT5oNEDg5-kkXy-RPjAiXvLFxeSUBoBoxBPZMEV4sKwlyZYyLQzY7VW1pQTnVmCwarjFR7i5Rl2bRXNgjvgw"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Arjun Mehta</span>
+<span class="text-label-sm text-outline text-[12px]">EMP-102</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Sales</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Field Executive</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-[11px]">Field</span>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Salim Al-Abri</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-green-100 text-green-700 font-label-md text-[12px] font-bold">Active</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a female employee, Priya Sharma, for a corporate HRMS. She has a warm, professional smile and is dressed in a dark business suit. The lighting is high-key and professional, with a clean office background that is blurred out to keep the focus on her face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCP4JgUjoklHogNuYJ59cpgkfv_DHjttSxjj2B2INapObu3TqdXgwR3oYNvvpQ42YWh-R2cU3uVpE6o_xlIkGWnH_NTQ2bnmxFGrIDgKovo81CxPrVg5-ibdX5e8xEb-Xgq1uCb7ShnebtdGbeAUyxPb8s0tX8agz-bSRTN9Mrn4J-mohtOYV_Os_jvGGM9BUHW7BrhTrEnA-gyu6833E2eDQBESd0cmusvBkAB_pFlJFuLmcGHkCiZMATmFO7NrnPg_5SJ3nr4g"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Priya Sharma</span>
+<span class="text-label-sm text-outline text-[12px]">EMP-105</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Engineering</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Senior Backend Dev</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-[11px]">Office</span>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Deepak Nair</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-outline/30">cancel</span>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-green-100 text-green-700 font-label-md text-[12px] font-bold">Active</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional corporate headshot of Rohan Varma, an Indian male professional in his 30s. He is wearing a formal blue shirt and has a neutral, professional expression. The background is a minimalist, modern office corridor with soft natural light, conveying a sense of corporate reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2Iy2MBltqEKpQ8-7kdbHdMY1RwZvNz8USD41fc2yweDYUwHa8GsQqP68dNQBGipaAIuv2uluuMnYUIrFWIiVSSQcQBZESJGnyWRG7mhx9jviFTQ1-npaNfRrH6czIVV0-jZQ9tdc9-DCbc_UC4snbMlXmLgBbBgvCsLkskLMtTJBT59hVUaFgvLLZM0lPw7CT2WMSbBVLXlkn4gPsz18odOX2TxKAaWqfZNy9WQFvLgkiT1MKubrLvIl0YGpX_egHYzV5aaupbg"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Rohan Varma</span>
+<span class="text-label-sm text-outline text-[12px]">EMP-098</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">HR & Admin</td>
+<td class="px-lg py-md font-body-sm text-body-sm">HR Manager</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[11px]">Hybrid</span>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Meera Iyer</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-tertiary-fixed/40 text-tertiary font-label-md text-[12px] font-bold">On Notice</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of Ananya Reddy for an HR dashboard. She is an Indian woman in professional attire, presenting a friendly and accessible appearance. The image is set against a clean, white architectural background with bright, even lighting, maintaining a premium corporate feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmL9AJA066ATd9oq9__OJe00tUOSYx3wgfmgO2JGaf8lS8D2Q0grDx4hZutXEsrtZ91QfPKZCRdmJu-hlmS8NzBgC0oHB0NIw5-vWt8XkB9u6cVyyDZIaZ9oJ5vUhPs-Ms02agMIXkwOE0W0cJQs1vGHaMjm7GIbd08TweKzt4xocn1wcHbvAW27yg6GehXg_EmgXAGxdubFlUCVr7eYcEQ2_zwrLdnzfgKWU5ZhWYhRfalW5NuF2XNnMopVdxHTflM4MytLrERg"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Ananya Reddy</span>
+<span class="text-label-sm text-outline text-[12px]">EMP-115</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Marketing</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Growth Lead</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-[11px]">Office</span>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Sanjay Gupta</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md text-center">
+<span class="material-symbols-outlined text-secondary fill-icon">check_circle</span>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-green-100 text-green-700 font-label-md text-[12px] font-bold">Active</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-lg py-md bg-surface-container-low border-t border-surface-variant/30 flex items-center justify-between">
+<div class="font-label-sm text-label-sm text-outline">
+                        Showing <span class="text-on-surface font-bold">1 - 10</span> of <span class="text-on-surface font-bold">190</span> employees
+                    </div>
+<div class="flex items-center gap-xs">
+<button class="p-xs rounded-md hover:bg-surface-container-highest disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-on-primary font-label-sm text-label-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-highest font-label-sm text-label-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-highest font-label-sm text-label-sm">3</button>
+<span class="text-outline mx-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-highest font-label-sm text-label-sm">19</button>
+</div>
+<button class="p-xs rounded-md hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Interaction Script -->
+<script>
+        // Simple micro-interaction for active states or feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>

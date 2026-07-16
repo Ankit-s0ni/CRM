@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Create Employee</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcf8ff;
+        }
+        .form-section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#fcf8ff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e4e1ee",
+                      "primary": "#3525cd",
+                      "on-primary-container": "#dad7ff",
+                      "surface-container-low": "#f5f2ff",
+                      "surface-container": "#f0ecf9",
+                      "outline-variant": "#c7c4d8",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#4d44e3",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#007230",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "inverse-on-surface": "#f3effc",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-dim": "#dcd8e5",
+                      "secondary-fixed": "#7ffc97",
+                      "on-primary-fixed": "#0f0069",
+                      "on-background": "#1b1b24",
+                      "secondary-fixed-dim": "#62df7d",
+                      "primary-container": "#4f46e5",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "on-primary": "#ffffff",
+                      "secondary": "#006e2d",
+                      "on-tertiary-fixed": "#2f1500",
+                      "tertiary": "#703a00",
+                      "on-secondary-fixed-variant": "#005320",
+                      "surface-variant": "#e4e1ee",
+                      "primary-fixed": "#e2dfff",
+                      "on-surface-variant": "#464555",
+                      "surface": "#fcf8ff",
+                      "on-tertiary-container": "#ffd2b1",
+                      "on-surface": "#1b1b24",
+                      "on-secondary-fixed": "#002109",
+                      "outline": "#777587",
+                      "inverse-surface": "#302f39",
+                      "tertiary-container": "#934e00",
+                      "background": "#fcf8ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#eae6f4",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "inverse-primary": "#c3c0ff",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#7cf994"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "3xl": "64px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "2xl": "48px",
+                      "container-max": "1440px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "sidebar-width": "280px",
+                      "base": "8px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface-bright text-on-surface antialiased">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest shadow-md flex flex-col z-50">
+<div class="p-lg">
+<h1 class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest dark:text-primary">IndigoHR</h1>
+<p class="font-label-sm text-label-sm text-surface-variant opacity-70">Mumbai Office</p>
+</div>
+<nav class="mt-md flex-1">
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-primary-fixed border-l-4 border-primary-fixed bg-primary/10" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Org Structure</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+</nav>
+</aside>
+<!-- Header -->
+<header class="flex justify-between items-center h-16 ml-[280px] px-lg bg-surface shadow-sm sticky top-0 z-40">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">IndigoHR Admin</h2>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<span class="text-on-surface-variant font-label-md">Create New Employee</span>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary w-64 text-label-md" placeholder="Global search..." type="text"/>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">help</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">apps</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator, a middle-aged woman with a friendly but authoritative expression, in a modern bright office setting with soft professional lighting. The aesthetic is clean and high-trust, matching a high-end HRMS platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKDxsb9UsEmOoLMF0uOBjfd95z6JGNesZrdk0OF6RQxmwoF58Xp7B9qaUHkA5b9sdBqddQB-5QmRMKk5z3uflkA3SYzDj_Q-BK0FWE7M5qKioRuMsWz0Z6U3L9PgwrogiCV0UD53TJiicNVIrFElIMIk046jDh4zFmCepY5nqR6lmzj1a0cR1pWUFWyYN-4zwMxZ9g94W0-ZqKtqS3oh1e4T35YHT1y3gcr4Ol-XNLfALCzCwO5GDbcbttOWnb-6M6q_wi5eRmjA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] p-xl pb-32 max-w-[1440px] mx-auto">
+<div class="flex flex-col gap-xl">
+<!-- Section 1: Personal Information -->
+<section class="form-section-card p-xl">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm">Personal Details</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Basic information and contact credentials</p>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-lg">
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Full Name</label>
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md" type="text" value="Arjun Kulkarni"/>
+</div>
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Employee Code</label>
+<div class="relative">
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md bg-surface-container-low" type="text" value="IND-2024-042"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-sm text-primary">Auto-suggested</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Email Address</label>
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md" type="email" value="arjun.k@indigohr.com"/>
+</div>
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Phone Number</label>
+<div class="flex">
+<span class="inline-flex items-center px-md border border-r-0 border-outline-variant bg-surface-container rounded-l-lg text-on-surface-variant font-label-md">+91</span>
+<input class="flex-1 p-md border border-outline-variant rounded-r-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md" type="tel" value="9876543210"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Organization -->
+<section class="form-section-card p-xl">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm">Organization Details</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Employment hierarchy and operational settings</p>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-lg">
+<div class="col-span-12 md:col-span-4">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Department</label>
+<div class="relative">
+<select class="w-full p-md border border-outline-variant rounded-lg appearance-none bg-white focus:ring-2 focus:ring-primary font-body-md">
+<option>Engineering &gt; Backend &gt; Mumbai</option>
+<option>Product Management</option>
+<option>Human Resources</option>
+<option>Sales &amp; Marketing</option>
+</select>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-outline">account_tree</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Designation</label>
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-body-md" type="text" value="Senior Backend Engineer"/>
+</div>
+<div class="col-span-12 md:col-span-4">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Reporting Manager</label>
+<div class="relative">
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-body-md" placeholder="Search manager..." type="text" value="Priya Sharma"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">person_search</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-12 py-md">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-md">Work Type</label>
+<div class="flex flex-wrap gap-xl">
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="w-5 h-5 text-primary focus:ring-primary border-outline-variant" name="work_type" type="radio"/>
+<span class="font-body-md group-hover:text-primary transition-colors">Office Based</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 text-primary focus:ring-primary border-outline-variant" name="work_type" type="radio"/>
+<span class="font-body-md group-hover:text-primary transition-colors">Field Work</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 text-primary focus:ring-primary border-outline-variant" name="work_type" type="radio"/>
+<span class="font-body-md group-hover:text-primary transition-colors">Hybrid Remote</span>
+</label>
+</div>
+</div>
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Joining Date</label>
+<div class="relative">
+<input class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-body-md" type="date" value="2024-05-15"/>
+</div>
+</div>
+<div class="col-span-12 md:col-span-6">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Default Shift</label>
+<select class="w-full p-md border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-body-md">
+<option>Standard Day (09:00 - 18:00)</option>
+<option>Evening Shift (14:00 - 23:00)</option>
+<option>Night Shift (22:00 - 07:00)</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Section 3: Verification & Bio-security -->
+<section class="form-section-card p-xl">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm">Verification &amp; Bio-security</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Authentication methods and device white-listing</p>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-xl">
+<!-- Selfie Section -->
+<div class="col-span-12 md:col-span-4 flex flex-col items-center p-lg border border-outline-variant border-dashed rounded-xl bg-surface-container-low">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-lg text-center w-full">Master Selfie Upload</label>
+<div class="relative group">
+<div class="w-40 h-40 rounded-full border-4 border-primary/20 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A high-resolution, centered portrait of a young professional male face for facial recognition. The lighting is neutral and even, against a plain studio background. Crisp details and professional light-mode HRMS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlDuaeIoqpsbZjCTqnjLz-ywAXFDh5RThs0MKfalmZUZk_Q-9Vb2zYE2yVzC6dcXJp4Zn8GFcrNa1nqrz2_JCOmdGx6LUOUTwOt1cIi4wj50nHyFfxH_ZFqR48VurnN4d7u2_n-wBuSLu-EYhgd2YusGhxArCRv1wSQL6r3v6u1hItK38dP3CwEOTPb_8EZrmMEfyCT8NumWt4Ik6o4FfBKuxIteXxISxI7mhoPpJqzPVUz46OQBOKFjUMT0ForAdLF_UXfDbQxQ"/>
+<div class="absolute inset-0 bg-inverse-surface/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
+</div>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow-md border border-outline-variant">
+<span class="material-symbols-outlined text-error text-md">lock</span>
+</div>
+</div>
+<div class="mt-lg flex items-center gap-sm text-on-surface-variant bg-white px-md py-sm rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-md">info</span>
+<span class="font-label-sm">Employees cannot change this photo</span>
+</div>
+<div class="mt-md flex items-center gap-sm px-md py-xs bg-secondary-container text-on-secondary-container rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-md font-bold">Face Enrolled</span>
+</div>
+</div>
+<!-- Device Section -->
+<div class="col-span-12 md:col-span-8 flex flex-col gap-lg">
+<label class="block font-label-md text-label-md text-on-surface-variant">Registered Devices</label>
+<div class="flex items-center justify-between p-lg bg-surface border border-outline-variant rounded-xl shadow-sm">
+<div class="flex items-center gap-lg">
+<div class="w-12 h-12 bg-surface-container-highest rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl">smartphone</span>
+</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface">Pixel 7 — Active</h4>
+<p class="font-label-sm text-on-surface-variant">Last used: Today, 10:24 AM • Mumbai, IN</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<span class="font-label-sm px-md py-xs bg-secondary/10 text-secondary border border-secondary/20 rounded-full">Authorized</span>
+<button class="px-md py-sm bg-error/10 text-error hover:bg-error hover:text-white transition-all font-label-md rounded-lg border border-error/20">Block</button>
+</div>
+</div>
+<div class="p-lg rounded-xl bg-primary-fixed text-on-primary-fixed-variant">
+<div class="flex gap-md">
+<span class="material-symbols-outlined">shield</span>
+<div>
+<h5 class="font-label-md font-bold">Two-Factor Authentication</h5>
+<p class="font-body-sm opacity-80">Device binding is enabled for this employee. They will only be able to clock-in using the registered Pixel 7 hardware ID.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Sticky Footer -->
+<footer class="fixed bottom-0 left-[280px] right-0 bg-surface border-t border-outline-variant py-md px-xl flex justify-end gap-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+<button class="px-xl py-md font-label-md text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg">
+            Cancel
+        </button>
+<button class="px-xl py-md font-label-md bg-primary text-on-primary rounded-lg shadow-sm hover:bg-primary-container transition-all flex items-center gap-sm">
+<span class="material-symbols-outlined text-sm">save</span>
+            Save Employee
+        </button>
+</footer>
+<!-- Simple Interactivity for the Tree Select & Form feedback -->
+<script>
+        // Micro-interactions and feedback
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('focus', function() {
+                this.parentElement.classList.add('scale-[1.01]');
+                this.parentElement.classList.add('transition-transform');
+            });
+            el.addEventListener('blur', function() {
+                this.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Block button simulation
+        const blockBtn = document.querySelector('button.bg-error\\/10');
+        if(blockBtn) {
+            blockBtn.addEventListener('click', function() {
+                const confirmed = confirm('Are you sure you want to block this device? The employee will lose access immediately.');
+                if(confirmed) {
+                    this.textContent = 'Blocked';
+                    this.classList.remove('bg-error/10', 'text-error');
+                    this.classList.add('bg-outline', 'text-white');
+                }
+            });
+        }
+    </script>
+</body></html>

@@ -60,7 +60,7 @@ The phase headings below group product capabilities, not strict delivery order. 
 - [x] **[API]** Quota enforcement under advisory lock; emits QUOTA_THRESHOLD events at 95/100%
 - [x] **[API]** CSV import: presigned upload → import_jobs → BullMQ worker validation → persistent row errors; idempotent retry
 - [x] **[API]** Invite users (Verification_Tokens.USER_INVITE + payload role_ids) · tenant roles CRUD · permission matrix endpoint
-- [ ] **[WEB]** B1 wizard (logo→MinIO, tz, weekly offs incl. 2nd/4th Sat) · B2 settings · B3 org builder · B4 list+quota banner · B5 form (+device card placeholder) · B6 import wizard · B7 users&roles · B8 role editor
+- [x] **[WEB]** B1 wizard (logo→MinIO, tz, weekly offs incl. 2nd/4th Sat) · B2 settings · B3 org builder · B4 list+quota banner · B5 form (+device card placeholder) · B6 import wizard · B7 users&roles · B8 role editor
 - [ ] **[WEB]** A2/A3 self-serve signup+verify (TENANT_SIGNUP tokens) — or explicitly deferred to P6 (decide ☐)
 - [x] **[TEST]** import edges (dupes, cross-tenant manager ref, quota race) · permission-matrix e2e
 - [x] **[DOC]** import template + roles guide
@@ -71,8 +71,8 @@ The phase headings below group product capabilities, not strict delivery order. 
 **Exit:** month incl. night shift + holiday + half-day yields correct muster.
 
 ## 2.1 Config domain
-- [ ] **[API]** Policies CRUD (all v4 fields incl. max_face_attempts, weekly_offs override, break_rules) · Policy_Assignments + cached PolicyResolver (emp>dept>default)
-- [ ] **[API]** Shifts (is_overnight auto) + ShiftResolver (roster>default>flexible) · Rosters single/bulk/CSV (holiday-skip) · Holidays (office-scoped) · Office_Locations + employee assignments
+- [x] **[API]** Policies CRUD (all v4 fields incl. max_face_attempts, weekly_offs override, break_rules) · Policy_Assignments + cached PolicyResolver (emp>dept>default)
+- [x] **[API]** Shifts (is_overnight auto) + ShiftResolver (roster>default>flexible) · Rosters single/bulk/CSV (holiday-skip) · Holidays (office-scoped) · Office_Locations + employee assignments
 
 ## 2.2 Calculator & aggregate
 - [ ] **[API]** VOs (GeoPoint/Geofence/TimeWindow/WorkMinutes) · DateAttributor (overnight rule, office-tz > tenant-tz)

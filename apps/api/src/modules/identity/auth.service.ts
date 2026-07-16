@@ -21,6 +21,7 @@ import {
   DEFAULT_ROLE_PERMISSIONS,
   PERMISSIONS,
 } from '../../shared/authorization/permissions.constants';
+import { provisionTenantAttendanceDefaults } from '../../shared/tenancy/provision-tenant-attendance-defaults';
 
 @Injectable()
 export class AuthService {
@@ -64,6 +65,7 @@ export class AuthService {
       await tx.tenantSettings.create({
         data: { tenantId: createdTenant.id },
       });
+      await provisionTenantAttendanceDefaults(tx, createdTenant.id);
 
       const trialPlan = await tx.subscriptionPlan.upsert({
         where: { name: 'Starter Trial' },

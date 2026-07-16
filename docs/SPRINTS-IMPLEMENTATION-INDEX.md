@@ -1,6 +1,6 @@
 # Implementation Sprint Index
 
-This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1 and 2 are complete. Sprints 3-8 cover all remaining MVP and GA requirements without treating future hooks as committed scope.
+This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1-3 are complete. Sprints 4-8 cover all remaining MVP and GA requirements without treating future hooks as committed scope.
 
 ## Source of Truth
 
@@ -18,7 +18,7 @@ This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementa
 |---|---|---|---|---|
 | 1 | Organization, employees, tenant access, imports, API hardening | API foundation for B3-B8 | Complete scope | Complete |
 | 2 | Platform owner core and operational foundation | S1-S4, S9-S11 | Complete scope | Complete |
-| 3 | Business-admin web and attendance configuration | B1-B9, H4-H8 | 3-4 weeks | Not started |
+| 3 | Business-admin web and attendance configuration | B1-B9, H4-H8 | Complete scope | Complete |
 | 4 | Deterministic attendance calculator, web punches, register and finalization | H1, H9, H10 | 3-4 weeks | Not started |
 | 5 | Trusted mobile attendance with device, integrity, location and face verification | M1-M13, M19-M20, H14 | 4-5 weeks | Not started |
 | 6 | Field tracking, offline replay, live map and route playback | H2-H3, M16-M17 | 3-4 weeks | Not started |

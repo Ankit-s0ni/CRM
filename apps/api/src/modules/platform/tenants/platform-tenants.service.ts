@@ -34,6 +34,7 @@ import {
   normalizeWorkspaceInput,
   tenantLifecycleTarget,
 } from '../platform-policy';
+import { provisionTenantAttendanceDefaults } from '../../../shared/tenancy/provision-tenant-attendance-defaults';
 
 type RequestMetadata = {
   ipAddress?: string;
@@ -246,6 +247,7 @@ export class PlatformTenantsService {
         await tx.tenantSettings.create({
           data: { tenantId: tenant.id, timezone: normalized.timezone },
         });
+        await provisionTenantAttendanceDefaults(tx, tenant.id);
         const periodStart = new Date();
         const periodEnd = new Date(periodStart);
         if (plan.billingPeriod === BillingPeriod.YEARLY) {

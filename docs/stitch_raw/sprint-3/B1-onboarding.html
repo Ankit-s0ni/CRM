@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Business Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#fcf8ff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e4e1ee",
+                      "primary": "#3525cd",
+                      "on-primary-container": "#dad7ff",
+                      "surface-container-low": "#f5f2ff",
+                      "surface-container": "#f0ecf9",
+                      "outline-variant": "#c7c4d8",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#4d44e3",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#007230",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "inverse-on-surface": "#f3effc",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-dim": "#dcd8e5",
+                      "secondary-fixed": "#7ffc97",
+                      "on-primary-fixed": "#0f0069",
+                      "on-background": "#1b1b24",
+                      "secondary-fixed-dim": "#62df7d",
+                      "primary-container": "#4f46e5",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "on-primary": "#ffffff",
+                      "secondary": "#006e2d",
+                      "on-tertiary-fixed": "#2f1500",
+                      "tertiary": "#703a00",
+                      "on-secondary-fixed-variant": "#005320",
+                      "surface-variant": "#e4e1ee",
+                      "primary-fixed": "#e2dfff",
+                      "on-surface-variant": "#464555",
+                      "surface": "#fcf8ff",
+                      "on-tertiary-container": "#ffd2b1",
+                      "on-surface": "#1b1b24",
+                      "on-secondary-fixed": "#002109",
+                      "outline": "#777587",
+                      "inverse-surface": "#302f39",
+                      "tertiary-container": "#934e00",
+                      "background": "#fcf8ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#eae6f4",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "inverse-primary": "#c3c0ff",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#7cf994"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "3xl": "64px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "2xl": "48px",
+                      "container-max": "1440px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "sidebar-width": "280px",
+                      "base": "8px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .step-active { color: #3525cd; }
+        .step-line { height: 2px; width: 40px; background: #e4e1ee; }
+        .step-line-active { background: #3525cd; }
+        
+        /* Custom scrollbar for better UI feel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c7c4d8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #777587; }
+      </style>
+</head>
+<body class="bg-surface-bright font-body-md text-on-surface min-h-screen flex flex-col">
+<!-- Top AppBar (Simulated Contextual for Onboarding) -->
+<header class="h-20 px-xl flex items-center justify-between border-b border-surface-container-highest bg-surface-container-lowest shrink-0">
+<div class="flex items-center gap-md">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">IndigoHR</span>
+<div class="h-6 w-[1px] bg-outline-variant mx-sm"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">Setup Wizard</span>
+</div>
+<div class="flex items-center gap-md text-outline">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</div>
+</header>
+<!-- Main Onboarding Shell -->
+<main class="flex-1 flex flex-col items-center py-2xl px-lg">
+<!-- Stepper -->
+<nav class="w-full max-w-[800px] mb-3xl">
+<div class="flex items-center justify-between relative">
+<!-- Step 1: Active -->
+<div class="flex flex-col items-center gap-sm z-10">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-md">1</div>
+<span class="font-label-md text-label-md text-primary font-bold">Company profile</span>
+</div>
+<div class="flex-1 h-[2px] bg-surface-container-highest mb-10 mx-sm"></div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center gap-sm z-10">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold">2</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Working days</span>
+</div>
+<div class="flex-1 h-[2px] bg-surface-container-highest mb-10 mx-sm"></div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center gap-sm z-10">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Verification rules</span>
+</div>
+<div class="flex-1 h-[2px] bg-surface-container-highest mb-10 mx-sm"></div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center gap-sm z-10">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold">4</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Invite HR</span>
+</div>
+</div>
+</nav>
+<!-- Form Card Container -->
+<div class="w-full max-w-container-max bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-highest flex overflow-hidden min-h-[600px]">
+<!-- Left Column: Form -->
+<section class="flex-1 p-3xl overflow-y-auto">
+<div class="max-w-[520px] mx-auto">
+<header class="mb-xl">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-sm">Let's build your workspace</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Tell us a bit about your company to personalize your dashboard and employee portal.</p>
+</header>
+<form class="space-y-xl" onsubmit="return false;">
+<!-- Logo Upload -->
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface">Company Logo</label>
+<div class="flex items-center gap-xl p-lg border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-low hover:border-primary transition-colors cursor-pointer group">
+<div class="w-20 h-20 rounded-lg bg-surface-container-highest flex flex-col items-center justify-center text-outline group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined scale-125">upload_file</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Click to upload or drag and drop</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">appears on your employees' app</p>
+<p class="text-[10px] font-bold uppercase tracking-wider text-outline mt-sm">SVG, PNG, JPG (MAX. 800X400PX)</p>
+</div>
+</div>
+</div>
+<!-- Company Name -->
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface" for="company_name">Company Name</label>
+<input class="w-full px-md py-md rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md" id="company_name" placeholder="Enter legal company name" type="text" value="Acme Industries"/>
+</div>
+<!-- Industry & City Row -->
+<div class="grid grid-cols-2 gap-lg">
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface" for="industry">Industry</label>
+<div class="relative">
+<select class="w-full appearance-none px-md py-md rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-transparent font-body-md" id="industry">
+<option selected="" value="Retail">Retail</option>
+<option value="Technology">Technology</option>
+<option value="Finance">Finance</option>
+<option value="Healthcare">Healthcare</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface" for="city">Primary office city</label>
+<input class="w-full px-md py-md rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md" id="city" type="text" value="Muscat"/>
+</div>
+</div>
+<!-- Timezone Selector -->
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface" for="timezone">Timezone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-md py-md rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md" id="timezone" placeholder="Search timezone..." type="text" value="(GMT+4) Muscat, Oman"/>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="pt-xl flex items-center justify-between">
+<button class="px-xl py-md font-label-md text-label-md text-outline hover:text-on-surface transition-colors" type="button">
+                                Skip for now
+                            </button>
+<button class="px-3xl py-md bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-sm" type="submit">
+                                Continue
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</section>
+<!-- Right Column: Illustration/Visual -->
+<aside class="hidden lg:flex w-[45%] bg-surface-container relative items-center justify-center overflow-hidden">
+<!-- Background Shader/Atmospheric Effect -->
+
+<div class="relative z-10 w-full px-3xl">
+<div class="bg-surface-container-lowest/80 backdrop-blur-md border border-white/40 p-3xl rounded-3xl shadow-2xl space-y-xl">
+<div class="aspect-video w-full rounded-2xl overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A clean, professional 3D isometric illustration of a modern tech office environment in Muscat, Oman. Soft natural morning light streaming through large windows, minimalist ergonomic furniture, thriving indoor plants, and a diverse team of HR professionals collaborating around a sleek digital interface. The color palette features deep indigo, soft lavenders, and crisp whites, reflecting a corporate yet approachable high-trust HRMS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLWAPX64LCELunQ7yJ951CIwuayb4NfrZAcstJMvn7_FsYrKXBx8aBUJHZwQ9Ftaycep8cyQFCTiHPUZeQwh2wyMRW0bc_ZOkTzi19TH0vZYpaLRO2LfgX0JMYy0OLCQqBf2FBw8IsS9ujRuCZvYlfKg0YenzP3fxsqHFLmj56z1YcawredE-hWvIvm0tvfO46hGoFbFfOn1qPg6vMqw8s8IWXX5fUV7zhx3c4fS0ratvhwN6BysiXyQV_vLTsXhRObtLuZjcVSw"/>
+</div>
+<div class="space-y-md">
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">Enterprise Grade</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Ready to scale with you.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                Join 5,000+ businesses across Asia who manage payroll, leaves, and attendance seamlessly with IndigoHR's intelligent automation.
+                            </p>
+</div>
+<!-- Testimonial or Stat Clip -->
+<div class="flex items-center gap-md pt-md border-t border-surface-container-highest">
+<div class="flex -space-x-sm">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-400"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Trusted by 12k+ HR Admins</span>
+</div>
+</div>
+</div>
+<!-- Decorative elements -->
+<div class="absolute -top-12 -right-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+</aside>
+</div>
+<!-- Footer Help -->
+<footer class="mt-xl text-center">
+<p class="font-body-sm text-body-sm text-outline">
+                Need help with the setup? <a class="text-primary font-bold hover:underline" href="#">Schedule a 1:1 call</a> with an onboarding specialist.
+            </p>
+</footer>
+</main>
+<script>
+        // Micro-interaction for input fields
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Simple button click effect
+        document.querySelector('button[type="submit"]').addEventListener('click', function(e) {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Validating...';
+            btn.classList.add('opacity-80');
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-80');
+                btn.disabled = false;
+                // Add success notification logic here
+            }, 1200);
+        });
+    </script>
+</body></html>

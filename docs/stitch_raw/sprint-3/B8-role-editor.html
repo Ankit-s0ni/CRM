@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Role: HR Manager | IndigoHR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#fcf8ff",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface-container-low": "#f5f2ff",
+                    "surface-container": "#f0ecf9",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#4d44e3",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#007230",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "inverse-on-surface": "#f3effc",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "tertiary-fixed": "#ffdcc3",
+                    "surface-dim": "#dcd8e5",
+                    "secondary-fixed": "#7ffc97",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "secondary-fixed-dim": "#62df7d",
+                    "primary-container": "#4f46e5",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "on-primary": "#ffffff",
+                    "secondary": "#006e2d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "tertiary": "#703a00",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-variant": "#e4e1ee",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "surface": "#fcf8ff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#002109",
+                    "outline": "#777587",
+                    "inverse-surface": "#302f39",
+                    "tertiary-container": "#934e00",
+                    "background": "#fcf8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "inverse-primary": "#c3c0ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "3xl": "64px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "2xl": "48px",
+                    "container-max": "1440px",
+                    "lg": "24px",
+                    "xl": "32px",
+                    "sidebar-width": "280px",
+                    "base": "8px",
+                    "md": "16px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .permission-row:hover { background-color: rgba(53, 37, 205, 0.04); }
+        .sticky-bar {
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(228, 225, 238, 0.5);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Sidebar Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface flex flex-col shadow-md z-30">
+<div class="px-lg py-xl">
+<h1 class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest">IndigoHR</h1>
+<p class="text-label-sm text-outline-variant mt-xs">Mumbai Office</p>
+</div>
+<nav class="flex-1 mt-md">
+<div class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Employees</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Org Structure</span>
+</div>
+<!-- Active State: Settings -->
+<div class="flex items-center gap-md px-lg py-md text-primary-fixed border-l-4 border-primary-fixed bg-primary/10 transition-all duration-150 ease-in-out cursor-default">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</div>
+<div class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</div>
+</nav>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed left-[280px] top-0 right-0 h-16 bg-surface shadow-sm flex items-center justify-between px-lg z-20">
+<div class="flex items-center gap-md">
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+</button>
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Edit role: HR Manager</h2>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative flex items-center bg-surface-container-low px-md py-xs rounded-full border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary w-64">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md w-full ml-sm" placeholder="Search permissions..." type="text"/>
+</div>
+<div class="flex gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">help</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">apps</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-primary-container">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a senior HR administrator in a clean office setting, featuring high-trust lighting and corporate aesthetics. The individual has a confident yet approachable expression. Minimalist background with hints of glass and steel. High resolution, 8k, modern corporate photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXr3mPbuL-HV8Mw-kjLCWcoU3BRyc3zI4jMOtySYKvKIEn5XrRU5r4fhveddb_ddpDaHdV76z2kPidEozH7Q_l4_bMLzkQqMu1Vd5tA_MSTguMxCef4vcsWNaMGIKv621-EqMKkezrxaRc9_SUv3y4SFxiv4xEcNPYBz9iMW0nGlYDB9tAv_NYMd7SpQRAEmM--A24duBRc5JlLRqm9SsWUADXNYQ9XO8kOGvFdJWpZ7d250_wu5yETB43AVeGpmTCZq7m2tVqsA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 pb-24 px-lg flex gap-lg">
+<!-- Left: Permission Matrix -->
+<div class="flex-1 space-y-lg mt-lg">
+<!-- Module: Attendance -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container-highest">
+<div class="bg-surface-container px-lg py-md flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">event_available</span>
+<h3 class="font-headline-sm text-headline-sm">Attendance</h3>
+</div>
+<span class="text-label-sm text-outline px-sm py-xs bg-surface-container-lowest rounded border border-outline-variant">2 Enabled</span>
+</div>
+<div class="divide-y divide-surface-container-highest">
+<!-- Permission Row 1 -->
+<div class="permission-row flex items-center justify-between px-lg py-md transition-colors">
+<div>
+<p class="font-label-md text-label-md text-on-surface">Manage Attendance Policy</p>
+<p class="text-label-sm text-outline">attendance:policy:manage</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Permission Row 2 -->
+<div class="permission-row flex items-center justify-between px-lg py-md transition-colors">
+<div>
+<p class="font-label-md text-label-md text-on-surface">Approve Regularization Requests</p>
+<p class="text-label-sm text-outline">attendance:regularization:approve</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Module: Organization -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container-highest">
+<div class="bg-surface-container px-lg py-md flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">corporate_fare</span>
+<h3 class="font-headline-sm text-headline-sm">Organization</h3>
+</div>
+<div class="divide-y divide-surface-container-highest">
+<div class="permission-row flex items-center justify-between px-lg py-md transition-colors">
+<div>
+<p class="font-label-md text-label-md text-on-surface">Manage Employees</p>
+<p class="text-label-sm text-outline">org:employee:manage</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Module: Reports -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container-highest">
+<div class="bg-surface-container px-lg py-md flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">assessment</span>
+<h3 class="font-headline-sm text-headline-sm">Reports</h3>
+</div>
+<div class="divide-y divide-surface-container-highest">
+<div class="permission-row flex items-center justify-between px-lg py-md transition-colors">
+<div>
+<p class="font-label-md text-label-md text-on-surface">View All Reports</p>
+<p class="text-label-sm text-outline">reports:view:all</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Module: Billing (Locked) -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-surface-container-highest opacity-75">
+<div class="bg-surface-container px-lg py-md flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">payments</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface-variant">Billing</h3>
+</div>
+<span class="material-symbols-outlined text-outline">lock</span>
+</div>
+<div class="divide-y divide-surface-container-highest">
+<div class="permission-row flex items-center justify-between px-lg py-md bg-surface-container-low cursor-not-allowed">
+<div>
+<p class="font-label-md text-label-md text-outline">Manage Billing &amp; Subscriptions</p>
+<p class="text-label-sm text-outline">billing:manage</p>
+</div>
+<div class="relative inline-flex items-center">
+<div class="w-11 h-6 bg-surface-container-highest rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Side Rail: Role Summary -->
+<aside class="w-[340px] mt-lg space-y-lg">
+<div class="bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-surface-container-highest sticky top-24">
+<h4 class="font-label-md text-label-md text-outline uppercase tracking-wider mb-md">Role Summary</h4>
+<div class="space-y-md">
+<div class="flex items-center justify-between pb-sm border-b border-surface-container-highest">
+<span class="text-body-sm text-on-surface-variant">Member Count</span>
+<span class="font-bold text-primary">4 Members</span>
+</div>
+<div class="flex items-center justify-between pb-sm border-b border-surface-container-highest">
+<span class="text-body-sm text-on-surface-variant">Access Level</span>
+<span class="text-body-sm font-medium">Standard Admin</span>
+</div>
+<div class="flex items-center justify-between pb-sm border-b border-surface-container-highest">
+<span class="text-body-sm text-on-surface-variant">Last Modified</span>
+<span class="text-body-sm">Oct 24, 2023</span>
+</div>
+</div>
+<div class="mt-xl space-y-md">
+<button class="w-full flex items-center justify-center gap-sm px-md py-sm bg-surface-container-low text-primary rounded-lg font-label-md text-label-md hover:bg-primary/5 transition-colors border border-primary/20">
+<span class="material-symbols-outlined">content_copy</span>
+                        Duplicate role
+                    </button>
+<button class="w-full flex items-center justify-center gap-sm px-md py-sm bg-error-container/10 text-error rounded-lg font-label-md text-label-md hover:bg-error/5 transition-colors border border-error/20">
+<span class="material-symbols-outlined">delete</span>
+                        Delete role
+                    </button>
+</div>
+<div class="mt-xl pt-lg border-t border-surface-container-highest">
+<p class="text-label-sm text-outline leading-relaxed">
+                        Role changes affect all assigned members immediately. Locked modules require 'Super Admin' level permissions to toggle.
+                    </p>
+</div>
+</div>
+</aside>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-[280px] right-0 bg-inverse-surface text-white py-md px-xl flex items-center justify-between sticky-bar z-40" id="unsaved-changes-bar">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary-fixed">info</span>
+<p class="font-label-md text-label-md">You have unsaved changes in Attendance and Organization modules.</p>
+</div>
+<div class="flex gap-lg">
+<button class="px-lg py-sm font-label-md text-label-md text-surface-variant hover:text-white transition-colors">
+                Discard
+            </button>
+<button class="px-xl py-sm font-label-md text-label-md bg-primary text-white rounded-lg hover:bg-primary-container transition-all shadow-md active:scale-95">
+                Save Permissions
+            </button>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggles = document.querySelectorAll('input[type="checkbox"]');
+            const stickyBar = document.getElementById('unsaved-changes-bar');
+            
+            // Simulating "Unsaved Changes" state logic
+            toggles.forEach(toggle => {
+                toggle.addEventListener('change', () => {
+                    // Visual feedback for change
+                    const row = toggle.closest('.permission-row');
+                    row.classList.add('bg-primary/5');
+                    
+                    // Logic to show/hide bar (simplified)
+                    stickyBar.style.display = 'flex';
+                });
+            });
+
+            // Discard action
+            const discardBtn = document.querySelector('button:contains("Discard")');
+            if(discardBtn) {
+                discardBtn.addEventListener('click', () => {
+                   window.location.reload();
+                });
+            }
+        });
+        
+        // Helper for selector
+        window.addEventListener('load', () => {
+            // Placeholder for real logic
+        });
+    </script>
+</body></html>

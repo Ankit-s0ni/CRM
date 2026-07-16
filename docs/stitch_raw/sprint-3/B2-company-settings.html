@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR - Company Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e1ee; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e4e1ee",
+                        "primary": "#3525cd",
+                        "on-primary-container": "#dad7ff",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container": "#f0ecf9",
+                        "outline-variant": "#c7c4d8",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#4d44e3",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#007230",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-dim": "#dcd8e5",
+                        "secondary-fixed": "#7ffc97",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#1b1b24",
+                        "secondary-fixed-dim": "#62df7d",
+                        "primary-container": "#4f46e5",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary": "#ffffff",
+                        "secondary": "#006e2d",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary": "#703a00",
+                        "on-secondary-fixed-variant": "#005320",
+                        "surface-variant": "#e4e1ee",
+                        "primary-fixed": "#e2dfff",
+                        "on-surface-variant": "#464555",
+                        "surface": "#fcf8ff",
+                        "on-tertiary-container": "#ffd2b1",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed": "#002109",
+                        "outline": "#777587",
+                        "inverse-surface": "#302f39",
+                        "tertiary-container": "#934e00",
+                        "background": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6f4",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "inverse-primary": "#c3c0ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#7cf994"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "2xl": "48px",
+                        "container-max": "1440px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sidebar-width": "280px",
+                        "base": "8px",
+                        "md": "16px",
+                        "gutter": "24px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<!-- Global Layout Shell -->
+<div class="flex h-screen overflow-hidden">
+<!-- Main Sidebar (SideNavBar Anchor) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest shadow-md flex flex-col z-50">
+<div class="p-lg flex items-center gap-md">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[28px]">account_tree</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-[20px] font-bold text-surface-container-lowest dark:text-primary leading-tight">IndigoHR</h1>
+<p class="text-[12px] text-outline-variant opacity-70">Mumbai Office</p>
+</div>
+</div>
+<nav class="flex-1 mt-md custom-scrollbar overflow-y-auto">
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-[14px]">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-[14px]">Employees</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-md text-[14px]">Org Structure</span>
+</a>
+<!-- Active Settings State -->
+<a class="flex items-center gap-md px-lg py-md text-primary-fixed dark:text-primary border-l-4 border-primary-fixed dark:border-primary bg-primary/10 transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-[14px]">Settings</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="policy">policy</span>
+<span class="font-label-md text-[14px]">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-[14px]">Billing</span>
+</a>
+</nav>
+<div class="p-lg border-t border-outline-variant/10">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full border border-outline-variant/20" data-alt="A professional professional portrait of a business administrator in a modern office setting, soft natural lighting, high-end corporate photography style with cool blue and deep indigo color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa271bTrDoUQgSLOCssBwFhefSl42SeZr17RhL_VlANbYWrsPaJoL824A7I7K3UIB3bIOOxPd2niDgzFyNxWb6BIAUvyTPWFTRC7ULCPt4ODUNq0PfQfOwh_twk8c2TrA1Gsx7Set8Cd5tuwfenVjIrOhuC91kAHWKYHh-9gx0d7VwjNdNGkgDLLaV7ze209D1QVJR2xQ55SIZOVpB5x--qh8Bj7bQav7XU-E_5bcfZKOHggUM5d0-I9kDB4IPIUl18ak-WP__dg"/>
+<div class="flex-1 min-w-0">
+<p class="text-[14px] font-semibold text-white truncate">Amit Sharma</p>
+<p class="text-[12px] text-outline-variant truncate">Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 ml-[280px] flex flex-col relative bg-surface-bright">
+<!-- Top Navigation (TopNavBar Anchor) -->
+<header class="flex justify-between items-center h-16 px-lg bg-surface dark:bg-surface-dim shadow-sm z-40">
+<div class="flex items-center gap-xl w-1/3">
+<h2 class="font-headline-sm text-[20px] font-bold text-primary dark:text-primary-fixed-dim">IndigoHR Admin</h2>
+</div>
+<div class="flex-1 max-w-xl">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-[14px] focus:ring-2 focus:ring-primary/20" placeholder="Search settings or employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md w-1/3 justify-end">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="apps">apps</span>
+</button>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 flex overflow-hidden relative">
+<!-- Settings Sub-Navigation -->
+<aside class="w-64 border-r border-outline-variant/30 flex flex-col bg-surface-container-low/30">
+<div class="p-lg">
+<h3 class="text-[12px] font-bold text-outline uppercase tracking-widest">Company Settings</h3>
+</div>
+<nav class="flex-1">
+<a class="flex items-center gap-md px-lg py-3 text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span class="text-[14px] font-medium">Profile</span>
+</a>
+<a class="flex items-center gap-md px-lg py-3 text-primary bg-primary/10 border-r-4 border-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="text-[14px] font-semibold">Working days</span>
+</a>
+<a class="flex items-center gap-md px-lg py-3 text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">security</span>
+<span class="text-[14px] font-medium">Security</span>
+</a>
+<a class="flex items-center gap-md px-lg py-3 text-on-surface-variant hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+<span class="text-[14px] font-medium">Branding</span>
+</a>
+</nav>
+</aside>
+<!-- Scrollable Content Canvas -->
+<div class="flex-1 overflow-y-auto custom-scrollbar bg-surface-bright/50">
+<div class="max-w-[1000px] mx-auto p-3xl pb-[120px]">
+<!-- Page Header -->
+<div class="mb-xl">
+<h2 class="text-[30px] font-bold text-on-surface leading-tight">Working Days &amp; Hours</h2>
+<p class="text-on-surface-variant mt-xs">Configure the operational calendar and standard office timings for the Mumbai office.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-xl">
+<!-- Main Configuration Cards -->
+<div class="lg:col-span-2 space-y-lg">
+<!-- Weekly Grid Card -->
+<section class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="text-[18px] font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">event_available</span>
+                                            Standard Working Week
+                                        </h3>
+<span class="px-2 py-1 bg-secondary-container text-on-secondary-container text-[11px] font-bold rounded uppercase">Active Cycle</span>
+</div>
+<div class="flex gap-sm justify-between">
+<!-- Day Chips -->
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-primary bg-primary text-on-primary transition-all shadow-md">
+<span class="text-[12px] font-medium opacity-80 uppercase">Mon</span>
+<span class="text-[20px] font-bold">M</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-primary bg-primary text-on-primary transition-all shadow-md">
+<span class="text-[12px] font-medium opacity-80 uppercase">Tue</span>
+<span class="text-[20px] font-bold">T</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-primary bg-primary text-on-primary transition-all shadow-md">
+<span class="text-[12px] font-medium opacity-80 uppercase">Wed</span>
+<span class="text-[20px] font-bold">W</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-primary bg-primary text-on-primary transition-all shadow-md">
+<span class="text-[12px] font-medium opacity-80 uppercase">Thu</span>
+<span class="text-[20px] font-bold">T</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-primary bg-primary text-on-primary transition-all shadow-md">
+<span class="text-[12px] font-medium opacity-80 uppercase">Fri</span>
+<span class="text-[20px] font-bold">F</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-outline-variant bg-surface-container-low text-on-surface-variant/40 transition-all hover:bg-surface-container">
+<span class="text-[12px] font-medium uppercase">Sat</span>
+<span class="text-[20px] font-bold">S</span>
+</button>
+<button class="flex-1 h-20 rounded-lg flex flex-col items-center justify-center border-2 border-outline-variant bg-surface-container-low text-on-surface-variant/40 transition-all hover:bg-surface-container">
+<span class="text-[12px] font-medium uppercase">Sun</span>
+<span class="text-[20px] font-bold">S</span>
+</button>
+</div>
+<!-- Special Rules Row -->
+<div class="mt-xl p-md bg-surface-container-low rounded-lg flex items-center justify-between border border-primary/10">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">weekend</span>
+</div>
+<div>
+<p class="text-[14px] font-semibold">2nd &amp; 4th Saturday off</p>
+<p class="text-[12px] text-on-surface-variant">Standard India-region banking holiday rule</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</section>
+<!-- Time & Attendance Card -->
+<section class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/10">
+<h3 class="text-[18px] font-semibold flex items-center gap-2 mb-lg">
+<span class="material-symbols-outlined text-primary">schedule</span>
+                                        Shift timings
+                                    </h3>
+<div class="grid grid-cols-2 gap-xl">
+<div class="space-y-sm">
+<label class="text-[14px] font-medium text-outline">Timezone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary">public</span>
+<input class="w-full bg-surface-container-low border-outline-variant/50 rounded-lg pl-10 pr-4 py-2.5 text-[14px] font-medium focus:ring-primary focus:border-primary" readonly="" type="text" value="(GMT+4) Muscat"/>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="text-[14px] font-medium text-outline">Work Duration</label>
+<div class="flex items-center h-[42px] px-md bg-primary-fixed/30 rounded-lg text-primary text-[14px] font-semibold">
+                                                9 Hours / Day (Expected)
+                                            </div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-xl mt-lg">
+<div class="space-y-sm">
+<label class="text-[14px] font-medium text-outline">Start Time</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none">expand_more</span>
+<input class="w-full bg-surface-container-lowest border-outline-variant/50 rounded-lg px-4 py-2.5 text-[14px] font-medium focus:ring-primary focus:border-primary shadow-sm" type="time" value="09:00"/>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="text-[14px] font-medium text-outline">End Time</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none">expand_more</span>
+<input class="w-full bg-surface-container-lowest border-outline-variant/50 rounded-lg px-4 py-2.5 text-[14px] font-medium focus:ring-primary focus:border-primary shadow-sm" type="time" value="18:00"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Branding Preview Sidebar (Right Column) -->
+<div class="space-y-lg">
+<section class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/10 h-fit">
+<h3 class="text-[18px] font-semibold flex items-center gap-2 mb-lg">
+<span class="material-symbols-outlined text-primary">smartphone</span>
+                                        App Branding
+                                    </h3>
+<!-- Mobile Mockup -->
+<div class="relative mx-auto w-[200px] h-[400px] bg-inverse-surface rounded-[32px] border-[8px] border-outline/30 p-2 overflow-hidden shadow-2xl">
+<!-- Notch -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-outline/30 rounded-b-xl z-20"></div>
+<!-- Screen Content -->
+<div class="w-full h-full bg-white rounded-[20px] overflow-hidden flex flex-col">
+<!-- Top App Bar Mock -->
+<div class="bg-primary h-14 flex items-center px-md">
+<div class="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+</div>
+<div class="ml-2 text-white">
+<p class="text-[10px] font-bold leading-none">IndigoHR</p>
+<p class="text-[8px] opacity-70">Employee App</p>
+</div>
+</div>
+<!-- Content Placeholders -->
+<div class="p-md space-y-md">
+<div class="flex gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high"></div>
+<div class="flex-1 space-y-1">
+<div class="h-2 w-2/3 bg-surface-container-high rounded"></div>
+<div class="h-2 w-1/2 bg-surface-container-high rounded"></div>
+</div>
+</div>
+<div class="h-24 w-full bg-surface-container-low rounded-lg border border-dashed border-outline-variant/50 flex flex-col items-center justify-center gap-2">
+<span class="material-symbols-outlined text-outline-variant">image</span>
+<span class="text-[10px] text-outline-variant">Logo Placement</span>
+</div>
+<div class="space-y-sm">
+<div class="h-2 w-full bg-surface-container-high rounded"></div>
+<div class="h-2 w-full bg-surface-container-high rounded"></div>
+<div class="h-2 w-3/4 bg-surface-container-high rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-lg">
+<p class="text-[12px] text-on-surface-variant leading-relaxed text-center">
+                                            This preview shows how your company identity appears in the <span class="font-bold">IndigoHR Employee App</span>.
+                                        </p>
+<button class="w-full mt-md py-2 border-2 border-primary/20 text-primary text-[14px] font-semibold rounded-lg hover:bg-primary/5 transition-colors">
+                                            Upload Logo
+                                        </button>
+</div>
+</section>
+<div class="p-lg bg-tertiary-fixed rounded-xl border border-tertiary/20">
+<div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-tertiary-container mt-1">info</span>
+<div>
+<h4 class="text-[14px] font-bold text-tertiary-container">Pro Tip</h4>
+<p class="text-[12px] text-on-tertiary-fixed-variant mt-xs">Changes to working days will affect leave balance calculations and attendance accruals from the next pay cycle.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Save Bar -->
+<footer class="absolute bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30 px-3xl py-md flex items-center justify-between z-50">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-secondary-container bg-secondary-container/50 p-2 rounded-full">sync</span>
+<p class="text-[14px] text-on-surface-variant font-medium">Unsaved changes detected</p>
+</div>
+<div class="flex gap-md">
+<button class="px-lg py-2.5 text-[14px] font-semibold text-outline hover:bg-surface-container rounded-lg transition-colors">
+                            Discard
+                        </button>
+<button class="px-xl py-2.5 text-[14px] font-semibold bg-primary text-on-primary rounded-lg shadow-lg shadow-primary/20 hover:bg-primary-container transition-all active:scale-95">
+                            Save Changes
+                        </button>
+</div>
+</footer>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.classList.contains('flex-1') && this.querySelector('span.text-[20px]')) {
+                    this.classList.toggle('bg-primary');
+                    this.classList.toggle('text-on-primary');
+                    this.classList.toggle('border-primary');
+                    this.classList.toggle('bg-surface-container-low');
+                    this.classList.toggle('text-on-surface-variant/40');
+                    this.classList.toggle('border-outline-variant');
+                }
+            });
+        });
+
+        // Add a subtle drift effect to the background
+        document.addEventListener('mousemove', (e) => {
+            const moveX = (e.clientX - window.innerWidth / 2) / 100;
+            const moveY = (e.clientY - window.innerHeight / 2) / 100;
+            document.body.style.backgroundPosition = `${moveX}px ${moveY}px`;
+        });
+    </script>
+</body></html>

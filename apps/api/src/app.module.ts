@@ -28,6 +28,8 @@ import { PlatformTenantsModule } from './modules/platform/tenants/platform-tenan
 import { PlatformModulesModule } from './modules/platform/modules/platform-modules.module';
 import { ImpersonationModule } from './modules/platform/impersonation/impersonation.module';
 import { PlatformOperationsModule } from './modules/platform/operations/platform-operations.module';
+import { WorkspaceSettingsModule } from './modules/workspace-settings/workspace-settings.module';
+import { AttendanceConfigModule } from './modules/attendance-config/attendance-config.module';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { PlatformOperationsModule } from './modules/platform/operations/platform
     PlatformModulesModule,
     ImpersonationModule,
     PlatformOperationsModule,
+    WorkspaceSettingsModule,
+    AttendanceConfigModule,
   ],
   controllers: [AppController],
   providers: [
