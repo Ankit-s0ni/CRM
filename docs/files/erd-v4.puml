@@ -1,0 +1,883 @@
+@startuml
+' =====================================================================
+' HRMS ATTENDANCE PLATFORM — ERD v4 (build target)
+' v3 + deep-evaluation fixes. New/changed items tagged [v4].
+' Implicit on every table: id UUIDv7 PK, created_at, updated_at,
+' tenant_id on all tenant-scoped tables.
+' =====================================================================
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+'=====================================================
+' BC 1 : PLATFORM / TENANCY
+'=====================================================
+package "Platform / Tenancy" {
+
+entity Subscription_Plans {
+    * id : UUID <<PK>>
+    --
+    name : String
+    price_per_user : Decimal
+    currency : String                ' [v4] ISO 4217, default INR
+    max_employees : Integer
+    billing_period : Enum(MONTHLY,YEARLY)
+}
+
+entity Tenants {
+    * id : UUID <<PK>>
+    --
+    company_name : String
+    subdomain : String <<UQ global>>
+    status : Enum(TRIAL,ACTIVE,SUSPENDED,CHURNED)
+    company_logo : URL
+    suspended_at : DateTime
+    suspended_reason : String
+    onboarding_completed_at : DateTime   ' [v4] wizard state
+}
+
+entity Tenant_Billing_Profiles {
+    ' [v4 NEW] required for legally valid invoices (GST)
+    * tenant_id : UUID <<PK,FK>>
+    --
+    legal_name : String
+    billing_email : String
+    address : JSON
+    gstin : String
+    pan : String
+    currency : String                ' default INR
+}
+
+entity Tenant_Subscriptions {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    plan_id : UUID <<FK>>
+    status : Enum(TRIALING,ACTIVE,PAST_DUE,CANCELLED)
+    seat_count : Integer
+    current_period_start : Date
+    current_period_end : Date
+    dunning_state : Enum(NONE,REMINDED,GRACE,SUSPEND_PENDING)
+}
+
+entity Modules {
+    * id : UUID <<PK>>
+    --
+    key : String <<UQ>>
+    name : String
+}
+
+entity Tenant_Modules {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    module_id : UUID <<FK>>
+    is_active : Boolean
+    activated_at : DateTime
+    activated_by : UUID
+}
+
+entity Tenant_Invoices {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    subscription_id : UUID <<FK>>
+    invoice_number : String <<UQ>>   ' [v4] sequential, legal requirement
+    amount_due : Decimal
+    tax_amount : Decimal             ' [v4] GST
+    total_amount : Decimal           ' [v4]
+    currency : String                ' [v4]
+    due_date : Date
+    status : Enum(DRAFT,OPEN,PAID,VOID,UNCOLLECTIBLE)
+    pdf_url : URL                    ' [v4] generated artifact
+}
+
+entity Payment_Transactions {
+    * id : UUID <<PK>>
+    --
+    invoice_id : UUID <<FK>>
+    gateway : Enum(STRIPE,RAZORPAY)
+    gateway_ref : String
+    amount : Decimal
+    currency : String                ' [v4]
+    status : Enum(PENDING,SUCCEEDED,FAILED,REFUNDED)
+    failure_reason : String
+    attempted_at : DateTime
+}
+
+entity Platform_Users {
+    * id : UUID <<PK>>
+    --
+    email : String <<UQ>>
+    password_hash : String
+    role : Enum(SUPER_ADMIN,SUPPORT)
+    mfa_secret : String
+    mfa_enabled : Boolean
+    last_login_at : DateTime
+    last_login_ip : String
+    status : Enum(ACTIVE,DISABLED)
+}
+
+entity Impersonation_Sessions {
+    * id : UUID <<PK>>
+    --
+    platform_user_id : UUID <<FK>>
+    tenant_id : UUID <<FK>>
+    target_user_id : UUID <<FK Users>>
+    reason : String
+    started_at : DateTime
+    ended_at : DateTime
+    expires_at : DateTime
+    ip_address : String
+    user_agent : String
+}
+
+entity System_Alerts {
+    * id : UUID <<PK>>
+    --
+    alert_type : Enum(PAYMENT_GATEWAY_DOWN,QUEUE_LAG,PUSH_FAILURE,NEW_SUBSCRIPTION,PLAN_UPGRADED,TENANT_SUSPENDED)
+    severity : Enum(INFO,WARNING,CRITICAL)
+    title : String
+    payload : JSON
+    tenant_id : UUID <<FK, nullable>>
+    status : Enum(OPEN,ACKNOWLEDGED,RESOLVED)
+    acknowledged_by : UUID
+    acknowledged_at : DateTime
+    resolved_at : DateTime
+}
+
+entity System_Audit_Logs {
+    * id : UUID <<PK>>
+    --
+    actor_platform_user_id : UUID
+    impersonation_session_id : UUID
+    action : String
+    module : String
+    old_value : JSON
+    new_value : JSON
+    ip_address : String
+    user_agent : String
+    request_id : String
+    created_at : DateTime
+}
+}
+
+'=====================================================
+' BC 2 : IDENTITY & ACCESS
+'=====================================================
+package "Identity & Access" {
+
+entity Users {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    email : String                   ' UQ(tenant_id,email)
+    phone : String
+    password_hash : String
+    status : Enum(ACTIVE,LOCKED,DISABLED)
+    email_verified_at : DateTime     ' [v4]
+    password_changed_at : DateTime
+    failed_login_count : Integer
+    locked_until : DateTime
+    last_login_at : DateTime
+    last_login_ip : String
+    mfa_secret : String
+    mfa_enabled : Boolean
+}
+
+entity Verification_Tokens {
+    ' [v4 NEW] one table for all account-flow tokens
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK, nullable>>  ' null for TENANT_SIGNUP
+    user_id : UUID <<FK, nullable>>
+    email : String
+    purpose : Enum(EMAIL_VERIFY,PASSWORD_RESET,USER_INVITE,TENANT_SIGNUP)
+    token_hash : String
+    payload : JSON                   ' invite: role_ids; signup: company/subdomain
+    expires_at : DateTime
+    consumed_at : DateTime
+    created_ip : String
+    invited_by : UUID <<FK Users, nullable>>
+}
+
+entity Roles {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK, nullable>>
+    name : String
+    is_system : Boolean
+}
+
+entity Permissions {
+    * id : UUID <<PK>>
+    --
+    key : String <<UQ>>
+}
+
+entity Role_Permissions {
+    * role_id : UUID <<PK,FK>>
+    * permission_id : UUID <<PK,FK>>
+}
+
+entity User_Roles {
+    * user_id : UUID <<PK,FK>>
+    * role_id : UUID <<PK,FK>>
+}
+
+entity Refresh_Tokens {
+    * id : UUID <<PK>>
+    --
+    user_id : UUID <<FK>>
+    token_hash : String
+    family_id : UUID
+    device_id : UUID <<FK, nullable>>
+    expires_at : DateTime
+    revoked_at : DateTime
+    revoked_reason : Enum(LOGOUT,REUSE_DETECTED,ADMIN,PASSWORD_CHANGE)
+    created_ip : String
+    user_agent : String
+}
+
+entity Login_Attempts {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID
+    email : String
+    ip_address : String
+    user_agent : String
+    success : Boolean
+    failure_reason : Enum(BAD_PASSWORD,LOCKED,DISABLED,UNKNOWN_USER,MFA_FAILED)
+    created_at : DateTime
+}
+}
+
+'=====================================================
+' BC 3 : ORGANIZATION
+'=====================================================
+package "Organization" {
+
+entity Departments {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    name : String
+    parent_dept_id : UUID <<FK self, nullable>>
+}
+
+entity Designations {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    name : String
+}
+
+entity Employees {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_code : String
+    full_name : String
+    phone : String
+    work_type : Enum(OFFICE,FIELD,HYBRID)
+    status : Enum(ACTIVE,ON_NOTICE,TERMINATED)
+    date_of_joining : Date
+    date_of_exit : Date
+    manager_id : UUID <<FK self, nullable>>
+    dept_id : UUID <<FK>>
+    designation_id : UUID <<FK, nullable>>
+    user_id : UUID <<FK, nullable>>
+    default_shift_id : UUID <<FK, nullable>>
+    master_selfie : URL
+    face_embedding_ref : String
+    face_enrolled_at : DateTime
+    face_enrolled_by : UUID
+}
+
+entity Employment_Events {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    event_type : Enum(JOINED,TRANSFERRED,PROMOTED,EXITED)
+    effective_date : Date
+    payload : JSON
+    created_by : UUID
+}
+
+entity Import_Jobs {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    requested_by : UUID <<FK Users>>
+    kind : Enum(EMPLOYEES,ROSTERS)
+    status : Enum(PENDING,RUNNING,COMPLETED,FAILED)
+    file_url : URL
+    total_rows : Integer
+    success_rows : Integer
+    error_rows : Integer
+    row_errors : JSON
+}
+}
+
+'=====================================================
+' BC 4 : ATTENDANCE
+'=====================================================
+package "Attendance" {
+
+entity Tenant_Settings {
+    * tenant_id : UUID <<PK,FK>>
+    --
+    timezone : String
+    weekly_offs : JSON
+    require_facial_recognition : Boolean
+    face_match_threshold : Integer
+    field_tracking_interval : Integer
+    checkin_reminder_enabled : Boolean
+    checkout_reminder_minutes : Integer
+    absentee_alert_time : Time
+}
+
+entity Office_Locations {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    office_name : String
+    latitude : Decimal
+    longitude : Decimal
+    radius_meters : Integer
+    timezone : String
+    egress_ips : JSON
+    wifi_ssids : JSON
+}
+
+entity Employee_Office_Assignments {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    office_location_id : UUID <<FK>>
+    is_primary : Boolean
+}
+
+entity Attendance_Policies {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    name : String
+    late_after_minutes : Integer
+    half_day_after_minutes : Integer
+    minimum_work_minutes : Integer
+    overtime_after_minutes : Integer
+    allow_early_checkin : Boolean
+    allow_early_checkout : Boolean
+    require_face_match : Boolean
+    require_registered_device : Boolean
+    require_geofence : Boolean
+    max_offline_sync_hours : Integer
+    max_face_attempts : Integer
+    weekly_offs : JSON <<nullable>>  ' [v4] override tenant default (factory vs office)
+    break_rules : JSON
+}
+
+entity Policy_Assignments {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    policy_id : UUID <<FK>>
+    scope : Enum(TENANT_DEFAULT,DEPARTMENT,EMPLOYEE)
+    dept_id : UUID <<FK, nullable>>
+    employee_id : UUID <<FK, nullable>>
+}
+
+entity Shifts {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    name : String
+    start_time : Time
+    end_time : Time
+    is_overnight : Boolean
+}
+
+entity Employee_Shift_Rosters {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    shift_id : UUID <<FK>>
+    roster_date : Date
+}
+
+entity Tenant_Holidays {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    holiday_name : String
+    holiday_date : Date
+    office_location_id : UUID <<FK, nullable>>
+}
+
+entity Registered_Devices {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    device_uuid : String
+    platform : Enum(IOS,ANDROID)
+    device_model : String
+    os_version : String
+    app_version : String
+    push_token : String
+    status : Enum(PENDING_APPROVAL,ACTIVE,BLOCKED,REPLACED)
+    is_primary : Boolean
+    approved_by : UUID
+    blocked_by : UUID
+    blocked_reason : String
+    replaced_by_device_id : UUID <<FK self, nullable>>
+    last_ip : String
+    registered_at : DateTime
+    last_seen_at : DateTime
+}
+
+entity Attendance_Logs {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    attendance_date : Date
+    applied_shift_id : UUID <<FK Shifts, nullable>>  ' [v4] shift pinned per day
+    first_checkin : DateTime
+    last_checkout : DateTime
+    total_work_minutes : Integer
+    late_minutes : Integer
+    overtime_minutes : Integer
+    early_leave_minutes : Integer
+    break_minutes : Integer
+    attendance_status : Enum(PRESENT_OPEN,PRESENT,HALF_DAY,ABSENT,ON_LEAVE,HOLIDAY,WEEKLY_OFF,ON_DUTY)
+    applied_policy_snapshot : JSON   ' incl. shift start/end snapshot [v4]
+    resolved_exception_id : UUID <<FK, nullable>>
+    finalized_at : DateTime
+    locked_at : DateTime
+    locked_by : UUID
+    payroll_lock_id : UUID <<FK, nullable>>  ' [v4] month-lock linkage
+}
+
+entity Payroll_Lock_Periods {
+    ' [v4 NEW] month-level lock with audit + controlled reopen
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    period : String                  ' "2026-07"  UQ(tenant, period)
+    status : Enum(OPEN,LOCKED,REOPENED)
+    locked_by : UUID <<FK Users>>
+    locked_at : DateTime
+    reopened_by : UUID <<FK Users>>
+    reopened_at : DateTime
+    reopen_reason : String
+    export_id : UUID <<FK Report_Exports, nullable>>
+}
+
+entity Attendance_Events {
+    ' partitioned monthly
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    attendance_log_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    verification_log_id : UUID <<FK, nullable>>
+    client_event_uuid : UUID
+    event_type : Enum(CHECKIN,CHECKOUT,BREAK_START,BREAK_END,REGULARIZED_CHECKIN,REGULARIZED_CHECKOUT)
+    source : Enum(MOBILE,WEB,KIOSK,REGULARIZED)
+    event_time : DateTime
+    latitude : Decimal
+    longitude : Decimal
+    accuracy_m : Integer
+    ip_address : String
+    user_agent : String
+    sync_time : DateTime
+    is_offline_sync : Boolean
+    time_suspect : Boolean
+    created_by : UUID <<nullable>>
+}
+
+entity Attendance_Verification_Logs {
+    ' partitioned monthly; superset incl. FAILED attempts
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    device_id : UUID <<FK, nullable>>
+    verification_type : Enum(CHECKIN,CHECKOUT)
+    attempt_latitude : Decimal
+    attempt_longitude : Decimal
+    attempt_accuracy_m : Integer
+    matched_office_id : UUID <<FK, nullable>>
+    distance_from_geofence_m : Integer
+    location_method : Enum(GEOFENCE,OFFICE_IP,GPS_ONLY,NONE)
+    face_match_score : Integer
+    liveness_ok : Boolean
+    selfie_key : String
+    gps_valid : Boolean
+    observed_ip : String
+    user_agent : String
+    app_version : String
+    os_version : String
+    mock_location : Boolean
+    is_rooted : Boolean
+    device_valid : Boolean
+    clock_skew_seconds : Integer
+    integrity_verdict : JSON
+    verification_status : Enum(PASSED,FAILED)
+    failure_reasons : JSON
+    verified_at : DateTime
+}
+
+entity Attendance_Exceptions {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    exception_type : Enum(ON_DUTY,LEAVE,WFH,OTHER)
+    source : Enum(MANUAL,LEAVE_MODULE)
+    start_date : Date
+    end_date : Date
+    reason : String
+    approved_by : UUID <<FK Users>>
+}
+
+entity Field_Tracking_Sessions {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    device_id : UUID <<FK>>
+    started_at : DateTime
+    ended_at : DateTime
+    end_reason : Enum(CHECKOUT,MANUAL,BATTERY,STALE)
+}
+
+entity Field_Location_Pings {
+    ' partitioned monthly, 90-day retention
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    session_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    latitude : Decimal
+    longitude : Decimal
+    accuracy_m : Integer
+    speed_mps : Decimal
+    is_mock : Boolean
+    battery_level : Integer
+    captured_at : DateTime
+    is_offline_sync : Boolean
+}
+
+entity Field_Route_Summaries {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    route_date : Date
+    simplified_path : JSON
+    distance_meters : Integer
+    ping_count : Integer
+    tracking_gap_minutes : Integer
+}
+
+entity Regularization_Requests {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    attendance_log_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    requested_checkin : DateTime
+    requested_checkout : DateTime
+    reason : String
+    attachment_key : String
+    manager_comments : String
+    status : Enum(PENDING,APPROVED,REJECTED,CANCELLED)
+    approved_by : UUID <<FK Users>>
+    approved_at : DateTime
+}
+
+entity Biometric_Consents {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    policy_version : String
+    consented_at : DateTime
+    revoked_at : DateTime
+    consent_ip : String
+    consent_user_agent : String
+}
+
+entity Tenant_Audit_Logs {
+    ' append-only, partitioned monthly
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    actor_user_id : UUID
+    impersonation_session_id : UUID
+    action : String
+    module : String
+    entity_type : String
+    entity_id : UUID
+    old_value : JSON
+    new_value : JSON
+    ip_address : String
+    user_agent : String
+    request_id : String
+    created_at : DateTime
+}
+
+entity Report_Exports {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    requested_by : UUID <<FK Users>>
+    report_type : Enum(MUSTER,PAYROLL,LATE_OT,VIOLATIONS,FIELD_DISTANCE)
+    period : String
+    status : Enum(PENDING,RUNNING,COMPLETED,FAILED)
+    file_url : URL
+    expires_at : DateTime
+}
+}
+
+'=====================================================
+' BC 5 : LEAVE
+'=====================================================
+package "Leave" {
+entity Leave_Policies {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    name : String
+    leave_type : Enum
+    accrual_logic : JSON
+}
+entity Leave_Balances {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    policy_id : UUID <<FK>>
+    remaining_days : Decimal
+}
+entity Leave_Requests {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    policy_id : UUID <<FK>>
+    start_date : Date
+    end_date : Date
+    half_day_start : Boolean         ' [v4] second-half start
+    half_day_end : Boolean           ' [v4] first-half end
+    total_days : Decimal             ' [v4] computed working days
+    reason : String
+    status : Enum(PENDING,APPROVED,REJECTED,CANCELLED)
+    approved_by : UUID <<FK Users>>
+    approved_at : DateTime
+    manager_comments : String
+}
+}
+
+'=====================================================
+' BC 6 : NOTIFICATIONS & ALERTS
+'=====================================================
+package "Notifications & Alerts" {
+
+entity Notification_Templates {
+    * id : UUID <<PK>>
+    --
+    event_key : String
+    channel : Enum(PUSH,EMAIL,IN_APP)
+    locale : String
+    subject : String
+    body_template : String
+    is_active : Boolean
+}
+
+entity Alert_Rules {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    rule_type : Enum(ABSENTEE_AFTER_GRACE,LATE_ARRIVAL,MISSED_CHECKOUT,GEOFENCE_VIOLATION,FACE_MISMATCH,MOCK_LOCATION,DEVICE_VIOLATION,CLOCK_TAMPER,QUOTA_THRESHOLD,OFFLINE_SYNC_STALE)
+    is_active : Boolean
+    threshold_config : JSON
+    channels : JSON
+    notify_roles : JSON
+    notify_user_ids : JSON
+    scope_dept_ids : JSON
+    cooldown_minutes : Integer
+}
+
+entity Security_Alerts {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    employee_id : UUID <<FK>>
+    verification_log_id : UUID <<FK, nullable>>
+    attendance_event_id : UUID <<FK, nullable>>
+    rule_id : UUID <<FK, nullable>>
+    alert_type : Enum(GEOFENCE_VIOLATION,FACE_MISMATCH,MOCK_LOCATION,ROOTED_DEVICE,UNREGISTERED_DEVICE,CLOCK_TAMPER,ABSENTEE)
+    severity : Enum(INFO,WARNING,CRITICAL)
+    title : String
+    details : JSON
+    status : Enum(OPEN,ACKNOWLEDGED,RESOLVED,DISMISSED)
+    acknowledged_by : UUID
+    acknowledged_at : DateTime
+    resolved_by : UUID
+    resolved_at : DateTime
+    resolution_note : String
+}
+
+entity Notification_Preferences {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    user_id : UUID <<FK>>
+    event_key : String
+    channel : Enum(PUSH,EMAIL,IN_APP)
+    enabled : Boolean
+}
+
+entity Notifications {
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<FK>>
+    user_id : UUID <<FK>>
+    event_key : String
+    severity : Enum(INFO,WARNING,CRITICAL)
+    title : String
+    body : String
+    module : String
+    reference_type : String
+    reference_id : UUID
+    action_url : String
+    data : JSON
+    is_read : Boolean
+    read_at : DateTime
+    expires_at : DateTime
+}
+
+entity Notification_Deliveries {
+    * id : UUID <<PK>>
+    --
+    notification_id : UUID <<FK>>
+    channel : Enum(PUSH,EMAIL)
+    status : Enum(PENDING,SENT,DELIVERED,FAILED,BOUNCED)
+    provider_ref : String
+    error_message : String
+    retry_count : Integer
+    device_id : UUID <<FK, nullable>>
+    attempted_at : DateTime
+    delivered_at : DateTime
+}
+}
+
+'=====================================================
+' INFRASTRUCTURE
+'=====================================================
+package "Infrastructure" {
+entity Outbox_Events {
+    ' [v4] now visible in the model — transactional event backbone
+    * id : UUID <<PK>>
+    --
+    tenant_id : UUID <<nullable>>
+    event_key : String
+    payload : JSON
+    created_at : DateTime
+    published_at : DateTime
+}
+}
+
+'=====================================================
+' RELATIONSHIPS
+'=====================================================
+Subscription_Plans ||--o{ Tenant_Subscriptions
+Tenants ||--o{ Tenant_Subscriptions
+Tenants ||--|| Tenant_Billing_Profiles
+Tenants ||--o{ Tenant_Modules
+Modules ||--o{ Tenant_Modules
+Tenants ||--o{ Tenant_Invoices
+Tenant_Subscriptions ||--o{ Tenant_Invoices
+Tenant_Invoices ||--o{ Payment_Transactions
+Platform_Users ||--o{ Impersonation_Sessions
+Tenants ||--o{ Impersonation_Sessions
+Platform_Users ||--o{ System_Audit_Logs
+Tenants |o--o{ System_Alerts
+
+Tenants ||--o{ Users
+Users |o--o{ Verification_Tokens
+Roles ||--o{ Role_Permissions
+Permissions ||--o{ Role_Permissions
+Users ||--o{ User_Roles
+Roles ||--o{ User_Roles
+Users ||--o{ Refresh_Tokens
+Registered_Devices |o--o{ Refresh_Tokens
+
+Tenants ||--o{ Departments
+Tenants ||--o{ Designations
+Tenants ||--o{ Employees
+Departments |o--o{ Departments
+Departments ||--o{ Employees
+Designations |o--o{ Employees
+Employees |o--o{ Employees : manager
+Users |o--o| Employees
+Employees ||--o{ Employment_Events
+
+Tenants ||--|| Tenant_Settings
+Tenants ||--o{ Office_Locations
+Employees ||--o{ Employee_Office_Assignments
+Office_Locations ||--o{ Employee_Office_Assignments
+Tenants ||--o{ Attendance_Policies
+Attendance_Policies ||--o{ Policy_Assignments
+Departments |o--o{ Policy_Assignments
+Employees |o--o{ Policy_Assignments
+Tenants ||--o{ Shifts
+Shifts |o--o{ Employees : default_shift
+Shifts |o--o{ Attendance_Logs : applied_shift
+Employees ||--o{ Employee_Shift_Rosters
+Shifts ||--o{ Employee_Shift_Rosters
+Tenants ||--o{ Tenant_Holidays
+Office_Locations |o--o{ Tenant_Holidays
+
+Employees ||--o{ Registered_Devices
+Registered_Devices |o--o| Registered_Devices : replaced_by
+Employees ||--o{ Attendance_Logs
+Payroll_Lock_Periods |o--o{ Attendance_Logs
+Report_Exports |o--o| Payroll_Lock_Periods
+Attendance_Logs ||--o{ Attendance_Events
+Attendance_Verification_Logs |o--o| Attendance_Events
+Registered_Devices |o--o{ Attendance_Verification_Logs
+Office_Locations |o--o{ Attendance_Verification_Logs : matched_office
+Employees ||--o{ Attendance_Verification_Logs
+Employees ||--o{ Attendance_Exceptions
+Attendance_Exceptions |o--o{ Attendance_Logs : resolved_exception
+Employees ||--o{ Field_Tracking_Sessions
+Registered_Devices |o--o{ Field_Tracking_Sessions
+Field_Tracking_Sessions ||--o{ Field_Location_Pings
+Employees ||--o{ Field_Route_Summaries
+Attendance_Logs ||--o{ Regularization_Requests
+Employees ||--o{ Regularization_Requests
+Employees ||--o{ Biometric_Consents
+
+Employees ||--o{ Leave_Balances
+Employees ||--o{ Leave_Requests
+Leave_Policies ||--o{ Leave_Balances
+Leave_Policies ||--o{ Leave_Requests
+
+Tenants ||--o{ Alert_Rules
+Alert_Rules |o--o{ Security_Alerts
+Employees ||--o{ Security_Alerts
+Attendance_Verification_Logs |o--o{ Security_Alerts
+Users ||--o{ Notifications
+Users ||--o{ Notification_Preferences
+Notifications ||--o{ Notification_Deliveries
+Registered_Devices |o--o{ Notification_Deliveries
+
+@enduml
