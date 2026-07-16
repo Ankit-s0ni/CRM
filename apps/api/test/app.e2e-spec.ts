@@ -23,6 +23,23 @@ describe('AppController (e2e)', () => {
       .expect('Hello World!');
   });
 
+  it('returns the standard API error contract with a request ID', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/workspace/status')
+      .expect(400);
+
+    expect(response.headers['x-request-id']).toBeTruthy();
+    expect(response.body).toMatchObject({
+      statusCode: 400,
+      code: 'BAD_REQUEST',
+      message: 'Subdomain or tenant ID required',
+      path: '/workspace/status',
+    });
+    expect((response.body as { requestId: string }).requestId).toBe(
+      response.headers['x-request-id'],
+    );
+  });
+
   afterEach(async () => {
     await app.close();
   });

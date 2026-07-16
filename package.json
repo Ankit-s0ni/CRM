@@ -1,0 +1,18 @@
+{
+  "name": "crm-workspace",
+  "private": true,
+  "pnpm": {
+    "allowBuilds": {
+      "msgpackr-extract": true
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "@scarf/scarf",
+      "argon2",
+      "msgpackr-extract",
+      "prisma",
+      "unrs-resolver",
+      "sharp"
+    ]
+  }
+}

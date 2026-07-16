@@ -7,5 +7,6 @@ build/
 coverage/
 *.log
 .turbo/
+.pnpm-store/
 apps/api/node_modules/
 apps/web/node_modules/

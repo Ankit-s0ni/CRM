@@ -3,6 +3,20 @@
 **Legend:** ☐ task · **[DB] [API] [WEB] [APP] [TEST] [DOC]** · Complexity S≈days M≈1–2wk L≈2–4wk · Screen IDs from STITCH-SCREEN-PROMPTS.md
 **DoD every task:** merged · unit tests pass · lint/typecheck clean · reviewed · OpenAPI annotated (API tasks).
 
+## Detailed Sprint Plans
+
+- [Sprint index](../SPRINTS-IMPLEMENTATION-INDEX.md)
+- [Sprint 1: Organization and Administration](../SPRINT-1-IMPLEMENTATION.md)
+- [Sprint 2: Platform Owner Core and Operational Foundation](../SPRINT-2-IMPLEMENTATION.md)
+- [Sprint 3: Admin Web and Attendance Configuration](../SPRINT-3-IMPLEMENTATION.md)
+- [Sprint 4: Attendance Core and Web Runtime](../SPRINT-4-IMPLEMENTATION.md)
+- [Sprint 5: Mobile Trust and Verification](../SPRINT-5-IMPLEMENTATION.md)
+- [Sprint 6: Field Tracking and Offline Sync](../SPRINT-6-IMPLEMENTATION.md)
+- [Sprint 7: HR Operations, Notifications, Reports and Leave](../SPRINT-7-IMPLEMENTATION.md)
+- [Sprint 8: Billing, Revenue Operations and GA](../SPRINT-8-IMPLEMENTATION.md)
+
+The phase headings below group product capabilities, not strict delivery order. Core Phase 6.2 platform-owner capabilities are intentionally pulled into Sprint 2 because tenant provisioning, module control, support, audit and health are prerequisites for subsequent tenant-module delivery. Billing-dependent platform capabilities remain in Sprint 8.
+
 ---
 
 # PHASE 0 — Foundations (L)
@@ -16,18 +30,19 @@
 - [ ] **[DOC]** ADR-0001 tooling · setup README
 
 ## 0.2 Database & tenancy
-- [ ] **[DB]** schema.prisma v4 → `migrate dev --name init`
-- [ ] **[DB]** rls-and-partitions.sql migration (v4 table list — includes leave_*, employment_events, import_jobs, alert/notification tables), partitions ×4, partial uniques, append-only audit grants
-- [ ] **[DB]** `app_user`(no BYPASSRLS)/`app_admin` roles; dual connection strings
-- [ ] **[API]** shared/tenancy (ALS context, subdomain middleware + suspension check, `forTenant()` SET LOCAL) · shared/kernel · zod env config
-- [ ] **[API]** Seed: 2 tenants, settings, billing profiles, system roles, permission catalog, default Alert_Rules per tenant, notification templates (en)
-- [ ] **[TEST]** 🔒 RLS isolation suite (PERMANENT GATE) incl. new v4 tables; fail-closed (no tenant_id set ⇒ 0 rows)
+- [x] **[DB]** schema.prisma v4 → `migrate dev --name init`
+- [x] **[DB]** rls-and-partitions.sql migration (v4 table list — includes leave_*, employment_events, import_jobs, alert/notification tables), partitions ×4, partial uniques, append-only audit grants
+- [x] **[DB]** `app_user`(no BYPASSRLS)/`app_admin` roles; dual connection strings
+- [x] **[API]** shared/tenancy (ALS context, workspace middleware + suspension check, `forTenant()` SET LOCAL) and shared HTTP/error kernel
+- [x] **[API]** Seed: 2 tenants, settings, billing profiles, system roles, permission catalog, default Alert_Rules per tenant, notification templates (en)
+- [x] **[TEST]** 🔒 RLS isolation suite (PERMANENT GATE) incl. new v4 tables; fail-closed (no tenant_id set ⇒ 0 rows)
 
 ## 0.3 Identity & access
-- [ ] **[API]** argon2id · login (email **or phone**) · access JWT + rotating refresh w/ family reuse-detection & revoked_reason · lockout via failed_login_count/locked_until · login_attempts w/ UA+failure_reason
-- [ ] **[API]** `Verification_Tokens`: PASSWORD_RESET + EMAIL_VERIFY + USER_INVITE flows (hash-stored, single-use, expiring)
-- [ ] **[API]** RBAC seed + CASL factory + `@Authorize()` + manager-chain ABAC helper
-- [ ] **[WEB]** A1 login · A4 forgot/reset · A5 suspended page · session handling
+## 0.3 Identity & access
+- [x] **[API]** argon2id · login (email **or phone**) · access JWT + rotating refresh w/ family reuse-detection & revoked_reason · lockout via failed_login_count/locked_until · login_attempts w/ UA+failure_reason
+- [x] **[API]** `Verification_Tokens`: PASSWORD_RESET + EMAIL_VERIFY + USER_INVITE flows (hash-stored, single-use, expiring)
+- [x] **[API]** RBAC seed + CASL factory + `@Authorize()` + manager-chain ABAC helper
+- [x] **[WEB]** A1 login · A4 forgot/reset · A5 suspended page · session handling
 - [ ] **[TEST]** auth e2e: rotation, reuse→family revoke, lockout, token single-use
 
 ## 0.4 Events, jobs, observability
@@ -41,14 +56,14 @@
 # PHASE 1 — Organization & Admin (M)
 **Exit:** tenant fully staffed via CSV (150 rows, 4 errors reported); HR role sees no billing.
 
-- [ ] **[API]** Departments tree (cycle-safe) · Designations · Employees CRUD (code autosuggest, phone, lifecycle, manager cycle-check, joining/exit rules) · employment_events on changes
-- [ ] **[API]** Quota enforcement under advisory lock; emits QUOTA_THRESHOLD alert at 95/100%
-- [ ] **[API]** CSV import: presigned upload → import_jobs (total/success/error_rows) → worker validate → row_errors report; idempotent re-run
-- [ ] **[API]** Invite users (Verification_Tokens.USER_INVITE + payload role_ids) · tenant roles CRUD · permission matrix endpoint
+- [x] **[API]** Departments tree (cycle-safe) · Designations · Employees CRUD (code autosuggest, phone, lifecycle, manager cycle-check, joining/exit rules) · employment_events on changes
+- [x] **[API]** Quota enforcement under advisory lock; emits QUOTA_THRESHOLD events at 95/100%
+- [x] **[API]** CSV import: presigned upload → import_jobs → BullMQ worker validation → persistent row errors; idempotent retry
+- [x] **[API]** Invite users (Verification_Tokens.USER_INVITE + payload role_ids) · tenant roles CRUD · permission matrix endpoint
 - [ ] **[WEB]** B1 wizard (logo→MinIO, tz, weekly offs incl. 2nd/4th Sat) · B2 settings · B3 org builder · B4 list+quota banner · B5 form (+device card placeholder) · B6 import wizard · B7 users&roles · B8 role editor
 - [ ] **[WEB]** A2/A3 self-serve signup+verify (TENANT_SIGNUP tokens) — or explicitly deferred to P6 (decide ☐)
-- [ ] **[TEST]** import edges (dupes, cross-tenant manager ref, quota race) · permission-matrix e2e
-- [ ] **[DOC]** import template + roles guide
+- [x] **[TEST]** import edges (dupes, cross-tenant manager ref, quota race) · permission-matrix e2e
+- [x] **[DOC]** import template + roles guide
 
 ---
 

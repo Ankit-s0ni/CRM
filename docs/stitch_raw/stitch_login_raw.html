@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login | DeltCRM</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e4e1ee",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-secondary-fixed-variant": "#005320",
+                        "on-primary-container": "#dad7ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-secondary-container": "#007230",
+                        "inverse-surface": "#302f39",
+                        "tertiary": "#703a00",
+                        "secondary-fixed": "#7ffc97",
+                        "secondary-fixed-dim": "#62df7d",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "secondary": "#006e2d",
+                        "inverse-on-surface": "#f3effc",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#002109",
+                        "on-error": "#ffffff",
+                        "outline": "#777587",
+                        "primary-container": "#4f46e5",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf8ff",
+                        "primary": "#3525cd",
+                        "secondary-container": "#7cf994",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-bright": "#fcf8ff",
+                        "surface-container": "#f0ecf9",
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-surface-variant": "#464555",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-dim": "#dcd8e5",
+                        "primary-fixed": "#e2dfff",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf8ff",
+                        "on-tertiary-container": "#ffd2b1",
+                        "on-tertiary-fixed": "#2f1500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "sidebar-width": "280px",
+                        "sm": "8px",
+                        "base": "8px",
+                        "3xl": "64px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "md": "16px",
+                        "container-max": "1440px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcf8ff;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.05), 0px 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+    <!-- Animated Atmospheric Background -->
+    <div class="absolute inset-0 -z-10 bg-surface">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary-container/10 blur-[120px]">
+        </div>
+    </div>
+    <!-- Main Content Container -->
+    <main class="w-full max-w-[440px] px-lg py-xl flex flex-col items-center">
+        <!-- Logo & Branding Section -->
+        <div class="mb-xl text-center">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-md shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined text-on-primary text-[32px]">corporate_fare</span>
+            </div>
+            <h1 class="font-headline-md text-headline-md text-on-surface mb-xs">Acme Industries</h1>
+            <p class="font-body-md text-body-md text-on-surface-variant">acme.hrmsapp.com</p>
+        </div>
+        <!-- Login Card -->
+        <div class="w-full glass-card border border-outline-variant/30 rounded-xl p-xl flex flex-col gap-lg">
+            <!-- Error State Variant (Initially Hidden, Toggleable for Demo) -->
+            <div class="flex items-center gap-md p-md bg-error-container text-on-error-container rounded-lg border border-error/20 animate-in fade-in slide-in-from-top-1 duration-300"
+                id="error-banner">
+                <span class="material-symbols-outlined text-error">report</span>
+                <span class="font-label-md text-label-md">Invalid email or password</span>
+            </div>
+            <form class="space-y-lg" onsubmit="return false">
+                <!-- Email Field -->
+                <div class="space-y-sm">
+                    <label class="block font-label-md text-label-md text-on-surface-variant" for="email">Email
+                        Address</label>
+                    <div class="relative">
+                        <input
+                            class="w-full h-12 px-md pt-1 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none font-body-md text-body-md text-on-surface"
+                            id="email" name="email" placeholder="e.g. sarah.j@acme.com" required="" type="email" />
+                    </div>
+                </div>
+                <!-- Password Field -->
+                <div class="space-y-sm">
+                    <div class="flex justify-between items-center">
+                        <label class="block font-label-md text-label-md text-on-surface-variant"
+                            for="password">Password</label>
+                        <a class="font-label-sm text-label-sm text-primary hover:underline transition-all"
+                            href="#">Forgot password?</a>
+                    </div>
+                    <div class="relative">
+                        <input
+                            class="w-full h-12 px-md pt-1 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none font-body-md text-body-md text-on-surface"
+                            id="password" name="password" placeholder="••••••••" required="" type="password" />
+                    </div>
+                </div>
+                <!-- Remember Me & Actions -->
+                <div class="flex items-center">
+                    <label class="flex items-center gap-md cursor-pointer group">
+                        <div class="relative flex items-center">
+                            <input
+                                class="peer h-5 w-5 border-outline-variant rounded bg-surface-container-lowest text-primary focus:ring-primary transition-all cursor-pointer"
+                                type="checkbox" />
+                        </div>
+                        <span
+                            class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember
+                            this device</span>
+                    </label>
+                </div>
+                <!-- Sign In Button -->
+                <button
+                    class="w-full h-12 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-sm"
+                    id="signin-btn" type="submit">
+                    Sign in
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </form>
+            <!-- Workspace Switcher -->
+            <div class="pt-lg border-t border-outline-variant/30 text-center">
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Not your workspace?
+                    <a class="text-primary font-label-md hover:underline ml-xs" href="#">Switch company</a>
+                </p>
+            </div>
+        </div>
+        <!-- Secondary Section: Illustrative Visual -->
+        <div class="mt-2xl w-full grid grid-cols-2 gap-md opacity-60">
+            <div class="h-32 rounded-xl bg-surface-container-high relative overflow-hidden">
+                <img class="w-full h-full object-cover"
+                    data-alt="A sophisticated abstract architectural photograph of a modern Mumbai corporate office lobby, featuring high ceilings, clean glass lines, and a professional indigo and white color palette. The morning sunlight filters through large windows, creating soft shadows and a high-trust institutional atmosphere."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHI59u55ijnFspyTBi0vWPbe0IGyZtnfvVBaHeximnZYAWBVddBTSLyuAq7tVp2Wz6r1zDQVyr5RxceUuXXIOmdBYvrX83iIuSApXOFvbKlOthGIEesSmJ4iRdSuqnzyiWP4SBq25vTZDdf49399ae69M92W-AA58Vq4FfJrPHduZyh8XXPHeTuLqvHz21rzlsi-_9CrXGd6GmRa4ujRr6-6iOjADIzBsJbUvu977tECMHYoa6Y_8pDBEU-GIajCRf07zd5IRgZg" />
+            </div>
+            <div class="h-32 rounded-xl bg-surface-container-high relative overflow-hidden">
+                <img class="w-full h-full object-cover"
+                    data-alt="A group of diverse corporate professionals in business casual attire collaborating in a bright, modern glass-walled conference room in Bengaluru. The lighting is crisp and airy, emphasizing a culture of transparency and modern HR management. The aesthetic is clean, minimalist, and professionally calm."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBom5TONTOFTUVb2BEfEMk-N16CEx7w9yymGDJy5p0tGtMbCQidzb97DfAFJ42WVWjFXrKKMfvFa6qNnqotxoDcI8jBZyWIpZWcwEFiuoxe7TvLXtX00OUkjmaOYPJZZzqIlLDZA_opk6xqD-P-PNEAWEoQhWj5O2jitoTZsaavi_ZS01Od4VMt2boPxWFipeu8z_JJGSZv3ktacK-89Vk4cBX_5PQ4wcoVf2-Y9qA5dRJAxxt4uagZDJUVNVw4YjijWY92jOf3Lg" />
+            </div>
+        </div>
+        <!-- Footer -->
+        <footer class="mt-auto pt-2xl w-full flex flex-col items-center gap-md">
+            <div class="flex gap-lg">
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Privacy Policy</a>
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Terms of Service</a>
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Help Center</a>
+            </div>
+            <p class="font-label-sm text-label-sm text-outline">© 2024 DeltCRM by Acme Solutions. All rights reserved.
+            </p>
+        </footer>
+    </main>
+    <script>
+        // Micro-interaction for the sign-in button
+        const signInBtn = document.getElementById('signin-btn');
+        const errorBanner = document.getElementById('error-banner');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        signInBtn.addEventListener('click', () => {
+            // Check for realistic data validation
+            if (emailInput.value === "admin@acme.com" && passwordInput.value === "password123") {
+                signInBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Signing in...';
+                setTimeout(() => {
+                    alert('Login Success! (Demo Redirection)');
+                    signInBtn.innerHTML = 'Sign in <span class="material-symbols-outlined text-[18px]">arrow_forward</span>';
+                }, 1500);
+            } else {
+                // Show Error State Variant
+                errorBanner.classList.remove('hidden');
+                errorBanner.classList.add('flex');
+
+                // Add a little shake animation to the card
+                const card = errorBanner.closest('.glass-card');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 500);
+            }
+        });
+
+        // Hide error banner when typing
+        [emailInput, passwordInput].forEach(input => {
+            input.addEventListener('input', () => {
+                if (errorBanner.classList.contains('flex')) {
+                    errorBanner.classList.add('hidden');
+                    errorBanner.classList.remove('flex');
+                }
+            });
+        });
+
+        // Custom Shake Animation Class
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            .animate-shake {
+                animation: shake 0.2s ease-in-out 0s 2;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>

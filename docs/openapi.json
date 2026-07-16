@@ -1,0 +1,2232 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Hello World!"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Check API availability",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "workEmail": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "subdomain": {
+                    "type": "string"
+                  },
+                  "employeeCount": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create a tenant workspace and admin account",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          }
+        },
+        "summary": "Login to the application",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke the current refresh token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated user and workspace session",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/password-reset": {
+      "post": {
+        "operationId": "AuthController_requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Request a password reset link",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/password-reset/confirm": {
+      "post": {
+        "operationId": "AuthController_confirmPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Reset password using a verification token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "operationId": "AuthController_verifyToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Consume a verification token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/verify/resend": {
+      "post": {
+        "operationId": "AuthController_resendVerification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Resend email verification code",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/workspace/status": {
+      "get": {
+        "operationId": "WorkspaceController_getStatus",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-subdomain",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-tenant-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Resolve workspace availability by subdomain or tenant ID",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
+    "/workspace/modules": {
+      "get": {
+        "operationId": "WorkspaceController_getModules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List modules enabled for the authenticated workspace",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
+    "/departments": {
+      "get": {
+        "operationId": "OrganizationController_listDepartments",
+        "parameters": [
+          {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "flat",
+                "tree"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flat departments or a nested tree assembled from one query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List departments in flat or tree view",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "post": {
+        "operationId": "OrganizationController_createDepartment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepartmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Department created"
+          },
+          "409": {
+            "description": "Duplicate root or sibling name"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a root or child department",
+        "tags": [
+          "Organization"
+        ]
+      }
+    },
+    "/departments/{id}": {
+      "get": {
+        "operationId": "OrganizationController_getDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "id": "0191d2e7-9ec3-7b94-bb3c-624f9d8d7a10",
+                      "name": "Operations",
+                      "parentDeptId": null,
+                      "counts": {
+                        "children": 2,
+                        "employees": 12
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Department is absent in this tenant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a department with child and employee counts",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "patch": {
+        "operationId": "OrganizationController_updateDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDepartmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Department updated"
+          },
+          "409": {
+            "description": "Duplicate name, hierarchy cycle, or maximum depth exceeded"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename or move a department",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "delete": {
+        "operationId": "OrganizationController_deleteDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Department has children or employees"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a department when it has no children or employees",
+        "tags": [
+          "Organization"
+        ]
+      }
+    },
+    "/designations": {
+      "get": {
+        "operationId": "DesignationsController_listDesignations",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "engineer",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "example": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 25,
+                      "total": 0,
+                      "totalPages": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List designations with optional search",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "post": {
+        "operationId": "DesignationsController_createDesignation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDesignationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Designation created"
+          },
+          "409": {
+            "description": "Designation name already exists"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a designation",
+        "tags": [
+          "Organization"
+        ]
+      }
+    },
+    "/designations/{id}": {
+      "get": {
+        "operationId": "DesignationsController_getDesignation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "id": "0191d2e7-9ec3-7b94-bb3c-624f9d8d7a10",
+                      "name": "Software Engineer",
+                      "employeeCount": 8
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Designation is absent in this tenant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a designation and assigned employee count",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "patch": {
+        "operationId": "DesignationsController_updateDesignation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDesignationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Designation updated"
+          },
+          "409": {
+            "description": "Designation name already exists"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename a designation",
+        "tags": [
+          "Organization"
+        ]
+      },
+      "delete": {
+        "operationId": "DesignationsController_deleteDesignation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Designation is assigned to employees"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a designation when it is not assigned",
+        "tags": [
+          "Organization"
+        ]
+      }
+    },
+    "/employees": {
+      "get": {
+        "operationId": "EmployeesController_listEmployees",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "aarav",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "ON_NOTICE",
+                "TERMINATED"
+              ]
+            }
+          },
+          {
+            "name": "workType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OFFICE",
+                "FIELD",
+                "HYBRID"
+              ]
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "designationId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "managerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "name_asc",
+              "type": "string",
+              "enum": [
+                "name_asc",
+                "name_desc",
+                "code_asc",
+                "code_desc",
+                "joined_asc",
+                "joined_desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List employees with filters and quota usage",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "post": {
+        "operationId": "EmployeesController_createEmployee",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an employee under the workspace quota",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/next-code": {
+      "get": {
+        "operationId": "EmployeesController_nextCode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suggest the next available employee code",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/quota": {
+      "get": {
+        "operationId": "EmployeesController_quota",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get employee quota usage",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/history": {
+      "get": {
+        "operationId": "EmployeesController_history",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an employee employment-event timeline",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}": {
+      "get": {
+        "operationId": "EmployeesController_getEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an employee profile",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "patch": {
+        "operationId": "EmployeesController_updateEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an employee and their relationships",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/terminate": {
+      "post": {
+        "operationId": "EmployeesController_terminateEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TerminateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Terminate an employee",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/reactivate": {
+      "post": {
+        "operationId": "EmployeesController_reactivateEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReactivateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reactivate a terminated employee under quota",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employee-imports/presign": {
+      "post": {
+        "operationId": "EmployeeImportsController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignEmployeeImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private CSV upload URL",
+        "tags": [
+          "Employee Imports"
+        ]
+      }
+    },
+    "/employee-imports": {
+      "post": {
+        "operationId": "EmployeeImportsController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEmployeeImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Validate and queue an uploaded employee CSV",
+        "tags": [
+          "Employee Imports"
+        ]
+      },
+      "get": {
+        "operationId": "EmployeeImportsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List employee import jobs",
+        "tags": [
+          "Employee Imports"
+        ]
+      }
+    },
+    "/employee-imports/{id}/errors": {
+      "get": {
+        "operationId": "EmployeeImportsController_errors",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe row-level import errors",
+        "tags": [
+          "Employee Imports"
+        ]
+      }
+    },
+    "/employee-imports/{id}": {
+      "get": {
+        "operationId": "EmployeeImportsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get employee import progress and summary",
+        "tags": [
+          "Employee Imports"
+        ]
+      }
+    },
+    "/employee-imports/{id}/retry": {
+      "post": {
+        "operationId": "EmployeeImportsController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Idempotently retry failed valid rows",
+        "tags": [
+          "Employee Imports"
+        ]
+      }
+    },
+    "/permissions": {
+      "get": {
+        "operationId": "RolesController_permissions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "module": "organization",
+                        "keys": [
+                          "organization.employees.read"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the stable permission catalog by module",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      }
+    },
+    "/roles/permission-matrix": {
+      "get": {
+        "operationId": "RolesController_matrix",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get roles and the complete permission matrix",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      }
+    },
+    "/roles": {
+      "get": {
+        "operationId": "RolesController_listRoles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant roles",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      },
+      "post": {
+        "operationId": "RolesController_createRole",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Custom role created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a custom tenant role",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "operationId": "RolesController_getRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a role and its permissions",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      },
+      "patch": {
+        "operationId": "RolesController_updateRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "409": {
+            "description": "System role or duplicate role name"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename a custom tenant role",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      },
+      "delete": {
+        "operationId": "RolesController_removeRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "System role or assigned custom role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unassigned custom role",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      }
+    },
+    "/roles/{id}/permissions": {
+      "put": {
+        "operationId": "RolesController_replacePermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceRolePermissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a role permission set atomically",
+        "tags": [
+          "Roles and Permissions"
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "UsersController_listUsers",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "admin@example.com",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "LOCKED",
+                "DISABLED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant users and assigned roles",
+        "tags": [
+          "Tenant Users"
+        ]
+      }
+    },
+    "/users/{id}/roles": {
+      "patch": {
+        "operationId": "UsersController_replaceRoles",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRolesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace tenant role assignments for a user",
+        "tags": [
+          "Tenant Users"
+        ]
+      }
+    },
+    "/users/{id}/status": {
+      "patch": {
+        "operationId": "UsersController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Enable, disable, or lock tenant user access",
+        "tags": [
+          "Tenant Users"
+        ]
+      }
+    },
+    "/users/invitations": {
+      "post": {
+        "operationId": "InvitationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite a tenant user with assigned roles",
+        "tags": [
+          "Tenant Users"
+        ]
+      }
+    },
+    "/users/invitations/resend": {
+      "post": {
+        "operationId": "InvitationsController_resend",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invalidate and resend a pending invitation",
+        "tags": [
+          "Tenant Users"
+        ]
+      }
+    },
+    "/auth/invitations/accept": {
+      "post": {
+        "operationId": "InvitationAcceptanceController_accept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User created and invitation consumed"
+          }
+        },
+        "summary": "Accept a single-use invitation and set password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/billing/subscription": {
+      "get": {
+        "operationId": "BillingAccessController_subscription",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the current workspace subscription",
+        "tags": [
+          "Billing"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "CRM API",
+    "description": "Tenant-isolated CRM and attendance platform API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "tenant-id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-tenant-id"
+      }
+    },
+    "schemas": {
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "CreateDepartmentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Operations"
+          },
+          "parentDeptId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "0191d2e7-9ec3-7b94-bb3c-624f9d8d7a10"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateDepartmentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Customer Success"
+          },
+          "parentDeptId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "example": "0191d2e7-9ec3-7b94-bb3c-624f9d8d7a10"
+          }
+        }
+      },
+      "CreateDesignationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "HR Executive"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateDesignationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Senior HR Executive"
+          }
+        }
+      },
+      "CreateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "employeeCode": {
+            "type": "string",
+            "example": "EMP-0001"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Aarav Sharma"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+919876543210"
+          },
+          "workType": {
+            "type": "string",
+            "enum": [
+              "OFFICE",
+              "FIELD",
+              "HYBRID"
+            ],
+            "example": "OFFICE"
+          },
+          "dateOfJoining": {
+            "type": "string",
+            "example": "2026-07-16",
+            "format": "date"
+          },
+          "deptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "designationId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "managerId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "employeeCode",
+          "fullName",
+          "workType",
+          "dateOfJoining",
+          "deptId"
+        ]
+      },
+      "UpdateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "employeeCode": {
+            "type": "string",
+            "example": "EMP-0001"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Aarav Sharma"
+          },
+          "phone": {
+            "type": "object",
+            "example": "+919876543210",
+            "nullable": true
+          },
+          "workType": {
+            "type": "string",
+            "enum": [
+              "OFFICE",
+              "FIELD",
+              "HYBRID"
+            ]
+          },
+          "dateOfJoining": {
+            "type": "string",
+            "example": "2026-07-16",
+            "format": "date"
+          },
+          "deptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "designationId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "managerId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "effectiveDate": {
+            "type": "string",
+            "example": "2026-07-16",
+            "format": "date"
+          }
+        }
+      },
+      "TerminateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "exitDate": {
+            "type": "string",
+            "example": "2026-07-31",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Voluntary resignation"
+          }
+        },
+        "required": [
+          "exitDate"
+        ]
+      },
+      "ReactivateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "effectiveDate": {
+            "type": "string",
+            "example": "2026-08-01",
+            "format": "date"
+          }
+        }
+      },
+      "PresignEmployeeImportDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "employees.csv"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "text/csv"
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 20480,
+            "maximum": 5242880
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "RegisterEmployeeImportDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "employees.csv"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "text/csv"
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 20480,
+            "maximum": 5242880
+          },
+          "objectKey": {
+            "type": "string",
+            "example": "tenant-id/employee-imports/file.csv"
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize",
+          "objectKey"
+        ]
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Attendance Supervisor"
+          },
+          "permissionKeys": {
+            "example": [
+              "organization.employees.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "permissionKeys"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Senior Attendance Supervisor"
+          }
+        }
+      },
+      "ReplaceRolePermissionsDto": {
+        "type": "object",
+        "properties": {
+          "permissionKeys": {
+            "example": [
+              "organization.employees.read",
+              "attendance.records.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "permissionKeys"
+        ]
+      },
+      "UpdateUserRolesDto": {
+        "type": "object",
+        "properties": {
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "roleIds"
+        ]
+      },
+      "UpdateUserStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "LOCKED",
+              "DISABLED"
+            ],
+            "example": "DISABLED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "hr.admin@example.com"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "email",
+          "roleIds"
+        ]
+      },
+      "ResendInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "hr.admin@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "AcceptInvitationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "4ad83d..."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "Secure123!"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      }
+    }
+  }
+}
