@@ -11,14 +11,14 @@ export default function LoginPage() {
       </div>
       
       {/* Main Content Container */}
-      <main className="w-full max-w-[440px] px-lg py-xl flex flex-col items-center">
+      <main className="w-full max-w-[440px] px-6 py-8 flex flex-col items-center">
         
         {/* Logo & Branding Section */}
-        <div className="mb-xl text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-md shadow-lg shadow-primary/20">
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4 shadow-lg shadow-primary/20">
             <span className="material-symbols-outlined text-on-primary text-[32px]">corporate_fare</span>
           </div>
-          <h1 className="font-headline-md text-headline-md text-on-surface mb-xs">DELTCRM</h1>
+          <h1 className="font-headline-md text-headline-md text-on-surface mb-1">DELTCRM</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">app.deltcrm.com</p>
         </div>
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
         </Suspense>
 
         {/* Secondary Section: Illustrative Visual */}
-        <div className="mt-2xl w-full grid grid-cols-2 gap-md opacity-60 hidden md:grid">
+        <div className="mt-12 w-full grid grid-cols-2 gap-4 opacity-60 hidden md:grid">
           <div className="h-32 rounded-xl bg-surface-container-high relative overflow-hidden">
             <img 
               alt="Office Lobby"
@@ -46,8 +46,8 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto pt-2xl w-full flex flex-col items-center gap-md">
-          <div className="flex gap-lg">
+        <footer className="mt-auto pt-12 w-full flex flex-col items-center gap-4">
+          <div className="flex gap-6">
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Help Center</a>

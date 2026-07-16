@@ -177,7 +177,7 @@ Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
 
 - Clean database: all 18 migrations and the idempotent seed passed in a temporary PostgreSQL database; resulting fixture had 2 tenants, 2 offices, 4 policies, and 4 shifts.
 - API quality: security check, lint, typecheck, OpenAPI, production build, 19 unit suites/39 tests, and 14 e2e suites/36 tests passed.
-- Web quality: lint (0 errors, 5 pre-existing optimization warnings), typecheck, 30-route production build, and 27 Playwright tests passed.
+- Web quality: lint (0 errors, 5 pre-existing optimization warnings), typecheck, 30-route production build, and 28 Playwright tests passed.
 - Visual contract: all B1-B9 and H4-H8 screens passed Stitch comparison at 1024 and 1440 widths plus 390px overflow safety.
 - Acceptance: the roster fixture processed 60 rows as 56 accepted and 4 stable row errors; policy and shift bulk resolution handled 500 employees below the one-second gate.
 - Operations: see [Sprint 3 Attendance Configuration Runbook](../SPRINT-3-ATTENDANCE-CONFIG-RUNBOOK.md).

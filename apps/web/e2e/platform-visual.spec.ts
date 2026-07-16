@@ -32,6 +32,7 @@ for (const viewport of viewports) {
         await page.goto(screen.path);
         await expect(page.getByRole('heading', { name: screen.heading })).toBeVisible();
         await expectPlatformShell(page);
+        await expectNoCollapsedContent(page);
         await compareWithStitch(page, screen.key);
       });
     }
@@ -43,6 +44,7 @@ for (const viewport of viewports) {
       await page.goto(href!);
       await expect(page.getByText('Danger Zone')).toBeVisible();
       await expectPlatformShell(page);
+      await expectNoCollapsedContent(page);
       await compareWithStitch(page, 'S3-tenant-detail');
     });
 
@@ -50,6 +52,7 @@ for (const viewport of viewports) {
       await page.goto('/platform/tenants');
       await page.getByRole('button', { name: 'Create Tenant' }).click();
       await expect(page.getByRole('heading', { name: 'Create new tenant' })).toBeVisible();
+      await expectNoCollapsedContent(page);
       await compareWithStitch(page, 'S4-create-tenant');
     });
   });
@@ -119,6 +122,23 @@ async function expectPlatformShell(page: Page) {
   await expect(page.getByRole('link', { name: 'Tenants', exact: true })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
+}
+
+async function expectNoCollapsedContent(page: Page) {
+  const collapsed = await page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLElement>('[class*="max-w-"]'))
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return style.display !== 'none' && rect.height > 0 && rect.width < 96 && (element.textContent?.trim().length ?? 0) >= 20;
+      })
+      .map((element) => ({
+        className: element.className,
+        text: element.textContent?.trim().slice(0, 80),
+        width: element.getBoundingClientRect().width,
+      })),
+  );
+  expect(collapsed, 'content container collapsed below 96px').toEqual([]);
 }
 
 async function compareWithStitch(page: Page, key: string) {

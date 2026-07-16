@@ -37,6 +37,7 @@ for (const viewport of [
         await page.goto(screen.path);
         await expect(page.getByRole('heading', { name: screen.heading })).toBeVisible();
         await expectNoOverflow(page);
+        await expectNoCollapsedContent(page);
         await compareWithStitch(page, screen.key);
       }
 
@@ -46,6 +47,7 @@ for (const viewport of [
       await page.goto(roleHref!);
       await expect(page.getByText('Select the exact permission keys granted to this role.')).toBeVisible();
       await expectNoOverflow(page);
+      await expectNoCollapsedContent(page);
       await compareWithStitch(page, 'B8-role-editor');
     });
   });
@@ -59,12 +61,30 @@ test.describe('390px mobile-safe tenant admin', () => {
       await page.goto(screen.path);
       await expect(page.getByRole('heading', { name: screen.heading })).toBeVisible();
       await expectNoOverflow(page);
+      await expectNoCollapsedContent(page);
     }
   });
 });
 
 test.describe('Sprint 3 screen behavior and states', () => {
   test.use({ viewport: { width: 1024, height: 900 } });
+
+  test('resolves a workspace-only login and toggles password visibility', async ({ page }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('/login?workspace=acme');
+    await page.getByLabel('Email Address').fill('admin@acme.com');
+    await page.locator('#password').fill('TenantAdmin123!');
+
+    const password = page.locator('#password');
+    await expect(password).toHaveAttribute('type', 'password');
+    await page.getByRole('button', { name: 'Show password' }).click();
+    await expect(password).toHaveAttribute('type', 'text');
+    await page.getByRole('button', { name: 'Hide password' }).click();
+    await expect(password).toHaveAttribute('type', 'password');
+
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.waitForURL(/\/app(?:\/onboarding)?$/);
+  });
 
   test('continues onboarding through the employee creation entry point', async ({ page }) => {
     await page.route('**/onboarding/status', (route) =>
@@ -201,7 +221,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
 async function login(page: Page) {
   await page.goto(`/login?tenantId=${tenantId}&workspace=acme`);
   await page.getByLabel('Email Address').fill('admin@acme.com');
-  await page.getByLabel('Password').fill('TenantAdmin123!');
+  await page.locator('#password').fill('TenantAdmin123!');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL('**/app/onboarding');
 }
@@ -211,6 +231,28 @@ async function expectNoOverflow(page: Page) {
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
+}
+
+async function expectNoCollapsedContent(page: Page) {
+  const collapsed = await page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLElement>('[class*="max-w-"]'))
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return (
+          style.display !== 'none' &&
+          rect.height > 0 &&
+          rect.width < 96 &&
+          (element.textContent?.trim().length ?? 0) >= 20
+        );
+      })
+      .map((element) => ({
+        className: element.className,
+        text: element.textContent?.trim().slice(0, 80),
+        width: element.getBoundingClientRect().width,
+      })),
+  );
+  expect(collapsed, 'content container collapsed below 96px').toEqual([]);
 }
 
 async function compareWithStitch(page: Page, key: string) {
