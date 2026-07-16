@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 
 const employeeBands = [
@@ -86,8 +87,8 @@ export function SignupForm() {
       });
       setSuccess("Workspace created. Continue to email verification.");
       router.push(`/verify-email?${params.toString()}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "We couldn't create your workspace right now.");
+    } catch (error: unknown) {
+      setError(getApiErrorMessage(error, "We couldn't create your workspace right now."));
     } finally {
       setIsSubmitting(false);
     }

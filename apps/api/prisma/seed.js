@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
+const argon2 = require('argon2');
 
 const connectionString =
   process.env.DATABASE_URL ??
@@ -63,6 +64,111 @@ const rolePermissions = {
     'attendance.records.self.read',
   ],
 };
+
+const platformPermissions = [
+  'platform.dashboard.read',
+  'platform.tenants.read',
+  'platform.tenants.create',
+  'platform.tenants.update',
+  'platform.tenants.lifecycle',
+  'platform.modules.read',
+  'platform.modules.manage',
+  'platform.impersonation.create',
+  'platform.audit.read',
+  'platform.alerts.read',
+  'platform.alerts.manage',
+  'platform.health.read',
+];
+
+const supportPlatformPermissions = [
+  'platform.dashboard.read',
+  'platform.tenants.read',
+  'platform.modules.read',
+  'platform.impersonation.create',
+  'platform.audit.read',
+  'platform.alerts.read',
+  'platform.health.read',
+];
+
+async function seedPlatformIdentity() {
+  await prisma.platformPermission.createMany({
+    data: platformPermissions.map((key) => ({ key })),
+    skipDuplicates: true,
+  });
+  const permissionRecords = await prisma.platformPermission.findMany({
+    where: { key: { in: platformPermissions } },
+  });
+  const permissionIdByKey = new Map(
+    permissionRecords.map((permission) => [permission.key, permission.id]),
+  );
+  const assignments = {
+    SUPER_ADMIN: platformPermissions,
+    SUPPORT: supportPlatformPermissions,
+  };
+
+  for (const [role, permissionKeys] of Object.entries(assignments)) {
+    await prisma.platformRolePermission.deleteMany({ where: { role } });
+    await prisma.platformRolePermission.createMany({
+      data: permissionKeys.map((key) => ({
+        role,
+        permissionId: permissionIdByKey.get(key),
+      })),
+    });
+  }
+
+  const defaultsAllowed = process.env.NODE_ENV !== 'production';
+  const users = [
+    {
+      email: process.env.PLATFORM_ADMIN_EMAIL ?? 'owner@deltcrm.local',
+      password:
+        process.env.PLATFORM_ADMIN_PASSWORD ??
+        (defaultsAllowed ? 'PlatformAdmin123!' : ''),
+      mfaSecret:
+        process.env.PLATFORM_ADMIN_MFA_SECRET ??
+        (defaultsAllowed ? 'JBSWY3DPEHPK3PXP' : ''),
+      role: 'SUPER_ADMIN',
+    },
+    {
+      email: process.env.PLATFORM_SUPPORT_EMAIL ?? 'support@deltcrm.local',
+      password:
+        process.env.PLATFORM_SUPPORT_PASSWORD ??
+        (defaultsAllowed ? 'PlatformSupport123!' : ''),
+      mfaSecret:
+        process.env.PLATFORM_SUPPORT_MFA_SECRET ??
+        (defaultsAllowed ? 'JBSWY3DPEHPK3PXP' : ''),
+      role: 'SUPPORT',
+    },
+  ];
+
+  for (const user of users) {
+    if (!user.password || !user.mfaSecret) {
+      throw new Error(
+        `Platform seed credentials are required for ${user.email}`,
+      );
+    }
+    const passwordHash = await argon2.hash(user.password);
+    await prisma.platformUser.upsert({
+      where: { email: user.email.toLowerCase() },
+      update: {
+        passwordHash,
+        role: user.role,
+        status: 'ACTIVE',
+        mfaSecret: user.mfaSecret,
+        mfaEnabled: true,
+      },
+      create: {
+        email: user.email.toLowerCase(),
+        passwordHash,
+        role: user.role,
+        status: 'ACTIVE',
+        mfaSecret: user.mfaSecret,
+        mfaEnabled: true,
+      },
+    });
+  }
+
+  console.log('Seeded platform Super Admin and Support identities');
+}
 
 const tenantSeeds = [
   {
@@ -206,9 +312,50 @@ async function main() {
   });
   const attendanceModule = await prisma.module.upsert({
     where: { key: 'ATTENDANCE' },
-    update: { name: 'Attendance' },
-    create: { key: 'ATTENDANCE', name: 'Attendance' },
+    update: {
+      name: 'Attendance',
+      description: 'Time, presence, shifts and attendance operations',
+      icon: 'clock-3',
+      availability: 'AVAILABLE',
+    },
+    create: {
+      key: 'ATTENDANCE',
+      name: 'Attendance',
+      description: 'Time, presence, shifts and attendance operations',
+      icon: 'clock-3',
+    },
   });
+  await prisma.module.upsert({
+    where: { key: 'FIELD_TRACKING' },
+    update: {
+      name: 'Field Tracking',
+      description: 'Location-aware field workforce operations',
+      icon: 'map-pin',
+      availability: 'AVAILABLE',
+      dependencyKeys: ['ATTENDANCE'],
+    },
+    create: {
+      key: 'FIELD_TRACKING',
+      name: 'Field Tracking',
+      description: 'Location-aware field workforce operations',
+      icon: 'map-pin',
+      dependencyKeys: ['ATTENDANCE'],
+    },
+  });
+  for (const module of [
+    { key: 'LEAVE', name: 'Leave Management', icon: 'calendar-days' },
+    { key: 'PAYROLL', name: 'Payroll', icon: 'wallet-cards' },
+  ]) {
+    await prisma.module.upsert({
+      where: { key: module.key },
+      update: { ...module, availability: 'COMING_SOON' },
+      create: {
+        ...module,
+        description: `${module.name} module is planned for a later sprint`,
+        availability: 'COMING_SOON',
+      },
+    });
+  }
 
   await prisma.permission.createMany({
     data: permissions.map((key) => ({ key })),
@@ -229,6 +376,8 @@ async function main() {
       permissionIdByKey,
     );
   }
+
+  await seedPlatformIdentity();
 }
 
 main()

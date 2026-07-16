@@ -1,22 +1,25 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const hasHydrated = useSyncExternalStore(
+    (onStoreChange) => useAuthStore.persist.onFinishHydration(onStoreChange),
+    () => useAuthStore.persist.hasHydrated(),
+    () => false,
+  );
 
   useEffect(() => {
-    setMounted(true);
-    if (!user) {
-      router.push('/login');
+    if (hasHydrated && !user) {
+      router.replace('/login');
     }
-  }, [user, router]);
+  }, [hasHydrated, user, router]);
 
-  if (!mounted || !user) return null;
+  if (!hasHydrated || !user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

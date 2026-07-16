@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | System Health &amp; Observability</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary": "#703a00",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#934e00",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "secondary-fixed-dim": "#62df7d",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "primary-container": "#4f46e5",
+                    "on-surface": "#1b1b24",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "background": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "surface-tint": "#4d44e3",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-bright": "#fcf8ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "container-max": "1440px",
+                    "base": "8px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sparkline {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 24px;
+        }
+        .sparkline-bar {
+            width: 3px;
+            background-color: currentColor;
+            opacity: 0.3;
+            border-radius: 1px;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container shadow-md flex flex-col py-lg z-50">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">IndigoHR</h1>
+<p class="font-label-md text-label-md text-on-primary/70">Super Admin</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-sm">
+<!-- Dashboard -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<!-- Tenants -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">business</span>
+                Tenants
+            </a>
+<!-- Plans -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">subscriptions</span>
+                Plans
+            </a>
+<!-- Billing -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Billing
+            </a>
+<!-- Modules -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">extension</span>
+                Modules
+            </a>
+<!-- Audit Logs -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+                Audit Logs
+            </a>
+<!-- Health (Active) -->
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md border-l-4 border-secondary text-on-primary bg-primary/20 scale-95 transition-all" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+                Health
+            </a>
+</nav>
+<div class="mt-auto px-sm flex flex-col gap-1 border-t border-on-primary/10 pt-lg">
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface shadow-sm flex justify-between items-center px-lg z-40">
+<div class="flex items-center gap-md w-1/3">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 font-body-md text-body-md focus-within:ring-2 focus-within:ring-primary transition-all" placeholder="Search system metrics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-sm ml-2">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-primary-fixed flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A high-quality professional portrait of a senior HR tech executive, wearing minimalist professional attire, clean studio lighting with a soft lavender background, modern corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSM4E3XUvLz0AXaAwFoEjnGMzQHYdUJhJm5OeyXAtL15vz8Qfge4EhcpfsBVpMFoCtOU36-C6N9Rc_MJ-0IZpA9kZ7Ik3vMe6hS27nwgZXEtb5VSWnoc-SQNXganWT5ZGfSi2YQ6N41GVDCpP8AID3Tg9rQB4WVYSCRMY6V2hiO_Vt5vX8ig4eZSlyr1h2aw4MajQdWvqX0Cnz8ZLvP4sh0olEnupQJAj7fq0vsmjb6WWJo2IHYsm0d2HGvK2zeVG6esx4Kk7QmA"/>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface">Admin User</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] pt-24 pb-12 px-gutter min-h-screen">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">System Observability</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Real-time infrastructure health and third-party service status.</p>
+</div>
+<div class="flex gap-md">
+<button class="flex items-center gap-sm px-md py-sm bg-surface-container-high text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+                        Refresh Data
+                    </button>
+<button class="flex items-center gap-sm px-md py-sm bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        New Alert Rule
+                    </button>
+</div>
+</div>
+<!-- Health Cards Bento Grid -->
+<div class="bento-grid mb-3xl">
+<!-- API Gateway -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">api</span>
+</div>
+<span class="font-label-md text-label-md font-bold">API Gateway</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse"></span>
+                            Healthy
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">99.98%</div>
+<p class="text-[12px] text-on-surface-variant">Uptime (Last 30d)</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">Lat: 42ms</div>
+<div class="sparkline text-secondary">
+<div class="sparkline-bar" style="height: 40%"></div>
+<div class="sparkline-bar" style="height: 60%"></div>
+<div class="sparkline-bar" style="height: 55%"></div>
+<div class="sparkline-bar" style="height: 70%"></div>
+<div class="sparkline-bar" style="height: 65%"></div>
+<div class="sparkline-bar" style="height: 80%"></div>
+<div class="sparkline-bar" style="height: 90%"></div>
+</div>
+</div>
+</div>
+<!-- Worker Queue -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-tertiary-fixed rounded-lg text-tertiary">
+<span class="material-symbols-outlined">layers</span>
+</div>
+<span class="font-label-md text-label-md font-bold">Worker Queue</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse"></span>
+                            Idle
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">0 Pending</div>
+<p class="text-[12px] text-on-surface-variant">Throughput: 1.2k/min</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">Avg: 1.2s proc</div>
+<div class="sparkline text-primary">
+<div class="sparkline-bar" style="height: 20%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 25%"></div>
+<div class="sparkline-bar" style="height: 40%"></div>
+<div class="sparkline-bar" style="height: 35%"></div>
+<div class="sparkline-bar" style="height: 50%"></div>
+<div class="sparkline-bar" style="height: 45%"></div>
+</div>
+</div>
+</div>
+<!-- Ping Ingestion -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md relative overflow-hidden">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-error-container rounded-lg text-error">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<span class="font-label-md text-label-md font-bold">Ping Ingestion</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-error-container text-on-error-container rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-error rounded-full"></span>
+                            Lag: 3s
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">94.5%</div>
+<p class="text-[12px] text-on-surface-variant">Precision score (Last 1hr)</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">Ingress: 450 req/s</div>
+<div class="sparkline text-error">
+<div class="sparkline-bar" style="height: 90%"></div>
+<div class="sparkline-bar" style="height: 85%"></div>
+<div class="sparkline-bar" style="height: 95%"></div>
+<div class="sparkline-bar" style="height: 100%"></div>
+<div class="sparkline-bar" style="height: 90%"></div>
+<div class="sparkline-bar" style="height: 95%"></div>
+<div class="sparkline-bar" style="height: 100%"></div>
+</div>
+</div>
+</div>
+<!-- Face-match Provider -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-secondary-container rounded-lg text-secondary">
+<span class="material-symbols-outlined">face_retouching_natural</span>
+</div>
+<span class="font-label-md text-label-md font-bold">Face-match Provider</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse"></span>
+                            Nominal
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">99.1%</div>
+<p class="text-[12px] text-on-surface-variant">External API Uptime</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">TTR: 1.8s</div>
+<div class="sparkline text-secondary">
+<div class="sparkline-bar" style="height: 50%"></div>
+<div class="sparkline-bar" style="height: 55%"></div>
+<div class="sparkline-bar" style="height: 45%"></div>
+<div class="sparkline-bar" style="height: 50%"></div>
+<div class="sparkline-bar" style="height: 60%"></div>
+<div class="sparkline-bar" style="height: 55%"></div>
+<div class="sparkline-bar" style="height: 50%"></div>
+</div>
+</div>
+</div>
+<!-- Payment Gateway -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-primary-fixed rounded-lg text-primary">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<span class="font-label-md text-label-md font-bold">Payment Gateway</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse"></span>
+                            Online
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">100%</div>
+<p class="text-[12px] text-on-surface-variant">Success rate (24h)</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">Last txn: 2m ago</div>
+<div class="sparkline text-primary">
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+<div class="sparkline-bar" style="height: 30%"></div>
+</div>
+</div>
+</div>
+<!-- Push Delivery -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="p-2 bg-surface-container-highest rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">send</span>
+</div>
+<span class="font-label-md text-label-md font-bold">Push Delivery</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-[12px] font-bold">
+<span class="w-1.5 h-1.5 bg-outline rounded-full"></span>
+                            Low Vol
+                        </div>
+</div>
+<div class="mt-2">
+<div class="text-headline-sm font-headline-sm">98.2%</div>
+<p class="text-[12px] text-on-surface-variant">FCM/APNS Delivery</p>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-label-sm text-on-surface-variant">Avg: 800ms</div>
+<div class="sparkline text-outline">
+<div class="sparkline-bar" style="height: 40%"></div>
+<div class="sparkline-bar" style="height: 45%"></div>
+<div class="sparkline-bar" style="height: 35%"></div>
+<div class="sparkline-bar" style="height: 40%"></div>
+<div class="sparkline-bar" style="height: 50%"></div>
+<div class="sparkline-bar" style="height: 45%"></div>
+<div class="sparkline-bar" style="height: 40%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Observability Sections -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Active Alerts List -->
+<div class="lg:col-span-1 flex flex-col gap-lg">
+<div class="flex justify-between items-center px-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Active Alerts</h3>
+<span class="px-2 py-1 bg-error-container text-on-error-container rounded text-[12px] font-bold">2 Active</span>
+</div>
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<!-- Alert Item 1 -->
+<div class="p-md border-b border-outline-variant/20 flex gap-md bg-tertiary-fixed/10">
+<div class="mt-1">
+<span class="material-symbols-outlined text-tertiary font-variation-settings-'FILL'-1">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md font-bold text-tertiary">GPS Ingestion Lag</h4>
+<span class="text-[11px] text-on-surface-variant">5 min ago</span>
+</div>
+<p class="text-body-sm text-body-sm mt-1 text-on-surface-variant">GPS ingestion lag &gt; 30s for 5 min on node-04.</p>
+<div class="flex gap-sm mt-2">
+<button class="text-[11px] font-bold text-primary hover:underline underline-offset-4">Acknowledge</button>
+<button class="text-[11px] font-bold text-primary hover:underline underline-offset-4">View Trace</button>
+</div>
+</div>
+</div>
+<!-- Alert Item 2 -->
+<div class="p-md flex gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-error font-variation-settings-'FILL'-1">error</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md font-bold text-error">Database CPU Spike</h4>
+<span class="text-[11px] text-on-surface-variant">12 min ago</span>
+</div>
+<p class="text-body-sm text-body-sm mt-1 text-on-surface-variant">PostgreSQL primary instance CPU utilization at 92%.</p>
+<div class="flex gap-sm mt-2">
+<button class="text-[11px] font-bold text-primary hover:underline underline-offset-4">Acknowledge</button>
+<button class="text-[11px] font-bold text-primary hover:underline underline-offset-4">View Trace</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick View Graphic -->
+<div class="rounded-xl overflow-hidden relative h-48 group">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent z-10"></div>
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A futuristic abstract data visualization showing glowing neon blue and purple threads connecting in a complex 3D network, representing cloud infrastructure nodes, high-contrast, dark background with subtle ambient light reflecting the IndigoHR palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFtH3X1fHbSdgheyKQ1U8rxS7p8Ukuz1H2esFZMaB9BmTG4uJd7VDWRXSZnC1_BZdtwYsLqx9PGWAWGVDYFyGqeQMMYt2-YYUNX1ZdiKmjE-EcmEmZanLNWvLzhmGWUU_ZWVI9dn7h0R6nMoTlma2GsR8vdxGLtSYHYqOFDDW215Uv04ixUjKMBus6DJ57mQqbCkif31fnvkk2mBItGZICIFC2RFcwgsgBnAj-4tu-E8h5uuWs251aAxP_szvUJ2_47sWQgWPqBQ"/>
+<div class="absolute bottom-4 left-4 z-20">
+<p class="font-label-md text-label-md text-white/70">Node Topology</p>
+<p class="font-headline-sm text-headline-sm text-white">All regions healthy</p>
+</div>
+</div>
+</div>
+<!-- Alert Rules Table -->
+<div class="lg:col-span-2 flex flex-col gap-lg">
+<div class="flex justify-between items-center px-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Alert Rules</h3>
+<div class="flex gap-sm">
+<select class="bg-surface border-outline-variant/30 rounded-lg text-label-md p-1 focus:ring-primary">
+<option>All Categories</option>
+<option>Performance</option>
+<option>Availability</option>
+</select>
+</div>
+</div>
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/30">
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant">Rule Name</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant">Threshold</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant">Channels</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="font-label-md text-label-md font-bold">High Error Rate (5xx)</div>
+<div class="text-[12px] text-on-surface-variant">API Gateway Cluster</div>
+</td>
+<td class="px-lg py-md">
+<span class="font-body-sm text-body-sm">&gt; 1.5% for 2m</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" title="Slack">chat</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" title="Email">mail</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" title="PagerDuty">vibration</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+<span class="font-label-sm text-label-sm">Enabled</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="font-label-md text-label-md font-bold">GPS Data Stale</div>
+<div class="text-[12px] text-on-surface-variant">Mobile Ingestion</div>
+</td>
+<td class="px-lg py-md">
+<span class="font-body-sm text-body-sm">&gt; 30s delay</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chat</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+<span class="font-label-sm text-label-sm">Enabled</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="font-label-md text-label-md font-bold">Memory Leakage</div>
+<div class="text-[12px] text-on-surface-variant">Payroll Workers</div>
+</td>
+<td class="px-lg py-md">
+<span class="font-body-sm text-body-sm">&gt; 85% RAM usage</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">mail</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-1.5 h-1.5 bg-outline rounded-full"></span>
+<span class="font-label-sm text-label-sm">Paused</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="font-label-md text-label-md font-bold">Face-match Latency</div>
+<div class="text-[12px] text-on-surface-variant">Authentication Provider</div>
+</td>
+<td class="px-lg py-md">
+<span class="font-body-sm text-body-sm">&gt; 5s RTT</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chat</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">vibration</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+<span class="font-label-sm text-label-sm">Enabled</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="font-label-md text-label-md font-bold">Disk Space Critical</div>
+<div class="text-[12px] text-on-surface-variant">Log Aggregator</div>
+</td>
+<td class="px-lg py-md">
+<span class="font-body-sm text-body-sm">&gt; 90% full</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chat</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">mail</span>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+<span class="font-label-sm text-label-sm">Enabled</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-md bg-surface-container-low flex justify-between items-center border-t border-outline-variant/30">
+<p class="text-label-sm text-on-surface-variant">Showing 5 of 24 alert rules</p>
+<div class="flex gap-sm">
+<button class="p-1 hover:bg-surface-variant rounded">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interaction for sparkline animation
+        document.querySelectorAll('.sparkline-bar').forEach(bar => {
+            const originalHeight = bar.style.height;
+            bar.style.height = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                bar.style.height = originalHeight;
+            }, 100 + Math.random() * 500);
+        });
+
+        // Pulsing dot logic (extra flair)
+        setInterval(() => {
+            document.querySelectorAll('.animate-pulse').forEach(dot => {
+                dot.style.opacity = (dot.style.opacity === '0.3') ? '1' : '0.3';
+            });
+        }, 1000);
+    </script>
+</body></html>

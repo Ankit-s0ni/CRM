@@ -6,6 +6,9 @@ export interface TenantContext {
   userId?: string;
   roleId?: string;
   requestId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  impersonationSessionId?: string;
 }
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -28,6 +31,16 @@ export class TenantContextService {
 
   get requestId(): string | undefined {
     return TenantContextService.als.getStore()?.requestId;
+  }
+
+  setActor(userId: string) {
+    const context = TenantContextService.als.getStore();
+    if (context) context.userId = userId;
+  }
+
+  setImpersonation(sessionId: string) {
+    const context = TenantContextService.als.getStore();
+    if (context) context.impersonationSessionId = sessionId;
   }
 
   get context(): TenantContext | undefined {

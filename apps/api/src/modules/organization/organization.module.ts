@@ -29,6 +29,10 @@ import { EmployeeImportQueue } from './imports/employee-import.queue';
     EmployeeImportProcessor,
     EmployeeImportQueue,
   ],
-  exports: [EmployeeImportStorageService, EmployeeImportProcessor],
+  exports: [
+    EmployeeImportStorageService,
+    EmployeeImportProcessor,
+    EmployeeImportQueue,
+  ],
 })
 export class OrganizationModule {}

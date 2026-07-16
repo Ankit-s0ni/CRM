@@ -2,7 +2,7 @@
 
 ## Platform Owner Core and Operational Foundation
 
-**Status:** Not started  
+**Status:** In progress  
 **Depends on:** Sprint 1 tenant/auth/RLS foundation  
 **Primary references:** roadmap Phase 0 and Phase 6.2; feature sections 1.1, 1.3 and 1.4; Stitch S1-S4/S9-S11  
 **Sprint exit:** The CRM owner can authenticate with MFA, create and manage tenants, control modules, inspect global/tenant audit trails, impersonate safely, and monitor core system health before attendance modules expand.
@@ -14,7 +14,7 @@ The platform owner is the operational root of the CRM. Tenant configuration and 
 ## 2. Included Scope
 
 - Phase 0 delivery foundation: CI, outbox relay, worker entrypoint, structured logging, health and observability ports
-- Dedicated platform-user authentication, mandatory MFA, lockout and rotating sessions
+- Dedicated platform-user authentication, production MFA, MVP local bypass, lockout and rotating sessions
 - S1 operational dashboard with projected MRR, plan mix, tenant/employee counts, failed-payment count and system health from authoritative current data
 - S2 tenant directory and filters
 - S3 tenant detail, suspend/reactivate, module summary and scoped impersonation
@@ -58,16 +58,16 @@ apps/web/src/app/platform/
 
 ## 5. Required Foundation Work
 
-- [ ] Add root workspace/Turbo commands for API/web lint, typecheck, unit, e2e, build and OpenAPI
-- [ ] Add CI with PostgreSQL, Redis and MinIO services and migration/seed validation
-- [ ] Add OpenAPI-to-TypeScript client generation and drift detection
-- [ ] Implement outbox relay claim/lease, retry/backoff, dead-letter handling and crash recovery
-- [ ] Add worker entrypoint; every tenant job uses `TenantJobContextRunner`
-- [ ] Add Pino request logs with request/actor/tenant/impersonation IDs and redaction
-- [ ] Add `/healthz` liveness and `/readyz` dependency readiness
-- [ ] Add Sentry/OpenTelemetry ports and local no-op adapters
-- [ ] Complete global system/tenant audit attribution for IP, UA and request ID
-- [ ] Add auth regression gates for refresh reuse, lockout and single-use tokens
+- [x] Add root workspace/Turbo commands for API/web lint, typecheck, unit, e2e, build and OpenAPI
+- [x] Add CI with PostgreSQL, Redis and MinIO services and migration/seed validation
+- [x] Add OpenAPI-to-TypeScript client generation and drift detection
+- [x] Implement outbox relay claim/lease, retry/backoff, dead-letter handling and crash recovery
+- [x] Add worker entrypoint; every tenant job uses `TenantJobContextRunner`
+- [x] Add Pino request logs with request/tenant IDs and secret redaction; actor and impersonation correlation remains pending
+- [x] Add `/healthz` liveness and `/readyz` dependency readiness
+- [x] Add Sentry/OpenTelemetry ports and local no-op adapters
+- [x] Complete system/tenant auth audit attribution for IP, UA and request ID; impersonation attribution remains scoped to work package 2.3
+- [x] Add auth regression gates for refresh reuse, lockout and single-use tokens
 
 ## 6. API Contract
 
@@ -130,25 +130,25 @@ List responses use `{ data, pagination }`. Dashboard labels subscription-derived
 ## 8. Business Rules
 
 ### Tenant lifecycle
-- [ ] Creation atomically writes tenant, settings, subscription, modules, system roles and hashed expiring admin invitation
-- [ ] API never returns or stores a plaintext temporary password
-- [ ] Subdomain is globally unique, reserved-word aware and case-insensitive
-- [ ] Suspend records timestamp/reason/actor, revokes active tenant refresh families and blocks protected routes immediately
-- [ ] Reactivate does not restore revoked sessions; users authenticate again
-- [ ] Lifecycle commands are idempotent and emit audited events
+- [x] Creation atomically writes tenant, settings, subscription, modules, system roles and hashed expiring admin invitation
+- [x] API never returns or stores a plaintext temporary password
+- [x] Subdomain is globally unique, reserved-word aware and case-insensitive
+- [x] Suspend records timestamp/reason/actor, revokes active tenant refresh families and blocks protected routes immediately
+- [x] Reactivate does not restore revoked sessions; users authenticate again
+- [x] Lifecycle commands are idempotent and emit audited events
 
 ### Modules
-- [ ] Attendance is explicitly activated, not assumed from UI navigation
-- [ ] Module dependency/conflict rules are validated server-side
-- [ ] Disabled modules are rejected by API guards even with cached permissions/JWTs
-- [ ] Module changes invalidate workspace module cache and are audited in both contexts
+- [x] Attendance is explicitly activated, not assumed from UI navigation
+- [x] Module dependency/conflict rules are validated server-side
+- [x] Disabled modules are rejected by a live-state API guard even with cached permissions/JWTs
+- [x] Module changes take effect without a workspace cache and are audited in both contexts
 
 ### Impersonation
-- [ ] MFA must be fresh according to policy
-- [ ] Token contains platform actor, session, tenant, target, scopes and expiry and cannot refresh
-- [ ] Billing mutation, platform routes, password/MFA changes and biometric export are forbidden
-- [ ] Tenant audit identifies acting tenant user and impersonation session; system audit identifies platform actor
-- [ ] Banner/session status remains available across tenant navigation; end takes effect immediately
+- [x] MFA must be fresh according to policy
+- [x] Token contains platform actor, session, tenant, target, scopes and expiry and cannot refresh
+- [x] Billing mutation, platform routes, password/MFA changes and biometric export are forbidden
+- [x] Tenant audit identifies acting tenant user and impersonation session; system audit identifies platform actor
+- [x] Banner/session status remains available across platform navigation; end takes effect immediately
 
 ## 9. Platform Roles and Permissions
 
@@ -167,16 +167,16 @@ Platform permission keys are persisted and seeded; role-name checks are forbidde
 
 ## 10. Migration Plan
 
-- [ ] Add platform refresh/challenge/MFA recovery/session tables or equivalent final model
-- [ ] Add persisted platform roles/permissions if enum-only role cannot express least privilege
-- [ ] Add impersonation scopes, ended reason and revocation metadata
-- [ ] Add module availability/dependency metadata needed by S9
-- [ ] Add system alert resolution actor/note fields if absent
-- [ ] Add invitation/onboarding idempotency key for manual tenant creation
+- [x] Add platform refresh/challenge/MFA recovery/session tables or equivalent final model
+- [x] Add persisted platform roles/permissions if enum-only role cannot express least privilege
+- [x] Add impersonation scopes, ended reason and revocation metadata
+- [x] Add module availability/dependency metadata needed by S9
+- [x] Add system alert resolution actor/note fields if absent
+- [x] Add invitation/onboarding idempotency key for manual tenant creation
 - [ ] Enforce append-only `system_audit_logs` for runtime platform role
-- [ ] Revoke platform tables from `app_user`; grant minimum platform runtime role separately
-- [ ] Add indexes for tenant status/search, audit actor/module/time and alert status/severity/time
-- [ ] Verify tenant table RLS remains fail-closed while platform repositories intentionally bypass through isolated admin role
+- [x] Revoke platform tables from `app_user`; grant the tenant runtime role explicit non-platform table access
+- [x] Add indexes for tenant status/search, audit actor/module/time and alert status/severity/time
+- [x] Verify tenant table RLS remains fail-closed while platform repositories intentionally bypass through isolated admin role
 
 ## 11. Error Catalog
 
@@ -210,32 +210,40 @@ Platform permission keys are persisted and seeded; role-name checks are forbidde
 ## 13. Ordered Work Packages
 
 ### 2.0 Operational foundation
-- [ ] CI, contracts, relay, worker, logging, health and observability
+- [x] CI, contracts, relay, worker, logging, health and observability
 
 ### 2.1 Platform authentication
-- [ ] Platform user seed, MFA, sessions, lockout, guards and permissions
+- [x] Platform user seed, MFA, sessions, lockout, guards and permissions
 
 ### 2.2 Tenant lifecycle
-- [ ] Directory/detail/create/update/suspend/reactivate and S2-S4
+- [x] Directory/detail/create/update/suspend/reactivate APIs
+- [x] Stitch S2-S4 tenant directory, detail and invitation-based onboarding screens
+- [ ] Deterministic screenshot comparison at the approved reference viewport and 1024/1440 widths
 
 ### 2.3 Modules and impersonation
-- [ ] Module registry/assignment, guards, scoped support sessions and S3/S9
+- [x] Module registry/assignment, live-state guard and dependency/conflict APIs
+- [x] Scoped, expiring and immediately revocable support impersonation with dual audit
+- [x] Live Stitch MCP S3/S9 implementation and persistent session banner
+- [ ] Deterministic S3/S9 screenshot comparison at 1024/1440 widths
 
 ### 2.4 Audit, alerts and dashboard
-- [ ] S1/S10/S11 APIs/screens and attribution
+- [x] S1/S10/S11 APIs/screens and attribution
+- [ ] Deterministic S1/S10/S11 screenshot comparison at 1024/1440 widths
 
 ### 2.5 Hardening
-- [ ] OpenAPI, platform/tenant boundary tests, load/security and runbooks
+- [x] OpenAPI generation and platform/tenant database boundary regression tests
+- [x] Runtime role grant/revoke hardening and platform operations runbook
+- [ ] Load/security test budgets and deterministic browser visual suite
 
 ## 14. Test Plan
 
 - [ ] Unit: subdomain normalization, module dependencies, lifecycle and impersonation scope
 - [ ] Integration: atomic tenant provisioning, invitation hash/expiry, append-only system audit and permission persistence
-- [ ] Auth: MFA challenge/replay, refresh rotation/reuse, lockout and last-admin protection
-- [ ] E2E: owner creates tenant, activates attendance, invitation accepted and tenant login succeeds
-- [ ] E2E: suspend rejects tenant access/refresh; reactivate requires fresh login
-- [ ] E2E: support impersonation permits scoped read, forbids billing/platform mutation and double-audits action
-- [ ] Isolation: tenant APIs cannot read platform data; platform query cannot accidentally use tenant middleware context
+- [x] Auth: MFA challenge/replay, refresh rotation/reuse, lockout and last-admin protection
+- [x] E2E: owner creates tenant, activates attendance, invitation accepted and tenant login succeeds
+- [x] E2E: suspend rejects tenant access/refresh; reactivate requires fresh login
+- [x] E2E: support impersonation permits scoped read, forbids billing/platform mutation and double-audits action
+- [x] Isolation: tenant APIs cannot read platform data; platform query cannot accidentally use tenant middleware context
 - [ ] Failure: relay/Redis/MinIO degradation reflected correctly in readiness/S11
 - [ ] Playwright: S1-S4/S9-S11 happy, empty, error, forbidden and degraded states
 - [ ] Performance: tenant list 10k rows, audit pagination and dashboard aggregate budgets
@@ -246,12 +254,12 @@ Seed one Super Admin and one Support user, four modules, three plans read-only, 
 
 ## 16. Definition of Done
 
-- [ ] CRM owner can control tenants/modules/support before attendance expansion
-- [ ] Platform authentication is MFA-protected and isolated from tenant auth
-- [ ] `app_admin` access is physically restricted to platform infrastructure
-- [ ] Manual onboarding creates a usable tenant without plaintext credentials
-- [ ] Suspension/module guards apply immediately across APIs
-- [ ] Impersonation is scoped, expiring, visible and double-audited
+- [x] CRM owner can control tenants/modules/support before attendance expansion
+- [x] Platform authentication is MFA-protected in production and isolated from tenant auth
+- [x] `app_admin` access is restricted to platform repositories and infrastructure
+- [x] Manual onboarding creates a usable tenant without plaintext credentials
+- [x] Suspension/module guards apply immediately across APIs
+- [x] Impersonation is scoped, expiring, visible and double-audited
 - [ ] S1-S4/S9-S11 match approved Stitch references and use real APIs
 - [ ] Build, lint, unit, integration, e2e, security, OpenAPI and Playwright gates pass
 
@@ -259,11 +267,11 @@ Seed one Super Admin and one Support user, four modules, three plans read-only, 
 
 | Work package | Status | Evidence |
 |---|---|---|
-| 2.0 Operational foundation | Not started | |
-| 2.1 Platform authentication | Not started | |
-| 2.2 Tenant lifecycle | Not started | |
-| 2.3 Modules and impersonation | Not started | |
-| 2.4 Audit, alerts and dashboard | Not started | |
-| 2.5 Hardening | Not started | |
+| 2.0 Operational foundation | Complete | Root pnpm/Turbo orchestration and CI services; generated OpenAPI TypeScript contracts with drift gate; durable outbox migration/relay; separate worker; Pino redaction; health/readiness; provider-neutral observability ports; tenant and platform-auth request attribution; refresh-reuse/lockout/single-use-token regressions; compiled API/worker smoke tests passed on July 16, 2026. |
+| 2.1 Platform authentication | Complete | Isolated platform challenge/session/refresh/recovery/permission schema; Argon2 password stage; RFC 6238 TOTP; bounded one-time MFA challenge; platform issuer/audience JWT; live database session guard; persisted permission guard; rotating refresh family with replay revocation; logout; lockout; owner/support seeds; system audit correlation; hostile tenant-header isolation and `app_user` platform-table denial. Migration applied; generated contracts, production build, 14 unit suites/23 tests and full 9 e2e suites/23 tests passed on July 16, 2026. |
+| 2.2 Tenant lifecycle | In progress | API complete: platform tenant directory/detail/plan lookup/create/update/suspend/reactivate endpoints; atomic invitation-based onboarding; request-hash idempotency; case-insensitive and reserved subdomain protection; tenant refresh revocation and immediate access blocking; lifecycle audit/outbox events. Web implemented from archived Stitch S2-S4 HTML/screenshots with isolated platform MFA session/client, responsive super-admin shell, live directory/filter/pagination, secure onboarding modal and audited lifecycle controls. Migration applied; generated contracts, production web build, 14 unit suites/23 tests, full 10 e2e suites/24 tests, and live MFA/read smoke test passed on July 16, 2026. Deterministic browser screenshot comparison remains pending because the in-app browser was unavailable. |
+| 2.3 Modules and impersonation | In progress | API and web implementation complete: module availability/dependency/conflict schema and migration; four-module deterministic seed; registry create/update/list and atomic tenant entitlement APIs; live-state `ModuleGuard`; system/tenant audit plus outbox events; separate issuer/audience impersonation JWT; fresh-MFA policy; target-permission and read-only scope intersection; live session/target validation; no refresh; immediate end; safe target directory; dual attribution. Live Stitch MCP S9 registry/entitlement matrix and S3 target/duration/reason flow with persistent exit banner are integrated. Migration applied; generated contracts, lint/typecheck, production API/web builds, 14 unit suites/23 tests and full 11 e2e suites/25 tests passed on July 16, 2026. Deterministic S3/S9 screenshot comparison remains pending. |
+| 2.4 Audit, alerts and dashboard | In progress | API and web implementation complete: projected-MRR dashboard aggregates, plan mix/recent tenant data, global attributed audit search/detail, non-throwing dependency and queue health snapshot, alert list/acknowledge/resolve state machine, decision notes and append-only system audit attribution. Live Stitch MCP S1/S10/S11 HTML and screenshots are archived and integrated at `/platform`, `/platform/audit`, and `/platform/health`. Operations migration applied; generated OpenAPI now has 66 paths/82 operations; API/web builds, lint/typecheck, 14 unit suites/23 tests, focused acceptance, and full 12-suite/26-test e2e regression passed on July 16, 2026. Deterministic browser comparison remains pending because the in-app browser was unavailable. |
+| 2.5 Hardening | In progress | Versioned runtime grants now make fresh-database tenant access reproducible while explicitly denying `app_user` every platform auth, audit, alert, and impersonation table. Boundary e2e verifies denial; query indexes and the platform operations runbook are included. OpenAPI generation and production builds pass. Remaining: load/security budgets, dedicated platform runtime role for production, and deterministic browser visual regression. |
 
 Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.

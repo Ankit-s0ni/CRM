@@ -1,18 +1,21 @@
 {
   "name": "crm-workspace",
   "private": true,
-  "pnpm": {
-    "allowBuilds": {
-      "msgpackr-extract": true
-    },
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "@scarf/scarf",
-      "argon2",
-      "msgpackr-extract",
-      "prisma",
-      "unrs-resolver",
-      "sharp"
-    ]
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter api test:e2e --runInBand",
+    "openapi:export": "pnpm --filter api openapi:export",
+    "openapi:generate": "pnpm openapi:export && openapi-typescript docs/openapi.json -o packages/contracts/src/generated.ts",
+    "quality": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "turbo": "^2.5.6"
   }
 }

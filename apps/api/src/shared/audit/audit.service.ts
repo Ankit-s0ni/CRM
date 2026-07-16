@@ -24,7 +24,10 @@ export class AuditService {
     return tx.tenantAuditLog.create({
       data: {
         tenantId: input.tenantId,
-        actorUserId: input.actorUserId ?? null,
+        actorUserId:
+          input.actorUserId ?? this.tenantContextService.userId ?? null,
+        impersonationSessionId:
+          this.tenantContextService.context?.impersonationSessionId ?? null,
         action: input.action,
         module: input.module,
         entityType: input.entityType ?? null,
@@ -32,6 +35,8 @@ export class AuditService {
         oldValue: this.json(input.oldValue),
         newValue: this.json(input.newValue),
         requestId: this.tenantContextService.requestId ?? null,
+        ipAddress: this.tenantContextService.context?.ipAddress ?? null,
+        userAgent: this.tenantContextService.context?.userAgent ?? null,
       },
     });
   }

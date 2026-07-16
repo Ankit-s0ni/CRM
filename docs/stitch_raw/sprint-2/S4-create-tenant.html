@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Tenant | IndigoHR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary": "#703a00",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#934e00",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "secondary-fixed-dim": "#62df7d",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "primary-container": "#4f46e5",
+                    "on-surface": "#1b1b24",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "background": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "surface-tint": "#4d44e3",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-bright": "#fcf8ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "container-max": "1440px",
+                    "base": "8px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            border-left: 4px solid #006e2d; /* Using secondary color for active accent */
+            background-color: rgba(53, 37, 205, 0.1);
+        }
+        .modal-overlay {
+            background-color: rgba(27, 27, 36, 0.4);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container dark:bg-inverse-surface flex flex-col py-lg z-50 shadow-md">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-inverse-primary">IndigoHR</h1>
+<p class="font-label-md text-label-md text-on-primary/80">Super Admin</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-lg py-md border-l-4 border-secondary text-on-primary bg-primary/20 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="business">business</span>
+                Tenants
+            </a>
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="subscriptions">subscriptions</span>
+                Plans
+            </a>
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="payments">payments</span>
+                Billing
+            </a>
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="extension">extension</span>
+                Modules
+            </a>
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="history">history</span>
+                Audit Logs
+            </a>
+<a class="flex items-center px-lg py-md text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="health_and_safety">health_and_safety</span>
+                Health
+            </a>
+</nav>
+<div class="mt-auto px-lg space-y-1">
+<a class="flex items-center py-md text-on-primary/70 hover:text-on-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center py-md text-on-primary/70 hover:text-on-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface shadow-sm flex justify-between items-center px-lg z-40">
+<div class="flex items-center bg-surface-container-high rounded-full px-md py-xs w-96 focus-within:ring-2 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-xs" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full" placeholder="Search tenants..." type="text"/>
+</div>
+<div class="flex items-center space-gap-md">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant mr-md">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="flex items-center gap-md pl-md border-l border-outline-variant">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Ahmed Al-Said</p>
+<p class="text-xs text-on-surface-variant">Regional Super Admin</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a Middle Eastern male executive wearing a modern corporate suit, set against a blurred high-end office background in Muscat. The lighting is soft and natural, emphasizing a high-trust and authoritative persona in a clean, light-mode UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFrRkTXPO9P0sHP1qXg5wqwWSiq8rmB0mV0L0Fye486EASATbh4B5cAi8O2uL09Di3TV74ChHeih6LHjC6mymM9HmkJdOS59A3262TtjqBkfHhitwBXL6N30oRHte8y6gdLc5SxMth6naQlpCcyVX5i9oqHF2JxPBu9hTMMwnRFIwjGNIG-6hn6QhagGek_k09pgMTDIVysJHUdCzWSFQNeMy3ijZyK6m5iUuV4RxUF4tv-7vYJHbp5c0Lzhrh-MlrhKM6iamFIg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content (Tenant List Context) -->
+<main class="ml-sidebar-width pt-16 min-h-screen p-lg">
+<div class="max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Tenants</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage organization instances and subscription levels across the Muscat region.</p>
+</div>
+<button class="bg-primary text-on-primary px-xl py-md rounded-lg font-label-md text-label-md flex items-center gap-sm shadow-md hover:scale-95 active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    Create Tenant
+                </button>
+</div>
+<!-- Fake Tenant List for Background -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg opacity-40">
+<div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full text-xs font-bold">ENTERPRISE</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Oman Petroleum Co.</h3>
+<p class="text-sm text-on-surface-variant mb-xl">opc.indigohr.om</p>
+<div class="flex justify-between text-xs font-bold text-outline">
+<span>1,240 Employees</span>
+<span>Active</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="apartment">apartment</span>
+</div>
+<span class="bg-primary-fixed-dim text-on-primary-fixed-variant px-sm py-xs rounded-full text-xs font-bold">PRO</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Muscat Logistics Ltd.</h3>
+<p class="text-sm text-on-surface-variant mb-xl">mll.indigohr.om</p>
+<div class="flex justify-between text-xs font-bold text-outline">
+<span>450 Employees</span>
+<span>Active</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-sm border border-outline-variant">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="store">store</span>
+</div>
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-xs rounded-full text-xs font-bold">BASIC</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Coastal Retail Oman</h3>
+<p class="text-sm text-on-surface-variant mb-xl">cro.indigohr.om</p>
+<div class="flex justify-between text-xs font-bold text-outline">
+<span>85 Employees</span>
+<span>Trial</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal: Create New Tenant -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center modal-overlay">
+<div class="bg-white w-full max-w-4xl max-h-[921px] overflow-hidden rounded-xl shadow-2xl flex border border-outline-variant animate-in fade-in zoom-in duration-300">
+<!-- Main Form Section -->
+<div class="flex-grow p-xl overflow-y-auto">
+<div class="flex justify-between items-start mb-xl">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Create new tenant</h2>
+<p class="text-body-md text-on-surface-variant">Setup organization-wide instance and administrative access.</p>
+</div>
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<form class="space-y-lg">
+<div class="grid grid-cols-2 gap-lg">
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Company Name</label>
+<input class="w-full border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md text-body-md" placeholder="e.g. Muscat Tech Solutions" type="text"/>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Subdomain</label>
+<div class="relative flex items-center">
+<input class="w-full border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md pr-32 text-body-md" placeholder="subdomain" type="text"/>
+<span class="absolute right-12 text-on-surface-variant text-body-sm">.indigohr.om</span>
+<span class="absolute right-4 text-secondary material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="text-[10px] text-secondary mt-1 font-bold">Subdomain is available</p>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Admin Email</label>
+<input class="w-full border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md text-body-md" placeholder="admin@company.om" type="email"/>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Temporary Password</label>
+<div class="flex gap-2">
+<input class="flex-grow border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md text-body-md bg-surface-container-low" id="temp-password" type="text" value="OmN@2024!xT"/>
+<button class="px-md bg-surface-container-high border border-outline-variant rounded-lg text-primary hover:bg-surface-container-highest transition-colors" onclick="generatePass()" type="button">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Subscription Plan</label>
+<select class="w-full border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md text-body-md bg-white">
+<option>Select a plan</option>
+<option value="basic">Basic (Up to 50 employees)</option>
+<option selected="" value="pro">Pro (Up to 500 employees)</option>
+<option value="enterprise">Enterprise (Unlimited)</option>
+</select>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Employee Limit</label>
+<input class="w-full border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-md text-body-md" type="number" value="500"/>
+</div>
+</div>
+<div class="flex items-center gap-md py-md">
+<input checked="" class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" id="send-email" type="checkbox"/>
+<label class="font-body-md text-body-md text-on-surface" for="send-email">Send credentials email to the business admin immediately</label>
+</div>
+<div class="pt-xl flex gap-md">
+<button class="flex-grow bg-primary text-on-primary py-md rounded-lg font-headline-sm text-headline-sm shadow-md hover:bg-primary-container transition-all active:scale-95" type="submit">
+                            Create &amp; send invite
+                        </button>
+<button class="px-xl border border-outline text-on-surface-variant py-md rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+                            Cancel
+                        </button>
+</div>
+</form>
+</div>
+<!-- Side Note Panel -->
+<div class="w-80 bg-surface-container-low border-l border-outline-variant p-lg flex flex-col">
+<div class="mb-xl">
+<h4 class="font-label-md text-label-md text-primary mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-lg" data-icon="info">info</span>
+                        ADMIN SECURITY
+                    </h4>
+<p class="text-body-sm text-on-surface-variant leading-relaxed">
+                        The Business Admin will be prompted to change password on first login.
+                    </p>
+</div>
+<div class="mt-auto p-md bg-white rounded-lg border border-outline-variant shadow-sm">
+<h5 class="text-[10px] font-bold text-outline-variant uppercase mb-xs">Preview Location</h5>
+<div class="h-32 rounded bg-surface-container-highest overflow-hidden mb-sm relative">
+<div class="absolute inset-0 grayscale opacity-40" data-alt="A stylized minimalist map of Muscat city center, showing simplified streets and coastal outlines in a clean architectural drafting style. The map uses a light grey and white color palette with subtle blue accents for water." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcP_QIl-kxD8JbAieMZnjeQu5wFYb7jlDp1fwwbhuM_0X4oy39h9V5oAIlfbxV9ui5tC17uB4J8gO3wD8E7UST2K7CYqgEyiKa2tVqdxp86jqpLWO98ry8mggkfW5CXG8r_1X7h5TCkpLQOJ2zweoXBfEoiIhoTe3GdY48JTLBZwZCzklUbTP-vy1JN-NQI-qZxDrrWkf9iOe_kKlBWl73KsjoH3I1lgYWMLkNxckXOwEaZuz8wEB3iAjWVmjx_lWaIg-z6gRbzA')"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="location_on" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+<p class="text-[12px] font-medium text-on-surface">Region: Muscat, Oman</p>
+<p class="text-[10px] text-on-surface-variant">Default Timezone: (GMT+4)</p>
+</div>
+<div class="mt-lg">
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-2/3"></div>
+</div>
+<p class="text-[10px] mt-xs text-on-surface-variant">Tenant setup 66% complete</p>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function generatePass() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+            let pass = "";
+            for (let i = 0; i < 12; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('temp-password').value = pass;
+        }
+
+        // Add a simple entrance animation trigger
+        window.addEventListener('DOMContentLoaded', () => {
+            const modal = document.querySelector('.animate-in');
+            modal.classList.add('opacity-100');
+        });
+    </script>
+</body></html>

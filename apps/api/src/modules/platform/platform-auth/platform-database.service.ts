@@ -1,0 +1,34 @@
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import type { PrismaTransaction } from '../../../shared/database/prisma.service';
+
+@Injectable()
+export class PlatformDatabaseService implements OnModuleInit, OnModuleDestroy {
+  private readonly pool: Pool;
+  private readonly client: PrismaClient;
+
+  constructor() {
+    this.pool = new Pool({
+      connectionString:
+        process.env.DATABASE_URL_PLATFORM ??
+        'postgresql://platform_runtime:platform_password@localhost:5433/hrms_dev?schema=public',
+      max: 10,
+    });
+    this.client = new PrismaClient({ adapter: new PrismaPg(this.pool) });
+  }
+
+  async onModuleInit() {
+    await this.client.$connect();
+  }
+
+  async onModuleDestroy() {
+    await this.client.$disconnect();
+    await this.pool.end();
+  }
+
+  transaction<T>(callback: (tx: PrismaTransaction) => Promise<T>) {
+    return this.client.$transaction(async (tx) => callback(tx));
+  }
+}

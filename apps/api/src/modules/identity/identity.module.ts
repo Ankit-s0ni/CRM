@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { VerificationTokensService } from './verification-tokens.service';
 import { DatabaseModule } from '../../shared/database/database.module';
 import { JwtTenantGuard } from './jwt-tenant.guard';
+import { ImpersonationJwtStrategy } from '../platform/impersonation/impersonation-jwt.strategy';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JwtTenantGuard } from './jwt-tenant.guard';
     AuthService,
     JwtStrategy,
     JwtTenantGuard,
+    ImpersonationJwtStrategy,
     VerificationTokensService,
   ],
   exports: [AuthService, JwtTenantGuard, VerificationTokensService],

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Module Management | IndigoHR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary": "#703a00",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#934e00",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "secondary-fixed-dim": "#62df7d",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "primary-container": "#4f46e5",
+                    "on-surface": "#1b1b24",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "background": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "surface-tint": "#4d44e3",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-bright": "#fcf8ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "container-max": "1440px",
+                    "base": "8px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e1ee; border-radius: 10px; }
+        .toggle-checkbox:checked { right: 0; border-color: #3525cd; background-color: #3525cd; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #3525cd; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Side Navigation Shell -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container dark:bg-inverse-surface flex flex-col py-lg z-50 shadow-md">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-inverse-primary">IndigoHR</h1>
+<p class="font-label-md text-label-md text-on-primary/70">Super Admin</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">business</span>
+<span>Tenants</span>
+</a>
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">subscriptions</span>
+<span>Plans</span>
+</a>
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">payments</span>
+<span>Billing</span>
+</a>
+<a class="flex items-center px-lg py-3 border-l-4 border-secondary text-on-primary bg-primary/20 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">extension</span>
+<span>Modules</span>
+</a>
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">history</span>
+<span>Audit Logs</span>
+</a>
+<a class="flex items-center px-lg py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">health_and_safety</span>
+<span>Health</span>
+</a>
+</nav>
+<div class="mt-auto px-lg space-y-1">
+<a class="flex items-center py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center py-3 text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-md">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface shadow-sm flex justify-between items-center px-lg z-40">
+<div class="flex items-center bg-surface-container-low px-md py-1.5 rounded-lg w-96 border border-outline-variant focus-within:ring-2 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-full placeholder:text-on-surface-variant/50" placeholder="Search tenants or modules..." type="text"/>
+</div>
+<div class="flex items-center space-x-lg">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-md ml-md border-l pl-md border-outline-variant">
+<img class="w-10 h-10 rounded-full border border-primary/20" data-alt="A professional headshot of a senior HR director in a well-lit modern office setting. The individual is wearing a navy blue blazer and has a friendly, authoritative expression. The lighting is crisp and corporate, highlighting a clean, sophisticated atmosphere consistent with a high-trust enterprise software platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQSiMxaiGNkmJGntnd2PBIbUbKujBx0lgi6LIDgpJtQCGpfYH1Qi_EElF6_GDbgLEaxeGh3TfZaOE76zDDbCjEl5V5APeDGHAhFgVbtp79nTKf_PfVSDEl8_GLeUxPwVxI9zcgGsQNqH9IY1sopTaDj2bP47Wu9T2xqkRrHqv_dE424JoTOA2luR0luahVe5ih2IX8diRYUCIn5gk52PZW8uL6twcBCqIjWv_brFJ8qlQFsWqNwZXcgKWn2rdAJNECFRaBr8s86A"/>
+<div class="hidden lg:block text-left">
+<p class="font-label-md text-label-md text-on-surface font-bold leading-none">Amit Verma</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Master Admin</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width pt-16 min-h-screen bg-surface">
+<div class="p-lg max-w-container-max mx-auto h-[calc(100vh-64px)] flex gap-lg">
+<!-- Left Panel: Module Registry -->
+<section class="w-1/3 flex flex-col bg-surface-container-lowest rounded-xl shadow-md overflow-hidden border border-surface-variant">
+<div class="p-lg border-b border-surface-variant bg-surface-container-low/50">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Module Registry</h2>
+<button class="flex items-center gap-xs px-md py-1.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            Add Module
+                        </button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage the core feature set of the IndigoHR ecosystem.</p>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-md space-y-md">
+<!-- Module Items -->
+<div class="group p-lg rounded-xl bg-surface border border-surface-variant hover:border-primary/50 transition-all cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Attendance</p>
+<div class="flex items-center gap-xs text-secondary">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Live</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group p-lg rounded-xl bg-surface border border-surface-variant hover:border-primary/50 transition-all cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">beach_access</span>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Leave</p>
+<div class="flex items-center gap-xs text-secondary">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Live</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group p-lg rounded-xl bg-surface border-primary border shadow-sm transition-all cursor-pointer relative">
+<div class="absolute -top-px -right-px bg-primary text-on-primary px-2 py-0.5 rounded-bl-lg font-label-sm text-[10px] uppercase">Active Selection</div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Field Tracking</p>
+<div class="flex items-center gap-xs text-secondary">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Live</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</div>
+</div>
+<div class="group p-lg rounded-xl bg-surface border border-surface-variant hover:border-primary/50 transition-all cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Payroll</p>
+<div class="flex items-center gap-xs text-tertiary">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Beta</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group p-lg rounded-xl bg-surface-container-low border border-surface-variant/50 opacity-60 grayscale cursor-not-allowed">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg bg-outline-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">CRM</p>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Locked</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface-container-high/30">
+<div class="bg-primary/5 border border-primary/20 rounded-lg p-md">
+<p class="font-label-md text-label-md text-primary font-bold mb-1">System Health</p>
+<div class="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span>4 Modules active</span>
+<span class="text-secondary font-bold">99.9% Uptime</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Tenant Matrix -->
+<section class="flex-1 flex flex-col bg-surface-container-lowest rounded-xl shadow-md overflow-hidden border border-surface-variant">
+<div class="p-lg border-b border-surface-variant flex items-center justify-between gap-xl">
+<div class="flex-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Tenant Entitlements</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Control feature access across your client database.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="whitespace-nowrap px-lg py-2 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:opacity-90 transition-all flex items-center gap-sm" onclick="openBulkAction()">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                            Enable for all Pro tenants
+                        </button>
+<div class="w-48 bg-surface-container border border-outline-variant rounded-lg flex items-center px-md py-1.5">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mr-xs">filter_list</span>
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-label-md placeholder:text-on-surface-variant/40" placeholder="Filter tenants..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Matrix Table -->
+<div class="flex-1 overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface-container-low/95 backdrop-blur z-10">
+<tr>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant w-64">Tenant Name</th>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant text-center">Attendance</th>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant text-center">Leave</th>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant text-center bg-primary/5">Field Track</th>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant text-center">Payroll</th>
+<th class="p-lg font-label-md text-label-md text-on-surface-variant border-b border-surface-variant text-center">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant">
+<!-- Tenant Row 1 -->
+<tr class="hover:bg-surface-container/30 transition-colors">
+<td class="p-lg">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-[12px]">OTS</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Oman Tech Solutions</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Plan: <span class="text-primary font-bold">Enterprise</span></p>
+</div>
+</div>
+</td>
+<td class="p-lg text-center">
+<div class="inline-flex items-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</td>
+<td class="p-lg text-center">
+<div class="inline-flex items-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</td>
+<td class="p-lg text-center bg-primary/5">
+<div class="inline-flex items-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" onchange="confirmToggle('Oman Tech Solutions', 'Field Tracking')" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</td>
+<td class="p-lg text-center">
+<div class="inline-flex items-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary"></div>
+</label>
+</div>
+</td>
+<td class="p-lg text-center">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</td>
+</tr>
+<!-- Tenant Row 2 -->
+<tr class="hover:bg-surface-container/30 transition-colors">
+<td class="p-lg">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[12px]">REL</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Reliance Retail (West)</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Plan: <span class="text-primary font-bold">Pro</span></p>
+</div>
+</div>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center bg-primary/5">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</td>
+</tr>
+<!-- Tenant Row 3 -->
+<tr class="hover:bg-surface-container/30 transition-colors">
+<td class="p-lg">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold text-[12px]">TATA</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Tata Logistics Hub</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Plan: <span class="text-primary font-bold">Standard</span></p>
+</div>
+</div>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center bg-primary/5">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</td>
+</tr>
+<!-- Tenant Row 4 -->
+<tr class="hover:bg-surface-container/30 transition-colors">
+<td class="p-lg">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-[12px]">HDFC</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">HDFC Life Mumbai</p>
+<p class="font-label-sm text-[11px] text-on-surface-variant">Plan: <span class="text-primary font-bold">Enterprise</span></p>
+</div>
+</div>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</td>
+<td class="p-lg text-center bg-primary/5">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary"></div>
+</label>
+</td>
+<td class="p-lg text-center">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-lg bg-surface-container-low/50 border-t border-surface-variant flex items-center justify-between">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 4 of 128 tenants</p>
+<div class="flex items-center gap-sm">
+<button class="p-2 border border-surface-variant rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-2 border border-surface-variant rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Confirmation Modal Example -->
+<div class="hidden fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-[100] flex items-center justify-center p-lg" id="confirmation-modal">
+<div class="bg-surface rounded-xl shadow-2xl max-w-md w-full animate-fade-in border border-outline-variant overflow-hidden">
+<div class="p-xl text-center">
+<div class="w-16 h-16 bg-primary-container/10 text-primary rounded-full flex items-center justify-center mx-auto mb-lg">
+<span class="material-symbols-outlined text-[32px]">extension</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Confirm Activation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant" id="modal-text">Enable Field Tracking for Oman Tech Solutions?</p>
+<div class="mt-xl flex flex-col gap-sm">
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-transform active:scale-95" onclick="closeModal()">
+                        Confirm Enable
+                    </button>
+<button class="w-full py-3 bg-transparent text-on-surface-variant hover:bg-surface-container rounded-lg font-label-md text-label-md" onclick="closeModal()">
+                        Cancel
+                    </button>
+</div>
+</div>
+<div class="bg-surface-container-low p-md border-t border-surface-variant text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant/70 italic">This change will be reflected in the client dashboard immediately.</p>
+</div>
+</div>
+</div>
+<!-- Bulk Action Modal -->
+<div class="hidden fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-[100] flex items-center justify-center p-lg" id="bulk-modal">
+<div class="bg-surface rounded-xl shadow-2xl max-w-lg w-full animate-fade-in border border-outline-variant">
+<div class="p-xl">
+<div class="flex items-center gap-md mb-lg">
+<div class="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Bulk Provisioning</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Update 42 "Pro" tier tenants</p>
+</div>
+</div>
+<div class="space-y-md">
+<p class="font-body-md text-body-md text-on-surface">Select module to enable for all Pro tenants:</p>
+<select class="w-full rounded-lg border-surface-variant focus:ring-primary focus:border-primary font-body-md">
+<option>Attendance</option>
+<option>Leave</option>
+<option selected="">Field Tracking</option>
+<option>Payroll (Beta)</option>
+</select>
+<div class="bg-error-container/20 p-md rounded-lg border border-error-container/50">
+<p class="text-error font-label-sm text-[11px] font-bold uppercase mb-1 flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                            Warning
+                        </p>
+<p class="text-on-error-container font-body-sm text-[13px]">This action cannot be undone in bulk. Disabling must be done per-tenant.</p>
+</div>
+</div>
+<div class="mt-xl flex gap-md">
+<button class="flex-1 py-3 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:opacity-90 transition-transform active:scale-95" onclick="closeBulkModal()">
+                        Apply Changes
+                    </button>
+<button class="flex-1 py-3 border border-surface-variant text-on-surface-variant hover:bg-surface-container rounded-lg font-label-md text-label-md" onclick="closeBulkModal()">
+                        Cancel
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function confirmToggle(tenant, module) {
+            const modal = document.getElementById('confirmation-modal');
+            const text = document.getElementById('modal-text');
+            text.innerText = `Enable ${module} for ${tenant}?`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+        }
+
+        function openBulkAction() {
+            document.getElementById('bulk-modal').classList.remove('hidden');
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulk-modal').classList.add('hidden');
+        }
+
+        // Search highlight micro-interaction
+        document.querySelector('input[placeholder="Search tenants or modules..."]').addEventListener('focus', function() {
+            this.parentElement.classList.add('w-[500px]');
+        });
+        document.querySelector('input[placeholder="Search tenants or modules..."]').addEventListener('blur', function() {
+            this.parentElement.classList.remove('w-[500px]');
+        });
+    </script>
+</body></html>

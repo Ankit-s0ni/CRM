@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Super Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary": "#703a00",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#934e00",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "secondary-fixed-dim": "#62df7d",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "primary-container": "#4f46e5",
+                    "on-surface": "#1b1b24",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "background": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "surface-tint": "#4d44e3",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-bright": "#fcf8ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "12px",
+                    "xl": "16px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "container-max": "1440px",
+                    "base": "8px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chart-container { position: relative; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- Sidebar Navigation Shell -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container dark:bg-inverse-surface flex flex-col py-lg z-50 shadow-md">
+<div class="px-lg mb-xl">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-inverse-primary">IndigoHR</h1>
+<p class="font-label-md text-label-md text-on-primary-container/80">Super Admin</p>
+</div>
+<nav class="flex-1 px-sm space-y-xs overflow-y-auto">
+<!-- Active Link -->
+<a class="flex items-center gap-md px-md py-sm rounded-lg border-l-4 border-secondary text-on-primary bg-primary/20 transition-all duration-150 scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">business</span>
+<span class="font-label-md text-label-md">Tenants</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">subscriptions</span>
+<span class="font-label-md text-label-md">Plans</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-label-md text-label-md">Modules</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Audit Logs</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span class="font-label-md text-label-md">Health</span>
+</a>
+</nav>
+<div class="px-sm mt-auto space-y-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col relative overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="h-16 flex items-center justify-between px-lg bg-surface shadow-sm z-40 sticky top-0">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 font-body-md text-body-md focus:ring-2 focus:ring-primary outline-none" placeholder="Search tenants, employees or logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-md ml-md border-l border-outline-variant pl-lg">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Ahmed Al-Bakri</p>
+<p class="text-[10px] uppercase tracking-wider text-outline">Super Admin</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="A professional headshot of an Omani business executive in traditional attire, smiling confidently. High-end portrait photography style, soft studio lighting, corporate background with subtle indigo and slate blue tones consistent with a premium HR software dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCiEl_1KXSl4YXfDRxNHgJDltJLV1qLB5nW9XYjeSC7j5DqgehrLzEsKKxFRrvT1b4j3GfuwqPbAwCrvI1eXZ7NC7XN7quvbob5GxEg6yeArEqbArcqaFRSnk4RLRTtH3BcISffxVDhLxaHJoMT00QW1j8OlF9swtvhoIlTV-fW5g1R1oV130bCKdAAJWTBSYATdTxdFnK1Gmn-IvadcrgJvj8WK2IG2eSDHCpS8fDq2mPSW3x091aLFczkTOH6UAtfnE3R0JjGg"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-lg max-w-container-max mx-auto w-full space-y-lg relative">
+<!-- Atmospheric Background Element -->
+<div class="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<!-- Page Title Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Regional Operations Center</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time overview of the IndigoHR ecosystem in Muscat, Oman.</p>
+</div>
+<div class="flex gap-md">
+<button class="flex items-center gap-xs px-md py-2 bg-surface border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                        Last 30 Days
+                    </button>
+<button class="flex items-center gap-xs px-lg py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg transition-all scale-100 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export Report
+                    </button>
+</div>
+</div>
+<!-- Top Row: 4 KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+<!-- KPI 1 -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start mb-md">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+<span class="text-secondary font-label-md text-label-md bg-secondary-container/30 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+<div>
+<p class="text-outline font-label-md text-label-md mb-xs">Monthly Recurring Revenue</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">OMR 1,950</h3>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start mb-md">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">corporate_fare</span>
+</div>
+</div>
+<div>
+<p class="text-outline font-label-md text-label-md mb-xs">Active Tenants</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">87</h3>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start mb-md">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">groups</span>
+</div>
+</div>
+<div>
+<p class="text-outline font-label-md text-label-md mb-xs">Total Employees Managed</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">12,450</h3>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-error/20 bg-error-container/10 flex flex-col justify-between hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start mb-md">
+<div class="p-2 bg-error/10 rounded-lg">
+<span class="material-symbols-outlined text-error">report</span>
+</div>
+</div>
+<div>
+<p class="text-error font-label-md text-label-md mb-xs">Failed Payments</p>
+<h3 class="text-headline-md font-headline-md text-error">3</h3>
+</div>
+</div>
+</div>
+<!-- Middle: Charts Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Line Chart: Revenue -->
+<div class="lg:col-span-2 bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30">
+<div class="flex justify-between items-center mb-xl">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Revenue Last 12 Months</h4>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="w-3 h-3 bg-primary rounded-full"></span>
+<span class="text-label-sm font-label-sm text-outline">Current Year</span>
+</div>
+</div>
+</div>
+<div class="h-[300px] w-full flex items-end justify-between gap-2 px-4">
+<!-- Simulated Chart Bars -->
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[40%] transition-all hover:bg-primary/20" title="Jan: OMR 1,100"></div>
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[45%] transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[50%] transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[48%] transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[55%] transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/10 rounded-t-lg h-[62%] transition-all hover:bg-primary/20"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[70%] transition-all hover:bg-primary/30"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[68%] transition-all hover:bg-primary/30"></div>
+<div class="flex-1 bg-primary/30 rounded-t-lg h-[75%] transition-all hover:bg-primary/40"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg h-[82%] transition-all hover:bg-primary/50"></div>
+<div class="flex-1 bg-primary/50 rounded-t-lg h-[88%] transition-all hover:bg-primary/60"></div>
+<div class="flex-1 bg-primary rounded-t-lg h-full transition-all hover:brightness-110"></div>
+</div>
+<div class="flex justify-between px-4 mt-md text-label-sm font-label-sm text-outline uppercase tracking-wider">
+<span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+</div>
+</div>
+<!-- Donut Chart: Tenants by Plan -->
+<div class="bg-surface p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-xl">Tenants by Plan</h4>
+<div class="flex-1 flex flex-col items-center justify-center relative">
+<!-- Custom Donut visualization using Conic Gradient -->
+<div class="w-48 h-48 rounded-full border-[16px] border-transparent" style="background: conic-gradient(#3525cd 0% 45%, #62df7d 45% 80%, #ffd2b1 80% 100%); mask-image: radial-gradient(circle at center, transparent 65%, black 66%); -webkit-mask-image: radial-gradient(circle at center, transparent 65%, black 66%);"></div>
+<div class="absolute flex flex-col items-center">
+<span class="font-headline-md text-headline-md text-on-surface">87</span>
+<span class="text-label-sm font-label-sm text-outline uppercase">Total</span>
+</div>
+</div>
+<div class="space-y-md mt-lg">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="w-3 h-3 bg-primary rounded-full"></span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Enterprise Plan</span>
+</div>
+<span class="text-body-sm font-body-sm font-semibold">39 (45%)</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="w-3 h-3 bg-secondary-fixed-dim rounded-full"></span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Pro Plan</span>
+</div>
+<span class="text-body-sm font-body-sm font-semibold">31 (35%)</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="w-3 h-3 bg-on-tertiary-container rounded-full"></span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Basic Plan</span>
+</div>
+<span class="text-body-sm font-body-sm font-semibold">17 (20%)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Panels -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Recent Signups Table -->
+<div class="lg:col-span-2 bg-surface rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<div class="p-lg border-b border-outline-variant/30 flex justify-between items-center">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Recent Signups</h4>
+<a class="text-primary font-label-md text-label-md hover:underline" href="#">View All</a>
+</div>
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/20">
+<th class="px-lg py-md text-label-sm font-label-sm text-outline uppercase">Company</th>
+<th class="px-lg py-md text-label-sm font-label-sm text-outline uppercase">Plan</th>
+<th class="px-lg py-md text-label-sm font-label-sm text-outline uppercase">Date</th>
+<th class="px-lg py-md text-label-sm font-label-sm text-outline uppercase">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">OL</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Oman Logistics S.A.O.C</p>
+<p class="text-[10px] text-outline">Muscat, OM</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Enterprise</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Oct 24, 2023</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-secondary-container/30 text-on-secondary-container rounded-full text-xs font-semibold">Active</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-xs">GT</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Gulf Tech Solutions</p>
+<p class="text-[10px] text-outline">Sohar, OM</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Pro</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Oct 22, 2023</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-semibold">Pending</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">MA</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Mazoon Agribusiness</p>
+<p class="text-[10px] text-outline">Nizwa, OM</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Basic</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Oct 21, 2023</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-secondary-container/30 text-on-secondary-container rounded-full text-xs font-semibold">Active</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded bg-inverse-primary text-primary flex items-center justify-center font-bold text-xs">BM</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Bank Muscat (Contractors)</p>
+<p class="text-[10px] text-outline">Muscat, OM</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Enterprise</td>
+<td class="px-lg py-md font-body-sm text-body-sm">Oct 19, 2023</td>
+<td class="px-lg py-md">
+<span class="px-sm py-1 bg-secondary-container/30 text-on-secondary-container rounded-full text-xs font-semibold">Active</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- System Health Panel -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant/30 flex flex-col">
+<div class="p-lg border-b border-outline-variant/30">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">System Health</h4>
+</div>
+<div class="p-lg flex-1">
+<ul class="space-y-lg">
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="w-2.5 h-2.5 bg-secondary rounded-full ring-4 ring-secondary/20"></span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">API Latency</p>
+<p class="text-xs text-outline">Cluster-01, Cluster-02</p>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-semibold">24ms</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="w-2.5 h-2.5 bg-secondary rounded-full ring-4 ring-secondary/20"></span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">GPS Ingestion Queue</p>
+<p class="text-xs text-outline">Processing attendance signals</p>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-semibold">Healthy</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="w-2.5 h-2.5 bg-tertiary rounded-full ring-4 ring-tertiary/20"></span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Payment Gateway</p>
+<p class="text-xs text-outline">Thawani API Response</p>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-tertiary font-semibold">Slow</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="w-2.5 h-2.5 bg-secondary rounded-full ring-4 ring-secondary/20"></span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Push Delivery</p>
+<p class="text-xs text-outline">Firebase &amp; SMS Gateway</p>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-semibold">100%</span>
+</li>
+</ul>
+<div class="mt-xl p-md bg-surface-container-low rounded-lg border border-outline-variant/30">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-[18px] text-primary">info</span>
+<span class="font-label-sm text-label-sm text-primary">Maintenance Notice</span>
+</div>
+<p class="text-[12px] text-on-surface-variant">Scheduled maintenance for Payroll Engine on Sunday, 02:00 AM GST.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- FAB for Quick Actions (Suppressed on details, but keeping for dashboard relevance) -->
+<button class="fixed bottom-lg right-lg w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined">add</span>
+</button>
+</main>
+<script>
+        // Micro-interaction for hover states and subtle animations
+        document.querySelectorAll('.hover\\:translate-y-\\[-4px\\]').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = 'rgba(53, 37, 205, 0.4)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = 'rgba(119, 117, 135, 0.1)';
+            });
+        });
+    </script>
+</body></html>

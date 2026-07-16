@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAuthStore } from "@/lib/auth-store";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 function getStrength(password: string) {
   const checks = [
@@ -119,8 +120,8 @@ export function PasswordResetForm() {
 
         setMessage("If the account exists, a reset link has been queued.");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Something went wrong.");
+    } catch (error: unknown) {
+      setError(getApiErrorMessage(error, "Something went wrong."));
     } finally {
       setLoading(false);
     }

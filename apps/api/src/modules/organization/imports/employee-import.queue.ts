@@ -1,5 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { Job, Queue, Worker } from 'bullmq';
+import { Queue } from 'bullmq';
 import { EmployeeImportProcessor } from './employee-import.processor';
 
 export type EmployeeImportJobData = { tenantId: string; importJobId: string };
@@ -7,7 +7,6 @@ export type EmployeeImportJobData = { tenantId: string; importJobId: string };
 @Injectable()
 export class EmployeeImportQueue implements OnModuleInit, OnModuleDestroy {
   private queue?: Queue<EmployeeImportJobData>;
-  private worker?: Worker<EmployeeImportJobData>;
 
   constructor(private readonly processor: EmployeeImportProcessor) {}
 
@@ -17,11 +16,6 @@ export class EmployeeImportQueue implements OnModuleInit, OnModuleDestroy {
     this.queue = new Queue<EmployeeImportJobData>('employee-imports', {
       connection,
     });
-    this.worker = new Worker<EmployeeImportJobData>(
-      'employee-imports',
-      (job: Job<EmployeeImportJobData>) => this.processor.process(job.data),
-      { connection, concurrency: 2 },
-    );
   }
 
   async enqueue(data: EmployeeImportJobData) {
@@ -36,7 +30,6 @@ export class EmployeeImportQueue implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    await this.worker?.close();
     await this.queue?.close();
   }
 
@@ -47,7 +40,7 @@ export class EmployeeImportQueue implements OnModuleInit, OnModuleDestroy {
     return process.env.NODE_ENV === 'test';
   }
 
-  private connection() {
+  connection() {
     const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379');
     return {
       host: url.hostname,

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAuthStore } from "@/lib/auth-store";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -66,8 +67,8 @@ export function LoginForm() {
       setAuth(user, accessToken, refreshToken);
       clearPendingAuth();
       router.push("/dashboard");
-    } catch (err: any) {
-      const message = err.response?.data?.message;
+    } catch (error: unknown) {
+      const message = getApiErrorMessage(error, "Invalid email or password");
 
       if (message === "Tenant is suspended. Please contact billing." || message === "User account is suspended") {
         const params = new URLSearchParams({ code: "TENANT_SUSPENDED" });
@@ -83,11 +84,7 @@ export function LoginForm() {
         return;
       }
 
-      if (message) {
-        setError(message);
-      } else {
-        setError("Invalid email or password");
-      }
+      setError(message);
     } finally {
       setLoading(false);
     }

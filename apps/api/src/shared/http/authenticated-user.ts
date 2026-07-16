@@ -3,4 +3,7 @@ export interface AuthenticatedUser {
   tenantId: string;
   email: string;
   roles: string[];
+  impersonationSessionId?: string;
+  impersonationPlatformUserId?: string;
+  impersonationScopes?: string[];
 }

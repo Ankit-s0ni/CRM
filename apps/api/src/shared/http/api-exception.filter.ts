@@ -4,8 +4,13 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import {
+  ERROR_REPORTER,
+  type ErrorReporter,
+} from '../observability/observability.port';
 
 interface ExceptionBody {
   code?: string;
@@ -15,6 +20,10 @@ interface ExceptionBody {
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  constructor(
+    @Inject(ERROR_REPORTER) private readonly errorReporter: ErrorReporter,
+  ) {}
+
   catch(exception: unknown, host: ArgumentsHost) {
     const context = host.switchToHttp();
     const request = context.getRequest<Request>();
@@ -25,6 +34,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const exceptionBody = this.getExceptionBody(exception);
     const requestId = String(request.headers['x-request-id'] ?? '');
+
+    if (status >= 500) {
+      this.errorReporter.captureException(exception, {
+        requestId,
+        path: request.originalUrl,
+      });
+    }
 
     response.status(status).json({
       statusCode: status,

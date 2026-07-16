@@ -77,6 +77,12 @@ export class PermissionsGuard implements CanActivate {
         role.permissions.map(({ permission }) => permission.key),
       ),
     );
+    if (request.user.impersonationSessionId) {
+      const scopes = new Set(request.user.impersonationScopes ?? []);
+      for (const permission of [...granted]) {
+        if (!scopes.has(permission)) granted.delete(permission);
+      }
+    }
 
     const hasAll =
       !required?.length ||

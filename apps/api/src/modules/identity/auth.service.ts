@@ -377,11 +377,21 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    if (storedToken.revokedAt || storedToken.expiresAt < new Date()) {
+    if (storedToken.revokedAt) {
       if (storedToken.familyId) {
         await this.revokeTokenFamily(
           storedToken.familyId,
-          storedToken.revokedReason ?? RevokeReason.REUSE_DETECTED,
+          RevokeReason.REUSE_DETECTED,
+        );
+      }
+      throw new UnauthorizedException('Refresh token expired or revoked');
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      if (storedToken.familyId) {
+        await this.revokeTokenFamily(
+          storedToken.familyId,
+          storedToken.revokedReason ?? RevokeReason.LOGOUT,
         );
       }
       throw new UnauthorizedException('Refresh token expired or revoked');

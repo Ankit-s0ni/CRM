@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tenant Detail - Oman Tech Solutions | IndigoHR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(228, 225, 238, 0.5);
+        }
+        .sparkline-container {
+            height: 40px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .spark-bar {
+            background-color: #3525cd;
+            width: 4px;
+            border-radius: 1px;
+            transition: height 0.3s ease;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#f3effc",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#ffd2b1",
+                      "surface-variant": "#e4e1ee",
+                      "surface-container-highest": "#e4e1ee",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#c3c0ff",
+                      "tertiary": "#703a00",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "tertiary-container": "#934e00",
+                      "surface-container-high": "#eae6f4",
+                      "primary": "#3525cd",
+                      "on-primary-container": "#dad7ff",
+                      "surface": "#fcf8ff",
+                      "on-secondary-fixed-variant": "#005320",
+                      "surface-dim": "#dcd8e5",
+                      "surface-container-low": "#f5f2ff",
+                      "primary-fixed": "#e2dfff",
+                      "on-surface-variant": "#464555",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "surface-container": "#f0ecf9",
+                      "secondary-fixed-dim": "#62df7d",
+                      "secondary": "#006e2d",
+                      "outline": "#777587",
+                      "primary-container": "#4f46e5",
+                      "on-surface": "#1b1b24",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#7ffc97",
+                      "on-secondary-fixed": "#002109",
+                      "inverse-surface": "#302f39",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "on-primary-fixed": "#0f0069",
+                      "on-background": "#1b1b24",
+                      "background": "#fcf8ff",
+                      "on-secondary-container": "#007230",
+                      "surface-tint": "#4d44e3",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-bright": "#fcf8ff",
+                      "outline-variant": "#c7c4d8",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#7cf994"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "3xl": "64px",
+                      "container-max": "1440px",
+                      "base": "8px",
+                      "2xl": "48px",
+                      "xs": "4px",
+                      "sidebar-width": "280px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface min-h-screen">
+<!-- Side Navigation Shell (from JSON) -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container shadow-md flex flex-col py-lg z-50">
+<div class="px-lg mb-xl">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">IndigoHR</h1>
+<p class="font-label-md text-label-md text-on-primary-container/80">Super Admin</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping from JSON -->
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md border-l-4 border-secondary text-on-primary bg-primary/20" href="#">
+<span class="material-symbols-outlined">business</span>
+<span class="font-label-md text-label-md">Tenants</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">subscriptions</span>
+<span class="font-label-md text-label-md">Plans</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-label-md text-label-md">Modules</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Audit Logs</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span class="font-label-md text-label-md">Health</span>
+</a>
+</nav>
+<div class="px-lg pt-xl border-t border-on-primary/10 space-y-1">
+<a class="flex items-center gap-md py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md py-md text-on-primary/70 hover:bg-primary/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width min-h-screen">
+<!-- Top Bar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface shadow-sm flex justify-between items-center px-lg z-40">
+<div class="flex items-center bg-surface-container-low px-md py-1.5 rounded-lg w-96 border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant mr-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full" placeholder="Search tenants, logs, or settings..." type="text"/>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-md border-l border-outline-variant/30 pl-lg">
+<div class="text-right">
+<p class="font-label-md text-on-surface leading-none">Ananya Sharma</p>
+<p class="text-xs text-on-surface-variant">Super Admin</p>
+</div>
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20" data-alt="A professional headshot of a female HR executive with a friendly smile, set against a blurred modern office background with soft lighting. She is wearing a professional navy blazer. The overall aesthetic is high-trust, corporate, and clean, matching the IndigoHR brand colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCEX4d4sPOeFJLlLqxdc-qtVpEPC7rT9wMgpyyXHiBCUbCE6nJp-1tvk_cJXTVRi4U4ODeqCq2vl9pFL40TrClqsZwITk8c5FHjeQy4dgIejeKzGK8YBkFZGzZoWBpWyl34E2iTByr64WexAsELH9W0Dtk2hkEU_kenl3ua4-MJrOF-OAzLK-cVkjQcxFOQYRiDzT6HU3O0UVkISVmXYK7TNkpyKjepPDcyyqTNwDbammrS9LgBGPIeE4gc3vveKHQ4Xap_Nabog"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="pt-24 px-gutter pb-xl max-w-container-max mx-auto">
+<!-- Impersonation Banner -->
+<div class="mb-lg bg-tertiary-fixed text-on-tertiary-fixed px-lg py-3 rounded-xl flex items-center justify-between border border-tertiary/20 animate-pulse-subtle">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<p class="font-label-md">Impersonation session active — acting as <span class="font-bold">admin@omantech.om</span> (ends in 28:14)</p>
+</div>
+<button class="bg-on-tertiary-fixed text-white px-md py-1 rounded-lg font-label-sm hover:opacity-90 transition-opacity">Exit Session</button>
+</div>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-lg mb-xl">
+<div class="flex items-start gap-xl">
+<div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-outline-variant p-4">
+<img class="w-full h-full object-contain" data-alt="A minimalist logo for Oman Tech Solutions featuring a stylized abstract falcon in deep teal and gold, representing innovation and heritage. The background is a crisp white. The style is modern, professional, and corporate, emphasizing stability and tech-forward thinking." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASN_AHHgXyz8ditSQ-SIXvqVbnByUQ21jUUg7p25qTHH90q26EF8a46Q23a3wwyCNRFmTrpRDBzdHBll08kibRnWEiY-UcT4YUhTKXMvvzyvAUYFs7v5lD6Ln920mIldQAnF-uOLZIkz9Ney6HOEAlmjfeUL5AWt8U2V3OiRBAZH_CH2_5nQ9c9VdFDAG0EDVfo8y1EKhgpvE5UXdtvxc8EpS7XlzTlQs2_ZaClXtgPZl-JzkvzSycMoetYXaReD164RJM6Po0CA"/>
+</div>
+<div class="pt-2">
+<div class="flex items-center gap-md mb-xs">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Oman Tech Solutions</h2>
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                Active
+                            </span>
+</div>
+<div class="flex items-center gap-md text-on-surface-variant">
+<a class="font-label-md text-primary hover:underline flex items-center gap-1" href="#">
+                                omantech.indigohr.io
+                                <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+<span class="text-outline-variant">•</span>
+<span class="text-body-sm">Created Oct 12, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-2 px-lg py-2.5 bg-primary text-on-primary rounded-xl font-label-md shadow-md hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+                        Impersonate Admin
+                    </button>
+<button class="flex items-center gap-2 px-lg py-2.5 bg-surface-container-highest text-error rounded-xl font-label-md hover:bg-error-container transition-all">
+<span class="material-symbols-outlined">block</span>
+                        Suspend
+                    </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant mb-xl">
+<button class="px-xl py-4 border-b-2 border-primary text-primary font-bold transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">overview</span>
+                    Overview
+                </button>
+<button class="px-xl py-4 text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">subscriptions</span>
+                    Subscription
+                </button>
+<button class="px-xl py-4 text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">extension</span>
+                    Modules
+                </button>
+<button class="px-xl py-4 text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">receipt_long</span>
+                    Invoices
+                </button>
+<button class="px-xl py-4 text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                    Audit Trail
+                </button>
+</div>
+<!-- Bento Content Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
+<!-- Info Card: Plan -->
+<div class="glass-card p-lg rounded-2xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-md">
+<span class="text-on-surface-variant font-label-md">Current Plan</span>
+<span class="material-symbols-outlined text-primary">workspace_premium</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-xs">Enterprise Plus</h3>
+<p class="text-body-sm text-on-surface-variant">Billed Annually • $2,400/mo</p>
+</div>
+<button class="mt-lg text-primary font-label-md hover:underline flex items-center gap-1">
+                        View Plan Details
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Info Card: Seats -->
+<div class="glass-card p-lg rounded-2xl shadow-sm">
+<div class="flex items-center justify-between mb-md">
+<span class="text-on-surface-variant font-label-md">License Usage</span>
+<span class="material-symbols-outlined text-secondary">group</span>
+</div>
+<div class="flex items-end justify-between mb-sm">
+<h3 class="font-headline-sm text-headline-sm">142<span class="text-on-surface-variant text-body-lg font-normal"> / 200</span></h3>
+<span class="text-secondary font-bold text-xs">71% Used</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 71%"></div>
+</div>
+<p class="mt-md text-xs text-on-surface-variant">58 seats remaining for this billing cycle.</p>
+</div>
+<!-- Info Card: Quick Info Cluster -->
+<div class="glass-card p-lg rounded-2xl shadow-sm space-y-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant">calendar_month</span>
+<span class="text-body-sm text-on-surface-variant">Next Billing</span>
+</div>
+<span class="font-label-md">Nov 12, 2024</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+<span class="text-body-sm text-on-surface-variant">Timezone</span>
+</div>
+<span class="font-label-md">(GMT+4) Muscat</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant">language</span>
+<span class="text-body-sm text-on-surface-variant">Region</span>
+</div>
+<span class="font-label-md">Middle East</span>
+</div>
+</div>
+<!-- Usage Sparkline Card (Full Width Span) -->
+<div class="md:col-span-2 glass-card p-lg rounded-2xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-lg">
+<div>
+<h4 class="font-label-md text-on-surface-variant">Daily Active Employees (DAE)</h4>
+<p class="text-xs text-on-surface-variant">Platform engagement over the last 30 days</p>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm">118</span>
+<span class="text-secondary text-xs block font-bold">+12% vs last month</span>
+</div>
+</div>
+<div class="sparkline-container items-end h-24">
+<!-- Simulated Sparkline Bars -->
+<div class="spark-bar flex-1" style="height: 45%"></div>
+<div class="spark-bar flex-1" style="height: 55%"></div>
+<div class="spark-bar flex-1" style="height: 40%"></div>
+<div class="spark-bar flex-1" style="height: 65%"></div>
+<div class="spark-bar flex-1" style="height: 70%"></div>
+<div class="spark-bar flex-1" style="height: 60%"></div>
+<div class="spark-bar flex-1" style="height: 80%"></div>
+<div class="spark-bar flex-1" style="height: 75%"></div>
+<div class="spark-bar flex-1" style="height: 85%"></div>
+<div class="spark-bar flex-1" style="height: 90%"></div>
+<div class="spark-bar flex-1" style="height: 82%"></div>
+<div class="spark-bar flex-1" style="height: 70%"></div>
+<div class="spark-bar flex-1" style="height: 65%"></div>
+<div class="spark-bar flex-1" style="height: 78%"></div>
+<div class="spark-bar flex-1" style="height: 84%"></div>
+<div class="spark-bar flex-1" style="height: 92%"></div>
+<div class="spark-bar flex-1" style="height: 95%"></div>
+<div class="spark-bar flex-1" style="height: 88%"></div>
+<div class="spark-bar flex-1" style="height: 80%"></div>
+<div class="spark-bar flex-1" style="height: 72%"></div>
+<div class="spark-bar flex-1" style="height: 85%"></div>
+<div class="spark-bar flex-1" style="height: 98%"></div>
+<div class="spark-bar flex-1" style="height: 90%"></div>
+<div class="spark-bar flex-1" style="height: 85%"></div>
+<div class="spark-bar flex-1" style="height: 70%"></div>
+<div class="spark-bar flex-1" style="height: 75%"></div>
+<div class="spark-bar flex-1" style="height: 80%"></div>
+<div class="spark-bar flex-1" style="height: 85%"></div>
+<div class="spark-bar flex-1" style="height: 90%"></div>
+<div class="spark-bar flex-1" style="height: 100%"></div>
+</div>
+</div>
+<!-- Admin Contact Card -->
+<div class="glass-card p-lg rounded-2xl shadow-sm">
+<h4 class="font-label-md text-on-surface-variant mb-md">Primary Administrator</h4>
+<div class="flex items-center gap-md mb-lg">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A clean, professional headshot of an Arab businessman wearing a white Kandura, representing the local leadership of Oman Tech Solutions. He has a warm, confident expression. The photo is taken against a minimalist, high-end office background with natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkrBQYZ9o0-DiRddSkuRvXo9Kp8lJYHurxehLCFD7hnz6346-NL4ATFdLLcVt44pbLYosmYyIx-3UE3swL8OsPYwfs-iZ9Lp67C0cq8v9LQ0UbaM62hymexPeud7RrjzVGk3TAa2FWB0fn1NUVvBuCD1mon_y_NIpTPQsJTb_6vjw8qQ48EwREGbYcnWYab8k5Zzw0sufjuF3kXNB4SIZTOVy4qIC_uTkJ4vW0WAROihPjDOYKtHinoFIpEe1wRz6RKbbunC5l6w"/>
+<div>
+<p class="font-bold text-on-surface">Salim Al-Abri</p>
+<p class="text-xs text-on-surface-variant">salim.abri@omantech.om</p>
+</div>
+</div>
+<button class="w-full py-2 border border-outline rounded-lg font-label-md hover:bg-surface-container transition-colors">
+                        Contact via Email
+                    </button>
+</div>
+</div>
+<!-- Danger Zone Card -->
+<div class="bg-error-container/20 border border-error/20 rounded-2xl p-lg mt-xl overflow-hidden relative">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-error" style="font-size: 80px;">warning</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-error mb-sm">Danger Zone</h4>
+<p class="text-on-surface-variant mb-xl max-w-2xl">These actions are destructive and cannot be easily reversed. Please ensure you have authorization before proceeding.</p>
+<div class="flex flex-col md:flex-row gap-lg">
+<div class="flex-1 flex items-center justify-between p-md bg-white/50 border border-error/10 rounded-xl">
+<div>
+<p class="font-bold text-on-surface">Suspend Tenant</p>
+<p class="text-xs text-on-surface-variant">Immediately revokes all user access.</p>
+</div>
+<button class="px-lg py-2 bg-error text-on-error rounded-lg font-label-md hover:opacity-90 transition-opacity">
+                            Suspend
+                        </button>
+</div>
+<div class="flex-1 flex items-center justify-between p-md bg-white/50 border border-error/10 rounded-xl">
+<div>
+<p class="font-bold text-on-surface">Schedule Deletion</p>
+<p class="text-xs text-on-surface-variant">Removes all data after 30-day grace period.</p>
+</div>
+<button class="px-lg py-2 border border-error text-error rounded-lg font-label-md hover:bg-error/5 transition-colors">
+                            Schedule
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for sparkline hover
+        const bars = document.querySelectorAll('.spark-bar');
+        bars.forEach(bar => {
+            bar.addEventListener('mouseenter', () => {
+                bar.style.backgroundColor = '#4f46e5';
+            });
+            bar.addEventListener('mouseleave', () => {
+                bar.style.backgroundColor = '#3525cd';
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        const searchContainer = searchInput.parentElement;
+        searchInput.addEventListener('focus', () => {
+            searchContainer.classList.add('ring-2', 'ring-primary/20', 'border-primary/50');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchContainer.classList.remove('ring-2', 'ring-primary/20', 'border-primary/50');
+        });
+    </script>
+</body></html>

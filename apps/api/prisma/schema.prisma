@@ -68,6 +68,12 @@ enum PlatformRole {
   SUPPORT
 }
 
+enum ModuleAvailability {
+  AVAILABLE
+  COMING_SOON
+  DEPRECATED
+}
+
 enum SystemAlertType {
   PAYMENT_GATEWAY_DOWN
   QUEUE_LAG
@@ -105,6 +111,7 @@ enum TokenPurpose {
 
 enum RevokeReason {
   LOGOUT
+  ROTATED
   REUSE_DETECTED
   ADMIN
   PASSWORD_CHANGE
@@ -302,22 +309,26 @@ enum SecurityAlertType {
 
 // ---------------- PLATFORM / TENANCY ----------------
 model Tenant {
-  id                    String       @id @default(uuid(7)) @db.Uuid
-  companyName           String
-  subdomain             String       @unique
-  status                TenantStatus @default(TRIAL)
-  companyLogo           String?
-  suspendedAt           DateTime?
-  suspendedReason       String?
-  onboardingCompletedAt DateTime?
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  id                        String       @id @default(uuid(7)) @db.Uuid
+  companyName               String
+  subdomain                 String       @unique
+  status                    TenantStatus @default(TRIAL)
+  companyLogo               String?
+  suspendedAt               DateTime?
+  suspendedReason           String?
+  suspendedByPlatformUserId String?      @db.Uuid
+  onboardingIdempotencyKey  String?      @unique
+  onboardingRequestHash     String?
+  onboardingCompletedAt     DateTime?
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
 
   settings       TenantSettings?
   billingProfile TenantBillingProfile?
   users          User[]
   employees      Employee[]
 
+  @@index([status, createdAt])
   @@map("tenants")
 }
 
@@ -368,10 +379,17 @@ model TenantSubscription {
 }
 
 model Module {
-  id            String         @id @default(uuid(7)) @db.Uuid
-  key           String         @unique
-  name          String
-  tenantModules TenantModule[]
+  id             String             @id @default(uuid(7)) @db.Uuid
+  key            String             @unique
+  name           String
+  description    String?
+  icon           String?
+  availability   ModuleAvailability @default(AVAILABLE)
+  dependencyKeys String[]           @default([])
+  conflictKeys   String[]           @default([])
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  tenantModules  TenantModule[]
 
   @@map("modules")
 }
@@ -427,51 +445,149 @@ model PaymentTransaction {
 }
 
 model PlatformUser {
-  id             String                 @id @default(uuid(7)) @db.Uuid
-  email          String                 @unique
-  passwordHash   String
-  role           PlatformRole
-  mfaSecret      String?
-  mfaEnabled     Boolean                @default(false)
-  lastLoginAt    DateTime?
-  lastLoginIp    String?
-  status         UserStatus             @default(ACTIVE)
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
-  impersonations ImpersonationSession[]
+  id                String                    @id @default(uuid(7)) @db.Uuid
+  email             String                    @unique
+  passwordHash      String
+  role              PlatformRole
+  mfaSecret         String?
+  mfaEnabled        Boolean                   @default(false)
+  failedLoginCount  Int                       @default(0)
+  lockedUntil       DateTime?
+  passwordChangedAt DateTime?
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  status            UserStatus                @default(ACTIVE)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  impersonations    ImpersonationSession[]
+  authChallenges    PlatformAuthChallenge[]
+  sessions          PlatformSession[]
+  recoveryCodes     PlatformMfaRecoveryCode[]
 
   @@map("platform_users")
 }
 
-model ImpersonationSession {
+model PlatformAuthChallenge {
   id             String       @id @default(uuid(7)) @db.Uuid
   platformUserId String       @db.Uuid
-  tenantId       String       @db.Uuid
-  targetUserId   String       @db.Uuid
-  reason         String
-  startedAt      DateTime     @default(now())
-  endedAt        DateTime?
+  tokenHash      String       @unique
+  attemptCount   Int          @default(0)
   expiresAt      DateTime
-  ipAddress      String?
+  consumedAt     DateTime?
+  createdIp      String?
   userAgent      String?
-  platformUser   PlatformUser @relation(fields: [platformUserId], references: [id])
+  createdAt      DateTime     @default(now())
+  platformUser   PlatformUser @relation(fields: [platformUserId], references: [id], onDelete: Cascade)
+
+  @@index([platformUserId, expiresAt])
+  @@map("platform_auth_challenges")
+}
+
+model PlatformSession {
+  id             String                 @id @default(uuid(7)) @db.Uuid
+  platformUserId String                 @db.Uuid
+  mfaVerifiedAt  DateTime
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdIp      String?
+  userAgent      String?
+  createdAt      DateTime               @default(now())
+  lastSeenAt     DateTime               @default(now())
+  platformUser   PlatformUser           @relation(fields: [platformUserId], references: [id], onDelete: Cascade)
+  refreshTokens  PlatformRefreshToken[]
+  impersonations ImpersonationSession[]
+
+  @@index([platformUserId, revokedAt, expiresAt])
+  @@map("platform_sessions")
+}
+
+model PlatformRefreshToken {
+  id            String          @id @default(uuid(7)) @db.Uuid
+  sessionId     String          @db.Uuid
+  tokenHash     String          @unique
+  familyId      String          @db.Uuid
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  revokedReason RevokeReason?
+  createdIp     String?
+  userAgent     String?
+  createdAt     DateTime        @default(now())
+  session       PlatformSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, familyId, revokedAt])
+  @@map("platform_refresh_tokens")
+}
+
+model PlatformMfaRecoveryCode {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  platformUserId String       @db.Uuid
+  codeHash       String       @unique
+  usedAt         DateTime?
+  createdAt      DateTime     @default(now())
+  platformUser   PlatformUser @relation(fields: [platformUserId], references: [id], onDelete: Cascade)
+
+  @@index([platformUserId, usedAt])
+  @@map("platform_mfa_recovery_codes")
+}
+
+model PlatformPermission {
+  id              String                   @id @default(uuid(7)) @db.Uuid
+  key             String                   @unique
+  rolePermissions PlatformRolePermission[]
+
+  @@map("platform_permissions")
+}
+
+model PlatformRolePermission {
+  role         PlatformRole
+  permissionId String             @db.Uuid
+  permission   PlatformPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([role, permissionId])
+  @@map("platform_role_permissions")
+}
+
+model ImpersonationSession {
+  id                    String          @id @default(uuid(7)) @db.Uuid
+  platformUserId        String          @db.Uuid
+  platformSessionId     String          @db.Uuid
+  tenantId              String          @db.Uuid
+  targetUserId          String          @db.Uuid
+  tokenJti              String          @unique @db.Uuid
+  scopes                String[]        @default([])
+  reason                String
+  startedAt             DateTime        @default(now())
+  endedAt               DateTime?
+  endedReason           String?
+  endedByPlatformUserId String?         @db.Uuid
+  expiresAt             DateTime
+  ipAddress             String?
+  userAgent             String?
+  platformUser          PlatformUser    @relation(fields: [platformUserId], references: [id])
+  platformSession       PlatformSession @relation(fields: [platformSessionId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, startedAt])
+  @@index([platformUserId, endedAt, expiresAt])
+  @@index([targetUserId, endedAt, expiresAt])
   @@map("impersonation_sessions")
 }
 
 model SystemAlert {
-  id             String          @id @default(uuid(7)) @db.Uuid
-  alertType      SystemAlertType
-  severity       AlertSeverity
-  title          String
-  payload        Json?
-  tenantId       String?         @db.Uuid
-  status         AlertStatus     @default(OPEN)
-  acknowledgedBy String?         @db.Uuid
-  acknowledgedAt DateTime?
-  resolvedAt     DateTime?
-  createdAt      DateTime        @default(now())
+  id               String          @id @default(uuid(7)) @db.Uuid
+  alertType        SystemAlertType
+  severity         AlertSeverity
+  title            String
+  payload          Json?
+  tenantId         String?         @db.Uuid
+  status           AlertStatus     @default(OPEN)
+  acknowledgedBy   String?         @db.Uuid
+  acknowledgedAt   DateTime?
+  acknowledgedNote String?
+  resolvedBy       String?         @db.Uuid
+  resolvedAt       DateTime?
+  resolvedNote     String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   @@index([status, severity, createdAt])
   @@map("system_alerts")
@@ -481,6 +597,7 @@ model SystemAuditLog {
   id                     String   @id @default(uuid(7)) @db.Uuid
   actorPlatformUserId    String?  @db.Uuid
   impersonationSessionId String?  @db.Uuid
+  tenantId               String?  @db.Uuid
   action                 String
   module                 String
   oldValue               Json?
@@ -491,6 +608,9 @@ model SystemAuditLog {
   createdAt              DateTime @default(now())
 
   @@index([actorPlatformUserId, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([module, createdAt])
+  @@index([action, createdAt])
   @@map("system_audit_logs")
 }
 
@@ -1316,13 +1436,19 @@ model NotificationDelivery {
 
 // ---------------- INFRASTRUCTURE ----------------
 model OutboxEvent {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  tenantId    String?   @db.Uuid
-  eventKey    String
-  payload     Json
-  createdAt   DateTime  @default(now())
-  publishedAt DateTime?
+  id             String    @id @default(uuid(7)) @db.Uuid
+  tenantId       String?   @db.Uuid
+  eventKey       String
+  payload        Json
+  createdAt      DateTime  @default(now())
+  availableAt    DateTime  @default(now())
+  publishedAt    DateTime?
+  lockedAt       DateTime?
+  lockedBy       String?
+  attemptCount   Int       @default(0)
+  lastError      String?
+  deadLetteredAt DateTime?
 
-  @@index([publishedAt, createdAt])
+  @@index([publishedAt, deadLetteredAt, availableAt, createdAt], map: "outbox_events_delivery_idx")
   @@map("outbox_events")
 }

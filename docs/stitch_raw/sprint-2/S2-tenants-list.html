@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Tenants Management</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffd2b1",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary": "#703a00",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#934e00",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary-container": "#dad7ff",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005320",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "primary-fixed": "#e2dfff",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "secondary-fixed-dim": "#62df7d",
+                    "secondary": "#006e2d",
+                    "outline": "#777587",
+                    "primary-container": "#4f46e5",
+                    "on-surface": "#1b1b24",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#1b1b24",
+                    "background": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "surface-tint": "#4d44e3",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-bright": "#fcf8ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#7cf994"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "container-max": "1440px",
+                    "base": "8px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        body {
+            background-color: #fcf8ff;
+            color: #1b1b24;
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar-active-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #7cf994; /* Secondary color for contrast in dark sidebar */
+        }
+        /* Custom scrollbar for better UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e4e1ee;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c7c4d8;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- Shell Container -->
+<div class="flex h-screen w-full">
+<!-- SideNavBar (Shared Component) -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary-container dark:bg-inverse-surface flex flex-col py-lg z-50 shadow-md">
+<div class="px-lg mb-2xl">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-on-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">business_center</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">IndigoHR</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container/80 uppercase tracking-widest">Super Admin</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-md space-y-xs overflow-y-auto">
+<!-- Navigation Items -->
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg border-l-4 border-secondary text-on-primary bg-primary/20 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">business</span>
+<span>Tenants</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">subscriptions</span>
+<span>Plans</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>Billing</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span>Modules</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Audit Logs</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span>Health</span>
+</a>
+</nav>
+<div class="mt-auto px-md pt-lg border-t border-on-primary/10 space-y-xs">
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="group relative flex items-center gap-md px-md py-sm rounded-lg text-on-primary/70 hover:text-on-primary hover:bg-primary/10 transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-error-container">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width flex-1 flex flex-col min-h-screen overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="h-16 bg-surface shadow-sm flex justify-between items-center px-lg z-40 sticky top-0">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 font-body-md text-body-md focus:ring-2 focus:ring-primary transition-all" placeholder="Search tenants, subdomains, or IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md ml-lg">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-sm"></div>
+<div class="flex items-center gap-sm cursor-pointer hover:bg-surface-container-high p-1 pr-3 rounded-full transition-colors">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-sm">
+                            SA
+                        </div>
+<div class="hidden sm:block">
+<p class="font-label-md text-label-md text-on-surface">Admin</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 overflow-y-auto bg-background p-lg space-y-lg">
+<!-- Page Header & Toolbar -->
+<div class="flex flex-col gap-lg md:flex-row md:items-center md:justify-between">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Tenants</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage organization accounts, subscriptions and operational status across Oman.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-sm px-lg py-md bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:shadow-lg active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+                            Create Tenant
+                        </button>
+</div>
+</div>
+<!-- Filters Bento -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30 flex flex-wrap items-center gap-md">
+<div class="flex items-center gap-sm border-r border-outline-variant pr-md mr-sm">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+<span class="font-label-md text-label-md text-on-surface">Filter By:</span>
+</div>
+<select class="bg-surface-container-low border-outline-variant/50 rounded-lg py-1.5 pl-3 pr-8 font-label-md text-label-md focus:ring-primary focus:border-primary">
+<option>All Statuses</option>
+<option>Trial</option>
+<option>Active</option>
+<option>Suspended</option>
+<option>Churned</option>
+</select>
+<select class="bg-surface-container-low border-outline-variant/50 rounded-lg py-1.5 pl-3 pr-8 font-label-md text-label-md focus:ring-primary focus:border-primary">
+<option>All Plans</option>
+<option>Basic</option>
+<option>Professional</option>
+<option>Enterprise</option>
+</select>
+<div class="flex-1"></div>
+<button class="flex items-center gap-sm text-primary font-label-md text-label-md hover:bg-primary/5 px-md py-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                        Reset Filters
+                    </button>
+</div>
+<!-- Tenants Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant/30 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/50">
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Company</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Subdomain</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Plan</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Usage</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">MRR (OMR)</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1: Active Enterprise -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-outline-variant/30 flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional minimalist company logo for an Omani technology firm, featuring abstract geometric shapes in deep blues and white, set against a clean white background. High-quality corporate branding aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe9ziXoLTk939AZtO7hwpsFSlY_q3gmDl7qXYHssPl9BGd3ViU4kq8ZBbdG9HKLoMJNGDKy_rwTwH-i7ehlwlNlGp90KhAY5MyH94z2NKtT9T6mqY3YVJF7SHDLlLCpW1-zHa83zO0RR9-oPA-9AjlS6YtJdHAh8IT4V3B0lVSDeY638MUy8mXNJum_1w_Wp71XMrOT68s9loB_RQDigPWZDaG8qyCYsj0HINCOVXggOph04m2eiTEZyv4dVonm_b2BRJU694gFQ"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Oman Data Park</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Created Jan 12, 2023</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface-variant">odp.indigohr.com</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-primary-fixed-dim/30 text-on-primary-fixed-variant rounded-full font-label-sm text-label-sm">Enterprise</span>
+</td>
+<td class="px-lg py-lg min-w-[180px]">
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface">142/200</span>
+<span class="text-on-surface-variant">71%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 71%"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface font-semibold">1,450.00</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-secondary-container/50 text-on-secondary-container rounded-full font-label-sm text-label-sm flex items-center gap-xs w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Active
+                                        </span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Past Due Trial -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-outline-variant/30 flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Corporate logo for Muscat Logistics, featuring a stylized eagle or shipment icon in desert gold and charcoal colors. Minimalist and authoritative branding for an Oman-based logistics company." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeiC6g4rO8C4HkmxO2jRB_Nvk7xPM1A5WwLMKhBaKTXg_NtfDAeceoojuEEDYfpuUxdz-52Lw2rCfdOTy9qwIu17-xRIP69NzRVsW60xQzvYl2hCPj3nWKGqrS82o1zaVb1yk4Ox5_4qt09yb-YN5hxxuQba5C3hEobeOY939IU_dw5K-N3hmzoK45B4qRM3P2htJN4TfvitkbwRtnmj_T1lS7Yw4gvMEDxcmqOCTktgnqol3fqSRMaWNWFWPx5psgx_HpkbVTJA"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Muscat Logistics</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Created Oct 24, 2023</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface-variant">muscat-log.indigohr.com</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-surface-variant text-on-surface-variant rounded-full font-label-sm text-label-sm">Basic</span>
+</td>
+<td class="px-lg py-lg min-w-[180px]">
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface">45/50</span>
+<span class="text-on-surface-variant">90%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 90%"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface font-semibold">250.00</td>
+<td class="px-lg py-lg">
+<div class="flex flex-col gap-xs">
+<span class="px-sm py-1 bg-tertiary-fixed/40 text-on-tertiary-fixed-variant rounded-full font-label-sm text-label-sm flex items-center gap-xs w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                                Trial
+                                            </span>
+<span class="text-[10px] bg-error-container text-on-error-container px-1.5 py-0.5 rounded font-bold uppercase w-fit">Past due</span>
+</div>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Suspended -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-outline-variant/30 flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Sleek branding for Salalah Retail Group, utilizing soft teal and grey tones in a clean modern typography. Reflective of high-end Middle Eastern retail and commerce, minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo6gsZfP1WbmiiZqE45fOGqu0VH6S-pcuFA_Cn5rwjk1WGtb5NtSSB_4_oAktlIY5KSJkfwfJXeIxc86SB6XdFX-oIEVHQkWgAZKZnemkKGNl6GvAK2OMQrxzfhaIRJ0NJz8yObfA7pM5aSCZbKvT5T8qx5gOhkcUdnBR8FWSuQMzKoTuLKuA4VKYBRG5_TEO1fTyFwdJ0z4vdpn9qnO470elxi87crqCXydobfyDA6vNOuaXbgSetMrnuFdki_RRdlb7eBWHQvQ"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Salalah Retail Group</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Created Mar 05, 2023</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface-variant">salalah-retail.indigohr.com</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-surface-variant text-on-surface-variant rounded-full font-label-sm text-label-sm">Professional</span>
+</td>
+<td class="px-lg py-lg min-w-[180px]">
+<div class="flex flex-col gap-xs opacity-50">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface">88/100</span>
+<span class="text-on-surface-variant">88%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface font-semibold">550.00</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-error-container/50 text-on-error-container rounded-full font-label-sm text-label-sm flex items-center gap-xs w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                            Suspended
+                                        </span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Active Professional -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-outline-variant/30 flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Branding for Sohar Industrial, featuring a robust industrial-inspired logo with silver and deep navy color scheme. Professional, reliable, and high-trust aesthetic for an Oman manufacturing company." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkdtaAYlbh-JbTE9Npc5BKhX6RHJTfShWDauZPrX_YhaG-O3oxu3Ul2uwrYzp5dkkorl1Hv86b0LMdGL0V4J28sPRjV_x4PbxG07SIQ3JTujkUOz5YyktpHAbIkPvhpjw4VybixiJIJiInENMRmIzUAmDCY4nhOaLSBwZ6XvoIaWpRjMKeAh7XrX6_r629eVt16W7IK0ueWVXqky5O15iQZc2P_rQ1PJ0OOENvHOXBq1c8pFQWQIzgUz8kDvd34dudDoyeS0wMjw"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Sohar Industrial</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Created Aug 18, 2023</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface-variant">sohar-ind.indigohr.com</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-surface-variant text-on-surface-variant rounded-full font-label-sm text-label-sm">Professional</span>
+</td>
+<td class="px-lg py-lg min-w-[180px]">
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface">12/100</span>
+<span class="text-on-surface-variant">12%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 12%"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg font-body-md text-body-md text-on-surface font-semibold">550.00</td>
+<td class="px-lg py-lg">
+<span class="px-sm py-1 bg-secondary-container/50 text-on-secondary-container rounded-full font-label-sm text-label-sm flex items-center gap-xs w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Active
+                                        </span>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-lg py-md bg-surface-container-low flex items-center justify-between border-t border-outline-variant/30">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 1 to 4 of 28 tenants</p>
+<div class="flex items-center gap-sm">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-label-sm text-label-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high font-label-sm text-label-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high font-label-sm text-label-sm">3</button>
+<span class="text-on-surface-variant px-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high font-label-sm text-label-sm">7</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Stats Overview Bento (Small) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-lg">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total MRR</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">14,250.00 OMR</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-lg">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Active Tenants</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">22 Companies</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 flex items-center gap-lg">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending Issues</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">3 Flagged</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Context Menu Placeholder Logic -->
+<div class="fixed hidden bg-surface-container-lowest border border-outline-variant/30 shadow-xl rounded-xl w-48 py-2 z-[100]" id="row-context-menu">
+<button class="w-full text-left px-md py-2 hover:bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-body-md">visibility</span>
+            View Details
+        </button>
+<button class="w-full text-left px-md py-2 hover:bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-body-md">login</span>
+            Impersonate
+        </button>
+<div class="my-1 border-t border-outline-variant/20"></div>
+<button class="w-full text-left px-md py-2 hover:bg-error-container text-error font-label-md text-label-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-body-md">block</span>
+            Suspend
+        </button>
+</div>
+<script>
+        // Simple Interaction logic for demo
+        document.querySelectorAll('table tr button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const menu = document.getElementById('row-context-menu');
+                const rect = btn.getBoundingClientRect();
+                menu.style.top = `${rect.bottom + 8}px`;
+                menu.style.left = `${rect.left - 160}px`;
+                menu.classList.toggle('hidden');
+                e.stopPropagation();
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.getElementById('row-context-menu').classList.add('hidden');
+        });
+
+        // Toggle Active State visuals
+        const navLinks = document.querySelectorAll('aside nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => {
+                    l.classList.remove('border-l-4', 'border-secondary', 'text-on-primary', 'bg-primary/20');
+                    l.classList.add('text-on-primary/70');
+                });
+                link.classList.add('border-l-4', 'border-secondary', 'text-on-primary', 'bg-primary/20');
+                link.classList.remove('text-on-primary/70');
+            });
+        });
+    </script>
+</body></html>

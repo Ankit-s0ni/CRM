@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form";
+import { Suspense } from "react";
 
 export default function LoginPage() {
   return (
@@ -22,7 +23,9 @@ export default function LoginPage() {
         </div>
 
         {/* Modular LoginForm Component */}
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
 
         {/* Secondary Section: Illustrative Visual */}
         <div className="mt-2xl w-full grid grid-cols-2 gap-md opacity-60 hidden md:grid">

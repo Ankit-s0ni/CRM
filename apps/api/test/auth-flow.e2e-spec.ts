@@ -152,12 +152,44 @@ describe('Auth flow integration', () => {
     });
     expect(verifiedUser?.emailVerifiedAt).toBeTruthy();
 
+    await expect(
+      TenantContextService.run({ tenantId }, () =>
+        authService.verifyToken(verifyToken, 'EMAIL_VERIFY'),
+      ),
+    ).rejects.toThrow();
+
     const loginResponse = await TenantContextService.run({ tenantId }, () =>
       authService.login(email, password, '127.0.0.1', 'jest'),
     );
 
     expect(loginResponse.accessToken).toBeTruthy();
     expect(loginResponse.refreshToken).toBeTruthy();
+
+    const rotatedSession = await TenantContextService.run({ tenantId }, () =>
+      authService.refresh(loginResponse.refreshToken, '127.0.0.1', 'jest'),
+    );
+    expect(rotatedSession.refreshToken).not.toBe(loginResponse.refreshToken);
+
+    await expect(
+      TenantContextService.run({ tenantId }, () =>
+        authService.refresh(loginResponse.refreshToken, '127.0.0.1', 'jest'),
+      ),
+    ).rejects.toThrow('Refresh token expired or revoked');
+    await expect(
+      TenantContextService.run({ tenantId }, () =>
+        authService.refresh(rotatedSession.refreshToken, '127.0.0.1', 'jest'),
+      ),
+    ).rejects.toThrow('Refresh token expired or revoked');
+
+    const replayedFamily = await adminPrisma.refreshToken.findMany({
+      where: { userId: loginResponse.user.id },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(replayedFamily).toHaveLength(2);
+    expect(replayedFamily.every(({ revokedAt }) => Boolean(revokedAt))).toBe(
+      true,
+    );
+    expect(replayedFamily.at(-1)?.revokedReason).toBe('REUSE_DETECTED');
 
     const workspaceStatus = await request(app.getHttpServer())
       .get('/workspace/status')
@@ -244,6 +276,19 @@ describe('Auth flow integration', () => {
       ),
     ).rejects.toThrow('Refresh token expired or revoked');
 
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await expect(
+        TenantContextService.run({ tenantId }, () =>
+          authService.login(email, 'WrongPassword!', '127.0.0.1', 'jest'),
+        ),
+      ).rejects.toThrow('Invalid credentials');
+    }
+    await expect(
+      TenantContextService.run({ tenantId }, () =>
+        authService.login(email, password, '127.0.0.1', 'jest'),
+      ),
+    ).rejects.toThrow('Account temporarily locked');
+
     const resetRequestResponse = await TenantContextService.run(
       { tenantId },
       () => authService.requestPasswordReset(email),
@@ -255,6 +300,12 @@ describe('Auth flow integration', () => {
     await TenantContextService.run({ tenantId }, () =>
       authService.resetPassword(resetToken, newPassword),
     );
+
+    await expect(
+      TenantContextService.run({ tenantId }, () =>
+        authService.resetPassword(resetToken, newPassword),
+      ),
+    ).rejects.toThrow();
 
     const reloginResponse = await TenantContextService.run({ tenantId }, () =>
       authService.login(email, newPassword, '127.0.0.1', 'jest'),

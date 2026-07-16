@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAuthStore } from "@/lib/auth-store";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 function sanitizeCode(value: string) {
   return value.replace(/\D/g, "").slice(0, 6);
@@ -78,8 +79,8 @@ export function VerifyEmailForm() {
       router.push(
         `/login?tenantId=${encodeURIComponent(tenantId)}&workspace=${encodeURIComponent(workspace)}&email=${encodeURIComponent(email)}`,
       );
-    } catch (err: any) {
-      setError(err.response?.data?.message || "We couldn't verify that code.");
+    } catch (error: unknown) {
+      setError(getApiErrorMessage(error, "We couldn't verify that code."));
     } finally {
       setLoading(false);
     }
@@ -114,8 +115,8 @@ export function VerifyEmailForm() {
 
       setResendMessage("A fresh verification code is ready.");
       setSecondsLeft(42);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Unable to resend the code right now.");
+    } catch (error: unknown) {
+      setError(getApiErrorMessage(error, "Unable to resend the code right now."));
     } finally {
       setResending(false);
     }
