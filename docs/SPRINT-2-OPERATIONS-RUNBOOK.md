@@ -4,6 +4,8 @@
 
 ```bash
 docker compose up -d --wait postgres redis minio
+# Existing PostgreSQL volumes only: provision the runtime role as postgres first.
+# psql -U postgres -d hrms_dev -f scripts/provision-platform-role.sql
 pnpm --filter api exec prisma migrate deploy
 pnpm --filter api exec prisma db seed
 pnpm dev:api
@@ -57,8 +59,10 @@ Alert decisions are state-checked. A resolved alert cannot be resolved or acknow
 ## Security boundaries
 
 - Tenant requests use `DATABASE_URL_APP` (`app_user`) and fail closed through RLS.
-- Platform repositories use the admin connection and never trust `x-tenant-id` as authority.
+- Platform repositories use `DATABASE_URL_PLATFORM` (`platform_runtime`) and never trust `x-tenant-id` as authority.
+- `app_admin` owns migrations and infrastructure operations; it is not the platform request-path connection.
 - `app_user` has no privileges on platform users/sessions/permissions, system alerts/audits, or impersonation sessions.
+- `platform_runtime` can append and read audit records but cannot update, delete, or truncate them.
 - Platform and impersonation JWTs have distinct issuers, audiences, and secrets.
 - Never place Stitch API keys, JWT secrets, MFA seeds, refresh tokens, or invitation tokens in logs or committed files.
 
@@ -69,7 +73,9 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm security:check
 pnpm test:e2e
+pnpm test:web:e2e
 pnpm openapi:generate
 git diff --exit-code -- docs/openapi.json packages/contracts/src/generated.ts
 ```

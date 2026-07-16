@@ -2,7 +2,11 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
-import type { PrismaTransaction } from '../../../shared/database/prisma.service';
+
+export type PlatformTransaction = Omit<
+  PrismaClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
 
 @Injectable()
 export class PlatformDatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -28,7 +32,7 @@ export class PlatformDatabaseService implements OnModuleInit, OnModuleDestroy {
     await this.pool.end();
   }
 
-  transaction<T>(callback: (tx: PrismaTransaction) => Promise<T>) {
+  transaction<T>(callback: (tx: PlatformTransaction) => Promise<T>) {
     return this.client.$transaction(async (tx) => callback(tx));
   }
 }

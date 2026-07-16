@@ -10,9 +10,11 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "pnpm --filter api test:e2e --runInBand",
+    "test:web:e2e": "pnpm --filter web test:e2e",
     "openapi:export": "pnpm --filter api openapi:export",
     "openapi:generate": "pnpm openapi:export && openapi-typescript docs/openapi.json -o packages/contracts/src/generated.ts",
-    "quality": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "security:check": "node scripts/security-check.mjs",
+    "quality": "pnpm security:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PlatformRole, Prisma, TenantStatus, UserStatus } from '@prisma/client';
+import { Prisma, TenantStatus, UserStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import type { PrismaTransaction } from '../../../shared/database/prisma.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
-import { PlatformDatabaseService } from '../platform-auth/platform-database.service';
+import {
+  PlatformDatabaseService,
+  type PlatformTransaction,
+} from '../platform-auth/platform-database.service';
 import { CreateImpersonationDto } from './dto/impersonation.dto';
 import { impersonationScopeViolation } from '../platform-policy';
 const MFA_FRESH_MS = 10 * 60 * 1000;
@@ -263,7 +265,7 @@ export class ImpersonationService {
   }
 
   private systemAudit(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     actor: AuthenticatedPlatformUser,
     metadata: Metadata,
     action: string,

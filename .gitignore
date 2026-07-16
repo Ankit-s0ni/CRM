@@ -10,3 +10,5 @@ coverage/
 .pnpm-store/
 apps/api/node_modules/
 apps/web/node_modules/
+apps/web/playwright-report/
+apps/web/test-results/

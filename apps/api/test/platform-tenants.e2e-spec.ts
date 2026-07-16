@@ -8,6 +8,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { generateTotp } from '../src/modules/platform/platform-auth/totp';
+import { OutboxService } from '../src/shared/events/outbox.service';
 
 type PlatformSession = { accessToken: string };
 type CreatedTenant = {
@@ -23,6 +24,7 @@ type CreatedTenant = {
 
 describe('Platform tenant lifecycle (e2e)', () => {
   let app: INestApplication<App>;
+  let failingApp: INestApplication<App>;
   let prisma: PrismaClient;
   let pool: Pool;
   let platformUserId = '';
@@ -45,6 +47,15 @@ describe('Platform tenant lifecycle (e2e)', () => {
     }).compile();
     app = moduleFixture.createNestApplication<INestApplication<App>>();
     await app.init();
+    failingApp = (
+      await Test.createTestingModule({ imports: [AppModule] })
+        .overrideProvider(OutboxService)
+        .useValue({
+          append: () => Promise.reject(new Error('Forced outbox failure')),
+        })
+        .compile()
+    ).createNestApplication<INestApplication<App>>();
+    await failingApp.init();
 
     pool = new Pool({
       connectionString:
@@ -88,6 +99,7 @@ describe('Platform tenant lifecycle (e2e)', () => {
       await prisma.platformUser.delete({ where: { id: supportUserId } });
     }
     await app.close();
+    await failingApp.close();
     await prisma.$disconnect();
     await pool.end();
   });
@@ -124,13 +136,14 @@ describe('Platform tenant lifecycle (e2e)', () => {
 
   async function platformSession(
     email = platformEmail,
+    targetApp = app,
   ): Promise<PlatformSession> {
-    const login = await request(app.getHttpServer())
+    const login = await request(targetApp.getHttpServer())
       .post('/platform/auth/login')
       .send({ email, password: platformPassword })
       .expect(200);
     const challenge = login.body as { challengeToken: string };
-    const verified = await request(app.getHttpServer())
+    const verified = await request(targetApp.getHttpServer())
       .post('/platform/auth/mfa/verify')
       .send({
         challengeToken: challenge.challengeToken,
@@ -139,6 +152,40 @@ describe('Platform tenant lifecycle (e2e)', () => {
       .expect(200);
     return verified.body as PlatformSession;
   }
+
+  it('rolls back every onboarding record after a late transaction failure', async () => {
+    const platform = await platformSession(platformEmail, failingApp);
+    const plan = await prisma.subscriptionPlan.findFirstOrThrow({
+      where: { name: 'Starter Trial' },
+    });
+    const rollbackSubdomain = `rollback-${stamp}`;
+    const rollbackEmail = `rollback-${stamp}@deltcrm.test`;
+    await request(failingApp.getHttpServer())
+      .post('/platform/tenants')
+      .set('Authorization', `Bearer ${platform.accessToken}`)
+      .set('Idempotency-Key', `rollback-onboarding-${stamp}`)
+      .send({
+        companyName: `Rollback Company ${stamp}`,
+        subdomain: rollbackSubdomain,
+        adminEmail: rollbackEmail,
+        planId: plan.id,
+        moduleKeys: ['ATTENDANCE'],
+        timezone: 'Asia/Kolkata',
+        seatCount: 10,
+      })
+      .expect(500);
+    expect(
+      await prisma.tenant.count({ where: { subdomain: rollbackSubdomain } }),
+    ).toBe(0);
+    expect(
+      await prisma.verificationToken.count({ where: { email: rollbackEmail } }),
+    ).toBe(0);
+    expect(
+      await prisma.outboxEvent.count({
+        where: { payload: { path: ['adminEmail'], equals: rollbackEmail } },
+      }),
+    ).toBe(0);
+  });
 
   it('provisions, manages, suspends, and reactivates a tenant safely', async () => {
     const platform = await platformSession();
@@ -196,6 +243,12 @@ describe('Platform tenant lifecycle (e2e)', () => {
     });
     expect(storedInvitation?.tokenHash).not.toBe(
       created.invitation.debugInvitationToken,
+    );
+    expect(storedInvitation?.expiresAt.getTime()).toBeGreaterThan(
+      Date.now() + 23 * 60 * 60 * 1000,
+    );
+    expect(storedInvitation?.expiresAt.getTime()).toBeLessThan(
+      Date.now() + 25 * 60 * 60 * 1000,
     );
 
     const replay = await request(app.getHttpServer())

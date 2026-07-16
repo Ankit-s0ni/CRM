@@ -11,9 +11,11 @@ import {
   TenantStatus,
 } from '@prisma/client';
 import { HealthService } from '../../../shared/health/health.service';
-import type { PrismaTransaction } from '../../../shared/database/prisma.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
-import { PlatformDatabaseService } from '../platform-auth/platform-database.service';
+import {
+  PlatformDatabaseService,
+  type PlatformTransaction,
+} from '../platform-auth/platform-database.service';
 import {
   ListSystemAlertsQueryDto,
   ListSystemAuditQueryDto,
@@ -282,7 +284,7 @@ export class PlatformOperationsService {
   }
 
   private async enrichAudit(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     logs: Array<
       { actorPlatformUserId: string | null; tenantId: string | null } & Record<
         string,

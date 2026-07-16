@@ -152,6 +152,11 @@ describe('Platform authentication (e2e)', () => {
     const session = await completeMfa(passwordResponse.challengeToken);
     expect(session.user.role).toBe('SUPER_ADMIN');
     expect(session.user.permissions).toContain('platform.tenants.lifecycle');
+    expect(
+      await prisma.platformRolePermission.count({
+        where: { role: 'SUPER_ADMIN' },
+      }),
+    ).toBeGreaterThan(0);
 
     await request(app.getHttpServer())
       .post('/platform/auth/mfa/verify')

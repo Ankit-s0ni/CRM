@@ -38,12 +38,12 @@ const navigation = [
 export function PlatformShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, accessToken, clearSession, impersonation, clearImpersonation } = usePlatformAuthStore();
+  const { user, accessToken, clearSession, impersonation, clearImpersonation, hasHydrated } = usePlatformAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!accessToken) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`);
-  }, [accessToken, pathname, router]);
+    if (hasHydrated && !accessToken) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`);
+  }, [accessToken, hasHydrated, pathname, router]);
 
   async function logout() {
     try {
@@ -60,7 +60,7 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
     finally { clearImpersonation(); }
   }
 
-  if (!accessToken) return <div className="min-h-screen bg-[#fcf8ff]" />;
+  if (!hasHydrated || !accessToken) return <div className="min-h-screen bg-[#fcf8ff]" />;
 
   return (
     <div className="min-h-screen bg-[#fcf8ff] text-[#1c1b1f]">

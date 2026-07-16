@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ServiceUnavailableException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
@@ -8,9 +8,11 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { generateTotp } from '../src/modules/platform/platform-auth/totp';
+import { HealthService } from '../src/shared/health/health.service';
 
 describe('Platform dashboard, audit, alerts and health (e2e)', () => {
   let app: INestApplication<App>;
+  let degradedApp: INestApplication<App>;
   let prisma: PrismaClient;
   let pool: Pool;
   const stamp = Date.now();
@@ -25,6 +27,28 @@ describe('Platform dashboard, audit, alerts and health (e2e)', () => {
       await Test.createTestingModule({ imports: [AppModule] }).compile()
     ).createNestApplication<INestApplication<App>>();
     await app.init();
+    degradedApp = (
+      await Test.createTestingModule({ imports: [AppModule] })
+        .overrideProvider(HealthService)
+        .useValue({
+          liveness: () => ({ status: 'ok' }),
+          dependencies: () =>
+            Promise.resolve({
+              database: { status: 'up', latencyMs: 4 },
+              redis: { status: 'down', latencyMs: 2001 },
+              objectStorage: { status: 'down', latencyMs: 2002 },
+            }),
+          readiness: () =>
+            Promise.reject(
+              new ServiceUnavailableException({
+                code: 'DEPENDENCY_UNAVAILABLE',
+                message: 'One or more required dependencies are unavailable',
+              }),
+            ),
+        })
+        .compile()
+    ).createNestApplication<INestApplication<App>>();
+    await degradedApp.init();
     pool = new Pool({
       connectionString:
         'postgresql://app_admin:admin_password@localhost:5433/hrms_dev?schema=public',
@@ -61,16 +85,21 @@ describe('Platform dashboard, audit, alerts and health (e2e)', () => {
     await prisma.systemAlert.deleteMany({ where: { id: alertId } });
     await prisma.platformUser.deleteMany({ where: { id: platformUserId } });
     await app.close();
+    await degradedApp.close();
     await prisma.$disconnect();
     await pool.end();
   });
 
   async function token() {
-    const login = await request(app.getHttpServer())
+    return tokenFor(app);
+  }
+
+  async function tokenFor(targetApp: INestApplication<App>) {
+    const login = await request(targetApp.getHttpServer())
       .post('/platform/auth/login')
       .send({ email, password })
       .expect(200);
-    const verified = await request(app.getHttpServer())
+    const verified = await request(targetApp.getHttpServer())
       .post('/platform/auth/mfa/verify')
       .send({
         challengeToken: (login.body as { challengeToken: string })
@@ -169,5 +198,23 @@ describe('Platform dashboard, audit, alerts and health (e2e)', () => {
           module: 'platform.operations',
         });
       });
+  });
+
+  it('reports deterministic Redis and object-storage degradation', async () => {
+    await request(degradedApp.getHttpServer()).get('/healthz').expect(200);
+    await request(degradedApp.getHttpServer()).get('/readyz').expect(503);
+    const accessToken = await tokenFor(degradedApp);
+    const response = await request(degradedApp.getHttpServer())
+      .get('/platform/health')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+    expect(response.body).toMatchObject({
+      status: 'degraded',
+      services: {
+        database: { status: 'up' },
+        redis: { status: 'down' },
+        objectStorage: { status: 'down' },
+      },
+    });
   });
 });

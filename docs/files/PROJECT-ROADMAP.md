@@ -6,14 +6,14 @@
 ## Detailed Sprint Plans
 
 - [Sprint index](../SPRINTS-IMPLEMENTATION-INDEX.md)
-- [Sprint 1: Organization and Administration](../SPRINT-1-IMPLEMENTATION.md)
-- [Sprint 2: Platform Owner Core and Operational Foundation](../SPRINT-2-IMPLEMENTATION.md)
-- [Sprint 3: Admin Web and Attendance Configuration](../SPRINT-3-IMPLEMENTATION.md)
-- [Sprint 4: Attendance Core and Web Runtime](../SPRINT-4-IMPLEMENTATION.md)
-- [Sprint 5: Mobile Trust and Verification](../SPRINT-5-IMPLEMENTATION.md)
-- [Sprint 6: Field Tracking and Offline Sync](../SPRINT-6-IMPLEMENTATION.md)
-- [Sprint 7: HR Operations, Notifications, Reports and Leave](../SPRINT-7-IMPLEMENTATION.md)
-- [Sprint 8: Billing, Revenue Operations and GA](../SPRINT-8-IMPLEMENTATION.md)
+- [Sprint 1: Organization and Administration](<../Sprint list /SPRINT-1-IMPLEMENTATION.md>)
+- [Sprint 2: Platform Owner Core and Operational Foundation](<../Sprint list /SPRINT-2-IMPLEMENTATION.md>)
+- [Sprint 3: Admin Web and Attendance Configuration](<../Sprint list /SPRINT-3-IMPLEMENTATION.md>)
+- [Sprint 4: Attendance Core and Web Runtime](<../Sprint list /SPRINT-4-IMPLEMENTATION.md>)
+- [Sprint 5: Mobile Trust and Verification](<../Sprint list /SPRINT-5-IMPLEMENTATION.md>)
+- [Sprint 6: Field Tracking and Offline Sync](<../Sprint list /SPRINT-6-IMPLEMENTATION.md>)
+- [Sprint 7: HR Operations, Notifications, Reports and Leave](<../Sprint list /SPRINT-7-IMPLEMENTATION.md>)
+- [Sprint 8: Billing, Revenue Operations and GA](<../Sprint list /SPRINT-8-IMPLEMENTATION.md>)
 
 The phase headings below group product capabilities, not strict delivery order. Core Phase 6.2 platform-owner capabilities are intentionally pulled into Sprint 2 because tenant provisioning, module control, support, audit and health are prerequisites for subsequent tenant-module delivery. Billing-dependent platform capabilities remain in Sprint 8.
 

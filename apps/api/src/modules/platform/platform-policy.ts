@@ -1,8 +1,4 @@
-import {
-  ModuleAvailability,
-  PlatformRole,
-  TenantStatus,
-} from '@prisma/client';
+import { ModuleAvailability, PlatformRole, TenantStatus } from '@prisma/client';
 
 const RESERVED_SUBDOMAINS = new Set([
   'admin',
@@ -41,7 +37,9 @@ export function normalizeWorkspaceInput(input: {
     companyName: input.companyName.trim(),
     subdomain: input.subdomain.trim().toLowerCase(),
     adminEmail: input.adminEmail.trim().toLowerCase(),
-    moduleKeys: [...new Set(input.moduleKeys.map((key) => key.trim().toUpperCase()))].sort(),
+    moduleKeys: [
+      ...new Set(input.moduleKeys.map((key) => key.trim().toUpperCase())),
+    ].sort(),
     timezone: input.timezone.trim(),
   };
 }

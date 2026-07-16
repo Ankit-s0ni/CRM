@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { ModuleAvailability, Prisma } from '@prisma/client';
 import { OutboxService } from '../../../shared/events/outbox.service';
-import type { PrismaTransaction } from '../../../shared/database/prisma.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
-import { PlatformDatabaseService } from '../platform-auth/platform-database.service';
+import {
+  PlatformDatabaseService,
+  type PlatformTransaction,
+} from '../platform-auth/platform-database.service';
 import {
   CreatePlatformModuleDto,
   ReplaceTenantModulesDto,
@@ -225,7 +227,7 @@ export class PlatformModulesService {
   }
 
   private async validateRules(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     key: string,
     dependencies: string[],
     conflicts: string[],
@@ -246,7 +248,7 @@ export class PlatformModulesService {
   }
 
   private async tenantModulesInTransaction(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     tenantId: string,
   ) {
     const modules = await tx.module.findMany({
@@ -262,7 +264,7 @@ export class PlatformModulesService {
     };
   }
 
-  private async assertTenant(tx: PrismaTransaction, id: string) {
+  private async assertTenant(tx: PlatformTransaction, id: string) {
     if (!(await tx.tenant.findUnique({ where: { id }, select: { id: true } })))
       this.notFound('Tenant');
   }
@@ -279,7 +281,7 @@ export class PlatformModulesService {
     });
   }
   private systemAudit(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     actor: AuthenticatedPlatformUser,
     metadata: RequestMetadata,
     action: string,

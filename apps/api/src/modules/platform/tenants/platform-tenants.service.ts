@@ -16,9 +16,11 @@ import {
   DEFAULT_ROLE_PERMISSIONS,
   PERMISSIONS,
 } from '../../../shared/authorization/permissions.constants';
-import type { PrismaTransaction } from '../../../shared/database/prisma.service';
 import { OutboxService } from '../../../shared/events/outbox.service';
-import { PlatformDatabaseService } from '../platform-auth/platform-database.service';
+import {
+  PlatformDatabaseService,
+  type PlatformTransaction,
+} from '../platform-auth/platform-database.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
   CreatePlatformTenantDto,
@@ -475,7 +477,7 @@ export class PlatformTenantsService {
     });
   }
 
-  private async detail(tx: PrismaTransaction, id: string) {
+  private async detail(tx: PlatformTransaction, id: string) {
     const tenant = await tx.tenant.findUnique({
       where: { id },
       include: { settings: true },
@@ -523,7 +525,7 @@ export class PlatformTenantsService {
   }
 
   private async filteredTenantIds(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     query: ListPlatformTenantsQueryDto,
   ) {
     let ids: Set<string> | null = null;
@@ -550,7 +552,7 @@ export class PlatformTenantsService {
     return ids ? [...ids] : null;
   }
 
-  private async provisionRoles(tx: PrismaTransaction, tenantId: string) {
+  private async provisionRoles(tx: PlatformTransaction, tenantId: string) {
     await tx.permission.createMany({
       data: Object.values(PERMISSIONS).map((key) => ({ key })),
       skipDuplicates: true,
@@ -580,7 +582,7 @@ export class PlatformTenantsService {
   }
 
   private audit(
-    tx: PrismaTransaction,
+    tx: PlatformTransaction,
     actor: AuthenticatedPlatformUser,
     metadata: RequestMetadata,
     action: string,

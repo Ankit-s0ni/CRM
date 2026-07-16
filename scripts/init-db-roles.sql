@@ -6,7 +6,7 @@
 -- app_user: the role the NestJS app connects as (NO BYPASSRLS)
 CREATE ROLE app_user LOGIN PASSWORD 'app_password';
 
--- app_admin: for migrations and super-admin portal (BYPASSRLS)
+-- app_admin: migration and infrastructure owner (BYPASSRLS)
 CREATE ROLE app_admin LOGIN PASSWORD 'admin_password' BYPASSRLS;
 
 -- Runtime-only connection for platform repositories.

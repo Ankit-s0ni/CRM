@@ -50,8 +50,19 @@ jobs:
       - name: Quality gates
         run: pnpm quality
 
+      - name: Start outbox worker
+        run: |
+          pnpm --filter api start:worker > /tmp/hrms-worker.log 2>&1 &
+          echo $! > /tmp/hrms-worker.pid
+
       - name: API end-to-end tests
         run: pnpm test:e2e
+
+      - name: Install browser runtime
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Platform visual and state tests
+        run: pnpm test:web:e2e
 
       - name: Verify generated API contracts have no drift
         run: |

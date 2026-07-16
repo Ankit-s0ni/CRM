@@ -7,10 +7,12 @@ type PlatformAuthState = {
   accessToken: string | null;
   refreshToken: string | null;
   impersonation: null | { sessionId: string; accessToken: string; expiresAt: string; targetEmail: string; workspaceName: string };
+  hasHydrated: boolean;
   setSession: (session: PlatformSessionResponse) => void;
   clearSession: () => void;
   setImpersonation: (value: NonNullable<PlatformAuthState["impersonation"]>) => void;
   clearImpersonation: () => void;
+  setHasHydrated: (value: boolean) => void;
 };
 
 export const usePlatformAuthStore = create<PlatformAuthState>()(
@@ -20,6 +22,7 @@ export const usePlatformAuthStore = create<PlatformAuthState>()(
       accessToken: null,
       refreshToken: null,
       impersonation: null,
+      hasHydrated: false,
       setSession: (session) =>
         set({
           user: session.user,
@@ -29,7 +32,12 @@ export const usePlatformAuthStore = create<PlatformAuthState>()(
       clearSession: () => set({ user: null, accessToken: null, refreshToken: null, impersonation: null }),
       setImpersonation: (impersonation) => set({ impersonation }),
       clearImpersonation: () => set({ impersonation: null }),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
-    { name: "deltcrm-platform-auth" },
+    {
+      name: "deltcrm-platform-auth",
+      partialize: ({ user, accessToken, refreshToken, impersonation }) => ({ user, accessToken, refreshToken, impersonation }),
+      onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
+    },
   ),
 );
