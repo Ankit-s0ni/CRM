@@ -1,0 +1,458 @@
+import {
+  ConflictException,
+  HttpException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { EventType, Prisma, PunchSource } from '@prisma/client';
+import { DateTime } from 'luxon';
+import { AuditService } from '../../../shared/audit/audit.service';
+import { PrismaService } from '../../../shared/database/prisma.service';
+import { OutboxService } from '../../../shared/events/outbox.service';
+import { TenantContextService } from '../../../shared/tenancy/tenant-context.service';
+import {
+  AttendanceDay,
+  AttendanceTransitionError,
+} from '../domain/attendance-day.aggregate';
+import { calculateAttendance } from '../domain/attendance-calculator';
+import { DateOnly } from '../domain/value-objects/date-only';
+import { TimeWindow } from '../domain/value-objects/time-window';
+import {
+  AttendanceContextService,
+  ResolvedAttendanceContext,
+} from './attendance-context.service';
+
+type PunchMetadata = {
+  requestId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+};
+
+@Injectable()
+export class AttendanceRuntimeService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly context: TenantContextService,
+    private readonly resolver: AttendanceContextService,
+    private readonly audit: AuditService,
+    private readonly outbox: OutboxService,
+  ) {}
+
+  punch(eventType: EventType, metadata: PunchMetadata, now = new Date()) {
+    const tenantId = this.requireTenantId();
+    const userId = this.requireUserId();
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await this.resolver.employeeForUser(tx, userId);
+      const runtime = await this.resolver.resolve(tx, employee, now);
+      this.assertEmployeeDate(runtime);
+      const initialLog = await tx.attendanceLog.upsert({
+        where: {
+          tenantId_employeeId_attendanceDate: {
+            tenantId,
+            employeeId: employee.id,
+            attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+          },
+        },
+        create: {
+          tenantId,
+          employeeId: employee.id,
+          attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+          appliedShiftId: runtime.appliedShiftId,
+          appliedPolicySnapshot: json(runtime.policy),
+          resolvedExceptionId: runtime.exceptionId,
+        },
+        update: {},
+      });
+      await tx.$queryRaw`SELECT id FROM attendance_logs WHERE id = ${initialLog.id}::uuid FOR UPDATE`;
+      const log = await tx.attendanceLog.findUniqueOrThrow({
+        where: { id: initialLog.id },
+        include: {
+          payrollLock: true,
+          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+        },
+      });
+      this.assertUnlocked(log);
+      const replay = metadata.requestId
+        ? log.events.find(
+            (event) => event.clientEventUuid === metadata.requestId,
+          )
+        : undefined;
+      if (replay) {
+        if (replay.eventType !== eventType) {
+          throw new ConflictException({
+            code: 'ATTENDANCE_EVENT_CONFLICT',
+            message:
+              'The request ID is already used by another attendance action',
+          });
+        }
+        return this.todayResponse(runtime, log, true, now);
+      }
+
+      const aggregate = this.restoreAggregate(log.events);
+      this.assertTransition(aggregate, eventType);
+      this.assertPunchWindow(runtime, eventType, now);
+      const event = await tx.attendanceEvent.create({
+        data: {
+          tenantId,
+          attendanceLogId: log.id,
+          employeeId: employee.id,
+          clientEventUuid: metadata.requestId,
+          eventType,
+          source: PunchSource.WEB,
+          eventTime: now,
+          ipAddress: metadata.ipAddress,
+          userAgent: metadata.userAgent,
+          createdBy: userId,
+        },
+      });
+      const calculation = calculateAttendance({
+        attendanceDate: runtime.attendanceDate.value,
+        timezone: runtime.timezone,
+        policy: runtime.policy,
+        shift: runtime.shift,
+        events: [...log.events, event].map(domainEvent),
+        exceptionType: runtime.exceptionType,
+        holiday: runtime.holiday,
+        weeklyOff: runtime.weeklyOff,
+        finalizing: false,
+        evaluationTime: now,
+      });
+      const updated = await tx.attendanceLog.update({
+        where: { id: log.id },
+        data: calculatedLogData(calculation, runtime),
+        include: {
+          payrollLock: true,
+          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+        },
+      });
+      await Promise.all([
+        this.audit.append(tx, {
+          tenantId,
+          action: `attendance.${eventKey(eventType)}`,
+          module: 'attendance',
+          entityType: 'AttendanceLog',
+          entityId: log.id,
+          newValue: {
+            eventId: event.id,
+            eventType,
+            attendanceDate: runtime.attendanceDate.value,
+          },
+        }),
+        this.outbox.append(tx, {
+          tenantId,
+          eventKey: `attendance.${eventKey(eventType)}`,
+          payload: {
+            attendanceLogId: log.id,
+            employeeId: employee.id,
+            attendanceDate: runtime.attendanceDate.value,
+            eventId: event.id,
+          },
+        }),
+      ]);
+      return this.todayResponse(runtime, updated, false, now);
+    });
+  }
+
+  today(now = new Date()) {
+    const userId = this.requireUserId();
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await this.resolver.employeeForUser(tx, userId);
+      const runtime = await this.resolver.resolve(tx, employee, now);
+      const log = await tx.attendanceLog.findFirst({
+        where: {
+          employeeId: employee.id,
+          attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+        },
+        include: {
+          payrollLock: true,
+          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+        },
+      });
+      return this.todayResponse(runtime, log, false, now);
+    });
+  }
+
+  history(month: string) {
+    const userId = this.requireUserId();
+    const range = monthRange(month);
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await this.resolver.employeeForUser(tx, userId);
+      const logs = await tx.attendanceLog.findMany({
+        where: {
+          employeeId: employee.id,
+          attendanceDate: { gte: range.start, lte: range.end },
+        },
+        orderBy: { attendanceDate: 'desc' },
+        select: {
+          id: true,
+          attendanceDate: true,
+          attendanceStatus: true,
+          firstCheckin: true,
+          lastCheckout: true,
+          totalWorkMinutes: true,
+          lateMinutes: true,
+          overtimeMinutes: true,
+          breakMinutes: true,
+          finalizedAt: true,
+          lockedAt: true,
+        },
+      });
+      return {
+        data: logs.map((log) => ({
+          ...log,
+          attendanceDate: log.attendanceDate.toISOString().slice(0, 10),
+        })),
+        summary: summarizeLogs(logs),
+      };
+    });
+  }
+
+  private todayResponse(
+    runtime: ResolvedAttendanceContext,
+    log: AttendanceLogWithEvents | null,
+    idempotent: boolean,
+    now: Date,
+  ) {
+    const calculation = calculateAttendance({
+      attendanceDate: runtime.attendanceDate.value,
+      timezone: runtime.timezone,
+      policy: runtime.policy,
+      shift: runtime.shift,
+      events: log?.events.map(domainEvent) ?? [],
+      exceptionType: runtime.exceptionType,
+      holiday: runtime.holiday,
+      weeklyOff: runtime.weeklyOff,
+      finalizing: !!log?.finalizedAt,
+      evaluationTime: now,
+    });
+    const state = AttendanceDay.restore(
+      log?.events.map(domainEvent) ?? [],
+    ).currentState;
+    return {
+      data: {
+        id: log?.id ?? null,
+        attendanceDate: runtime.attendanceDate.value,
+        timezone: runtime.timezone,
+        status: log?.attendanceStatus ?? calculation.attendanceStatus,
+        openAction:
+          state === 'CLOSED'
+            ? 'CHECKIN'
+            : state === 'ON_BREAK'
+              ? 'BREAK_END'
+              : 'CHECKOUT',
+        canStartBreak: state === 'OPEN',
+        isLocked: !!log?.lockedAt || log?.payrollLock?.status === 'LOCKED',
+        totals: {
+          workMinutes: calculation.totalWorkMinutes,
+          payableMinutes: calculation.payableMinutes,
+          breakMinutes: calculation.breakMinutes,
+          lateMinutes: calculation.lateMinutes,
+          overtimeMinutes: calculation.overtimeMinutes,
+          earlyLeaveMinutes: calculation.earlyLeaveMinutes,
+        },
+        shift: runtime.shift,
+        policy: runtime.policy,
+        exceptionType: runtime.exceptionType,
+        holiday: runtime.holiday,
+        weeklyOff: runtime.weeklyOff,
+        anomalies: calculation.anomalies,
+        timeline: (log?.events ?? []).map(safeEvent),
+      },
+      idempotent,
+    };
+  }
+
+  private restoreAggregate(events: AttendanceLogWithEvents['events']) {
+    try {
+      return AttendanceDay.restore(events.map(domainEvent));
+    } catch {
+      throw new ConflictException({
+        code: 'ATTENDANCE_EVENT_CONFLICT',
+        message: 'Attendance evidence contains an invalid transition sequence',
+      });
+    }
+  }
+
+  private assertTransition(aggregate: AttendanceDay, eventType: EventType) {
+    try {
+      aggregate.assertCanAppend(eventType);
+    } catch (error) {
+      if (error instanceof AttendanceTransitionError) {
+        throw new ConflictException({
+          code: error.code,
+          message: transitionMessage(error.code),
+        });
+      }
+      throw error;
+    }
+  }
+
+  private assertPunchWindow(
+    runtime: ResolvedAttendanceContext,
+    eventType: EventType,
+    now: Date,
+  ) {
+    if (!runtime.shift) return;
+    const bounds = TimeWindow.create(
+      runtime.shift.startTime,
+      runtime.shift.endTime,
+    ).bounds(runtime.attendanceDate, runtime.shift.timezone);
+    const instant = DateTime.fromJSDate(now);
+    const earlyCheckin =
+      eventType === EventType.CHECKIN &&
+      runtime.policy.allowEarlyCheckin === false &&
+      instant < bounds.start;
+    const earlyCheckout =
+      eventType === EventType.CHECKOUT &&
+      runtime.policy.allowEarlyCheckout === false &&
+      instant < bounds.end;
+    if (earlyCheckin || earlyCheckout) {
+      throw new UnprocessableEntityException({
+        code: 'PUNCH_OUTSIDE_ALLOWED_WINDOW',
+        message:
+          'This attendance action is outside the configured shift window',
+      });
+    }
+  }
+
+  private assertUnlocked(log: {
+    lockedAt: Date | null;
+    payrollLock: { status: string } | null;
+  }) {
+    if (log.lockedAt || log.payrollLock?.status === 'LOCKED') {
+      throw new HttpException(
+        {
+          code: 'ATTENDANCE_DAY_LOCKED',
+          message: 'Attendance is locked for payroll',
+        },
+        423,
+      );
+    }
+  }
+
+  private assertEmployeeDate(runtime: ResolvedAttendanceContext) {
+    const date = runtime.attendanceDate.toDatabaseDate();
+    if (
+      runtime.employee.dateOfJoining > date ||
+      (runtime.employee.dateOfExit && runtime.employee.dateOfExit < date)
+    ) {
+      throw new UnprocessableEntityException({
+        code: 'EMPLOYEE_DATE_INACTIVE',
+        message: 'Employee is not active on the attributed attendance date',
+      });
+    }
+  }
+
+  private requireTenantId() {
+    if (!this.context.tenantId) throw new Error('Tenant context is required');
+    return this.context.tenantId;
+  }
+
+  private requireUserId() {
+    if (!this.context.userId) throw new Error('User context is required');
+    return this.context.userId;
+  }
+}
+
+type AttendanceLogWithEvents = Prisma.AttendanceLogGetPayload<{
+  include: { payrollLock: true; events: true };
+}>;
+
+function calculatedLogData(
+  calculation: ReturnType<typeof calculateAttendance>,
+  runtime: ResolvedAttendanceContext,
+): Prisma.AttendanceLogUpdateInput {
+  return {
+    appliedShift: runtime.appliedShiftId
+      ? { connect: { id: runtime.appliedShiftId } }
+      : { disconnect: true },
+    firstCheckin: calculation.firstCheckin,
+    lastCheckout: calculation.lastCheckout,
+    totalWorkMinutes: calculation.totalWorkMinutes,
+    lateMinutes: calculation.lateMinutes,
+    overtimeMinutes: calculation.overtimeMinutes,
+    earlyLeaveMinutes: calculation.earlyLeaveMinutes,
+    breakMinutes: calculation.breakMinutes,
+    attendanceStatus: calculation.attendanceStatus,
+    appliedPolicySnapshot: json(calculation.appliedPolicySnapshot),
+    resolvedExceptionId: runtime.exceptionId,
+  };
+}
+
+function domainEvent(event: {
+  id: string;
+  eventType: EventType;
+  eventTime: Date;
+  syncTime: Date;
+}) {
+  return {
+    id: event.id,
+    eventType: event.eventType,
+    eventTime: event.eventTime,
+    createdAt: event.syncTime,
+  };
+}
+
+function safeEvent(event: AttendanceLogWithEvents['events'][number]) {
+  return {
+    id: event.id,
+    eventType: event.eventType,
+    source: event.source,
+    eventTime: event.eventTime,
+    isOfflineSync: event.isOfflineSync,
+    timeSuspect: event.timeSuspect,
+  };
+}
+
+function eventKey(eventType: EventType) {
+  return eventType.toLowerCase().replace('_', '-');
+}
+
+function transitionMessage(code: string) {
+  const messages: Record<string, string> = {
+    ATTENDANCE_ALREADY_OPEN: 'Attendance is already open',
+    ATTENDANCE_NOT_OPEN: 'Attendance is not open',
+    BREAK_ALREADY_OPEN: 'A break is already open',
+    BREAK_NOT_OPEN: 'No break is currently open',
+  };
+  return messages[code] ?? 'Attendance transition is not allowed';
+}
+
+function json(value: unknown) {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function monthRange(month: string) {
+  const start = DateTime.fromFormat(month, 'yyyy-MM', { zone: 'utc' });
+  if (!start.isValid || start.toFormat('yyyy-MM') !== month) {
+    throw new UnprocessableEntityException({
+      code: 'ATTENDANCE_MONTH_INVALID',
+      message: 'Month must use YYYY-MM',
+    });
+  }
+  return {
+    start: DateOnly.parse(start.toISODate()).toDatabaseDate(),
+    end: DateOnly.parse(start.endOf('month').toISODate()).toDatabaseDate(),
+  };
+}
+
+function summarizeLogs(
+  logs: Array<{
+    attendanceStatus: string;
+    totalWorkMinutes: number;
+    lateMinutes: number;
+    overtimeMinutes: number;
+  }>,
+) {
+  return {
+    days: logs.length,
+    present: logs.filter((log) =>
+      ['PRESENT', 'PRESENT_OPEN', 'ON_DUTY'].includes(log.attendanceStatus),
+    ).length,
+    absent: logs.filter((log) => log.attendanceStatus === 'ABSENT').length,
+    halfDays: logs.filter((log) => log.attendanceStatus === 'HALF_DAY').length,
+    lateDays: logs.filter((log) => log.lateMinutes > 0).length,
+    workMinutes: logs.reduce((sum, log) => sum + log.totalWorkMinutes, 0),
+    overtimeMinutes: logs.reduce((sum, log) => sum + log.overtimeMinutes, 0),
+  };
+}

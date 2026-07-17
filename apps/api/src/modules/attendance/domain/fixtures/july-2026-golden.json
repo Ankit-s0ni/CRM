@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "policy": {
+    "id": "policy-standard",
+    "name": "Standard attendance",
+    "lateAfterMinutes": 15,
+    "halfDayAfterMinutes": 240,
+    "minimumWorkMinutes": 480,
+    "overtimeAfterMinutes": 540,
+    "breakRules": { "paid": false }
+  },
+  "shift": {
+    "id": "shift-day",
+    "name": "Day shift",
+    "startTime": "09:00",
+    "endTime": "18:00",
+    "timezone": "UTC"
+  },
+  "cases": [
+    {
+      "name": "regular day",
+      "attendanceDate": "2026-07-01",
+      "events": [
+        ["CHECKIN", "2026-07-01T09:00:00.000Z"],
+        ["CHECKOUT", "2026-07-01T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 540,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "grace boundary",
+      "attendanceDate": "2026-07-02",
+      "events": [
+        ["CHECKIN", "2026-07-02T09:15:00.000Z"],
+        ["CHECKOUT", "2026-07-02T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 525,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "half day",
+      "attendanceDate": "2026-07-03",
+      "events": [
+        ["CHECKIN", "2026-07-03T09:00:00.000Z"],
+        ["CHECKOUT", "2026-07-03T13:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "HALF_DAY",
+        "work": 240,
+        "break": 0,
+        "late": 0,
+        "early": 300,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "overtime",
+      "attendanceDate": "2026-07-04",
+      "events": [
+        ["CHECKIN", "2026-07-04T08:00:00.000Z"],
+        ["CHECKOUT", "2026-07-04T19:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 660,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 120,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "unpaid break",
+      "attendanceDate": "2026-07-05",
+      "events": [
+        ["CHECKIN", "2026-07-05T09:00:00.000Z"],
+        ["BREAK_START", "2026-07-05T12:00:00.000Z"],
+        ["BREAK_END", "2026-07-05T13:00:00.000Z"],
+        ["CHECKOUT", "2026-07-05T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 480,
+        "break": 60,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "paid break",
+      "attendanceDate": "2026-07-06",
+      "policy": { "breakRules": { "paid": true } },
+      "events": [
+        ["CHECKIN", "2026-07-06T09:00:00.000Z"],
+        ["BREAK_START", "2026-07-06T12:00:00.000Z"],
+        ["BREAK_END", "2026-07-06T13:00:00.000Z"],
+        ["CHECKOUT", "2026-07-06T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 540,
+        "break": 60,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "overnight Dubai shift",
+      "attendanceDate": "2026-07-07",
+      "timezone": "Asia/Dubai",
+      "shift": {
+        "id": "shift-night",
+        "name": "Night shift",
+        "startTime": "22:00",
+        "endTime": "06:00",
+        "timezone": "Asia/Dubai"
+      },
+      "events": [
+        ["CHECKIN", "2026-07-07T18:00:00.000Z"],
+        ["CHECKOUT", "2026-07-08T02:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 480,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "office holiday with punch",
+      "attendanceDate": "2026-07-08",
+      "holiday": true,
+      "events": [
+        ["CHECKIN", "2026-07-08T09:00:00.000Z"],
+        ["CHECKOUT", "2026-07-08T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "ON_DUTY",
+        "work": 540,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "weekly off override",
+      "attendanceDate": "2026-07-10",
+      "weeklyOff": true,
+      "events": [
+        ["CHECKIN", "2026-07-10T09:00:00.000Z"],
+        ["CHECKOUT", "2026-07-10T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 540,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "on duty exception",
+      "attendanceDate": "2026-07-11",
+      "exceptionType": "ON_DUTY",
+      "events": [],
+      "expected": {
+        "status": "ON_DUTY",
+        "work": 0,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "work from home exception",
+      "attendanceDate": "2026-07-12",
+      "exceptionType": "WFH",
+      "events": [],
+      "expected": {
+        "status": "ON_DUTY",
+        "work": 0,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "no roster fallback",
+      "attendanceDate": "2026-07-13",
+      "shift": null,
+      "events": [
+        ["CHECKIN", "2026-07-13T09:00:00.000Z"],
+        ["CHECKOUT", "2026-07-13T18:00:00.000Z"]
+      ],
+      "expected": {
+        "status": "PRESENT",
+        "work": 540,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "outside joining or exit boundary",
+      "attendanceDate": "2026-07-14",
+      "employeeActive": false,
+      "events": [],
+      "expected": {
+        "status": "ABSENT",
+        "work": 0,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "name": "missing checkout",
+      "attendanceDate": "2026-07-15",
+      "events": [["CHECKIN", "2026-07-15T09:00:00.000Z"]],
+      "expected": {
+        "status": "HALF_DAY",
+        "work": 0,
+        "break": 0,
+        "late": 0,
+        "early": 0,
+        "overtime": 0,
+        "anomalies": ["MISSING_CHECKOUT"]
+      }
+    }
+  ]
+}

@@ -16,6 +16,16 @@ describe('workspace settings rules', () => {
     ).toEqual([{ weekday: 'SAT', occurrences: [2, 4] }, { weekday: 'SUN' }]);
   });
 
+  it('accepts Gulf weekend patterns and occurrence rules on any weekday', () => {
+    expect(normalizeWeeklyOffs(['fri', 'sat'])).toEqual([
+      { weekday: 'FRI' },
+      { weekday: 'SAT' },
+    ]);
+    expect(
+      normalizeWeeklyOffs([{ weekday: 'fri', occurrences: [5, 1, 3] }]),
+    ).toEqual([{ weekday: 'FRI', occurrences: [1, 3, 5] }]);
+  });
+
   it('rejects malformed weekly offs and clock times', () => {
     expect(() =>
       normalizeWeeklyOffs([{ weekday: 'SAT', occurrences: [0] }]),

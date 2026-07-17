@@ -25,6 +25,7 @@ export const PERMISSIONS = {
   ROLES_DELETE: 'identity.roles.delete',
   SETTINGS_READ: 'workspace.settings.read',
   SETTINGS_UPDATE: 'workspace.settings.update',
+  DASHBOARD_ADMIN_READ: 'workspace.dashboard.admin.read',
   MODULES_READ: 'workspace.modules.read',
   BILLING_SUBSCRIPTION_READ: 'billing.subscription.read',
   BILLING_INVOICES_READ: 'billing.invoices.read',
@@ -42,6 +43,8 @@ export const PERMISSIONS = {
   ATTENDANCE_HOLIDAYS_MANAGE: 'attendance.holidays.manage',
   ATTENDANCE_RECORDS_READ: 'attendance.records.read',
   ATTENDANCE_RECORDS_SELF_READ: 'attendance.records.self.read',
+  ATTENDANCE_EXCEPTIONS_READ: 'attendance.exceptions.read',
+  ATTENDANCE_EXCEPTIONS_MANAGE: 'attendance.exceptions.manage',
   ATTENDANCE_APPROVALS_MANAGE: 'attendance.approvals.manage',
   ATTENDANCE_REPORTS_READ: 'attendance.reports.read',
 } as const;
@@ -56,7 +59,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<
 > = {
   BUSINESS_ADMIN: ALL_PERMISSIONS,
   HR_ADMIN: ALL_PERMISSIONS.filter(
-    (permission) => !permission.startsWith('billing.'),
+    (permission) =>
+      !permission.startsWith('billing.') &&
+      permission !== PERMISSIONS.DASHBOARD_ADMIN_READ,
   ),
   MANAGER: [
     PERMISSIONS.EMPLOYEES_REPORTS_READ,

@@ -30,6 +30,8 @@ import { ImpersonationModule } from './modules/platform/impersonation/impersonat
 import { PlatformOperationsModule } from './modules/platform/operations/platform-operations.module';
 import { WorkspaceSettingsModule } from './modules/workspace-settings/workspace-settings.module';
 import { AttendanceConfigModule } from './modules/attendance-config/attendance-config.module';
+import { AttendanceDashboardModule } from './modules/attendance-dashboard/attendance-dashboard.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -72,6 +74,8 @@ import { AttendanceConfigModule } from './modules/attendance-config/attendance-c
     PlatformOperationsModule,
     WorkspaceSettingsModule,
     AttendanceConfigModule,
+    AttendanceDashboardModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [

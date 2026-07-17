@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   tenantId: string;
   workspace: string;
   roles?: string[];
+  permissions?: string[];
+  companyName?: string;
 }
 
 interface PendingAuthContext {
@@ -22,6 +24,7 @@ interface AuthState {
   pendingAuth: PendingAuthContext;
   hasHydrated: boolean;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setUser: (user: User) => void;
   setPendingAuth: (context: Partial<PendingAuthContext>) => void;
   clearPendingAuth: () => void;
   clearAuth: () => void;
@@ -51,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
             email: user.email,
           },
         }),
+      setUser: (user) => set({ user }),
       setPendingAuth: (context) =>
         set((state) => ({
           pendingAuth: {

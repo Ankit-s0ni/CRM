@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Live Attendance Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f2ff",
+                    "primary-container": "#4f46e5",
+                    "primary": "#3525cd",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-tint": "#4d44e3",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "on-primary-container": "#dad7ff",
+                    "outline-variant": "#c7c4d8",
+                    "secondary-container": "#7cf994",
+                    "secondary": "#006e2d",
+                    "on-secondary-fixed-variant": "#005320",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#7ffc97",
+                    "on-secondary-fixed": "#002109",
+                    "on-background": "#1b1b24",
+                    "surface-container-highest": "#e4e1ee",
+                    "secondary-fixed-dim": "#62df7d",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffdcc3",
+                    "inverse-on-surface": "#f3effc",
+                    "on-primary-fixed": "#0f0069",
+                    "tertiary": "#703a00",
+                    "surface-container-high": "#eae6f4",
+                    "tertiary-container": "#934e00",
+                    "surface-variant": "#e4e1ee",
+                    "primary-fixed": "#e2dfff",
+                    "on-error-container": "#93000a",
+                    "background": "#fcf8ff",
+                    "outline": "#777587",
+                    "surface": "#fcf8ff",
+                    "on-secondary-container": "#007230",
+                    "on-surface": "#1b1b24",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-surface-variant": "#464555",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#2f1500",
+                    "on-tertiary-container": "#ffd2b1",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dcd8e5",
+                    "inverse-surface": "#302f39",
+                    "surface-container": "#f0ecf9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "base": "8px",
+                    "sidebar-width": "280px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "gutter": "24px",
+                    "2xl": "48px",
+                    "md": "16px",
+                    "container-max": "1440px",
+                    "3xl": "64px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(79, 70, 229, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e4e1ee; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7c4d8; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col h-screen fixed left-0 top-0 z-40 bg-inverse-surface w-sidebar-width shadow-md border-r border-outline-variant">
+<div class="p-lg flex items-center gap-md">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-container-lowest" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-surface-container-lowest">IndigoHR</h1>
+<p class="font-label-md text-label-md text-primary-fixed-dim">Admin Portal</p>
+</div>
+</div>
+<nav class="mt-lg flex-1 overflow-y-auto">
+<a class="flex items-center gap-md px-lg py-md border-l-4 border-primary bg-primary/10 text-primary-fixed-dim font-bold transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_view_month</span>
+<span class="font-label-md text-label-md">Roster</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-label-md text-label-md">Attendance</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary/5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+<div class="p-lg border-t border-outline-variant/20 mt-auto">
+<div class="flex items-center gap-md mb-md">
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A professional headshot of a Middle Eastern HR administrator in a clean modern office, wearing professional corporate attire with soft, cinematic lighting and a shallow depth of field, reflecting a high-trust corporate HR environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACIErpSPRMYHUlwUdZshJniEMuFu-PK6yQ9wcvEBDuM7d8SR6tNXBj7hEmWoZt6jXaC85d5SKke9WtppvXO9GwyknaBDNTmcICT6wyICrLUmR3weUCEG-VR-dz6pu2v_63Mo0nONalMgw1LNmJZx2aKFsCqhOeWMuRbBauMl5mqLaeCum_0LVFNIKzn1QU1HveugjL8fEgfDiHs5xYUGeXpR1NfxUjv1svYgVHTIhlk2HVdPxR-lhDhfulfTdPjDMA3xH6eyDM-g"/>
+<div>
+<p class="font-label-md text-label-md text-surface-container-lowest">Ahmed Al-Bakri</p>
+<p class="text-[10px] text-surface-variant uppercase tracking-wider">Super Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width min-h-screen">
+<!-- Top Navigation -->
+<header class="h-16 fixed top-0 right-0 w-[calc(100%-280px)] z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-gutter">
+<div class="flex items-center gap-md flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-high border-none rounded-full pl-10 pr-4 py-2 text-label-md focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="Search employees, shifts, or records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs px-3 py-1 bg-secondary-container/20 text-secondary rounded-full">
+<span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+<span class="text-[12px] font-bold">Live • updated 4s ago</span>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<div class="pt-24 pb-lg px-gutter max-w-container-max mx-auto flex gap-lg">
+<!-- Left Side: Dashboard & Grid -->
+<div class="flex-1 space-y-lg">
+<!-- KPI Strip -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-md">
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Present</p>
+<h3 class="font-headline-md text-headline-md text-primary">142</h3>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Late</p>
+<h3 class="font-headline-md text-headline-md text-tertiary">11</h3>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Absent</p>
+<h3 class="font-headline-md text-headline-md text-error">9</h3>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">On field</p>
+<h3 class="font-headline-md text-headline-md text-secondary">34</h3>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">On break</p>
+<h3 class="font-headline-md text-headline-md text-outline">6</h3>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/30">
+<p class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Not yet in</p>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">18</h3>
+</div>
+</div>
+<!-- Filters & Controls -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-4 py-2 bg-primary text-white rounded-full text-label-md font-medium whitespace-nowrap">All Employees</button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-full text-label-md font-medium whitespace-nowrap">Engineering</button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-full text-label-md font-medium whitespace-nowrap">Operations</button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-full text-label-md font-medium whitespace-nowrap">Customer Success</button>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-full text-label-md font-medium whitespace-nowrap flex items-center gap-1">
+<span class="w-2 h-2 bg-secondary rounded-full"></span> Clocked In
+                        </button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-full text-label-md font-medium whitespace-nowrap flex items-center gap-1">
+<span class="w-2 h-2 bg-tertiary rounded-full"></span> Late
+                        </button>
+</div>
+<div class="flex items-center bg-surface-container-high rounded-lg p-1 gap-1">
+<button class="p-1 bg-surface-container-lowest shadow-sm rounded text-primary" id="grid-toggle">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="p-1 text-outline hover:text-on-surface transition-colors" id="list-toggle">
+<span class="material-symbols-outlined">list</span>
+</button>
+</div>
+</div>
+<!-- Employee Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-lg">
+<!-- Employee Card 1 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="A realistic digital 3D portrait of a young Indian male tech employee with a friendly smile, short dark hair, wearing a casual polo shirt, against a soft blurred office background with warm lighting, professional SaaS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAARfWPWSAx0J-rNbvBNlcVrOfYzKDZhuV-i_seI96s8aCjJi1uUtqs0MxzyCFBX6sXNLubELbDAlbipFZFR57TIbD8zIRuXHTYfEc6YvWFwrCcXjh34DR1NYkA3JDDP0PTuQKm6k-iPEDPg0fgwsm2QZSJ3jiKxfqwZ5T7iA_ts4hpkjHBF1KCxLscKkIJX17o5M_zdaY4sE40NwgujDasS-UTJU4Q_9b1ZiMMNXPncgWfNL3WZobqA8rgFBy71j_2Fl-QVAgNA"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-secondary border-2 border-surface-container-lowest rounded-full pulse"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-secondary-container/20 text-secondary text-[10px] font-bold rounded uppercase tracking-wider">Clocked In</span>
+<p class="text-label-sm text-on-surface-variant mt-1">Checked-in: 08:14 AM</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Rajesh Kumar</h4>
+<p class="text-label-md text-on-surface-variant">Senior Logistics Analyst • Muscat</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="text-label-sm text-on-surface-variant">Warehouse — Ghala Industrial</span>
+</div>
+</div>
+<!-- Employee Card 2 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="A clean, professional headshot of a modern Indian female professional in a corporate setting, soft high-key lighting, bright and airy office atmosphere, wearing formal business attire, looking confident and approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnNG1fmCY9IGQH6tt2UskjZ4l1inEaeuhEonjzaUeyHxGiNsn90k_IAJ06LZWJxPT6Zdc3EdeovfToYxF0Lw5xRxlG90lMrx99-0tLppY1yW1bYzQ-41qLRIfh7msDpJ1B8GmqGy23zbpPs85LcHOPKKX45c9Unv-QL2lBfSDCwFxmAv5zE-oJeN8HoK3xoJae1NLI8ePxLhA4OaHJ583baCWLsUAMYb99XqLYNG-Dx8BspRmCDDUG1I9u5PlAJ05NS9Xm2vv0wA"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-tertiary border-2 border-surface-container-lowest rounded-full pulse"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-tertiary-container/20 text-tertiary text-[10px] font-bold rounded uppercase tracking-wider">On Break</span>
+<p class="text-label-sm text-on-surface-variant mt-1">Checked-in: 09:05 AM</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Priya Sharma</h4>
+<p class="text-label-md text-on-surface-variant">HR Coordinator • Ruwi</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">coffee</span>
+<span class="text-label-sm text-on-surface-variant">HQ — Indigo Towers</span>
+</div>
+</div>
+<!-- Employee Card 3 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="A high-quality 3D avatar of a professional male in his 40s with glasses, warm smiling expression, styled with modern corporate office background lighting, soft teal and indigo color palette in the atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwy8ukScpLVOp9bcnAoS5-l_8FgL42UbLRtet6EeKgaXS7qslrIp5OMRB0xaZohrkW5jXLSm9X4msTh3KRC1OxyzpGkSXYJwUeQ8o0xCOezerxkKB1FxoGkrz52BW1IICbdRHPCUqJkXC4Slvu6v06EC2fMt92OEGn6oQL90oqcPjpcDr_u4POl_iEiWBsPDZ0AUJ5QSnyZNMBgcmF8ntD8wlY57BiYpiN4_zRa3DzbmBQtob7JqAJkbqTgl1nU_SUNQsDLKaXLg"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-primary border-2 border-surface-container-lowest rounded-full pulse"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-primary-container/20 text-primary text-[10px] font-bold rounded uppercase tracking-wider">On Field</span>
+<p class="text-label-sm text-on-surface-variant mt-1">Checked-in: 07:30 AM</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Sanjay Varma</h4>
+<p class="text-label-md text-on-surface-variant">Field Sales Head • Seeb</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">travel_explore</span>
+<span class="text-label-sm text-on-surface-variant">Client Site — Al Mouj</span>
+</div>
+</div>
+<!-- Employee Card 4 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="A realistic corporate portrait of an Indian woman in her late 20s, stylish professional wear, minimalist background with soft bokeh, clean and bright lighting aesthetic, focus on friendly professional expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgRIjSQLRdABUS3cEoSrvAM5fiPyawbZw50Q-9Uo5uEQU8KJWfdTvTrwc7cRgRm5xAh7hrJahrq13GDJqzApGksDrVY_6_PwANar-d_rYY1TcoHIQCiHpPDrI9YYKBaGK0CoEtLwekFgsp4wGbnCox2sBQWwi4yZNhfmZgJhMt7keo0zPCy4aDdfidZ3_7iPWuLWirxszaat45bVBg9KKAumpNHZRy_Js8nbdxx5u1v23hGueEiCekAYWsBfwL6ajhMizTlrTtOA"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-secondary border-2 border-surface-container-lowest rounded-full pulse"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-secondary-container/20 text-secondary text-[10px] font-bold rounded uppercase tracking-wider">Clocked In</span>
+<p class="text-label-sm text-on-surface-variant mt-1">Checked-in: 08:55 AM</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Ananya Iyer</h4>
+<p class="text-label-md text-on-surface-variant">Project Manager • Muscat</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="text-label-sm text-on-surface-variant">HQ — Indigo Towers</span>
+</div>
+</div>
+<!-- Employee Card 5 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden opacity-75 grayscale-[0.5]">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="3D professional avatar of a young Indian man with a neat beard, wearing a formal light blue shirt, clean workplace backdrop, soft and cinematic lighting with professional SaaS color tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcNpMou5Ystnlqj7nDlTouPMWlwEbC_OAPMMeqUeWx6cvjgPmzaLnJQhIDyMpNAQN_TQg08XH4eckt7u3zcp3mpoJVL_NASOTbTdSCt1dUpurQ_A2iD1pGT1Ltv0Mc9ZJJBAGRXo4gxIo0MogQoGqgnKgCrFsLmy9JQAERpERzngrXyalUZYXFrskCUgVO52fPA4smXMl8aaIXeKcDP-_106jCCK9wi5sFU6ZWEcWTHD2FSf5gSUjhE1EujrSMnqc2FOTLuPafdQ"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-error border-2 border-surface-container-lowest rounded-full"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-error-container/20 text-error text-[10px] font-bold rounded uppercase tracking-wider">Absent</span>
+<p class="text-label-sm text-on-surface-variant mt-1">No Check-in</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Rahul Nair</h4>
+<p class="text-label-md text-on-surface-variant">Accountant • Muscat</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">error_outline</span>
+<span class="text-label-sm text-error">Unplanned Absence</span>
+</div>
+</div>
+<!-- Employee Card 6 -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group relative overflow-hidden">
+<div class="flex items-start justify-between mb-md">
+<div class="relative">
+<img class="w-14 h-14 rounded-full bg-surface-container" data-alt="A portrait of a confident Indian woman in executive attire, modern professional corporate style, diffused studio lighting, shallow depth of field, high-end SaaS platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe_chrr4eyaH6CCcbghsUVkFw57x5X1VkAV4plnDQhOYuXE711YOYI3X8iVmSe6kyyaCyBwgFGP2Uxrtw26tdzeZd7c-ijIGRcpv0as2VKZYmG5Yst0sNkSi0e95QNS_DylENuHaBAziOY882gouJzOEGjwS6i8VEOhvUgaZthaLATtlzJm9bHEmHdkEwU4xKcDIPhLP-2uduoI4ayIfrCpbJEcflvcNlcnkQgDzSoZyqCTWFClihrKKS6kR1DrnedayXvVI6tyQ"/>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-secondary border-2 border-surface-container-lowest rounded-full pulse"></span>
+</div>
+<div class="text-right">
+<span class="px-2 py-1 bg-secondary-container/20 text-secondary text-[10px] font-bold rounded uppercase tracking-wider">Clocked In</span>
+<p class="text-label-sm text-on-surface-variant mt-1">Checked-in: 08:02 AM</p>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-headline-sm text-headline-sm">Deepika Reddy</h4>
+<p class="text-label-md text-on-surface-variant">Lead Developer • Al Khuwair</p>
+</div>
+<div class="flex items-center gap-2 pt-md border-t border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+<span class="text-label-sm text-on-surface-variant">Tech Park — Muscat Grand Mall</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Rail: Needs Attention -->
+<aside class="w-80 flex-shrink-0 space-y-lg">
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-md sticky top-24">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm">Needs Attention</h2>
+<span class="w-6 h-6 bg-error text-white text-[11px] font-bold rounded-full flex items-center justify-center">10</span>
+</div>
+<div class="space-y-md overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
+<!-- Pending Regularizations -->
+<div class="p-md bg-surface-container-high/50 rounded-lg border-l-4 border-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[20px] text-primary">history_edu</span>
+<p class="text-label-md font-bold">3 Pending Regularizations</p>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-3">Requests from Logistics team for missed swipes yesterday.</p>
+<button class="w-full py-2 bg-primary text-white rounded text-[12px] font-bold hover:bg-primary-container transition-colors">Review All</button>
+</div>
+<!-- Security Violations -->
+<div class="p-md bg-surface-container-high/50 rounded-lg border-l-4 border-error">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[20px] text-error">gpp_maybe</span>
+<p class="text-label-md font-bold">2 Security Violations</p>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-3">Tailgating detected at Server Room 2 (HQ) at 10:45 AM.</p>
+<button class="w-full py-2 border border-error text-error rounded text-[12px] font-bold hover:bg-error-container/20 transition-colors">Investigate</button>
+</div>
+<!-- Absentee Alerts -->
+<div class="p-md bg-surface-container-high/50 rounded-lg border-l-4 border-tertiary">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[20px] text-tertiary">person_off</span>
+<p class="text-label-md font-bold">5 Absentee Alerts</p>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-3">Critical roles not clocked in after 10:00 AM grace period.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-2 bg-tertiary text-white rounded text-[12px] font-bold hover:bg-tertiary-container transition-colors">Notify Managers</button>
+<button class="p-2 border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Late Alert Detail (Muscat Specific) -->
+<div class="p-md border border-outline-variant/50 rounded-lg">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB-V_XRcH1MP-0g6bFhq-18HOpS73g2rUqhvGCVBpjLWwuQBGAT8wkEao-X3fAAjNsEo7Q2iatcrFrMvxZ9UYPNKJJU9ufCdjjMkRZc4V15AYH3XRhP3hHHWqtaHbHIrwsVw4n601ogJ5ZJ0hiikFtuGhyxSln8LdIz_W6i0SITfCtMhTLGYMqmModlCw7GLm1EiGI53QZKLDGe-NgTAmHw6apPC_GOfKw5EVEmFHuPLEVTAyiZgoh0SY6IK8u4PisKreO9Wh7sQ"/>
+<span class="text-label-sm font-bold">Ahmed Hassan</span>
+</div>
+<span class="text-[10px] text-tertiary font-bold uppercase">1h Late</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mb-2">Shift: 08:00 AM — Operations (Ghubrah)</p>
+<button class="w-full py-1 text-primary text-[11px] font-bold hover:underline">Send Gentle Reminder</button>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<button class="w-full py-3 flex items-center justify-center gap-2 text-on-surface-variant font-bold text-label-md hover:bg-surface-container-high rounded-lg transition-colors">
+<span class="material-symbols-outlined">download</span> Export Daily Summary
+                        </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Contextual FAB (Only for Home/Dashboard) -->
+<button class="fixed bottom-lg right-lg w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform group z-50">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+<div class="absolute right-16 px-4 py-2 bg-inverse-surface text-surface-container-lowest text-label-md rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+            Manual Clock-In / Entry
+        </div>
+</button>
+<script>
+        // Micro-interactions for Grid/List toggle
+        const gridBtn = document.getElementById('grid-toggle');
+        const listBtn = document.getElementById('list-toggle');
+
+        gridBtn.addEventListener('click', () => {
+            gridBtn.classList.add('bg-surface-container-lowest', 'shadow-sm', 'text-primary');
+            gridBtn.classList.remove('text-outline');
+            listBtn.classList.remove('bg-surface-container-lowest', 'shadow-sm', 'text-primary');
+            listBtn.classList.add('text-outline');
+        });
+
+        listBtn.addEventListener('click', () => {
+            listBtn.classList.add('bg-surface-container-lowest', 'shadow-sm', 'text-primary');
+            listBtn.classList.remove('text-outline');
+            gridBtn.classList.remove('bg-surface-container-lowest', 'shadow-sm', 'text-primary');
+            gridBtn.classList.add('text-outline');
+        });
+
+        // Simulating Live Update pulse effect
+        setInterval(() => {
+            const timeSpan = document.querySelector('.animate-pulse + span');
+            if(timeSpan) {
+                let seconds = parseInt(timeSpan.textContent.match(/\d+/)[0]);
+                seconds = (seconds + 1) % 60;
+                timeSpan.textContent = `Live • updated ${seconds}s ago`;
+            }
+        }, 1000);
+    </script>
+</body></html>

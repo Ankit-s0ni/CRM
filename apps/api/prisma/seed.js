@@ -36,6 +36,7 @@ const permissions = [
   'identity.roles.delete',
   'workspace.settings.read',
   'workspace.settings.update',
+  'workspace.dashboard.admin.read',
   'workspace.modules.read',
   'billing.subscription.read',
   'billing.invoices.read',
@@ -53,6 +54,8 @@ const permissions = [
   'attendance.holidays.manage',
   'attendance.records.read',
   'attendance.records.self.read',
+  'attendance.exceptions.read',
+  'attendance.exceptions.manage',
   'attendance.approvals.manage',
   'attendance.reports.read',
 ];
@@ -60,7 +63,9 @@ const permissions = [
 const rolePermissions = {
   BUSINESS_ADMIN: permissions,
   HR_ADMIN: permissions.filter(
-    (permission) => !permission.startsWith('billing.'),
+    (permission) =>
+      !permission.startsWith('billing.') &&
+      permission !== 'workspace.dashboard.admin.read',
   ),
   MANAGER: [
     'organization.employees.read',
@@ -424,8 +429,7 @@ async function seedSprint3AcceptanceFixture(tenantId, defaultShiftId) {
           },
         },
         update: {
-          workType:
-            index <= 5 ? 'FIELD' : index <= 10 ? 'HYBRID' : 'OFFICE',
+          workType: index <= 5 ? 'FIELD' : index <= 10 ? 'HYBRID' : 'OFFICE',
           deptId: departments[(index - 1) % departments.length].id,
           designationId: designation.id,
           defaultShiftId: index % 7 === 0 ? shifts[1].id : defaultShiftId,

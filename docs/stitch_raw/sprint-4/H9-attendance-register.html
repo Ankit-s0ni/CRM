@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Attendance Register</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .sidebar-active-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #c3c0ff;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0ecf9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c7c4d8;
+            border-radius: 10px;
+        }
+        .bento-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#62df7d",
+                      "surface-container-low": "#f5f2ff",
+                      "secondary-container": "#7cf994",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dcd8e5",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "outline-variant": "#c7c4d8",
+                      "on-surface-variant": "#464555",
+                      "on-tertiary-fixed": "#2f1500",
+                      "on-primary-fixed": "#0f0069",
+                      "inverse-on-surface": "#f3effc",
+                      "primary": "#3525cd",
+                      "on-surface": "#1b1b24",
+                      "on-primary-container": "#dad7ff",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fcf8ff",
+                      "surface-container-high": "#eae6f4",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#4d44e3",
+                      "inverse-surface": "#302f39",
+                      "secondary": "#006e2d",
+                      "outline": "#777587",
+                      "surface": "#fcf8ff",
+                      "on-tertiary-container": "#ffd2b1",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#f0ecf9",
+                      "on-secondary-container": "#007230",
+                      "background": "#fcf8ff",
+                      "primary-container": "#4f46e5",
+                      "primary-fixed": "#e2dfff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "on-tertiary": "#ffffff",
+                      "tertiary": "#703a00",
+                      "tertiary-container": "#934e00",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-secondary-fixed": "#002109",
+                      "surface-container-highest": "#e4e1ee",
+                      "surface-variant": "#e4e1ee",
+                      "on-secondary-fixed-variant": "#005320",
+                      "inverse-primary": "#c3c0ff",
+                      "secondary-fixed": "#7ffc97",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#1b1b24"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "280px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "container-max": "1440px",
+                      "md": "16px",
+                      "lg": "24px",
+                      "gutter": "24px",
+                      "3xl": "64px",
+                      "sm": "8px",
+                      "2xl": "48px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-[sidebar-width] h-screen fixed left-0 top-0 bg-inverse-surface border-r border-outline-variant flex flex-col h-full py-lg z-50">
+<div class="px-lg mb-2xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary-fixed">IndigoHR</h1>
+<p class="font-label-md text-label-md text-surface-variant">Mumbai Office</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">calendar_view_month</span>
+<span class="font-label-md text-label-md">Roster</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-primary-fixed-dim bg-primary-container/20 border-l-4 border-primary-fixed-dim transition-colors duration-150 relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_available</span>
+<span class="font-label-md text-label-md font-bold">Attendance</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant hover:bg-primary-container/10 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+<div class="px-lg mt-auto space-y-md">
+<button class="w-full bg-primary-container text-on-primary-container py-md rounded-lg font-label-md flex items-center justify-center gap-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined">person_add</span>
+                Add New Employee
+            </button>
+<div class="pt-lg border-t border-outline-variant/30">
+<a class="flex items-center gap-md px-sm py-xs text-surface-variant hover:text-primary-fixed-dim transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs text-surface-variant hover:text-error transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-surface-container-high flex justify-between items-center px-lg z-40 shadow-sm">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-sm focus:ring-2 focus:ring-primary/20" placeholder="Search attendance records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-sm"></div>
+<div class="flex items-center gap-md pl-sm">
+<div class="text-right hidden lg:block">
+<p class="font-label-md text-on-surface">Rajesh Kumar</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">HR Administrator</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-fixed object-cover" data-alt="A professional portrait of an Indian male HR Administrator in his early 40s wearing a smart navy blue blazer and white shirt. He has a warm, confident smile and is photographed in a bright, modern corporate office environment with a soft, out-of-focus background. The lighting is clean and professional, matching a high-trust SaaS application aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABnuFUrZ9DFldKNRAUgkYP-e_pvpx18y-wuZFchOOah4CqfvBb8hf0Co0_Jm02AqWZYr5sewAG6DbQnH5OajAEloDgX9ALl1qTl17wWgwIxJXuOG1iP_Npj4LeC0k_JbSVmVYCcZXX9hzZfVqDtLV6jJqKf9fs8G-DzaQqRkZY6m82QBnOT91-n2lYLwyYpPd9ow5Q4OswINADJzJZ_U0RgUjQmAzOonOfdDIlVoxk3WU6jwWCUTWp6SZIu6zUY_dwxyBKNQdwIg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="p-lg max-w-[container-max] mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Attendance Register</h2>
+<p class="font-body-md text-on-surface-variant">Daily activity log for Mumbai Branch Operations.</p>
+</div>
+<div class="flex gap-md">
+<button class="flex items-center gap-sm px-lg py-2 bg-surface-container-high text-on-surface rounded-lg font-label-md hover:bg-surface-container-highest transition-colors active:scale-95 border border-outline-variant">
+<span class="material-symbols-outlined">download</span>
+                        Bulk Export (XLSX)
+                    </button>
+<button class="flex items-center gap-sm px-lg py-2 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/90 transition-colors active:scale-95 shadow-md">
+<span class="material-symbols-outlined">sync</span>
+                        Re-sync Bio-logs
+                    </button>
+</div>
+</div>
+<!-- Advanced Filter Bar -->
+<div class="bg-white rounded-xl shadow-md border border-outline-variant p-lg mb-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-lg items-end">
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant">Date Range</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">calendar_today</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-primary/20 cursor-pointer" readonly="" type="text" value="01 Oct - 31 Oct 2023"/>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant">Department</label>
+<select class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-primary/20 appearance-none">
+<option>All Departments</option>
+<option>Engineering</option>
+<option>Human Resources</option>
+<option>Marketing & Sales</option>
+<option>Operations</option>
+</select>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant">Status (Multi)</label>
+<div class="flex gap-2 flex-wrap items-center px-2 py-2 bg-surface-container-low border border-outline-variant rounded-lg min-h-[40px]">
+<span class="bg-primary-container/20 text-primary px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1">Present <span class="material-symbols-outlined text-[12px]">close</span></span>
+<span class="bg-error-container/20 text-error px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1">Absent <span class="material-symbols-outlined text-[12px]">close</span></span>
+<span class="text-on-surface-variant text-[12px] px-2 italic">+3 more</span>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-on-surface-variant">Work Type</label>
+<select class="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-primary/20 appearance-none">
+<option>All Work Types</option>
+<option>Office</option>
+<option>Remote (WFH)</option>
+<option>Field Work</option>
+</select>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 px-4 py-2 bg-surface-container-highest text-on-surface font-label-md rounded-lg border border-outline-variant hover:bg-outline-variant/20 transition-all">
+                            Clear
+                        </button>
+<button class="flex-1 px-4 py-2 bg-inverse-surface text-white font-label-md rounded-lg hover:bg-on-surface transition-all">
+                            Apply
+                        </button>
+</div>
+</div>
+</div>
+<!-- Attendance Data Table Container -->
+<div class="bg-white rounded-xl shadow-md border border-outline-variant overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high border-b border-outline-variant">
+<tr>
+<th class="px-lg py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Employee</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider">First In / Last Out</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Hours</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Late / OT</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Verified</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Source</th>
+<th class="px-lg py-4 w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1: Normal Present -->
+<tr class="group hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-lg py-4">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-primary">AM</div>
+<div>
+<p class="font-label-md text-on-surface">Arjun Mehta</p>
+<p class="text-[12px] text-on-surface-variant">EMP-2034 • Engineering</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<p class="text-body-sm text-on-surface">24 Oct, 2023</p>
+<p class="text-[10px] text-on-surface-variant font-bold">TUESDAY</p>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-semibold text-secondary">09:12 AM</span>
+<span class="text-body-sm text-on-surface-variant">06:05 PM</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="text-body-md font-bold">8h 53m</span>
+</td>
+<td class="px-md py-4 text-center">
+<div class="flex flex-col items-center">
+<span class="text-[12px] text-amber-600 font-bold">12m Late</span>
+<span class="text-[12px] text-on-surface-variant">0m OT</span>
+</div>
+</td>
+<td class="px-md py-4">
+<span class="px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full text-[12px] font-bold">Present</span>
+</td>
+<td class="px-md py-4 text-center">
+<div class="flex justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary" style="font-variation-settings: 'FILL' 1;">face</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" style="font-variation-settings: 'FILL' 1;">stay_current_portrait</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant" title="Mobile App">smartphone</span>
+</td>
+<td class="px-lg py-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</td>
+</tr>
+<!-- Row 2: WFH & OT -->
+<tr class="group hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-lg py-4">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-tertiary">SJ</div>
+<div>
+<p class="font-label-md text-on-surface">Sarah Johnson</p>
+<p class="text-[12px] text-on-surface-variant">EMP-2155 • Marketing</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<p class="text-body-sm text-on-surface">24 Oct, 2023</p>
+<p class="text-[10px] text-on-surface-variant font-bold">TUESDAY</p>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-semibold text-on-surface">08:55 AM</span>
+<span class="text-body-sm text-on-surface-variant">07:30 PM</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="text-body-md font-bold">10h 35m</span>
+</td>
+<td class="px-md py-4 text-center">
+<div class="flex flex-col items-center">
+<span class="text-[12px] text-on-surface-variant">—</span>
+<span class="text-[12px] text-primary font-bold">95m OT</span>
+</div>
+</td>
+<td class="px-md py-4">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[12px] font-bold">WFH</span>
+</td>
+<td class="px-md py-4 text-center">
+<div class="flex justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline-variant">face</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" style="font-variation-settings: 'FILL' 1;">laptop_mac</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant" title="Web Dashboard">laptop_mac</span>
+</td>
+<td class="px-lg py-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</td>
+</tr>
+<!-- Row 3: Locked Payroll Row -->
+<tr class="group bg-surface-container-low/30 hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-lg py-4">
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-full object-cover grayscale opacity-80" data-alt="A medium shot of a professional woman in her 30s with a warm and genuine smile. She is wearing glasses and a formal cream-colored blouse. The lighting is bright and airy, suggesting a modern high-end office lobby. She is an HR lead at a technology company, radiating confidence and institutional reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAC-WfmpJ7QJyBj5wxTzsa0SbvygqszW4720DFypZaEijyj309rv_rZqYSnikFz5BJEzsHgkvfUZ8QLKYxXtXte6kHypHtd2V-0mzIZXuN3fOPsh8v4GBfDBgmQEELSGyCfoHWMFDaA92LhOuMmVAZJ38LbkBt8bcnWeBp3KpbFjdj55pymf1RnE7szoWdp_42mFtyzcYtlyV55VbjUztzX0K7bruBZfiMNcL2lwfwioGAnXvxvyJPYWlHYguc1G0iXoBwemfoWaw"/>
+<div>
+<p class="font-label-md text-on-surface-variant">Priya Sharma</p>
+<p class="text-[12px] text-on-surface-variant">EMP-1002 • Operations</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<p class="text-body-sm text-on-surface-variant">23 Oct, 2023</p>
+<p class="text-[10px] text-on-surface-variant font-bold">MONDAY</p>
+</td>
+<td class="px-md py-4">
+<div class="flex flex-col opacity-60">
+<span class="text-body-sm font-semibold">09:00 AM</span>
+<span class="text-body-sm">05:45 PM</span>
+</div>
+</td>
+<td class="px-md py-4 text-center opacity-60">
+<span class="text-body-md font-bold">8h 45m</span>
+</td>
+<td class="px-md py-4 text-center opacity-60">
+<div class="flex flex-col items-center">
+<span class="text-[12px]">—</span>
+<span class="text-[12px]">0m OT</span>
+</div>
+</td>
+<td class="px-md py-4">
+<span class="px-3 py-1 bg-outline-variant/20 text-outline rounded-full text-[12px] font-bold">Present</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/40" title="Locked by Payroll Cycle">lock</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">fingerprint</span>
+</td>
+<td class="px-lg py-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">info</span>
+</td>
+</tr>
+<!-- Row 4: Absent/Leave -->
+<tr class="group hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-lg py-4">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center font-bold text-error">VN</div>
+<div>
+<p class="font-label-md text-on-surface">Vikram Nath</p>
+<p class="text-[12px] text-on-surface-variant">EMP-2101 • Engineering</p>
+</div>
+</div>
+</td>
+<td class="px-md py-4">
+<p class="text-body-sm text-on-surface">24 Oct, 2023</p>
+<p class="text-[10px] text-on-surface-variant font-bold">TUESDAY</p>
+</td>
+<td class="px-md py-4">
+<span class="text-body-sm text-error">— No Punch —</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="text-body-md font-bold text-error-container text-outline">0h 0m</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="text-[12px] text-on-surface-variant">—</span>
+</td>
+<td class="px-md py-4">
+<span class="px-3 py-1 bg-error-container text-on-error-container rounded-full text-[12px] font-bold">On Leave</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-[18px] text-outline-variant">help</span>
+</td>
+<td class="px-md py-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant">event</span>
+</td>
+<td class="px-lg py-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</td>
+</tr>
+</tbody>
+<tfoot class="bg-surface-container-highest/50">
+<tr>
+<td class="px-lg py-6 font-bold text-on-surface">Daily Summary (Totals)</td>
+<td class="px-md py-6"></td>
+<td class="px-md py-6"></td>
+<td class="px-md py-6 text-center">
+<div class="flex flex-col">
+<span class="font-bold text-headline-sm">242h</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Total Man Hours</span>
+</div>
+</td>
+<td class="px-md py-6 text-center">
+<div class="flex flex-col">
+<span class="font-bold text-headline-sm text-primary">14.5h</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Total Overtime</span>
+</div>
+</td>
+<td class="px-md py-6" colspan="4">
+<div class="flex gap-lg justify-end pr-lg">
+<div class="text-right border-r border-outline-variant pr-md">
+<p class="text-headline-sm font-bold text-secondary">28</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase">Present</p>
+</div>
+<div class="text-right border-r border-outline-variant pr-md">
+<p class="text-headline-sm font-bold text-error">02</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase">Absent</p>
+</div>
+<div class="text-right">
+<p class="text-headline-sm font-bold text-on-surface-variant">04</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase">On Leave</p>
+</div>
+</div>
+</td>
+</tr>
+</tfoot>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-lg py-4 border-t border-outline-variant bg-surface-container flex items-center justify-between">
+<p class="text-body-sm text-on-surface-variant">Showing 1 - 25 of 1,248 records</p>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-outline-variant rounded-lg bg-white disabled:opacity-50"><span class="material-symbols-outlined">first_page</span></button>
+<button class="p-2 border border-outline-variant rounded-lg bg-white disabled:opacity-50"><span class="material-symbols-outlined">chevron_left</span></button>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-sm shadow-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors text-sm">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-sm">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors text-sm">50</button>
+</div>
+<button class="p-2 border border-outline-variant rounded-lg bg-white"><span class="material-symbols-outlined">chevron_right</span></button>
+<button class="p-2 border border-outline-variant rounded-lg bg-white"><span class="material-symbols-outlined">last_page</span></button>
+</div>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg mt-xl">
+<div class="bento-card bg-white p-lg rounded-xl border border-outline-variant flex flex-col gap-md relative overflow-hidden">
+<div class="z-10">
+<p class="font-label-md text-on-surface-variant uppercase tracking-widest text-[10px] font-bold">System Health</p>
+<h4 class="text-headline-md font-bold mt-1">98.4% Sync</h4>
+<p class="text-body-sm text-secondary mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                            Active biometric nodes: 42/42
+                        </p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 rotate-12 scale-150">
+<span class="material-symbols-outlined text-[120px]">router</span>
+</div>
+</div>
+<div class="bento-card bg-white p-lg rounded-xl border border-outline-variant flex flex-col gap-md relative overflow-hidden">
+<div class="z-10">
+<p class="font-label-md text-on-surface-variant uppercase tracking-widest text-[10px] font-bold">Late Frequency</p>
+<h4 class="text-headline-md font-bold mt-1">12% avg.</h4>
+<p class="text-body-sm text-amber-600 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            +2% increase vs last period
+                        </p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 rotate-12 scale-150">
+<span class="material-symbols-outlined text-[120px]">timer_off</span>
+</div>
+</div>
+<div class="bento-card bg-primary text-on-primary p-lg rounded-xl flex flex-col gap-md relative overflow-hidden">
+<div class="z-10">
+<p class="font-label-md text-on-primary-container uppercase tracking-widest text-[10px] font-bold">Payroll Status</p>
+<h4 class="text-headline-md font-bold mt-1">Oct-23 Finalized</h4>
+<p class="text-body-sm text-on-primary-container mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                            9,420 records locked and audited
+                        </p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 scale-150">
+<span class="material-symbols-outlined text-[120px]">account_balance_wallet</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Tooltip Simulation (JS for demo) -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    const hint = row.querySelector('.chevron_right, .info');
+                    if (hint) hint.classList.add('translate-x-1');
+                });
+                row.addEventListener('mouseleave', () => {
+                    const hint = row.querySelector('.chevron_right, .info');
+                    if (hint) hint.classList.remove('translate-x-1');
+                });
+            });
+        });
+    </script>
+</body></html>

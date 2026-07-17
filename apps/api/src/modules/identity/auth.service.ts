@@ -609,6 +609,7 @@ export class AuthService {
         email: user.email,
         tenantId: user.tenantId,
         workspace: user.tenant?.subdomain ?? '',
+        roles: user.roles.map(({ role }) => role.name),
       },
     };
   }

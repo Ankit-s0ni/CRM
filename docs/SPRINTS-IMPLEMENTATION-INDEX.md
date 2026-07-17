@@ -1,6 +1,6 @@
 # Implementation Sprint Index
 
-This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1-3 are complete. Sprints 4-8 cover all remaining MVP and GA requirements without treating future hooks as committed scope.
+This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1-4 are complete. Sprints 5-8 cover all remaining MVP and GA requirements without treating future hooks as committed scope.
 
 ## Source of Truth
 
@@ -14,16 +14,16 @@ This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementa
 
 ## Delivery Sequence
 
-| Sprint | Outcome | Primary screens | Indicative size | Status |
-|---|---|---|---|---|
-| 1 | Organization, employees, tenant access, imports, API hardening | API foundation for B3-B8 | Complete scope | Complete |
-| 2 | Platform owner core and operational foundation | S1-S4, S9-S11 | Complete scope | Complete |
-| 3 | Business-admin web and attendance configuration | B1-B9, H4-H8 | Complete scope | Complete |
-| 4 | Deterministic attendance calculator, web punches, register and finalization | H1, H9, H10 | 3-4 weeks | Not started |
-| 5 | Trusted mobile attendance with device, integrity, location and face verification | M1-M13, M19-M20, H14 | 4-5 weeks | Not started |
-| 6 | Field tracking, offline replay, live map and route playback | H2-H3, M16-M17 | 3-4 weeks | Not started |
-| 7 | Regularization, notifications, reports, payroll lock and minimal leave | H11-H16, M14-M15, M18, L1-L3 | 3-4 weeks | Not started |
-| 8 | Billing, revenue operations, retention, security hardening and GA | S5-S8, S1/S11 enhancements, B10, A2-A3 | 4-5 weeks | Not started |
+| Sprint | Outcome                                                                                                   | Primary screens                        | Indicative size | Status      |
+| ------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------- | --------------- | ----------- |
+| 1      | Organization, employees, tenant access, imports, API hardening                                            | API foundation for B3-B8               | Complete scope  | Complete    |
+| 2      | Platform owner core and operational foundation                                                            | S1-S4, S9-S11                          | Complete scope  | Complete    |
+| 3      | Business-admin web and attendance configuration                                                           | B1-B9, H4-H8                           | Complete scope  | Complete    |
+| 4      | Deterministic attendance calculator, shared Business/HR dashboard, web punches, register and finalization | H1 shared role variants, H9, H10, H13  | Complete scope  | Complete    |
+| 5      | Trusted mobile attendance with device, integrity, location and face verification                          | M1-M13, M19-M20, H14                   | 4-5 weeks       | Not started |
+| 6      | Field tracking, offline replay, live map and route playback                                               | H2-H3, M16-M17                         | 3-4 weeks       | Not started |
+| 7      | Regularization, notifications, reports, payroll lock and minimal leave                                    | H11-H16, M14-M15, M18, L1-L3           | 3-4 weeks       | Not started |
+| 8      | Billing, revenue operations, retention, security hardening and GA                                         | S5-S8, S1/S11 enhancements, B10, A2-A3 | 4-5 weeks       | Not started |
 
 Indicative sizes assume one cross-functional delivery team and include API, UI, automated tests and hardening. Re-estimate each sprint after its contract/design handoff; do not trade away its exit gate to preserve a calendar date.
 

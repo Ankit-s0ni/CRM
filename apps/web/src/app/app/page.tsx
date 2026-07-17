@@ -1,2 +1,5 @@
-import { redirect } from "next/navigation";
-export default function TenantAppPage() { redirect("/app/employees"); }
+import { TenantDashboard } from "@/components/tenant/tenant-dashboard";
+
+export default function TenantAppPage() {
+  return <TenantDashboard />;
+}

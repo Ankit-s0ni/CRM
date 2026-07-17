@@ -141,11 +141,13 @@
 
 ---
 
-# PART H — HR PORTAL (Operational Dashboard, Web)
+# PART H — TENANT OPERATIONS (Business Admin + HR Admin, Web)
 
-### H1. HR Dashboard / Live Attendance Board
+### H1. Shared Workspace Dashboard / Live Attendance Board
 
 > Real-time HR dashboard. Top KPI strip: Present 142, Late 11 (amber), Absent 9 (red), On field 34, On break 6, Not yet in 18. Main: live grid of employee cards (avatar, name, department, status chip Clocked In/On Break/On Field/Absent, check-in time, small location tag "HQ — Bengaluru") with live-updating pulse dot, filter chips by department and status, view toggle grid/list. Right rail: "Needs attention" feed — 3 pending regularizations, 2 security violations, 5 absentee alerts after 10:00 AM grace with "Notify" buttons. Auto-refresh indicator "Live • updated 4s ago".
+
+> Role variants: this is the canonical `/app` dashboard for both Business Admin and HR Admin. Business Admin sees the same operational board plus permission-gated workspace setup, employee quota, users/roles and enabled-module cards. Billing/plan additions appear only for users with billing read permissions after B10 is delivered. HR Admin never sees or requests billing data. Custom roles receive widgets from persisted permissions rather than hard-coded role names.
 
 ### H2. Live Field Map
 

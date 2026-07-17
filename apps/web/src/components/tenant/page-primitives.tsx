@@ -19,5 +19,5 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 export const inputClass = "h-11 w-full rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm outline-none transition focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15";
 
 export function LoadingState() { return <div className="grid gap-3">{[0, 1, 2].map((item) => <div key={item} className="h-16 animate-pulse rounded-xl bg-[#f0ecf9]" />)}</div>; }
-export function EmptyState({ title, body }: { title: string; body: string }) { return <div className="grid min-h-56 place-items-center p-8 text-center"><div><div className="text-lg font-semibold">{title}</div><p className="mt-2 max-w-md text-sm text-[#777587]">{body}</p></div></div>; }
+export function EmptyState({ title, body }: { title: string; body: string }) { return <div className="grid min-h-56 place-items-center p-8 text-center"><div><h3 className="text-lg font-semibold">{title}</h3><p className="mt-2 max-w-md text-sm text-[#777587]">{body}</p></div></div>; }
 export function ErrorState({ message }: { message: string }) { return <div className="rounded-xl border border-[#ffb4ab] bg-[#ffdad6] p-4 text-sm text-[#93000a]">{message}</div>; }

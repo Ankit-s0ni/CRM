@@ -87,6 +87,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
   });
 
   test('continues onboarding through the employee creation entry point', async ({ page }) => {
+    let latestSettingsUpdate: Record<string, unknown> | undefined;
     await page.route('**/onboarding/status', (route) =>
       route.fulfill({
         status: 200,
@@ -108,6 +109,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
           },
         });
       }
+      latestSettingsUpdate = route.request().postDataJSON() as Record<string, unknown>;
       return route.fulfill({ status: 200, json: { data: {} } });
     });
     await page.route('**/roles', (route) =>
@@ -121,7 +123,12 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await expect(page.getByRole('heading', { name: "Let's build your workspace" })).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByRole('heading', { name: 'Define your working week' })).toBeVisible();
+    await page.getByRole('button', { name: 'Friday + Saturday' }).click();
+    await expect(page.getByText('Every Friday, Every Saturday')).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
+    expect(latestSettingsUpdate).toMatchObject({
+      weeklyOffs: [{ weekday: 'FRI' }, { weekday: 'SAT' }],
+    });
     await expect(page.getByRole('heading', { name: 'Set verification defaults' })).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByRole('heading', { name: 'Invite your HR team' })).toBeVisible();
@@ -216,14 +223,164 @@ test.describe('Sprint 3 screen behavior and states', () => {
     expect(dialogType).toBe('confirm');
     await expect(page.getByRole('heading', { name: 'Edit shift' })).toBeVisible();
   });
+
+  test('configures occurrence-based weekly offs in Company Settings', async ({ page }) => {
+    let savedSettings: Record<string, unknown> | undefined;
+    await page.route('**/tenant-settings', (route) => {
+      if (route.request().method() === 'GET') {
+        return route.fulfill({
+          status: 200,
+          json: {
+            data: {
+              timezone: 'Asia/Dubai',
+              weeklyOffs: [{ weekday: 'SAT' }, { weekday: 'SUN' }],
+              workingDayStart: '09:00',
+              workingDayEnd: '18:00',
+              requireFacialRecognition: false,
+              faceMatchThreshold: 85,
+              fieldTrackingIntervalMin: 15,
+              checkinReminderEnabled: true,
+              checkoutReminderMinutes: 15,
+              absenteeAlertTime: '10:00',
+              onboardingStep: 4,
+            },
+          },
+        });
+      }
+      savedSettings = route.request().postDataJSON() as Record<string, unknown>;
+      return route.fulfill({ status: 200, json: { data: savedSettings } });
+    });
+
+    await page.goto('/app/settings/company');
+    const friday = page.getByRole('group', { name: 'Friday weekly off' });
+    await friday.getByRole('checkbox', { name: 'Friday' }).click();
+    await friday.getByRole('combobox', { name: 'Friday recurrence' }).selectOption('selected');
+    await friday.getByRole('checkbox', { name: '2nd' }).click();
+    await friday.getByRole('checkbox', { name: '1st' }).click();
+    await expect(page.getByText('2nd Friday, Every Saturday, Every Sunday')).toBeVisible();
+    await page.getByRole('button', { name: 'Save changes' }).last().click();
+
+    expect(savedSettings).toMatchObject({
+      weeklyOffs: [
+        { weekday: 'FRI', occurrences: [2] },
+        { weekday: 'SAT' },
+        { weekday: 'SUN' },
+      ],
+    });
+  });
+
+  test('renders the shared dashboard with Business Admin additions', async ({ page }) => {
+    await mockDashboard(page);
+    await page.goto('/app');
+
+    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Business Admin overview' })).toBeVisible();
+    await expect(page.getByText('Every Friday')).toBeHidden();
+    await expect(page.getByText('142')).toBeVisible();
+    await expect(page.getByText('Rajesh Kumar')).toBeVisible();
+    const attention = page.getByRole('complementary');
+    await expect(attention.getByText('3', { exact: true })).toBeVisible();
+    await expect(attention.getByText('Pending regularizations')).toBeVisible();
+    await expectNoOverflow(page);
+    await expectNoCollapsedContent(page);
+  });
+
+  test('uses the same dashboard for HR without requesting owner additions', async ({ page }) => {
+    let ownerRequestCount = 0;
+    await page.route('**/auth/me', (route) =>
+      route.fulfill({
+        status: 200,
+        json: authMeFixture([
+          'attendance.records.read',
+          'organization.employees.read',
+        ], ['HR_ADMIN']),
+      }),
+    );
+    for (const path of ['**/employees/quota', '**/users']) {
+      await page.route(path, (route) => {
+        ownerRequestCount += 1;
+        return route.fulfill({ status: 200, json: { data: [] } });
+      });
+    }
+    await mockDashboard(page, false);
+    await page.goto('/app');
+
+    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Business Admin overview' })).toBeHidden();
+    expect(ownerRequestCount).toBe(0);
+  });
+
+  test('keeps the shared dashboard usable on a 390px mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockDashboard(page);
+    await page.goto('/app');
+
+    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByText('Rajesh Kumar')).toBeVisible();
+    await expectNoOverflow(page);
+    await expectNoCollapsedContent(page);
+  });
 });
 
 async function login(page: Page) {
+  await page.route('**/onboarding/status', (route) =>
+    route.fulfill({
+      status: 200,
+      json: { data: { completed: false, currentStep: 1, steps: {} } },
+    }),
+  );
+  await page.route('**/auth/me', (route) =>
+    route.fulfill({
+      status: 200,
+      json: authMeFixture([
+        'attendance.records.read',
+        'organization.employees.read',
+        'workspace.dashboard.admin.read',
+      ], ['BUSINESS_ADMIN']),
+    }),
+  );
   await page.goto(`/login?tenantId=${tenantId}&workspace=acme`);
   await page.getByLabel('Email Address').fill('admin@acme.com');
   await page.locator('#password').fill('TenantAdmin123!');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL('**/app/onboarding');
+}
+
+async function mockDashboard(page: Page, includeOwnerMocks = true) {
+  await page.route('**/attendance/dashboard?*', (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        data: {
+          date: '2026-07-17',
+          timezone: 'Asia/Muscat',
+          summary: { present: 142, late: 11, absent: 9, onField: 34, onBreak: 6, notYetIn: 18 },
+          employees: [
+            {
+              id: 'employee-1', employeeCode: 'EMP-001', fullName: 'Rajesh Kumar',
+              designation: 'Senior Logistics Analyst', department: { id: 'department-1', name: 'Operations' },
+              workType: 'OFFICE', status: 'CLOCKED_IN', lateMinutes: 0,
+              checkinTime: '2026-07-17T05:14:00.000Z', office: { id: 'office-1', officeName: 'Muscat HQ' },
+              shift: { id: 'shift-1', name: 'Day' },
+            },
+          ],
+          attention: { pendingRegularizations: 3, openSecurityViolations: 2, absenteeAlerts: 5 },
+          updatedAt: new Date().toISOString(), nextCursor: null,
+        },
+      },
+    }),
+  );
+  if (includeOwnerMocks) {
+    await page.route('**/employees/quota', (route) => route.fulfill({ status: 200, json: { data: { used: 190, limit: 200, percentage: 95 } } }));
+    await page.route('**/users', (route) => route.fulfill({ status: 200, json: { data: [{ id: 'user-1' }, { id: 'user-2' }] } }));
+  }
+}
+
+function authMeFixture(permissions: string[], roles: string[]) {
+  return {
+    user: { id: 'admin-user', email: 'admin@acme.com', roles, permissions },
+    workspace: { id: tenantId, companyName: 'Acme Technologies', subdomain: 'acme', status: 'ACTIVE' },
+  };
 }
 
 async function expectNoOverflow(page: Page) {

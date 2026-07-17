@@ -33,6 +33,10 @@ Every feature mapped to its **ERD v4 entities** and **screen IDs** (STITCH-SCREE
 
 ## 2. Business Admin (Portal 2)
 
+**2.0 Shared workspace dashboard**
+- ✅ Shared H1 live attendance board with HR Admin; Business Admin receives additional quota, setup, access and enabled-module cards — derived attendance reads + permission-safe existing APIs — H1
+- ✅ Billing/plan dashboard additions are permission-gated and delivered with B10; HR Admin never receives billing data
+
 **2.1 Company setup**
 - ✅ Onboarding wizard: logo (reflected in employee app), timezone, working days — `Tenants`, `Tenant_Settings` — B1, B2
 - ✅ Weekly-off patterns incl. 2nd/4th Saturday — `Tenant_Settings.weekly_offs` (+ per-policy override) — B2
@@ -56,6 +60,10 @@ Every feature mapped to its **ERD v4 entities** and **screen IDs** (STITCH-SCREE
 ---
 
 ## 3. HR Portal (Portal 3)
+
+**3.0 Shared workspace dashboard**
+- ✅ H1 is the canonical `/app` tenant dashboard for HR Admin and Business Admin, not a separate duplicated portal page
+- ✅ Widget visibility and action links follow persisted permissions; role names are display labels only
 
 **3.1 Geo-security config**
 - ✅ Geofence drawing: pin + radius per office, per-office timezone — `Office_Locations` — H4
