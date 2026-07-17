@@ -1,3 +1,4 @@
 abstract interface class EnrollmentRepository {
-  Future<void> complete(String privateObjectKey, String proofToken);
+  Future<Map<String, dynamic>> status();
+  Future<void> enroll(String filePath);
 }

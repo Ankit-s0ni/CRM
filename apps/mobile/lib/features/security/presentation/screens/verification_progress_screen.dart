@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -8,8 +6,15 @@ import '../widgets/verification_checklist.dart';
 import '../../../../l10n/l10n_context.dart';
 
 class VerificationProgressScreen extends StatefulWidget {
-  const VerificationProgressScreen({super.key, required this.onComplete});
-  final VoidCallback onComplete;
+  const VerificationProgressScreen({
+    super.key,
+    required this.verify,
+    required this.onSuccess,
+    required this.onFailure,
+  });
+  final Future<bool> Function() verify;
+  final VoidCallback onSuccess;
+  final VoidCallback onFailure;
 
   @override
   State<VerificationProgressScreen> createState() =>
@@ -18,20 +23,20 @@ class VerificationProgressScreen extends StatefulWidget {
 
 class _VerificationProgressScreenState
     extends State<VerificationProgressScreen> {
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 1600), () {
-      if (mounted) widget.onComplete();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _verify());
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  Future<void> _verify() async {
+    final passed = await widget.verify();
+    if (!mounted) return;
+    if (passed) {
+      widget.onSuccess();
+    } else {
+      widget.onFailure();
+    }
   }
 
   Future<void> _warnBeforeLeaving() => AppFeedback.information(

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acme Industries - Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#777587",
+                    "tertiary-container": "#a44100",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-primary-fixed": "#0f0069",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary": "#7e3000",
+                    "secondary": "#505f76",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-variant": "#e4e1ee",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary": "#3525cd",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container": "#f0ecf9",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-primary-container": "#dad7ff",
+                    "background": "#fcf8ff",
+                    "surface-tint": "#4d44e3",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "on-surface-variant": "#464555",
+                    "primary-container": "#4f46e5",
+                    "on-background": "#1b1b24",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-fixed": "#351000",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-container": "#54647a",
+                    "inverse-surface": "#302f39",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-low": "#f5f2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "container-margin": "16px",
+                    "base": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC; /* Slate 50 as per Brand Anchor */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shadow-subtle {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        .unread-dot::after {
+            content: '';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            background-color: #3525cd;
+            border-radius: 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen text-on-surface">
+<!-- Top App Bar -->
+<header class="bg-surface w-full top-0 sticky z-40 flex items-center justify-between px-container-margin h-14 w-full">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container transition-colors p-2 rounded-full active:opacity-80">arrow_back</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Acme Industries</h1>
+</div>
+<button class="text-primary font-label-md hover:bg-surface-container px-3 py-2 rounded-lg transition-colors active:opacity-80">
+            Mark all as read
+        </button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-container-margin pb-24 overflow-y-auto">
+<!-- Header Section -->
+<section class="py-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Notifications</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Stay updated with your latest activities</p>
+</section>
+<!-- Today's Notifications -->
+<section class="mb-lg">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider mb-md">Today</h3>
+<div class="space-y-md">
+<!-- Success Notification -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-subtle flex gap-md items-start unread-dot relative group hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1 pr-6">
+<p class="font-body-lg text-body-lg text-on-surface leading-tight">
+                            Your regularization for <span class="font-semibold">Jul 5</span> was approved by <span class="font-semibold text-primary">Anil</span>
+</p>
+<span class="font-label-sm text-label-sm text-outline mt-xs block">2 hours ago</span>
+</div>
+</div>
+<!-- Info Notification -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-subtle flex gap-md items-start unread-dot relative group hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</div>
+<div class="flex-1 pr-6">
+<p class="font-body-lg text-body-lg text-on-surface leading-tight">
+<span class="font-semibold">Shift reminder</span> — your shift ends in 15 min
+                        </p>
+<span class="font-label-sm text-label-sm text-outline mt-xs block">4:45 PM</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Earlier Notifications -->
+<section>
+<div class="flex items-center gap-md mb-md">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider">Earlier</h3>
+<div class="h-px bg-outline-variant flex-1"></div>
+</div>
+<div class="space-y-md">
+<!-- Location Notification -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-subtle flex gap-md items-start hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-teal-600" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-body-lg text-on-surface leading-tight">
+                            You've entered the <span class="font-semibold">office zone</span> — don't forget to check in!
+                        </p>
+<div class="mt-md rounded-lg overflow-hidden h-32 relative border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A clean, minimalist vector map illustration of an urban corporate office park with a bright primary indigo pin dropping onto a teal-highlighted zone. The style is professional and informative, using a high-contrast light mode color scheme to match the enterprise UI." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3-LqY5-PhOlNpHi-TxUunynFsS3VWGzjVANbajFpNO5oLOjya_BofJN-qi1ZXzaVU87rCKcwmYyhpTxLUfCA4LVUg-WG-PydS3_aRKSaLag2tQDd_mDhpPIpPxXpXABCMpI1sMUD3qZuRAxSjCmsC46oWXNlLgr_cLPuhztzjOzZL8qXoOZiP0-bCEhnlGzIEP2jFxK3KrWHMJSeOjHbwhcq1mYlbPQmobvNCtdu22l8CL1UcE0YQ5mM3JpW26kP4X6eb8W0W0g')"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline mt-xs block">Yesterday, 9:02 AM</span>
+</div>
+</div>
+<!-- Alert Notification -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-subtle flex gap-md items-start hover:bg-surface-container-low transition-colors duration-200 cursor-pointer border-l-4 border-amber-500">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-amber-600" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-body-lg text-on-surface leading-tight">
+                            You were marked <span class="font-semibold text-error">late</span> today (21 min)
+                        </p>
+<span class="font-label-sm text-label-sm text-outline mt-xs block">Yesterday, 9:21 AM</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Empty State Buffer -->
+<div class="h-10"></div>
+</main>
+<!-- Bottom Navigation Bar -->
+<!-- Screen logic: Active on 'Alerts' which maps to Notifications/Alerts tab -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest shadow-sm border-t border-outline-variant flex justify-around items-center h-20 pb-safe px-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction: Mark as read
+        document.querySelector('button:contains("Mark all as read")')?.addEventListener('click', function() {
+            document.querySelectorAll('.unread-dot').forEach(el => {
+                el.classList.remove('unread-dot');
+            });
+        });
+
+        // Add contains selector support for the demo
+        if (!window.jQuery) {
+          window.HTMLElement.prototype.containsText = function(text) {
+            return this.innerText.includes(text);
+          };
+        }
+    </script>
+</body></html>

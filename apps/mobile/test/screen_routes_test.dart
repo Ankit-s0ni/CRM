@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hrms_attendance/core/router/app_router.dart';
 import 'package:hrms_attendance/core/router/app_routes.dart';
+import 'package:hrms_attendance/core/network/network_providers.dart';
 import 'package:hrms_attendance/main.dart';
+
+import 'support/test_api_service.dart';
 
 void main() {
   const paths = [
@@ -35,7 +38,11 @@ void main() {
     ) async {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.binding.setSurfaceSize(size);
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          apiServiceProvider.overrideWithValue(createTestApiService()),
+        ],
+      );
       addTearDown(container.dispose);
       await tester.pumpWidget(
         UncontrolledProviderScope(container: container, child: const HrmsApp()),
@@ -51,6 +58,79 @@ void main() {
           reason: 'Route failed: $path at ${size.width}×${size.height}',
         );
       }
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
     });
   }
+
+  testWidgets('all M1-M20 routes support 200 percent text scaling', (
+    tester,
+  ) async {
+    addTearDown(() {
+      tester.binding.setSurfaceSize(null);
+      tester.platformDispatcher.clearTextScaleFactorTestValue();
+    });
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    final container = ProviderContainer(
+      overrides: [apiServiceProvider.overrideWithValue(createTestApiService())],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const HrmsApp()),
+    );
+    final router = container.read(appRouterProvider);
+    for (final path in paths) {
+      router.go(path);
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Route failed at 200 percent text scaling: $path',
+      );
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('all M1-M20 routes meet automated accessibility guidelines', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    final container = ProviderContainer(
+      overrides: [apiServiceProvider.overrideWithValue(createTestApiService())],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const HrmsApp()),
+    );
+    final router = container.read(appRouterProvider);
+
+    for (final path in paths) {
+      router.go(path);
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(tester.takeException(), isNull, reason: 'Route failed: $path');
+      await expectLater(
+        tester,
+        meetsGuideline(labeledTapTargetGuideline),
+        reason: 'Unlabeled control on $path',
+      );
+      await expectLater(
+        tester,
+        meetsGuideline(androidTapTargetGuideline),
+        reason: 'Undersized control on $path',
+      );
+      await expectLater(
+        tester,
+        meetsGuideline(textContrastGuideline),
+        reason: 'Insufficient text contrast on $path',
+      );
+    }
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    semantics.dispose();
+  });
 }

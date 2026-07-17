@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Punch Failed | Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Shared Style & Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "background": "#fcf8ff",
+                    "surface-container": "#f0ecf9",
+                    "on-surface-variant": "#464555",
+                    "on-surface": "#1b1b24",
+                    "surface": "#fcf8ff",
+                    "inverse-on-surface": "#f3effc",
+                    "tertiary": "#7e3000",
+                    "outline": "#777587",
+                    "surface-bright": "#fcf8ff",
+                    "on-primary-container": "#dad7ff",
+                    "secondary": "#505f76",
+                    "on-tertiary-fixed": "#351000",
+                    "on-secondary-container": "#54647a",
+                    "on-background": "#1b1b24",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "surface-dim": "#dcd8e5",
+                    "secondary-container": "#d0e1fb",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "tertiary-fixed": "#ffdbcc",
+                    "primary": "#3525cd",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d3e4fe",
+                    "outline-variant": "#c7c4d8",
+                    "surface-container-high": "#eae6f4",
+                    "tertiary-container": "#a44100",
+                    "primary-fixed": "#e2dfff",
+                    "inverse-primary": "#c3c0ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-tint": "#4d44e3",
+                    "surface-variant": "#e4e1ee",
+                    "primary-container": "#4f46e5",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-container-low": "#f5f2ff",
+                    "on-tertiary-container": "#ffd2be",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#0f0069",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-container-highest": "#e4e1ee"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "16px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "gutter": "12px",
+                    "sm": "8px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .card-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        /* Custom map circle animation */
+        @keyframes pulse-circle {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .geo-pulse {
+            animation: pulse-circle 2s infinite ease-in-out;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- Top AppBar (from JSON) -->
+<header class="bg-surface dark:bg-on-background w-full top-0 sticky flex items-center justify-between px-container-margin h-14 w-full z-40">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Punch Failed</h1>
+</div>
+<div class="flex items-center">
+<span class="font-label-md text-label-md text-on-surface-variant px-2 py-1 bg-surface-container rounded-lg">Acme Industries</span>
+</div>
+</header>
+<main class="px-container-margin pt-6 space-y-6 max-w-md mx-auto">
+<!-- Card 1: OUTSIDE_GEOFENCE -->
+<section class="bg-surface-container-lowest rounded-xl card-shadow overflow-hidden border border-outline-variant">
+<div class="p-4 space-y-4">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-error-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">location_off</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">You're 2.1 km from the office</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Please be within 200m of the office premises to punch in.</p>
+</div>
+</div>
+<!-- Mini Map View -->
+<div class="relative w-full h-40 bg-slate-100 rounded-lg overflow-hidden border border-outline-variant">
+<div class="absolute inset-0 grayscale opacity-40" data-location="San Francisco Office" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAbemR9y-MLghvqTcFzgqPZOMUNI5VcubbQS_UfmtXNq2lQkVY_MYaaXNB7CahajqOzSIyBLGmnvqrKdyuO3MFD9DqGr_QD2HZZd5k6vLNEIJASs3VsKJc0ArpbRlPTDKNi-2_t6TKYVIzQT06SJu0brMzirMCxY7bH2bSqOkShMn5rqY5B2A6lCxF091UAO5GAFnuPYZuvHPlJQ_6TH6pqNhWpisl6HL0CFHEYhTqWszw-uMVXKU0Zsp2-oXcBav5tvYbtoXQWYg')"></div>
+<!-- User Location -->
+<div class="absolute top-1/2 left-1/3 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<span class="material-symbols-outlined text-error text-3xl" style="font-variation-settings: 'FILL' 1;">person_pin_circle</span>
+<div class="bg-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm border border-slate-200 uppercase">You</div>
+</div>
+<!-- Office Target -->
+<div class="absolute top-1/4 right-1/4 transform translate-x-1/2 translate-y-1/2 flex items-center justify-center">
+<div class="w-16 h-16 bg-primary/20 rounded-full border border-primary geo-pulse flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">apartment</span>
+</div>
+</div>
+</div>
+<div class="space-y-2 pt-2">
+<button class="w-full py-3 px-6 rounded-lg border border-primary text-primary font-bold active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+                        Retry
+                    </button>
+<button class="w-full py-3 px-6 text-primary font-bold active:opacity-70 transition-opacity">
+                        Request regularization
+                    </button>
+</div>
+<div class="pt-2 border-t border-slate-100">
+<span class="font-label-sm text-label-sm text-outline">Error: ERR_GEOFENCE_01</span>
+</div>
+</div>
+</section>
+<!-- Card 2: FACE_MISMATCH -->
+<section class="bg-surface-container-lowest rounded-xl card-shadow overflow-hidden border border-outline-variant">
+<div class="p-4 space-y-4">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-error-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">face_retouching_off</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Face didn't match</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Verification failed. Your current photo doesn't align with our records.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="font-label-md text-label-md text-on-surface mb-2">Tips for a better scan:</p>
+<ul class="space-y-2">
+<li class="flex items-center gap-2 text-on-surface-variant font-body-md">
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+                            Remove mask, glasses or headwear
+                        </li>
+<li class="flex items-center gap-2 text-on-surface-variant font-body-md">
+<span class="material-symbols-outlined text-[18px] text-primary">light_mode</span>
+                            Ensure you are in a well-lit area
+                        </li>
+<li class="flex items-center gap-2 text-on-surface-variant font-body-md">
+<span class="material-symbols-outlined text-[18px] text-primary">smartphone</span>
+                            Hold the camera at eye-level
+                        </li>
+</ul>
+</div>
+<button class="w-full py-3 px-6 rounded-lg bg-primary text-white font-bold active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-md">
+                    Try again (2 attempts left)
+                </button>
+<div class="pt-2 border-t border-slate-100">
+<span class="font-label-sm text-label-sm text-outline">Error: ERR_FACE_403</span>
+</div>
+</div>
+</section>
+<!-- Card 3: MOCK_LOCATION -->
+<section class="bg-surface-container-lowest rounded-xl card-shadow overflow-hidden border border-outline-variant">
+<div class="p-4 space-y-4">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-tertiary-fixed rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Fake GPS detected</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">A mock location app was detected. Attendance cannot be marked with developer options enabled.</p>
+<a class="inline-flex items-center gap-1 text-primary font-label-md mt-3 hover:underline" href="#">
+                            How to fix
+                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</a>
+</div>
+</div>
+<div class="pt-2 border-t border-slate-100">
+<span class="font-label-sm text-label-sm text-outline">Error: ERR_MOCK_LOC_09</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (from JSON) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant dark:border-outline shadow-sm flex justify-around items-center h-20 pb-safe px-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200 relative" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+<span class="absolute top-1 right-3 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary active:scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- Map Image Loader Logic -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const maps = document.querySelectorAll('[data-location]');
+            maps.forEach(map => {
+                const location = map.getAttribute('data-location');
+                // The data-alt attribute for map imagery
+                map.setAttribute('data-alt', `A professional, clean, minimalist map rendering of ${location} with subtle corporate styling. The map features high-contrast slate-blue roads and muted grey buildings against a pristine white background. A circular blue translucent geofence zone is clearly demarcated, signifying a secure office perimeter. The aesthetic is modern, tech-focused, and follows a strict enterprise design system palette with deep indigo and light grey tones.`);
+            });
+        });
+    </script>
+</body></html>

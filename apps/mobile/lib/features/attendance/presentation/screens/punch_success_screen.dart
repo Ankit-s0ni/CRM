@@ -17,9 +17,18 @@ class PunchSuccessScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final attendance = ref.watch(attendanceControllerProvider).value;
+    final attendance = ref.watch(attendanceControllerProvider).asData?.value;
     final checkedOut = attendance?.phase == AttendancePhase.checkedOut;
-    final time = TimeOfDay.now().format(context);
+    final eventTime = attendance?.lastPunch?.attendance['timeline'] is List
+        ? ((attendance!.lastPunch!.attendance['timeline'] as List).last
+                  as Map<String, dynamic>)['eventTime']
+              as String?
+        : null;
+    final parsedTime = eventTime == null ? null : DateTime.tryParse(eventTime);
+    final time = TimeOfDay.fromDateTime(
+      parsedTime?.toLocal() ?? DateTime.now(),
+    ).format(context);
+    final checks = attendance?.lastPunch?.checks ?? const <String>[];
     return AppPage(
       title: context.l10n.punchSuccessful,
       child: Column(
@@ -40,7 +49,10 @@ class PunchSuccessScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           AppCard(
             child: Text(
-              'HQ — Main office ✓\nFace match ✓\nRegistered device ✓\n${checkedOut ? 'Workday completed' : 'Day shift started on time'}',
+              '${checks.contains('location') ? 'Approved location ✓' : 'Location skipped by policy'}\n'
+              '${checks.contains('face') ? 'Face match ✓' : 'Face match not required'}\n'
+              '${checks.contains('device') ? 'Registered device ✓' : 'Device check skipped'}\n'
+              '${checkedOut ? 'Workday completed' : 'Shift started'}',
             ),
           ),
           const SizedBox(height: 20),

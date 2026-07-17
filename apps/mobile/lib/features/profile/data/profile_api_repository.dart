@@ -7,5 +7,7 @@ class ProfileApiRepository implements ProfileRepository {
   final ApiService _api;
   @override
   Future<Map<String, dynamic>> load() async =>
-      (await _api.get<Map<String, dynamic>>(ApiRoutes.profile)).data ?? {};
+      (await _api.get<Map<String, dynamic>>(ApiRoutes.profile)).data?['data']
+          as Map<String, dynamic>? ??
+      {};
 }

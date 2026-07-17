@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Regularization Request - Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .timeline-gradient {
+            background: linear-gradient(90deg, #3525cd 0%, #3525cd 65%, #ba1a1a 65%, #ba1a1a 75%, #e4e1ee 75%);
+        }
+        .subtle-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf8ff",
+                        "surface-container": "#f0ecf9",
+                        "on-surface-variant": "#464555",
+                        "on-surface": "#1b1b24",
+                        "surface": "#fcf8ff",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary": "#7e3000",
+                        "outline": "#777587",
+                        "surface-bright": "#fcf8ff",
+                        "on-primary-container": "#dad7ff",
+                        "secondary": "#505f76",
+                        "on-tertiary-fixed": "#351000",
+                        "on-secondary-container": "#54647a",
+                        "on-background": "#1b1b24",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-dim": "#dcd8e5",
+                        "secondary-container": "#d0e1fb",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary": "#3525cd",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#d3e4fe",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container-high": "#eae6f4",
+                        "tertiary-container": "#a44100",
+                        "primary-fixed": "#e2dfff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "surface-tint": "#4d44e3",
+                        "surface-variant": "#e4e1ee",
+                        "primary-container": "#4f46e5",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#302f39",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-container-low": "#f5f2ff",
+                        "on-tertiary-container": "#ffd2be",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#0f0069",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "surface-container-highest": "#e4e1ee"
+                    },
+                    "spacing": {
+                        "container-margin": "16px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "gutter": "12px",
+                        "sm": "8px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-on-background w-full top-0 sticky z-40">
+<div class="flex items-center justify-between px-container-margin h-14 w-full">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-opacity text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed">Regularization</h1>
+</div>
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">
+                Acme
+            </div>
+</div>
+</header>
+<main class="flex-grow px-container-margin py-lg space-y-lg">
+<!-- Context Card -->
+<section class="bg-surface-container-lowest subtle-shadow rounded-xl p-md border border-outline-variant/30">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">July 5</h2>
+<p class="font-body-md text-body-md text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">error</span>
+                        Missing check-out
+                    </p>
+</div>
+<span class="bg-error/10 text-error px-2 py-0.5 rounded-full font-label-md text-label-md">Action Required</span>
+</div>
+<div class="mt-lg space-y-xs">
+<div class="flex justify-between font-label-md text-label-md text-on-surface-variant">
+<span>09:00 AM</span>
+<span class="text-error">MISSING</span>
+<span>06:00 PM</span>
+</div>
+<div class="h-2 w-full rounded-full timeline-gradient"></div>
+<div class="flex justify-between font-label-sm text-label-sm text-outline">
+<span>In</span>
+<span>Gap</span>
+<span>Out</span>
+</div>
+</div>
+</section>
+<!-- Form Section -->
+<form class="space-y-lg pb-xl">
+<!-- Time Pickers -->
+<div class="grid grid-cols-2 gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Requested Check-in</label>
+<div class="h-11 px-md bg-surface-container border border-outline-variant rounded-lg flex items-center font-body-md text-on-surface-variant opacity-70">
+                        09:00 AM
+                    </div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Requested Check-out</label>
+<input class="h-11 px-md bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg font-body-md text-on-surface" type="time" value="18:00"/>
+</div>
+</div>
+<!-- Reason Dropdown -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Reason</label>
+<div class="relative">
+<select class="appearance-none w-full h-11 px-md bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg font-body-md text-on-surface">
+<option disabled="" selected="" value="">Select a reason</option>
+<option value="battery">Battery died</option>
+<option value="forgot">Forgot to punch</option>
+<option value="device">Device issue</option>
+<option value="other">Other</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<!-- Comments Area -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Comments</label>
+<textarea class="w-full p-md bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg font-body-md text-on-surface resize-none" placeholder="Explain briefly..." rows="3"></textarea>
+</div>
+<!-- Attachment Tile -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Attachment</label>
+<button class="w-full aspect-[3/1] border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-surface-container-low transition-colors active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-primary text-2xl">add_a_photo</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Add photo/proof</span>
+</button>
+</div>
+<!-- Policy Note -->
+<div class="flex items-start gap-3 p-md bg-surface-container-low rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary text-[20px]">info</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+<span class="font-semibold text-on-surface">Policy note:</span> Requests allowed within 7 days of the attendance date.
+                </p>
+</div>
+<!-- Submit Action -->
+<div class="pt-md">
+<button class="w-full h-12 bg-primary text-on-primary font-bold text-body-lg rounded-lg shadow-lg active:scale-[0.97] transition-all hover:bg-primary-container" type="button">
+                    Send to manager
+                </button>
+</div>
+</form>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant dark:border-outline shadow-sm">
+<div class="flex justify-around items-center w-full h-20 pb-safe px-base">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</div>
+</nav>
+<!-- Spacer for bottom nav -->
+<div class="h-20"></div>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.innerText.includes('Send')) {
+                    btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending...</span>';
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        btn.innerHTML = 'Success!';
+                        btn.classList.remove('bg-primary');
+                        btn.classList.add('bg-green-600');
+                        setTimeout(() => {
+                            btn.innerText = 'Send to manager';
+                            btn.classList.add('bg-primary');
+                            btn.classList.remove('bg-green-600');
+                            btn.disabled = false;
+                        }, 2000);
+                    }, 1500);
+                }
+            });
+        });
+    </script>
+</body></html>

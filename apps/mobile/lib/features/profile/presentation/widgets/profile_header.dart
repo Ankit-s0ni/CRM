@@ -21,11 +21,11 @@ class ProfileHeader extends StatelessWidget {
       Stack(
         clipBehavior: Clip.none,
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 48,
             backgroundColor: AppTheme.charcoal,
             child: Text(
-              'SA',
+              _initials(name),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 23,
@@ -73,7 +73,7 @@ class ProfileHeader extends StatelessWidget {
         child: Text(
           department,
           style: const TextStyle(
-            color: AppTheme.green,
+            color: AppTheme.charcoal,
             fontSize: 11,
             fontWeight: FontWeight.w800,
           ),
@@ -82,3 +82,11 @@ class ProfileHeader extends StatelessWidget {
     ],
   );
 }
+
+String _initials(String name) => name
+    .trim()
+    .split(RegExp(r'\s+'))
+    .where((part) => part.isNotEmpty)
+    .take(2)
+    .map((part) => part[0].toUpperCase())
+    .join();

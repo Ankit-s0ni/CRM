@@ -20,6 +20,7 @@ class HomeController extends AsyncNotifier<HomeSummary> {
 
   @override
   Future<HomeSummary> build() async {
+    if (!AppConfig.localMode) return _repository.loadToday();
     final tenant = ref.watch(tenantControllerProvider);
     final policy = tenant.attendancePolicy;
     String time(TimeOfDay value) =>

@@ -19,9 +19,11 @@ class FaceCaptureGuide extends StatefulWidget {
     super.key,
     required this.onCaptured,
     this.isCheckOut = false,
+    this.captureLabel,
   });
-  final Future<void> Function() onCaptured;
+  final Future<void> Function(XFile file) onCaptured;
   final bool isCheckOut;
+  final String? captureLabel;
 
   @override
   State<FaceCaptureGuide> createState() => _FaceCaptureGuideState();
@@ -112,8 +114,8 @@ class _FaceCaptureGuideState extends State<FaceCaptureGuide>
       _message = context.l10n.verifyingFaceLocation;
     });
     try {
-      await camera.takePicture();
-      await widget.onCaptured();
+      final file = await camera.takePicture();
+      await widget.onCaptured(file);
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -230,9 +232,10 @@ class _FaceCaptureGuideState extends State<FaceCaptureGuide>
               fit: BoxFit.scaleDown,
               child: Text(
                 _status == FaceCaptureStatus.ready
-                    ? widget.isCheckOut
-                          ? context.l10n.verifyCheckOut
-                          : context.l10n.verifyCheckIn
+                    ? widget.captureLabel ??
+                          (widget.isCheckOut
+                              ? context.l10n.verifyCheckOut
+                              : context.l10n.verifyCheckIn)
                     : context.l10n.tryCameraAgain,
               ),
             ),

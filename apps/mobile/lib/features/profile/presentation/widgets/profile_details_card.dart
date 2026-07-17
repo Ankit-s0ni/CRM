@@ -5,8 +5,19 @@ import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
 
 class ProfileDetailsCard extends StatelessWidget {
-  const ProfileDetailsCard({super.key, required this.tenant});
+  const ProfileDetailsCard({
+    super.key,
+    required this.tenant,
+    required this.employeeCode,
+    required this.department,
+    required this.manager,
+    required this.office,
+  });
   final TenantConfig tenant;
+  final String employeeCode;
+  final String department;
+  final String manager;
+  final String office;
 
   @override
   Widget build(BuildContext context) => AppCard(
@@ -16,22 +27,22 @@ class ProfileDetailsCard extends StatelessWidget {
         _Detail(
           icon: Icons.badge_outlined,
           label: context.l10n.companyCode,
-          value: 'NSL-1042',
+          value: employeeCode,
         ),
         _Detail(
           icon: Icons.account_tree_outlined,
           label: context.l10n.department,
-          value: 'Field Operations',
+          value: department,
         ),
         _Detail(
           icon: Icons.supervisor_account_outlined,
           label: context.l10n.manager,
-          value: 'Mariam Al Balushi',
+          value: manager,
         ),
         _Detail(
           icon: Icons.apartment_outlined,
           label: context.l10n.office,
-          value: 'Muscat Logistics Hub',
+          value: office,
         ),
         _Detail(
           icon: Icons.schedule_outlined,

@@ -40,7 +40,7 @@ class _PermissionsOnboardingScreenState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(permissionsControllerProvider);
-    final snapshot = state.value;
+    final snapshot = state.asData?.value;
     return AppPage(
       title: context.l10n.attendancePermissions,
       child: Column(

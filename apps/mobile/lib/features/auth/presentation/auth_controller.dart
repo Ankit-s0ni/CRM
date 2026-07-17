@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/device/device_identity.dart';
 import '../../../core/network/network_providers.dart';
 import '../data/auth_api_repository.dart';
 import '../data/local_auth_repository.dart';
@@ -8,7 +9,10 @@ import '../domain/auth_repository.dart';
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AppConfig.localMode
       ? const LocalAuthRepository()
-      : AuthApiRepository(ref.watch(apiServiceProvider)),
+      : AuthApiRepository(
+          ref.watch(apiServiceProvider),
+          ref.watch(deviceIdentityProvider),
+        ),
 );
 final authControllerProvider = AsyncNotifierProvider<AuthController, void>(
   AuthController.new,
@@ -28,6 +32,5 @@ class AuthController extends AsyncNotifier<void> {
 
   Future<void> logout() async {
     await _repository.logout();
-    await ref.read(tokenStoreProvider).clear();
   }
 }

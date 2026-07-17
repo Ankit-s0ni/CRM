@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#777587",
+                    "tertiary-container": "#a44100",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-primary-fixed": "#0f0069",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary": "#7e3000",
+                    "secondary": "#505f76",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-variant": "#e4e1ee",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary": "#3525cd",
+                    "surface-container": "#f0ecf9",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-primary-container": "#dad7ff",
+                    "background": "#fcf8ff",
+                    "surface-tint": "#4d44e3",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "on-surface-variant": "#464555",
+                    "primary-container": "#4f46e5",
+                    "on-background": "#1b1b24",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-fixed": "#351000",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-container": "#54647a",
+                    "inverse-surface": "#302f39",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-low": "#f5f2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "container-margin": "16px",
+                    "base": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-subtle-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        .retry-animation {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="bg-surface sticky top-0 w-full z-40 flex items-center justify-between px-container-margin h-14">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Sync Queue</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="more_vert">more_vert</span>
+</div>
+</header>
+<main class="px-container-margin py-md space-y-md">
+<!-- Connectivity Row -->
+<div class="flex items-center justify-center gap-2 bg-error-container/20 py-2 rounded-lg">
+<span class="material-symbols-outlined text-error text-[20px]" data-icon="wifi_off">wifi_off</span>
+<span class="font-label-md text-error">No internet connection — will retry automatically</span>
+</div>
+<!-- Header Card: Offline Status -->
+<section class="bg-surface-container-lowest rounded-xl p-md bg-subtle-shadow border border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="cloud_off">cloud_off</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">3 punches waiting to sync</h2>
+<p class="font-body-md text-on-surface-variant">Your activity is saved securely offline.</p>
+</div>
+</div>
+</section>
+<!-- Sync Queue List -->
+<div class="space-y-sm">
+<h3 class="font-label-md text-on-surface-variant px-1 uppercase tracking-wider">Queue</h3>
+<!-- Item 1: Retrying -->
+<div class="bg-surface-container-lowest rounded-xl p-md bg-subtle-shadow border border-outline-variant transition-all">
+<div class="flex justify-between items-start">
+<div class="flex gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-primary" data-icon="login">login</span>
+</div>
+<div class="space-y-1">
+<p class="font-headline-sm text-on-surface">Check-in • 9:12 AM</p>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tight border border-outline-variant">
+                                    Clock-saved
+                                </span>
+<span class="inline-flex items-center gap-1 text-primary font-label-md">
+<span class="material-symbols-outlined text-[14px] retry-animation" data-icon="sync">sync</span>
+                                    Retrying...
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md bg-subtle-shadow border border-outline-variant">
+<div class="flex justify-between items-start">
+<div class="flex gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-outline" data-icon="pause_circle">pause_circle</span>
+</div>
+<div class="space-y-1">
+<p class="font-headline-sm text-on-surface">Break Start • 1:00 PM</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tight border border-outline-variant">
+                                Clock-saved
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-md bg-subtle-shadow border border-outline-variant">
+<div class="flex justify-between items-start">
+<div class="flex gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-outline" data-icon="play_circle">play_circle</span>
+</div>
+<div class="space-y-1">
+<p class="font-headline-sm text-on-surface">Break End • 1:32 PM</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tight border border-outline-variant">
+                                Clock-saved
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Success Variant -->
+<div class="mt-xl pt-md border-t border-outline-variant">
+<h3 class="font-label-md text-on-surface-variant px-1 mb-sm uppercase tracking-wider">Recently Synced</h3>
+<div class="bg-surface-container-lowest rounded-xl p-md bg-subtle-shadow border border-outline-variant opacity-80">
+<div class="flex justify-between items-start">
+<div class="flex gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-outline" data-icon="logout">logout</span>
+</div>
+<div class="space-y-1">
+<p class="font-headline-sm text-on-surface">Check-out synced ✓</p>
+<p class="font-label-md text-on-surface-variant">2 min ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-xl space-y-md">
+<button class="w-full h-12 bg-outline-variant/30 text-on-surface-variant/50 font-bold rounded-lg cursor-not-allowed transition-all flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[20px]" data-icon="sync">sync</span>
+                Sync now
+            </button>
+<p class="text-center font-label-sm text-on-surface-variant italic px-lg">
+                Punch times are verified against server clock on sync.
+            </p>
+</div>
+</main>
+<!-- Bottom Navigation (from Shared Components) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center h-20 pb-safe px-base bg-surface-container-lowest border-t border-outline-variant shadow-sm">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="fingerprint">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="quickreply">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- Visual Polish: Glassmorphism Accent -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
+<div class="absolute -top-[10%] -left-[10%] w-[40%] h-[30%] bg-primary/5 rounded-full blur-[120px]"></div>
+<div class="absolute top-[20%] right-[-5%] w-[30%] h-[40%] bg-tertiary/5 rounded-full blur-[100px]"></div>
+</div>
+</body></html>

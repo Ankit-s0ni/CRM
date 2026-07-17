@@ -11,4 +11,6 @@ class DeviceApiRepository implements DeviceRepository {
   @override
   Future<Map<String, dynamic>> current() async =>
       (await _api.get<Map<String, dynamic>>(ApiRoutes.myDevice)).data ?? {};
+  @override
+  Future<void> unregister() async => _api.delete(ApiRoutes.myDevice);
 }

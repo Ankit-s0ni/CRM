@@ -76,8 +76,14 @@ final appRouterProvider = Provider<GoRouter>(
             final success = await ref
                 .read(deviceControllerProvider.notifier)
                 .register();
-            if (success && context.mounted) context.go(AppRoutes.permissions);
+            if (!success || !context.mounted) return;
+            final status = ref
+                .read(deviceControllerProvider)
+                .asData
+                ?.value?['status'];
+            if (status == 'ACTIVE') context.go(AppRoutes.permissions);
           },
+          onContinue: () => context.go(AppRoutes.permissions),
         ),
       ),
       GoRoute(
@@ -98,18 +104,29 @@ final appRouterProvider = Provider<GoRouter>(
             if (success && context.mounted) context.go(AppRoutes.enrollment);
           },
           onDecline: () => context.go(AppRoutes.home),
+          onContinue: () => context.go(AppRoutes.enrollment),
+          onWithdraw: () async {
+            final withdrawn = await ref
+                .read(consentControllerProvider.notifier)
+                .withdraw();
+            if (withdrawn && context.mounted) {
+              AppFeedback.success(context, 'Biometric consent was withdrawn.');
+            }
+          },
         ),
       ),
       GoRoute(
         path: AppRoutes.enrollment,
         name: 'enrollment',
         builder: (context, _) => EnrollmentScreen(
-          onCapture: () async {
+          onCapture: (file) async {
             final success = await ref
                 .read(enrollmentControllerProvider.notifier)
-                .complete('pending-private-key', 'pending-proof-token');
+                .enroll(file.path);
             if (success && context.mounted) context.go(AppRoutes.home);
           },
+          onContinue: () => context.go(AppRoutes.home),
+          onConsentRequired: () => context.go(AppRoutes.consent),
         ),
       ),
       StatefulShellRoute.indexedStack(
@@ -150,7 +167,8 @@ final appRouterProvider = Provider<GoRouter>(
                 path: AppRoutes.history,
                 name: 'history',
                 builder: (context, _) => HistoryScreen(
-                  onDay: () => context.push(AppRoutes.dayDetail),
+                  onDay: (date) =>
+                      context.push('${AppRoutes.dayDetail}?date=$date'),
                 ),
               ),
             ],
@@ -181,34 +199,24 @@ final appRouterProvider = Provider<GoRouter>(
         path: AppRoutes.punchCamera,
         name: 'punchCamera',
         builder: (context, _) {
-          final phase = ref.read(attendanceControllerProvider).value?.phase;
+          final phase = ref
+              .read(attendanceControllerProvider)
+              .asData
+              ?.value
+              .phase;
           final isCheckOut =
               phase == AttendancePhase.checkedIn ||
               phase == AttendancePhase.onBreak;
           return PunchCameraScreen(
             isCheckOut: isCheckOut,
-            onCaptured: () async {
-              final identity = await ref.read(deviceIdentityProvider).payload();
-              final payload = {
-                'deviceUuid': identity['deviceUuid'],
-                'clientTime': DateTime.now().toUtc().toIso8601String(),
-                'latitude': 23.5880,
-                'longitude': 58.3829,
-                'accuracyMeters': 8,
-                'source': 'MOBILE',
-              };
-              final controller = ref.read(
-                attendanceControllerProvider.notifier,
-              );
-              if (isCheckOut) {
-                await controller.checkOut(payload);
-              } else {
-                await controller.checkIn(payload);
-              }
+            onCaptured: (file) async {
               if (!context.mounted) return;
-              final result = ref.read(attendanceControllerProvider);
               context.pushReplacement(
-                result.hasError ? AppRoutes.punchFailure : AppRoutes.verifying,
+                AppRoutes.verifying,
+                extra: PunchCapture(
+                  filePath: file.path,
+                  isCheckOut: isCheckOut,
+                ),
               );
             },
           );
@@ -217,9 +225,22 @@ final appRouterProvider = Provider<GoRouter>(
       GoRoute(
         path: AppRoutes.verifying,
         name: 'verifying',
-        builder: (context, _) => VerificationProgressScreen(
-          onComplete: () => context.pushReplacement(AppRoutes.punchSuccess),
-        ),
+        builder: (context, state) {
+          final capture = state.extra as PunchCapture?;
+          if (capture == null) {
+            return PunchFailureScreen(
+              onRetry: () => context.pushReplacement(AppRoutes.punchCamera),
+              onRegularization: () => context.push(AppRoutes.regularization),
+            );
+          }
+          return VerificationProgressScreen(
+            verify: () => ref
+                .read(attendanceControllerProvider.notifier)
+                .verifyPunch(capture),
+            onSuccess: () => context.pushReplacement(AppRoutes.punchSuccess),
+            onFailure: () => context.pushReplacement(AppRoutes.punchFailure),
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.punchSuccess,
@@ -234,6 +255,7 @@ final appRouterProvider = Provider<GoRouter>(
         name: 'punchFailure',
         builder: (context, _) => PunchFailureScreen(
           onRetry: () => context.pushReplacement(AppRoutes.punchCamera),
+          onRegularization: () => context.push(AppRoutes.regularization),
         ),
       ),
       GoRoute(
@@ -241,7 +263,7 @@ final appRouterProvider = Provider<GoRouter>(
         name: 'breakFlow',
         builder: (context, _) {
           final isOnBreak =
-              ref.read(attendanceControllerProvider).value?.phase ==
+              ref.read(attendanceControllerProvider).asData?.value.phase ==
               AttendancePhase.onBreak;
           return BreakScreen(
             isOnBreak: isOnBreak,
@@ -270,7 +292,10 @@ final appRouterProvider = Provider<GoRouter>(
       GoRoute(
         path: AppRoutes.dayDetail,
         name: 'dayDetail',
-        builder: (context, _) => DayDetailScreen(
+        builder: (context, state) => DayDetailScreen(
+          date:
+              state.uri.queryParameters['date'] ??
+              DateTime.now().toIso8601String().split('T').first,
           onCorrection: () => context.push(AppRoutes.regularization),
         ),
       ),

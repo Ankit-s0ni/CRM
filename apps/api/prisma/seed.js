@@ -58,6 +58,14 @@ const permissions = [
   'attendance.exceptions.manage',
   'attendance.approvals.manage',
   'attendance.reports.read',
+  'attendance.devices.read',
+  'attendance.devices.manage',
+  'attendance.biometrics.read',
+  'attendance.biometrics.manage',
+  'attendance.verification.read',
+  'attendance.alert-rules.manage',
+  'attendance.security-alerts.read',
+  'attendance.security-alerts.manage',
 ];
 
 const rolePermissions = {
@@ -73,6 +81,8 @@ const rolePermissions = {
     'attendance.records.read',
     'attendance.records.self.read',
     'attendance.approvals.manage',
+    'attendance.devices.read',
+    'attendance.security-alerts.read',
   ],
   EMPLOYEE: [
     'organization.employees.self.read',
@@ -363,13 +373,21 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
   });
 
   if (seed.subdomain === 'acme') {
-    await seedSprint3AcceptanceFixture(tenant.id, defaultShift.id);
+    await seedSprint3AcceptanceFixture(
+      tenant.id,
+      defaultShift.id,
+      roleIdByName.get('EMPLOYEE'),
+    );
   }
 
   console.log(`Seeded ${tenant.companyName} (${tenant.subdomain})`);
 }
 
-async function seedSprint3AcceptanceFixture(tenantId, defaultShiftId) {
+async function seedSprint3AcceptanceFixture(
+  tenantId,
+  defaultShiftId,
+  employeeRoleId,
+) {
   await prisma.tenantSettings.update({
     where: { tenantId },
     data: {
@@ -447,6 +465,46 @@ async function seedSprint3AcceptanceFixture(tenantId, defaultShiftId) {
       }),
     );
   }
+
+  const mobileEmployeeEmail = 'employee@acme.com';
+  const mobileEmployeePassword =
+    process.env.MOBILE_EMPLOYEE_PASSWORD ??
+    (process.env.NODE_ENV !== 'production' ? 'Employee123!' : '');
+  if (!mobileEmployeePassword) {
+    throw new Error('MOBILE_EMPLOYEE_PASSWORD is required in production');
+  }
+  const mobileEmployeePasswordHash = await argon2.hash(mobileEmployeePassword);
+  const mobileEmployee = await prisma.user.upsert({
+    where: {
+      tenantId_email: { tenantId, email: mobileEmployeeEmail },
+    },
+    update: {
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      passwordHash: mobileEmployeePasswordHash,
+    },
+    create: {
+      tenantId,
+      email: mobileEmployeeEmail,
+      passwordHash: mobileEmployeePasswordHash,
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: mobileEmployee.id,
+        roleId: employeeRoleId,
+      },
+    },
+    update: {},
+    create: { userId: mobileEmployee.id, roleId: employeeRoleId },
+  });
+  await prisma.employee.update({
+    where: { id: employees[0].id },
+    data: { userId: mobileEmployee.id },
+  });
 
   const offices = [];
   for (const office of [

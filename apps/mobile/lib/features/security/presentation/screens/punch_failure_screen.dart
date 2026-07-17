@@ -1,31 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../attendance/presentation/attendance_controller.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../widgets/verification_failure_card.dart';
 import '../../../../l10n/l10n_context.dart';
 
-class PunchFailureScreen extends StatelessWidget {
-  const PunchFailureScreen({super.key, required this.onRetry});
+class PunchFailureScreen extends ConsumerWidget {
+  const PunchFailureScreen({
+    super.key,
+    required this.onRetry,
+    this.onRegularization,
+  });
   final VoidCallback onRetry;
+  final VoidCallback? onRegularization;
 
   @override
-  Widget build(BuildContext context) => AppPage(
-    title: context.l10n.punchFailed,
-    child: Column(
-      children: [
-        for (final failure in const [
-          ('You are 2.1 km from the office', 'OUTSIDE_GEOFENCE'),
-          ('Face did not match · 2 attempts left', 'FACE_MISMATCH'),
-          ('Fake GPS detected', 'MOCK_LOCATION'),
-          ('This is not your registered device', 'DEVICE_NOT_REGISTERED'),
-        ]) ...[
+  Widget build(BuildContext context, WidgetRef ref) {
+    final failure = ref
+        .watch(attendanceControllerProvider)
+        .asData
+        ?.value
+        .failure;
+    return AppPage(
+      title: context.l10n.punchFailed,
+      child: Column(
+        children: [
           VerificationFailureCard(
-            title: failure.$1,
-            code: failure.$2,
+            title: failure?.message ?? 'Attendance verification failed.',
+            code: failure?.code ?? 'VERIFICATION_FAILED',
+            details: failure?.details ?? const {},
             onRetry: onRetry,
+            onRegularization: onRegularization,
           ),
-          const SizedBox(height: 10),
         ],
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }

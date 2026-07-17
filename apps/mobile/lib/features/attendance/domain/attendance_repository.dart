@@ -1,6 +1,39 @@
 abstract interface class AttendanceRepository {
-  Future<void> punch(Map<String, dynamic> payload);
+  Future<PunchResult> punch({
+    required String type,
+    required String filePath,
+    required Map<String, String> device,
+    required double latitude,
+    required double longitude,
+    required int accuracyMeters,
+    required bool mockLocation,
+    required String attestationToken,
+  });
   Future<void> toggleBreak(String action);
   Future<List<Map<String, dynamic>>> history({String? month});
   Future<Map<String, dynamic>> day(String date);
+}
+
+class PunchResult {
+  const PunchResult({
+    required this.verificationId,
+    required this.checks,
+    required this.attendance,
+  });
+
+  final String verificationId;
+  final List<String> checks;
+  final Map<String, dynamic> attendance;
+}
+
+class PunchFailure implements Exception {
+  const PunchFailure({
+    required this.code,
+    required this.message,
+    this.details = const {},
+  });
+
+  final String code;
+  final String message;
+  final Map<String, dynamic> details;
 }

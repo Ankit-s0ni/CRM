@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile - Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#777587",
+                    "tertiary-container": "#a44100",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-primary-fixed": "#0f0069",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary": "#7e3000",
+                    "secondary": "#505f76",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-variant": "#e4e1ee",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary": "#3525cd",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container": "#f0ecf9",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-primary-container": "#dad7ff",
+                    "background": "#fcf8ff",
+                    "surface-tint": "#4d44e3",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "on-surface-variant": "#464555",
+                    "primary-container": "#4f46e5",
+                    "on-background": "#1b1b24",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-fixed": "#351000",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-container": "#54647a",
+                    "inverse-surface": "#302f39",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-low": "#f5f2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "container-margin": "16px",
+                    "base": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .subtle-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface antialiased pb-24">
+<!-- Top App Bar -->
+<header class="bg-surface w-full top-0 sticky z-50 flex items-center justify-between px-container-margin h-14">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container transition-colors p-2 rounded-full active:opacity-80">arrow_back</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Profile</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant p-2">more_vert</span>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-margin mt-lg">
+<!-- Header: Profile Identity -->
+<section class="flex flex-col items-center mb-xl">
+<div class="relative mb-md">
+<div class="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a woman named Priya Sharma, showing a warm, confident expression. She has dark hair tied back neatly and wears a professional navy blue blazer. The background is a soft, blurred corporate office setting with high-key, natural lighting that emphasizes a clean and modern professional HRMS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHKHYfd1Ya8ufVbk6VKhmzLuBjVrunTMIBZRWJPwSfRv1Ui0mGrWPLH-ZP2KBwAKWn9cVA9urK-6N-CZ6Hjgi8yOoygd30mH8IN6ipb4wz-rNhIUbkEeW_-FsAGoDnuRAgpzulRyC--cGWvv__OiieP-vaiwB71bMeR7fVDxbO4j8LLPZ5WOZAqAXWW6yb2MtTbKpH9IUebyYQFYWSIvt5jFVEgwC46T2r9w8ac13MjhCgLs0AC27eTFvK66mbaX24UByO4LZhpQ"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 border-2 border-white shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-white" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+</div>
+<div class="text-center">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Priya Sharma</h2>
+<p class="font-label-md text-label-md text-secondary tracking-wider mt-1">EMP-1024</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Senior Associate • HR Operations</p>
+</div>
+</section>
+<!-- Bento-style Grid for Details -->
+<div class="grid grid-cols-1 gap-md">
+<!-- My Shift Card -->
+<div class="bg-surface-container-lowest subtle-shadow rounded-xl p-md flex items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">schedule</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-tight">My Shift</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">Day Shift 9:00–18:00</p>
+</div>
+</div>
+</div>
+<!-- My Office Card -->
+<div class="bg-surface-container-lowest subtle-shadow rounded-xl p-md">
+<div class="flex items-start justify-between mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">location_on</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-tight">My Office</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">HQ — Indiranagar</p>
+</div>
+</div>
+<span class="bg-success-container/10 text-primary font-label-sm text-label-sm px-2 py-1 rounded-full bg-primary-fixed/30">150m zone</span>
+</div>
+<!-- Mini Map Placeholder -->
+<div class="h-24 w-full rounded-lg overflow-hidden mt-2 grayscale-[0.5] opacity-80" data-alt="A stylized aerial minimalist map view of Indiranagar district in Bangalore, showing clean street grids and a circular green radius highlight indicating a 150-meter geofenced zone around a corporate headquarters building. The map uses a professional palette of slate grays and muted blues with a vibrant indigo accent for the zone." data-location="Indiranagar, Bangalore" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAFMyTyt9jz_AyKcdm5ksxu6BgMr30LSEEM1yPY-lYZSsuUUO6hBkbElfvXEOYROB8NF0N9tSzHuYro4Mqjhc764UHScF6z-73F0Nd_h2i7GcpCeeuS9d8lPrPOO6WtehSGFbqD9507_EN--A8Un2iHBYOuojODSHnr4CSC-ifVDDrA-vC2juaKQ3yn8SZufgNZlMTz9VYvANTGy2SsDfJifhPDrPdrkZYh69S_2NW-g-cxjGfhdcDLnryRq_s204NnLVE-xy652Q')"></div>
+</div>
+<!-- Registered Device Card -->
+<div class="bg-surface-container-lowest subtle-shadow rounded-xl p-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-on-surface-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">smartphone</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-tight">Registered Device</p>
+<div class="flex items-center gap-2">
+<p class="font-headline-sm text-headline-sm text-on-surface">Pixel 7</p>
+<span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold uppercase">Active</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-end mt-2">
+<a class="font-label-md text-label-md text-primary hover:underline transition-all" href="#">Request device change</a>
+</div>
+</div>
+<!-- Face Verification Card -->
+<div class="bg-surface-container-lowest subtle-shadow rounded-xl p-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">face</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-tight">Face Verification</p>
+<p class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1">
+                                Enrolled <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</p>
+<p class="text-[11px] text-on-surface-variant italic">Jan 2024</p>
+</div>
+</div>
+</div>
+<div class="flex justify-end mt-2">
+<a class="font-label-md text-label-md text-error hover:underline transition-all" href="#">Withdraw consent</a>
+</div>
+</div>
+</div>
+<!-- Logout Action -->
+<div class="mt-xl px-base pb-xl">
+<button class="w-full h-[56px] rounded-xl bg-surface-container-high text-error font-headline-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">logout</span>
+                Sign out
+            </button>
+<p class="text-center text-[11px] text-outline mt-md">App Version 2.4.1 (Build 108)</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest shadow-sm border-t border-outline-variant flex justify-around items-center h-20 pb-safe px-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</a>
+<!-- Active Tab: Profile -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.subtle-shadow').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.99)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

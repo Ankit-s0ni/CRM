@@ -32,6 +32,11 @@ export type AttendancePolicySnapshot = {
   overtimeAfterMinutes: number;
   allowEarlyCheckin?: boolean;
   allowEarlyCheckout?: boolean;
+  requireFaceMatch?: boolean;
+  allowBiometricOptOut?: boolean;
+  requireRegisteredDevice?: boolean;
+  requireGeofence?: boolean;
+  maxFaceAttempts?: number;
   breakRules?: { paid?: boolean };
 };
 

@@ -74,15 +74,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string"
-                  },
-                  "password": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/LoginDto"
               }
             }
           }
@@ -934,6 +926,26 @@
           }
         ],
         "summary": "Create an employee under the workspace quota",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/me": {
+      "get": {
+        "operationId": "EmployeesController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated employee profile",
         "tags": [
           "Employees"
         ]
@@ -4271,6 +4283,36 @@
         ]
       }
     },
+    "/attendance/me/day": {
+      "get": {
+        "operationId": "AttendanceRuntimeController_day",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-07-16",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an authenticated employee attendance day",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
     "/attendance/register": {
       "get": {
         "operationId": "AttendanceQueryController_register",
@@ -4519,6 +4561,1034 @@
           "Attendance records"
         ]
       }
+    },
+    "/devices/register": {
+      "post": {
+        "operationId": "DeviceTrustController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register or refresh the authenticated employee device",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/devices/me": {
+      "get": {
+        "operationId": "DeviceTrustController_mine",
+        "parameters": [
+          {
+            "name": "x-device-uuid",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get devices owned by the authenticated employee",
+        "tags": [
+          "Device trust"
+        ]
+      },
+      "delete": {
+        "operationId": "DeviceTrustController_removeMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove the current device and revoke its session",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/devices": {
+      "get": {
+        "operationId": "DeviceTrustController_list",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_APPROVAL",
+                "ACTIVE",
+                "BLOCKED",
+                "REPLACED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List registered devices in the caller reporting scope",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/devices/{id}/approve": {
+      "post": {
+        "operationId": "DeviceTrustController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a pending employee device",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/devices/{id}/block": {
+      "post": {
+        "operationId": "DeviceTrustController_block",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Block a device and revoke its refresh sessions",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/devices/{id}/replace": {
+      "post": {
+        "operationId": "DeviceTrustController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace an active device with a pending device",
+        "tags": [
+          "Device trust"
+        ]
+      }
+    },
+    "/biometric-consents/me": {
+      "get": {
+        "operationId": "BiometricsController_currentConsent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated employee biometric consent",
+        "tags": [
+          "Biometrics"
+        ]
+      },
+      "delete": {
+        "operationId": "BiometricsController_withdrawConsent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw the authenticated employee consent",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/biometric-consents": {
+      "post": {
+        "operationId": "BiometricsController_createConsent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBiometricConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accept the current biometric consent policy",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/presign": {
+      "post": {
+        "operationId": "BiometricsController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentPresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private face enrollment upload URL",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments": {
+      "post": {
+        "operationId": "BiometricsController_complete",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete liveness-backed face enrollment",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/me/status": {
+      "get": {
+        "operationId": "BiometricsController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe face enrollment eligibility status",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/{employeeId}/status": {
+      "get": {
+        "operationId": "BiometricsController_employeeStatus",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe employee biometric enrollment status",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/{employeeId}/reset": {
+      "post": {
+        "operationId": "BiometricsController_resetEmployeeFace",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetFaceEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset a locked employee face profile for re-enrollment",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/attendance/punch-evidence/presign": {
+      "post": {
+        "operationId": "AttendanceVerificationController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PunchEvidencePresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private mobile punch selfie upload URL",
+        "tags": [
+          "Attendance verification"
+        ]
+      }
+    },
+    "/attendance/punches": {
+      "post": {
+        "operationId": "AttendanceVerificationController_punch",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifiedPunchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record a mobile punch through the verification pipeline",
+        "tags": [
+          "Attendance verification"
+        ]
+      }
+    },
+    "/verification-logs": {
+      "get": {
+        "operationId": "SecurityAlertsController_verificationLogs",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PASSED",
+                "FAILED"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List redacted attendance verification logs",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/alert-rules": {
+      "get": {
+        "operationId": "SecurityAlertsController_rules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List security alert rules",
+        "tags": [
+          "Attendance security"
+        ]
+      },
+      "post": {
+        "operationId": "SecurityAlertsController_createRule",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAlertRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a security alert rule",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/alert-rules/{id}": {
+      "patch": {
+        "operationId": "SecurityAlertsController_updateRule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlertRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a security alert rule",
+        "tags": [
+          "Attendance security"
+        ]
+      },
+      "delete": {
+        "operationId": "SecurityAlertsController_deleteRule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unused security alert rule",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts": {
+      "get": {
+        "operationId": "SecurityAlertsController_alerts",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "ACKNOWLEDGED",
+                "RESOLVED",
+                "DISMISSED"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INFO",
+                "WARNING",
+                "CRITICAL"
+              ]
+            }
+          },
+          {
+            "name": "alertType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GEOFENCE_VIOLATION",
+                "FACE_MISMATCH",
+                "MOCK_LOCATION",
+                "ROOTED_DEVICE",
+                "UNREGISTERED_DEVICE",
+                "DEVICE_MISMATCH",
+                "CLOCK_TAMPER",
+                "ABSENTEE"
+              ]
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant security alerts",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts/{id}": {
+      "get": {
+        "operationId": "SecurityAlertsController_alert",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a security alert",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts/{id}/evidence": {
+      "get": {
+        "operationId": "SecurityAlertsController_evidence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get short-lived private alert evidence",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts/{id}/acknowledge": {
+      "post": {
+        "operationId": "SecurityAlertsController_acknowledge",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acknowledge a security alert",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts/{id}/resolve": {
+      "post": {
+        "operationId": "SecurityAlertsController_resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve a security alert",
+        "tags": [
+          "Attendance security"
+        ]
+      }
+    },
+    "/security-alerts/{id}/dismiss": {
+      "post": {
+        "operationId": "SecurityAlertsController_dismiss",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dismiss a security alert",
+        "tags": [
+          "Attendance security"
+        ]
+      }
     }
   },
   "info": {
@@ -4543,11 +5613,35 @@
       }
     },
     "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@acme.com"
+          },
+          "password": {
+            "type": "string"
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
       "RefreshTokenDto": {
         "type": "object",
         "properties": {
           "refreshToken": {
             "type": "string"
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -5358,6 +6452,378 @@
       "UpdateAttendanceExceptionDto": {
         "type": "object",
         "properties": {}
+      },
+      "RegisterDeviceDto": {
+        "type": "object",
+        "properties": {
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "IOS",
+              "ANDROID"
+            ]
+          },
+          "deviceModel": {
+            "type": "string"
+          },
+          "osVersion": {
+            "type": "string"
+          },
+          "appVersion": {
+            "type": "string"
+          },
+          "pushToken": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "deviceUuid",
+          "platform"
+        ]
+      },
+      "DeviceDecisionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "ReplaceDeviceDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "newDeviceId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "reason",
+          "newDeviceId"
+        ]
+      },
+      "CreateBiometricConsentDto": {
+        "type": "object",
+        "properties": {
+          "policyVersion": {
+            "type": "string",
+            "example": "1.2"
+          },
+          "accepted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "policyVersion",
+          "accepted"
+        ]
+      },
+      "EnrollmentPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "face.jpg"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "minimum": 1024,
+            "maximum": 5000000
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "CompleteEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "privateObjectKey": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "livenessProofToken": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "privateObjectKey",
+          "livenessProofToken"
+        ]
+      },
+      "ResetFaceEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PunchEvidencePresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "punch.jpg"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "minimum": 1024,
+            "maximum": 5000000
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "VerifiedPunchDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "CHECKIN",
+              "CHECKOUT"
+            ]
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attestationToken": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "clientTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "accuracyMeters": {
+            "type": "number"
+          },
+          "mockLocation": {
+            "type": "boolean",
+            "default": false
+          },
+          "selfieKey": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "appVersion": {
+            "type": "string"
+          },
+          "osVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "deviceUuid",
+          "attestationToken",
+          "clientTime",
+          "requestId",
+          "latitude",
+          "longitude",
+          "accuracyMeters"
+        ]
+      },
+      "CreateAlertRuleDto": {
+        "type": "object",
+        "properties": {
+          "ruleType": {
+            "type": "string",
+            "enum": [
+              "ABSENTEE_AFTER_GRACE",
+              "LATE_ARRIVAL",
+              "MISSED_CHECKOUT",
+              "GEOFENCE_VIOLATION",
+              "FACE_MISMATCH",
+              "MOCK_LOCATION",
+              "DEVICE_VIOLATION",
+              "ROOTED_DEVICE",
+              "DEVICE_MISMATCH",
+              "CLOCK_TAMPER",
+              "QUOTA_THRESHOLD",
+              "OFFLINE_SYNC_STALE"
+            ]
+          },
+          "isActive": {
+            "type": "object",
+            "default": true
+          },
+          "thresholdConfig": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "channels": {
+            "example": [
+              "IN_APP"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notifyRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notifyUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "scopeDeptIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "cooldownMinutes": {
+            "type": "object",
+            "minimum": 0,
+            "maximum": 10080,
+            "default": 60
+          }
+        },
+        "required": [
+          "ruleType"
+        ]
+      },
+      "UpdateAlertRuleDto": {
+        "type": "object",
+        "properties": {
+          "ruleType": {
+            "type": "string",
+            "enum": [
+              "ABSENTEE_AFTER_GRACE",
+              "LATE_ARRIVAL",
+              "MISSED_CHECKOUT",
+              "GEOFENCE_VIOLATION",
+              "FACE_MISMATCH",
+              "MOCK_LOCATION",
+              "DEVICE_VIOLATION",
+              "ROOTED_DEVICE",
+              "DEVICE_MISMATCH",
+              "CLOCK_TAMPER",
+              "QUOTA_THRESHOLD",
+              "OFFLINE_SYNC_STALE"
+            ]
+          },
+          "isActive": {
+            "type": "object",
+            "default": true
+          },
+          "thresholdConfig": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "channels": {
+            "example": [
+              "IN_APP"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notifyRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notifyUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "scopeDeptIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "cooldownMinutes": {
+            "type": "object",
+            "minimum": 0,
+            "maximum": 10080,
+            "default": 60
+          }
+        }
+      },
+      "AlertDecisionDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "note"
+        ]
       }
     }
   }

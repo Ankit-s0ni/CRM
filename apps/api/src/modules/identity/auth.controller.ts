@@ -67,12 +67,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login to the application' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: { email: { type: 'string' }, password: { type: 'string' } },
-    },
-  })
+  @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Successful login' })
   async login(@Body() body: LoginDto, @Req() req: Request) {
     return this.authService.login(
@@ -80,6 +75,7 @@ export class AuthController {
       body.password,
       req.ip,
       req.headers['user-agent'],
+      body.deviceUuid,
     );
   }
 
@@ -97,6 +93,7 @@ export class AuthController {
       body.refreshToken,
       req.ip,
       req.headers['user-agent'],
+      body.deviceUuid,
     );
   }
 

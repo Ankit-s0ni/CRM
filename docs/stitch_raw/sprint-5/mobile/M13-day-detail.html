@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Day Detail - Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "background": "#fcf8ff",
+                    "surface-container": "#f0ecf9",
+                    "on-surface-variant": "#464555",
+                    "on-surface": "#1b1b24",
+                    "surface": "#fcf8ff",
+                    "inverse-on-surface": "#f3effc",
+                    "tertiary": "#7e3000",
+                    "outline": "#777587",
+                    "surface-bright": "#fcf8ff",
+                    "on-primary-container": "#dad7ff",
+                    "secondary": "#505f76",
+                    "on-tertiary-fixed": "#351000",
+                    "on-secondary-container": "#54647a",
+                    "on-background": "#1b1b24",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "surface-dim": "#dcd8e5",
+                    "secondary-container": "#d0e1fb",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "tertiary-fixed": "#ffdbcc",
+                    "primary": "#3525cd",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d3e4fe",
+                    "outline-variant": "#c7c4d8",
+                    "surface-container-high": "#eae6f4",
+                    "tertiary-container": "#a44100",
+                    "primary-fixed": "#e2dfff",
+                    "inverse-primary": "#c3c0ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-tint": "#4d44e3",
+                    "surface-variant": "#e4e1ee",
+                    "primary-container": "#4f46e5",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#302f39",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-container-low": "#f5f2ff",
+                    "on-tertiary-container": "#ffd2be",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#0f0069",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-container-highest": "#e4e1ee",
+                    "success": "#2e7d32",
+                    "success-container": "#e8f5e9",
+                    "warning": "#ed6c02",
+                    "warning-container": "#fff3e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "16px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "gutter": "12px",
+                    "sm": "8px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timeline-line {
+            width: 2px;
+            background: repeating-linear-gradient(to bottom, #c7c4d8 0px, #c7c4d8 4px, transparent 4px, transparent 8px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="bg-surface sticky top-0 z-50 w-full flex items-center justify-between px-container-margin h-14">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Monday, 8 July 2023</h1>
+</div>
+<div class="flex items-center">
+<span class="bg-success-container text-success px-3 py-1 rounded-full font-label-md text-label-md">Present</span>
+</div>
+</header>
+<main class="px-container-margin mt-6">
+<!-- Summary Row -->
+<div class="grid grid-cols-3 gap-gutter mb-8">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col items-center">
+<span class="text-on-surface-variant font-label-sm text-label-sm mb-1 uppercase tracking-wider">Worked</span>
+<span class="text-on-surface font-headline-sm text-headline-sm">8h 12m</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col items-center">
+<span class="text-on-surface-variant font-label-sm text-label-sm mb-1 uppercase tracking-wider">Late</span>
+<span class="text-warning font-headline-sm text-headline-sm">6m</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col items-center">
+<span class="text-on-surface-variant font-label-sm text-label-sm mb-1 uppercase tracking-wider">Break</span>
+<span class="text-on-surface font-headline-sm text-headline-sm">30m</span>
+</div>
+</div>
+<!-- Vertical Timeline -->
+<div class="relative pl-8">
+<!-- Timeline Main Line -->
+<div class="absolute left-3 top-0 bottom-0 w-0.5 timeline-line"></div>
+<!-- Event 1: Check-in -->
+<div class="relative mb-10">
+<div class="absolute -left-[27px] top-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-4 border-background"></div>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<span class="font-headline-sm text-headline-sm text-on-surface">9:21 AM</span>
+<div class="flex items-center gap-2">
+<span class="bg-success-container text-success font-label-md text-label-md px-2 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified
+                            </span>
+<span class="text-on-surface-variant font-label-md text-label-md">Check-in</span>
+</div>
+</div>
+<!-- Detail Bento Card -->
+<div class="grid grid-cols-2 gap-3">
+<div class="relative rounded-lg overflow-hidden h-32 border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional vertical selfie of a corporate employee in a well-lit office lobby. The employee is wearing a navy blue blazer. The lighting is soft and natural, coming from large windows. The background features modern architecture with clean lines and a hint of indoor greenery, matching a high-end corporate HRM aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAC8DPMcIFUxTf0Il5giwR8VuMn6lY0n7wVoKNTzRelzOzj-CMhY9hfMd9pYnZhihg4jUboG-L_MCfIoY6Oabo0WgN0D2JcSG5nC3AJPeBoUmtT-CerJ7Ux6ebwQ2MnMc1RSYGJLZxrpewFBLO9AppLf-j0Zp09RNPvbxkpM6Xk97TQiNsJccuWRkNgv2zntYRgW6v_4ZmEeW2P_XiV0hdzKorCZ2L4qP_y69LjuYDND1bUHktGZ4mFxLA9dvFjHOgxMnnOpYO_KQ"/>
+<div class="absolute top-2 right-2 bg-black/50 backdrop-blur-sm p-1 rounded">
+<span class="material-symbols-outlined text-white text-[16px]">face</span>
+</div>
+</div>
+<div class="relative rounded-lg overflow-hidden h-32 border border-outline-variant">
+<div class="w-full h-full bg-cover bg-center" data-location="Chicago" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCGHY61qorVrvykdOUy4p3aKNoorUvdcxJvxtkz15l8WcisrhIwRERVuVJd-D0nJ0ZNhmK9XNceX0J5nZueDF5w3CirxWq-42CAq3JFXaEfbDDoxWq16gQKC8AOHSf4XOOs8fHUh7XyXXjfn2l_SlI1CBRXARLpe4G1i-ccXKa4e-WSLVQr2f_lwIE5k6HTliebD4P6u3v6bG8vFsVKxQltnLKDx5GmjIt52r6lXk1CZDAwLhPsKPodkcXaWVX6RomR1ViKvwdkXQ')"></div>
+<div class="absolute inset-0 bg-primary/10 pointer-events-none"></div>
+<div class="absolute bottom-2 left-2 bg-white/90 px-2 py-0.5 rounded text-[10px] font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">location_on</span> HQ Office
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event 2: Break Started -->
+<div class="relative mb-10">
+<div class="absolute -left-[27px] top-1 w-5 h-5 rounded-full bg-outline-variant flex items-center justify-center border-4 border-background"></div>
+<div class="flex justify-between items-center py-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">1:00 PM</span>
+<span class="text-on-surface-variant font-label-md text-label-md">Break started</span>
+</div>
+</div>
+<!-- Event 3: Break Ended -->
+<div class="relative mb-10">
+<div class="absolute -left-[27px] top-1 w-5 h-5 rounded-full bg-outline-variant flex items-center justify-center border-4 border-background"></div>
+<div class="flex justify-between items-center py-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">1:30 PM</span>
+<span class="text-on-surface-variant font-label-md text-label-md">Break ended</span>
+</div>
+</div>
+<!-- Event 4: Check-out -->
+<div class="relative mb-10">
+<div class="absolute -left-[27px] top-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-4 border-background"></div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-headline-sm text-headline-sm text-on-surface">6:03 PM</span>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container text-on-surface-variant font-label-md text-label-md px-2 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span> Synced
+                            </span>
+<span class="text-on-surface-variant font-label-md text-label-md">Check-out</span>
+</div>
+</div>
+<p class="text-on-surface-variant font-body-md text-body-md">Manual check-out from mobile app.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Actions -->
+<footer class="fixed bottom-20 w-full px-container-margin py-6 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
+<div class="flex flex-col gap-3 pointer-events-auto">
+<button class="w-full h-12 rounded-lg border-2 border-primary text-primary font-headline-sm text-headline-sm active:scale-[0.98] transition-transform flex items-center justify-center hover:bg-primary-fixed">
+                Request correction
+            </button>
+<button class="w-full py-2 text-on-surface-variant font-label-md text-label-md flex items-center justify-center hover:text-primary transition-colors">
+                Report an issue
+            </button>
+</div>
+</footer>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center h-20 pb-safe px-base bg-surface-container-lowest shadow-sm border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for feedback
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute bg-white/20 rounded-full scale-0 transition-transform duration-500 pointer-events-none';
+                // Add ripple effect logic here if desired, otherwise native active state suffices
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acme Industries - Splash Screen</title>
+<!-- Tailwind CSS with essential plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols for icon integrity -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter as defined in the Design System -->
+<link href="https://fonts.googleapis.com/css1?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary-container": "#4f46e5",
+                "tertiary-container": "#a44100",
+                "secondary-fixed": "#d3e4fe",
+                "surface-container-highest": "#e4e1ee",
+                "on-tertiary": "#ffffff",
+                "on-background": "#1b1b24",
+                "on-tertiary-fixed-variant": "#7b2f00",
+                "surface-container": "#f0ecf9",
+                "on-secondary": "#ffffff",
+                "on-error": "#ffffff",
+                "primary": "#3525cd",
+                "error-container": "#ffdad6",
+                "tertiary": "#7e3000",
+                "primary-fixed-dim": "#c3c0ff",
+                "surface-bright": "#fcf8ff",
+                "surface": "#fcf8ff",
+                "primary-fixed": "#e2dfff",
+                "secondary-container": "#d0e1fb",
+                "on-tertiary-container": "#ffd2be",
+                "inverse-surface": "#302f39",
+                "outline": "#777587",
+                "background": "#fcf8ff",
+                "on-primary-container": "#dad7ff",
+                "surface-dim": "#dcd8e5",
+                "surface-container-low": "#f5f2ff",
+                "surface-container-lowest": "#ffffff",
+                "secondary-fixed-dim": "#b7c8e1",
+                "outline-variant": "#c7c4d8",
+                "on-secondary-container": "#54647a",
+                "tertiary-fixed": "#ffdbcc",
+                "secondary": "#505f76",
+                "inverse-on-surface": "#f3effc",
+                "on-error-container": "#93000a",
+                "on-surface": "#1b1b24",
+                "on-secondary-fixed": "#0b1c30",
+                "tertiary-fixed-dim": "#ffb695",
+                "surface-variant": "#e4e1ee",
+                "inverse-primary": "#c3c0ff",
+                "surface-tint": "#4d44e3",
+                "on-tertiary-fixed": "#351000",
+                "on-primary-fixed": "#0f0069",
+                "on-surface-variant": "#464555",
+                "on-primary-fixed-variant": "#3323cc",
+                "on-secondary-fixed-variant": "#38485d",
+                "on-primary": "#ffffff",
+                "surface-container-high": "#eae6f4",
+                "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "container-margin": "16px",
+                "gutter": "12px",
+                "xs": "4px",
+                "lg": "24px",
+                "base": "8px",
+                "sm": "8px",
+                "md": "16px",
+                "xl": "32px"
+            },
+            "fontFamily": {
+                "body-lg": ["Inter"],
+                "headline-md": ["Inter"],
+                "body-md": ["Inter"],
+                "headline-lg": ["Inter"],
+                "label-md": ["Inter"],
+                "headline-sm": ["Inter"],
+                "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        @keyframes subtle-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.95; }
+        }
+        .animate-pulse-subtle {
+            animation: subtle-pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes dot-bounce {
+            0%, 100% { transform: translateY(0); opacity: 0.3; }
+            50% { transform: translateY(-4px); opacity: 1; }
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #4f46e5;
+            display: inline-block;
+            animation: dot-bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        body {
+            background-color: #fcf8ff; /* surface color */
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen overflow-hidden">
+<!-- Main Splash Canvas -->
+<main class="flex flex-col items-center justify-between w-full h-screen max-w-md px-container-margin py-xl relative">
+<!-- Top space filler to balance centering -->
+<div class="h-14 w-full"></div>
+<!-- Center Content: Logo and Status -->
+<div class="flex flex-col items-center gap-lg">
+<div class="relative w-32 h-32 flex items-center justify-center animate-pulse-subtle">
+<!-- Branding Image -->
+<img alt="Acme Industries Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLtbo8N6ilLshQQBoqgDFM7X7fTCyA5ABSHAds2IrQc5RZ57A6A2JCXsPqBIg-cihXGzj6RWG7ROUDETDs8VLv6FAkw4tj7F1sHmdv9yU_jCxPnWO1cOYP4n45D7oNNmGm-xQ9Sc1937l70nlbnTt_vQrawhx0Hbh9ONNtiar7Kc-uCCOE5uyHj8arczYC8a-hwzb3JEJ4-RKNxaUciep3rwOu0QRjLvpeP58noDGiO6JV2PtfGNyLAfWA"/>
+</div>
+<div class="flex flex-col items-center gap-xs">
+<p class="font-body-md text-body-md text-on-surface-variant tracking-wide">
+                    Checking session...
+                </p>
+</div>
+</div>
+<!-- Bottom Content: Branding & Progress -->
+<div class="flex flex-col items-center gap-sm">
+<!-- Indigo Progress Dots -->
+<div class="flex gap-xs items-center h-4">
+<span class="dot"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+</div>
+<p class="font-label-md text-label-md text-outline tracking-widest uppercase">
+                Powered by HRMS
+            </p>
+</div>
+</main>
+<!-- Subtle Background Ambient Effect (Micro-interaction) -->
+<div class="absolute inset-0 -z-10 opacity-30 pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-container/10 blur-[100px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary-container/10 blur-[100px]"></div>
+</div>
+<!-- Micro-interaction logic for simulated transition -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // This is a splash screen, usually it redirects after a few seconds
+            // For the sake of UI demonstration, we'll just log the "session check"
+            console.log("HRMS Splash Initialized: Checking session state...");
+            
+            // Interaction: Subtle tap to "skip" or see interaction feedback
+            document.body.addEventListener('click', () => {
+                const statusText = document.querySelector('p.text-body-md');
+                if(statusText) {
+                    statusText.textContent = "Establishing secure connection...";
+                    setTimeout(() => {
+                        statusText.textContent = "Redirecting to Dashboard...";
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+</body></html>

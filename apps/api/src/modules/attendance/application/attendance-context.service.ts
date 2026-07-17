@@ -194,6 +194,11 @@ function policySnapshot(policy: {
   overtimeAfterMinutes: number;
   allowEarlyCheckin: boolean;
   allowEarlyCheckout: boolean;
+  requireFaceMatch: boolean;
+  allowBiometricOptOut: boolean;
+  requireRegisteredDevice: boolean;
+  requireGeofence: boolean;
+  maxFaceAttempts: number;
   breakRules: Prisma.JsonValue;
 }): AttendancePolicySnapshot {
   const breakRules = jsonObject(policy.breakRules);
@@ -206,6 +211,11 @@ function policySnapshot(policy: {
     overtimeAfterMinutes: policy.overtimeAfterMinutes,
     allowEarlyCheckin: policy.allowEarlyCheckin,
     allowEarlyCheckout: policy.allowEarlyCheckout,
+    requireFaceMatch: policy.requireFaceMatch,
+    allowBiometricOptOut: policy.allowBiometricOptOut,
+    requireRegisteredDevice: policy.requireRegisteredDevice,
+    requireGeofence: policy.requireGeofence,
+    maxFaceAttempts: policy.maxFaceAttempts,
     breakRules: { paid: breakRules.paid === true },
   };
 }
@@ -219,6 +229,11 @@ function fallbackPolicy(): AttendancePolicySnapshot {
     overtimeAfterMinutes: 540,
     allowEarlyCheckin: true,
     allowEarlyCheckout: true,
+    requireFaceMatch: false,
+    allowBiometricOptOut: false,
+    requireRegisteredDevice: true,
+    requireGeofence: true,
+    maxFaceAttempts: 3,
     breakRules: { paid: false },
   };
 }

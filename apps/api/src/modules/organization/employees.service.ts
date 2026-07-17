@@ -114,6 +114,28 @@ export class EmployeesService {
     return { data: employee };
   }
 
+  async me(userId: string) {
+    const employee = await this.prisma.forTenant((tx) =>
+      tx.employee.findUnique({
+        where: { userId },
+        include: {
+          ...EMPLOYEE_RELATIONS,
+          officeAssignments: {
+            where: { isPrimary: true },
+            take: 1,
+            include: {
+              office: {
+                select: { id: true, officeName: true, timezone: true },
+              },
+            },
+          },
+        },
+      }),
+    );
+    if (!employee) this.throwNotFound();
+    return { data: employee };
+  }
+
   async nextCode() {
     const employees = await this.prisma.forTenant((tx) =>
       tx.employee.findMany({ select: { employeeCode: true } }),

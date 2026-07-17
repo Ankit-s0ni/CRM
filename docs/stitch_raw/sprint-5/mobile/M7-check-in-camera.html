@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Biometric Verification | Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#4f46e5",
+                        "tertiary-container": "#a44100",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1b1b24",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "surface-container": "#f0ecf9",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary": "#3525cd",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#7e3000",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-bright": "#fcf8ff",
+                        "surface": "#fcf8ff",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-container": "#ffd2be",
+                        "inverse-surface": "#302f39",
+                        "outline": "#777587",
+                        "background": "#fcf8ff",
+                        "on-primary-container": "#dad7ff",
+                        "surface-dim": "#dcd8e5",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "outline-variant": "#c7c4d8",
+                        "on-secondary-container": "#54647a",
+                        "tertiary-fixed": "#ffdbcc",
+                        "secondary": "#505f76",
+                        "inverse-on-surface": "#f3effc",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1b1b24",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface-variant": "#e4e1ee",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-tint": "#4d44e3",
+                        "on-tertiary-fixed": "#351000",
+                        "on-primary-fixed": "#0f0069",
+                        "on-surface-variant": "#464555",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#eae6f4",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "16px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "base": "8px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .camera-overlay {
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.7) 70%);
+            mask-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='black'/%3E%3Cellipse cx='50' cy='45' rx='35' ry='45' fill='white'/%3E%3C/svg%3E");
+            mask-size: 100% 100%;
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100' height='100' fill='black'/%3E%3Cellipse cx='50' cy='45' rx='30' ry='40' fill='white'/%3E%3C/svg%3E");
+            -webkit-mask-size: 100% 100%;
+            mask-composite: exclude;
+            -webkit-mask-composite: destination-out;
+        }
+
+        .face-oval {
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50% / 50%;
+            width: 260px;
+            height: 340px;
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+        }
+
+        .blink-animation {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .scanning-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4f46e5, transparent);
+            position: absolute;
+            top: 0;
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 20%; }
+            100% { top: 70%; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-on-background h-screen w-full overflow-hidden font-body-md text-on-primary">
+<!-- Full Screen Camera View (Simulated) -->
+<div class="relative h-screen w-full bg-slate-900 flex flex-col">
+<!-- Live Camera Feed Placeholder -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A high-quality, professional first-person perspective of a human face viewed through a front-facing smartphone camera for biometric authentication. The lighting is soft and even, highlighting facial features clearly. The background is a clean, minimalist corporate office setting with soft-focus indigo and slate tones. The overall atmosphere is secure, high-tech, and clinical, emphasizing trust and identity verification." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDb4jjhivJawm8glG3Eb8UBWRhtizy7rc_0KY-5K35rcZ-BEx088xexOv0EfUvmnAs8Bj_F9wxkYVgdBUfKzYIGZirWiJOiWnrfygWzIWKjvmZge90fjCXUz_TfcLAAQmIZq5za8nuZzPy6nxmNMqC4DebCDqVNPW1QY6caF6EG12IRzmsFNiUSc_VosTnzA5Gbokvju-YhwV1RAJF828KpXvlUGFEZI5Jp4i8W_6jc8ZVZRWS-SIFlKXcS5LwyTrQIja-JYol6Fw')">
+</div>
+<!-- Dynamic Scanning Element -->
+<div class="scanning-line z-10"></div>
+</div>
+<!-- UI Overlays -->
+<div class="relative z-20 flex flex-col h-full w-full">
+<!-- Top Header & Progress -->
+<div class="px-container-margin pt-12 pb-6 flex flex-col items-center gap-6">
+<div class="flex items-center gap-4">
+<!-- Progress Dots -->
+<div class="flex items-center gap-2">
+<div class="flex flex-col items-center gap-1">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_rgba(79,70,229,0.8)]"></div>
+<span class="text-label-sm font-label-sm opacity-90">Face</span>
+</div>
+<div class="w-10 h-px bg-outline-variant/30 mt-[-12px]"></div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></div>
+<span class="text-label-sm font-label-sm opacity-90">Blink</span>
+</div>
+<div class="w-10 h-px bg-outline-variant/30 mt-[-12px]"></div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-2.5 h-2.5 rounded-full bg-white/30 border border-white/50"></div>
+<span class="text-label-sm font-label-sm opacity-40">Capturing</span>
+</div>
+</div>
+</div>
+<!-- Active Instruction -->
+<div class="bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+<h1 class="text-headline-sm font-headline-sm tracking-tight blink-animation">Blink now</h1>
+</div>
+</div>
+<!-- Central Face Guide -->
+<div class="flex-grow relative flex items-center justify-center">
+<div class="face-oval border-primary-container/40">
+<!-- Target Corner Brackets -->
+<div class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-primary-container rounded-tl-xl"></div>
+<div class="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-primary-container rounded-tr-xl"></div>
+<div class="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-primary-container rounded-bl-xl"></div>
+<div class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-primary-container rounded-br-xl"></div>
+</div>
+</div>
+<!-- GPS Indicator Chip (Top Right Corner Absolute) -->
+<div class="absolute top-4 right-4">
+<div class="bg-black/60 backdrop-blur-md rounded-lg px-3 py-1.5 flex items-center gap-2 border border-white/10 shadow-lg">
+<span class="material-symbols-outlined text-[18px] text-green-400" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<div class="flex flex-col leading-none">
+<span class="text-[10px] uppercase tracking-wider font-bold opacity-60">GPS Lock</span>
+<span class="text-label-md font-label-md">±8m Accuracy</span>
+</div>
+</div>
+</div>
+<!-- Bottom Content Area -->
+<div class="mt-auto pb-12 px-xl flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center mb-6 overflow-hidden">
+<div class="w-full bg-primary-container h-full origin-bottom animate-[shutter-fill_3s_ease-in-out_infinite]" id="loading-fill"></div>
+</div>
+<p class="text-body-lg font-body-lg text-white mb-2 max-w-[280px]">
+                    Verifying it's really you — takes ~3 seconds
+                </p>
+<div class="flex items-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span class="text-label-sm font-label-sm uppercase tracking-widest">Secure Attendance Log</span>
+</div>
+</div>
+</div>
+<!-- System Bar Mask -->
+<div class="absolute top-0 w-full h-8 bg-gradient-to-b from-black/40 to-transparent z-50"></div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        // Simple visual simulation of the "capture" process
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingFill = document.getElementById('loading-fill');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 1;
+                if (progress > 100) progress = 0;
+                // We're just letting the CSS animation handle it for now
+            }, 30);
+        });
+
+        // Toggle dark mode class to ensure surface colors are applied if needed 
+        // though this specific screen is mostly dark by design
+        document.documentElement.classList.add('dark');
+    </script>
+<style>
+        @keyframes shutter-fill {
+            0% { transform: scaleY(0); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+            100% { transform: scaleY(0); opacity: 0.5; }
+        }
+    </style>
+</body></html>

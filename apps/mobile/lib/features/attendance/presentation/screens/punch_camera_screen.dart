@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../widgets/face_capture_guide.dart';
@@ -9,7 +10,7 @@ class PunchCameraScreen extends StatelessWidget {
     required this.onCaptured,
     this.isCheckOut = false,
   });
-  final VoidCallback onCaptured;
+  final Future<void> Function(XFile file) onCaptured;
   final bool isCheckOut;
 
   @override
@@ -28,7 +29,7 @@ class PunchCameraScreen extends StatelessWidget {
           Expanded(
             child: FaceCaptureGuide(
               isCheckOut: isCheckOut,
-              onCaptured: () async => onCaptured(),
+              onCaptured: onCaptured,
             ),
           ),
         ],

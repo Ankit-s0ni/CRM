@@ -260,6 +260,7 @@ export class AuthService {
     passwordPlain: string,
     ipAddress?: string,
     userAgent?: string,
+    deviceUuid?: string,
   ) {
     const user = await this.prisma.forTenant(async (tx) => {
       return tx.user.findFirst({
@@ -363,10 +364,15 @@ export class AuthService {
 
     await this.recordLoginAttempt(email, true, null, ipAddress, userAgent);
 
-    return this.buildSession(user, ipAddress, userAgent);
+    return this.buildSession(user, ipAddress, userAgent, undefined, deviceUuid);
   }
 
-  async refresh(refreshToken: string, ipAddress?: string, userAgent?: string) {
+  async refresh(
+    refreshToken: string,
+    ipAddress?: string,
+    userAgent?: string,
+    deviceUuid?: string,
+  ) {
     const tokenHash = this.hashToken(refreshToken);
 
     const storedToken = await this.prisma.forTenant((tx) =>
@@ -412,6 +418,27 @@ export class AuthService {
 
     this.assertTenantAvailable(user.tenant.status);
 
+    if (storedToken.deviceId) {
+      const boundDevice = await this.prisma.forTenant((tx) =>
+        tx.registeredDevice.findUnique({
+          where: { id: storedToken.deviceId! },
+        }),
+      );
+      if (!boundDevice || boundDevice.status !== 'ACTIVE') {
+        await this.revokeTokenFamily(storedToken.familyId, RevokeReason.ADMIN);
+        throw new UnauthorizedException({
+          code: 'DEVICE_SESSION_REVOKED',
+          message: 'The device session is no longer active',
+        });
+      }
+      if (deviceUuid && deviceUuid !== boundDevice.deviceUuid) {
+        throw new UnauthorizedException({
+          code: 'DEVICE_SESSION_MISMATCH',
+          message: 'The refresh token belongs to another device',
+        });
+      }
+    }
+
     await this.prisma.forTenant((tx) =>
       tx.refreshToken.update({
         where: { id: storedToken.id },
@@ -422,7 +449,14 @@ export class AuthService {
       }),
     );
 
-    return this.buildSession(user, ipAddress, userAgent, storedToken.familyId);
+    return this.buildSession(
+      user,
+      ipAddress,
+      userAgent,
+      storedToken.familyId,
+      deviceUuid,
+      storedToken.deviceId,
+    );
   }
 
   async logout(userId: string, refreshToken: string) {
@@ -576,12 +610,20 @@ export class AuthService {
     ipAddress?: string,
     userAgent?: string,
     familyId: string = randomUUID(),
+    deviceUuid?: string,
+    preferredDeviceId?: string | null,
   ) {
+    const device = await this.resolveSessionDevice(
+      user.id,
+      deviceUuid,
+      preferredDeviceId,
+    );
     const payload = {
       sub: user.id,
       email: user.email,
       tenantId: user.tenantId,
       roles: user.roles.map((r) => r.role.name),
+      ...(device?.status === 'ACTIVE' ? { deviceId: device.id } : {}),
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -594,6 +636,7 @@ export class AuthService {
           userId: user.id,
           tokenHash: refreshTokenHash,
           familyId,
+          deviceId: device?.status === 'ACTIVE' ? device.id : null,
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           createdIp: ipAddress ?? null,
           userAgent: userAgent ?? null,
@@ -610,8 +653,41 @@ export class AuthService {
         tenantId: user.tenantId,
         workspace: user.tenant?.subdomain ?? '',
         roles: user.roles.map(({ role }) => role.name),
+        device: device
+          ? {
+              id: device.id,
+              status: device.status,
+              isPrimary: device.isPrimary,
+            }
+          : null,
       },
     };
+  }
+
+  private async resolveSessionDevice(
+    userId: string,
+    deviceUuid?: string,
+    preferredDeviceId?: string | null,
+  ) {
+    if (!deviceUuid && !preferredDeviceId) return null;
+    const device = await this.prisma.forTenant((tx) =>
+      tx.registeredDevice.findFirst({
+        where: {
+          ...(preferredDeviceId
+            ? { id: preferredDeviceId }
+            : { deviceUuid, employee: { userId } }),
+        },
+      }),
+    );
+    if (!device) return null;
+    if (device.status === 'BLOCKED' || device.status === 'REPLACED') {
+      throw new ForbiddenException({
+        code:
+          device.status === 'BLOCKED' ? 'DEVICE_BLOCKED' : 'DEVICE_REPLACED',
+        message: 'This device is no longer permitted to access the workspace',
+      });
+    }
+    return device;
   }
 
   private async recordLoginAttempt(

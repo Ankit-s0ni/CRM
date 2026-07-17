@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Biometric Consent | Acme Industries</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#4f46e5",
+                    "tertiary-container": "#a44100",
+                    "secondary-fixed": "#d3e4fe",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#1b1b24",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-container": "#f0ecf9",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary": "#3525cd",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#7e3000",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-bright": "#fcf8ff",
+                    "surface": "#fcf8ff",
+                    "primary-fixed": "#e2dfff",
+                    "secondary-container": "#d0e1fb",
+                    "on-tertiary-container": "#ffd2be",
+                    "inverse-surface": "#302f39",
+                    "outline": "#777587",
+                    "background": "#fcf8ff",
+                    "on-primary-container": "#dad7ff",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container-low": "#f5f2ff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary-container": "#54647a",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary": "#505f76",
+                    "inverse-on-surface": "#f3effc",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#0b1c30",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "surface-variant": "#e4e1ee",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-tint": "#4d44e3",
+                    "on-tertiary-fixed": "#351000",
+                    "on-primary-fixed": "#0f0069",
+                    "on-surface-variant": "#464555",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#eae6f4",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "16px",
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "base": "8px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .policy-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .policy-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .policy-scroll::-webkit-scrollbar-thumb {
+            background: #c7c4d8;
+            border-radius: 10px;
+        }
+        .subtle-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        .face-animation-ring {
+            animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 0.2; transform: scale(0.95); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- Top Navigation Bar (Suppressed on focused consent screen, but following Shell Logic for standard apps) -->
+<!-- Note: TopAppBar is rendered here but simplified for the "Focused Task" context -->
+<header class="flex items-center justify-between px-container-margin h-14 w-full bg-surface sticky top-0 z-50">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary text-headline-sm">arrow_back</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Acme Industries</h1>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-margin py-lg flex flex-col gap-lg">
+<!-- Illustration Section -->
+<section class="flex flex-col items-center justify-center pt-md">
+<div class="relative w-48 h-48 bg-surface-container rounded-full flex items-center justify-center overflow-hidden border-2 border-outline-variant">
+<div class="absolute inset-0 face-animation-ring border-4 border-primary rounded-full opacity-20"></div>
+<div class="absolute inset-4 border-2 border-dashed border-primary/30 rounded-full"></div>
+<div class="z-10 bg-white rounded-full p-4 subtle-shadow">
+<img class="w-24 h-24 object-contain" data-alt="A clean, friendly minimalist 3D character illustration with a soft blue and indigo color scheme. The character is smiling warmly, framed by a delicate biometric scanning HUD overlay with faint teal glowing lines. The style is modern corporate flat design with soft shadows, set against a pristine white background to evoke trust and security." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9BtgpPoxek-lDEGuueNwQKng4HeuaH3ign4Ep1FQmR5KE39gOD25Wc4VOnGtqKESuSYHTKbBDlQDJbr6fsC7aNG8oxdJAmdymfpi27zkDyzluFgtdI9PXDU1z7sqyGY_-6BniP5m_K151QoYAa-UT9GUpLWn6gpJlepjTniZdcpPdsQY1akMsNH9hCOQUK6nhkuDuR7lIvyG47Fkcg_v8QwhIAtmqD8xF9HgPNpULxegXfHePONpvuqZYWn6Hn-ayrrUWneOTFw"/>
+</div>
+<!-- Scanning Effect Line -->
+<div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent top-1/2 -translate-y-1/2 opacity-30 animate-pulse"></div>
+</div>
+<div class="text-center mt-md">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Face verification consent</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Biometric authentication for secure workplace attendance.</p>
+</div>
+</section>
+<!-- Policy Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant subtle-shadow flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Policy Text v1.2</h3>
+<span class="px-base py-0.5 bg-secondary-container text-on-secondary-container text-label-sm font-label-sm rounded-full">Required</span>
+</div>
+<div class="policy-scroll h-56 overflow-y-auto p-md font-body-md text-on-surface-variant space-y-md leading-relaxed">
+<div>
+<h4 class="font-bold text-on-surface mb-xs">1. Data Collection</h4>
+<p>Acme Industries collects a mathematical "face template" derived from your facial features. We do not store high-resolution photographs of your face on our servers.</p>
+</div>
+<div>
+<h4 class="font-bold text-on-surface mb-xs">2. Purpose of Usage</h4>
+<p>This biometric template is used exclusively for attendance verification and to prevent "buddy punching." It ensures that only authorized personnel can log entry into secure facilities.</p>
+</div>
+<div>
+<h4 class="font-bold text-on-surface mb-xs">3. Retention &amp; Security</h4>
+<p>Your biometric data is encrypted using AES-256 standards. Retention is limited to the duration of your employment plus 30 days, or until consent is withdrawn. Data is never shared with third parties for marketing.</p>
+</div>
+<div>
+<h4 class="font-bold text-on-surface mb-xs">4. Compliance</h4>
+<p>This policy adheres to local data protection regulations including GDPR and BIPA requirements for biometric privacy and disclosure.</p>
+</div>
+</div>
+<div class="p-md bg-surface-container-low rounded-b-xl border-t border-outline-variant">
+<label class="flex items-start gap-md cursor-pointer group">
+<div class="relative flex items-center pt-0.5">
+<input class="peer h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary-container transition-all" id="consent-check" type="checkbox"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-on-surface font-medium">I agree to biometric verification</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">By checking this, you accept the policy terms above.</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-md">
+<button class="w-full bg-primary text-on-primary font-bold py-md rounded-lg opacity-50 cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-base" disabled="" id="submit-btn">
+<span>Give consent</span>
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</button>
+<div class="flex flex-col gap-xs">
+<button class="w-full py-base font-body-md text-primary font-semibold hover:bg-surface-container-high rounded-lg transition-colors active:opacity-70">
+                    Decline — use GPS only
+                </button>
+<div class="flex items-center justify-center gap-xs text-label-sm font-label-sm text-on-surface-variant px-md">
+<span class="material-symbols-outlined text-[14px]">info</span>
+<p>Decline notification will be sent to HR admin.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Following Filter logic: Not shown on focused task/transactional screen) -->
+<!-- <nav class="fixed bottom-0 w-full h-20 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center px-base z-50 shadow-sm md:hidden"> ... </nav> -->
+<script>
+        // Simple Interaction Logic
+        const checkbox = document.getElementById('consent-check');
+        const submitBtn = document.getElementById('submit-btn');
+
+        checkbox.addEventListener('change', () => {
+            if(checkbox.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitBtn.classList.add('hover:shadow-lg');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                submitBtn.classList.remove('hover:shadow-lg');
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            if(!submitBtn.disabled) {
+                submitBtn.innerHTML = 'Processing...';
+                setTimeout(() => {
+                    alert('Consent recorded successfully.');
+                    submitBtn.innerHTML = 'Consent Granted';
+                }, 1000);
+            }
+        });
+    </script>
+</body></html>

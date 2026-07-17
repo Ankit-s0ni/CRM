@@ -5,15 +5,19 @@ class AppConfig {
 
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'http://10.0.2.2:4001',
   );
   static const localMode = bool.fromEnvironment(
     'LOCAL_MODE',
-    defaultValue: true,
+    defaultValue: false,
   );
   static const tenantId = String.fromEnvironment(
     'TENANT_ID',
     defaultValue: 'northstar-oman',
+  );
+  static const workspaceSubdomain = String.fromEnvironment(
+    'WORKSPACE_SUBDOMAIN',
+    defaultValue: 'acme',
   );
   static const environment = String.fromEnvironment(
     'APP_ENV',

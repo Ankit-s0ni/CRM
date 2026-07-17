@@ -999,6 +999,7 @@ export class AttendanceConfigService {
       allowEarlyCheckin: dto.allowEarlyCheckin ?? true,
       allowEarlyCheckout: dto.allowEarlyCheckout ?? false,
       requireFaceMatch: dto.requireFaceMatch ?? false,
+      allowBiometricOptOut: dto.allowBiometricOptOut ?? false,
       requireRegisteredDevice: dto.requireRegisteredDevice ?? true,
       requireGeofence: dto.requireGeofence ?? true,
       maxOfflineSyncHours: dto.maxOfflineSyncHours ?? 48,

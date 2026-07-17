@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Device Registration | Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "primary-container": "#4f46e5",
+                  "tertiary-container": "#a44100",
+                  "secondary-fixed": "#d3e4fe",
+                  "surface-container-highest": "#e4e1ee",
+                  "on-tertiary": "#ffffff",
+                  "on-background": "#1b1b24",
+                  "on-tertiary-fixed-variant": "#7b2f00",
+                  "surface-container": "#f0ecf9",
+                  "on-secondary": "#ffffff",
+                  "on-error": "#ffffff",
+                  "primary": "#3525cd",
+                  "error-container": "#ffdad6",
+                  "tertiary": "#7e3000",
+                  "primary-fixed-dim": "#c3c0ff",
+                  "surface-bright": "#fcf8ff",
+                  "surface": "#fcf8ff",
+                  "primary-fixed": "#e2dfff",
+                  "secondary-container": "#d0e1fb",
+                  "on-tertiary-container": "#ffd2be",
+                  "inverse-surface": "#302f39",
+                  "outline": "#777587",
+                  "background": "#fcf8ff",
+                  "on-primary-container": "#dad7ff",
+                  "surface-dim": "#dcd8e5",
+                  "surface-container-low": "#f5f2ff",
+                  "surface-container-lowest": "#ffffff",
+                  "secondary-fixed-dim": "#b7c8e1",
+                  "outline-variant": "#c7c4d8",
+                  "on-secondary-container": "#54647a",
+                  "tertiary-fixed": "#ffdbcc",
+                  "secondary": "#505f76",
+                  "inverse-on-surface": "#f3effc",
+                  "on-error-container": "#93000a",
+                  "on-surface": "#1b1b24",
+                  "on-secondary-fixed": "#0b1c30",
+                  "tertiary-fixed-dim": "#ffb695",
+                  "surface-variant": "#e4e1ee",
+                  "inverse-primary": "#c3c0ff",
+                  "surface-tint": "#4d44e3",
+                  "on-tertiary-fixed": "#351000",
+                  "on-primary-fixed": "#0f0069",
+                  "on-surface-variant": "#464555",
+                  "on-primary-fixed-variant": "#3323cc",
+                  "on-secondary-fixed-variant": "#38485d",
+                  "on-primary": "#ffffff",
+                  "surface-container-high": "#eae6f4",
+                  "error": "#ba1a1a"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "container-margin": "16px",
+                  "gutter": "12px",
+                  "xs": "4px",
+                  "lg": "24px",
+                  "base": "8px",
+                  "sm": "8px",
+                  "md": "16px",
+                  "xl": "32px"
+          },
+          "fontFamily": {
+                  "body-lg": ["Inter"],
+                  "headline-md": ["Inter"],
+                  "body-md": ["Inter"],
+                  "headline-lg": ["Inter"],
+                  "label-md": ["Inter"],
+                  "headline-sm": ["Inter"],
+                  "label-sm": ["Inter"]
+          },
+          "fontSize": {
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                  "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                  "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .subtle-shadow {
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+    }
+    .status-pill-info {
+      background-color: rgba(53, 37, 205, 0.1);
+      color: #3525cd;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background w-full top-0 sticky z-50 transition-colors">
+<div class="flex items-center justify-between px-container-margin h-14 w-full">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full hover:bg-surface-container dark:hover:bg-surface-variant">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Acme Industries</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center px-container-margin pt-base pb-xl">
+<!-- Shield Illustration (The Anchor) -->
+<div class="w-full flex justify-center mb-xl">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Background decorative circles -->
+<div class="absolute inset-0 bg-primary/5 rounded-full animate-pulse"></div>
+<div class="absolute inset-4 bg-primary/10 rounded-full"></div>
+<!-- Main Shield Image -->
+<div class="relative z-10 animate-float">
+<div class="w-32 h-32 bg-primary rounded-xl flex items-center justify-center subtle-shadow rotate-3 transform">
+<div class="bg-white/10 inset-1 absolute rounded-lg border border-white/20"></div>
+<span class="material-symbols-outlined text-white text-[64px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+</div>
+<!-- Floating Security Accents -->
+<div class="absolute top-4 right-4 bg-white p-2 rounded-full subtle-shadow">
+<span class="material-symbols-outlined text-primary-container text-md">lock</span>
+</div>
+<div class="absolute bottom-6 left-2 bg-white p-2 rounded-full subtle-shadow">
+<span class="material-symbols-outlined text-primary-container text-md">fingerprint</span>
+</div>
+</div>
+</div>
+<!-- Text Header Content -->
+<div class="text-center max-w-sm mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-sm">Register this device</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Attendance punches are only allowed from your registered device to ensure workplace security and integrity.
+      </p>
+</div>
+<!-- Device Details Card -->
+<div class="w-full max-w-sm bg-white rounded-xl p-md subtle-shadow border border-slate-200 mb-xl">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">smartphone</span>
+</div>
+<div class="flex-grow">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-xs">Detected Device</p>
+<p class="font-headline-sm text-headline-sm text-on-background">Pixel 7 • Android 15</p>
+</div>
+</div>
+<div class="mt-md pt-md border-t border-slate-100 flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Device ID Snippet</p>
+<code class="font-mono text-body-md text-primary font-semibold">****-8E2F-4A91</code>
+</div>
+<div class="px-3 py-1 rounded-full status-pill-info font-label-sm text-label-sm">
+          READY
+        </div>
+</div>
+</div>
+<!-- Actions -->
+<div class="w-full max-w-sm flex flex-col gap-md">
+<button class="w-full h-12 bg-primary text-white font-headline-sm rounded-lg active:scale-95 transition-transform duration-200 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">app_registration</span>
+        Register device
+      </button>
+<div class="p-md bg-slate-50 border border-slate-200 rounded-xl flex gap-md">
+<span class="material-symbols-outlined text-slate-500">info</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Need to switch phones later? <span class="font-semibold text-on-surface">HR approval required</span> for re-registration.
+        </p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Suppressed as this is a focused task/onboarding flow) -->
+<!-- Note: Following "Relevance Check" logic from instructions, nav is suppressed for Task-Focused screens -->
+<script>
+    // Micro-interaction: Button ripple/feedback
+    document.querySelector('button').addEventListener('click', function(e) {
+      const btn = e.currentTarget;
+      btn.style.opacity = '0.8';
+      setTimeout(() => {
+        btn.style.opacity = '1';
+      }, 150);
+    });
+
+    // Device detail "Ready" pulse animation trigger
+    const statusPill = document.querySelector('.status-pill-info');
+    if(statusPill) {
+      setInterval(() => {
+        statusPill.classList.toggle('opacity-70');
+      }, 1000);
+    }
+  </script>
+</body></html>

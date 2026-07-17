@@ -4,8 +4,23 @@ class LocalAttendanceRepository implements AttendanceRepository {
   const LocalAttendanceRepository();
 
   @override
-  Future<void> punch(Map<String, dynamic> payload) async =>
-      Future<void>.delayed(const Duration(milliseconds: 350));
+  Future<PunchResult> punch({
+    required String type,
+    required String filePath,
+    required Map<String, String> device,
+    required double latitude,
+    required double longitude,
+    required int accuracyMeters,
+    required bool mockLocation,
+    required String attestationToken,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    return PunchResult(
+      verificationId: 'local',
+      checks: const ['device', 'integrity', 'location'],
+      attendance: const {},
+    );
+  }
 
   @override
   Future<void> toggleBreak(String action) async =>

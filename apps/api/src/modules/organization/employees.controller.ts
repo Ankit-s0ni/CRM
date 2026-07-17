@@ -49,6 +49,13 @@ export class EmployeesController {
     return this.employeesService.list(query, user.userId);
   }
 
+  @Get('me')
+  @RequirePermissions(PERMISSIONS.EMPLOYEES_SELF_READ)
+  @ApiOperation({ summary: 'Get the authenticated employee profile' })
+  me(@CurrentUser() user: AuthenticatedUser) {
+    return this.employeesService.me(user.userId);
+  }
+
   @Get('next-code')
   @RequirePermissions(PERMISSIONS.EMPLOYEES_READ)
   @ApiOperation({ summary: 'Suggest the next available employee code' })

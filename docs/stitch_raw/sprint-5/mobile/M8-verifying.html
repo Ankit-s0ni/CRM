@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verifying Attendance | Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .shimmer {
+      background: linear-gradient(90deg, #f0ecf9 25%, #e4e1ee 50%, #f0ecf9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 2s linear infinite;
+    }
+    .progress-bar-fill {
+      width: 75%;
+      transition: width 2s ease-in-out;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#ffffff",
+            "background": "#fcf8ff",
+            "surface-container": "#f0ecf9",
+            "on-surface-variant": "#464555",
+            "on-surface": "#1b1b24",
+            "surface": "#fcf8ff",
+            "inverse-on-surface": "#f3effc",
+            "tertiary": "#7e3000",
+            "outline": "#777587",
+            "surface-bright": "#fcf8ff",
+            "on-primary-container": "#dad7ff",
+            "secondary": "#505f76",
+            "on-tertiary-fixed": "#351000",
+            "on-secondary-container": "#54647a",
+            "on-background": "#1b1b24",
+            "error-container": "#ffdad6",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#b7c8e1",
+            "surface-dim": "#dcd8e5",
+            "secondary-container": "#d0e1fb",
+            "on-error": "#ffffff",
+            "on-secondary-fixed-variant": "#38485d",
+            "tertiary-fixed": "#ffdbcc",
+            "primary": "#3525cd",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#d3e4fe",
+            "outline-variant": "#c7c4d8",
+            "surface-container-high": "#eae6f4",
+            "tertiary-container": "#a44100",
+            "primary-fixed": "#e2dfff",
+            "inverse-primary": "#c3c0ff",
+            "on-primary-fixed-variant": "#3323cc",
+            "surface-tint": "#4d44e3",
+            "surface-variant": "#e4e1ee",
+            "primary-container": "#4f46e5",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#302f39",
+            "primary-fixed-dim": "#c3c0ff",
+            "surface-container-low": "#f5f2ff",
+            "on-tertiary-container": "#ffd2be",
+            "tertiary-fixed-dim": "#ffb695",
+            "on-secondary-fixed": "#0b1c30",
+            "on-error-container": "#93000a",
+            "on-primary-fixed": "#0f0069",
+            "on-tertiary-fixed-variant": "#7b2f00",
+            "surface-container-highest": "#e4e1ee"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "container-margin": "16px",
+            "md": "16px",
+            "xs": "4px",
+            "xl": "32px",
+            "lg": "24px",
+            "gutter": "12px",
+            "sm": "8px",
+            "base": "8px"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+            "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- Top Navigation Shell -->
+<header class="bg-surface dark:bg-on-background text-primary dark:text-primary-fixed font-headline-sm text-headline-sm w-full top-0 sticky flex items-center justify-between px-container-margin h-14 z-50">
+<div class="flex items-center gap-4">
+<button class="active:opacity-80 transition-opacity flex items-center justify-center h-10 w-10 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-sm">Verifying...</h1>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center justify-center px-container-margin py-xl">
+<!-- Selfie Captured Frame -->
+<div class="relative mb-xl">
+<div class="w-48 h-48 rounded-full border-4 border-primary-container p-1 shadow-lg overflow-hidden flex items-center justify-center bg-surface-container">
+<img class="w-full h-full object-cover rounded-full" data-alt="A high-quality professional portrait of a smiling employee in a corporate setting, showing only the head and shoulders. The background is a blurred office environment with soft indigo and white tones, matching the corporate HRMS theme. The lighting is crisp and flattering, emphasizing clarity for face recognition technology." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaokTKaVnVOYnGltCdXRvjKL_i76nlQs4qQW67YBX0THEuZRN0-mLa7KnSmwk4XOBFYSWKwMo_6mS7xtbbGUb_EiwjLBsy_dJ-56zEAAgwPN_adsKMiY5LWCj9jbb3LKN_ZYJX7WY6ePzt0AJXMwMgq8aKi1DnYWxo2K5H4n0AnqY1gH9P6xB880klaViZyPNaifAzYabMU-5tjF1Sb_N-xi2fIn9s16bT3cxz2MH1dhsx-naIICdaOa06KPXybCnPO1Ilb3x_GQ"/>
+</div>
+<!-- Pulse Effect -->
+<div class="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-20"></div>
+</div>
+<!-- Checklist Card -->
+<div class="w-full max-w-sm bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant space-y-md">
+<!-- Item 1: Device (Resolved) -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex items-center gap-md">
+<div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="font-label-md text-on-surface">Device compatibility</span>
+</div>
+<span class="text-green-600 font-label-sm">Verified</span>
+</div>
+<div class="h-px bg-outline-variant opacity-30"></div>
+<!-- Item 2: Security (Resolved) -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex items-center gap-md">
+<div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="font-label-md text-on-surface">Security check</span>
+</div>
+<span class="text-green-600 font-label-sm">Verified</span>
+</div>
+<div class="h-px bg-outline-variant opacity-30"></div>
+<!-- Item 3: Location (Resolved) -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex items-center gap-md">
+<div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="font-label-md text-on-surface">Location match</span>
+</div>
+<span class="text-green-600 font-label-sm">Verified</span>
+</div>
+<div class="h-px bg-outline-variant opacity-30"></div>
+<!-- Item 4: Face Match (Pending/Loading) -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex items-center gap-md">
+<div class="h-8 w-8 rounded-full bg-primary-container text-white flex items-center justify-center">
+<span class="material-symbols-outlined animate-spin-slow">progress_activity</span>
+</div>
+<span class="font-label-md text-on-surface font-semibold">Face match</span>
+</div>
+<span class="text-primary font-label-sm animate-pulse">Processing...</span>
+</div>
+<!-- Linear Progress Bar -->
+<div class="pt-md">
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="h-full bg-primary progress-bar-fill rounded-full shadow-[0_0_8px_rgba(53,37,205,0.4)]"></div>
+</div>
+</div>
+</div>
+<!-- Skeleton Shimmer Placeholder for next step -->
+<div class="w-full max-w-sm mt-md opacity-40">
+<div class="h-12 w-full shimmer rounded-lg"></div>
+</div>
+</main>
+<!-- Bottom Message Section -->
+<footer class="mt-auto px-container-margin pb-xl text-center">
+<p class="text-on-surface-variant font-body-md max-w-[280px] mx-auto">
+      Do not close the app. We're finalizing your attendance punch.
+    </p>
+<!-- Micro-interaction script for progress simulation -->
+<script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const progressBar = document.querySelector('.progress-bar-fill');
+        setTimeout(() => {
+          progressBar.style.width = '88%';
+        }, 1000);
+      });
+    </script>
+</footer>
+<!-- Background Ambience (Subtle Gradient) -->
+<div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary opacity-[0.03] blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary opacity-[0.03] blur-[120px] rounded-full"></div>
+</div>
+</body></html>

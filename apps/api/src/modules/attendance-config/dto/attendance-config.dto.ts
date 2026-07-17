@@ -60,6 +60,7 @@ export class CreatePolicyDto {
   @IsOptional() @IsBoolean() allowEarlyCheckin?: boolean;
   @IsOptional() @IsBoolean() allowEarlyCheckout?: boolean;
   @IsOptional() @IsBoolean() requireFaceMatch?: boolean;
+  @IsOptional() @IsBoolean() allowBiometricOptOut?: boolean;
   @IsOptional() @IsBoolean() requireRegisteredDevice?: boolean;
   @IsOptional() @IsBoolean() requireGeofence?: boolean;
   @IsOptional() @IsInt() @Min(0) @Max(168) maxOfflineSyncHours?: number;

@@ -7,7 +7,10 @@ import {
 import { EventType, Prisma, PunchSource } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { AuditService } from '../../../shared/audit/audit.service';
-import { PrismaService } from '../../../shared/database/prisma.service';
+import {
+  PrismaService,
+  PrismaTransaction,
+} from '../../../shared/database/prisma.service';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import { TenantContextService } from '../../../shared/tenancy/tenant-context.service';
 import {
@@ -26,6 +29,11 @@ type PunchMetadata = {
   requestId?: string;
   ipAddress?: string;
   userAgent?: string;
+  source?: PunchSource;
+  verificationLogId?: string;
+  latitude?: number;
+  longitude?: number;
+  accuracyM?: number;
 };
 
 @Injectable()
@@ -39,118 +47,129 @@ export class AttendanceRuntimeService {
   ) {}
 
   punch(eventType: EventType, metadata: PunchMetadata, now = new Date()) {
+    return this.prisma.forTenant((tx) =>
+      this.punchInTransaction(tx, eventType, metadata, now),
+    );
+  }
+
+  async punchInTransaction(
+    tx: PrismaTransaction,
+    eventType: EventType,
+    metadata: PunchMetadata,
+    now = new Date(),
+  ) {
     const tenantId = this.requireTenantId();
     const userId = this.requireUserId();
-    return this.prisma.forTenant(async (tx) => {
-      const employee = await this.resolver.employeeForUser(tx, userId);
-      const runtime = await this.resolver.resolve(tx, employee, now);
-      this.assertEmployeeDate(runtime);
-      const initialLog = await tx.attendanceLog.upsert({
-        where: {
-          tenantId_employeeId_attendanceDate: {
-            tenantId,
-            employeeId: employee.id,
-            attendanceDate: runtime.attendanceDate.toDatabaseDate(),
-          },
-        },
-        create: {
+    const employee = await this.resolver.employeeForUser(tx, userId);
+    const runtime = await this.resolver.resolve(tx, employee, now);
+    this.assertEmployeeDate(runtime);
+    const initialLog = await tx.attendanceLog.upsert({
+      where: {
+        tenantId_employeeId_attendanceDate: {
           tenantId,
           employeeId: employee.id,
           attendanceDate: runtime.attendanceDate.toDatabaseDate(),
-          appliedShiftId: runtime.appliedShiftId,
-          appliedPolicySnapshot: json(runtime.policy),
-          resolvedExceptionId: runtime.exceptionId,
         },
-        update: {},
-      });
-      await tx.$queryRaw`SELECT id FROM attendance_logs WHERE id = ${initialLog.id}::uuid FOR UPDATE`;
-      const log = await tx.attendanceLog.findUniqueOrThrow({
-        where: { id: initialLog.id },
-        include: {
-          payrollLock: true,
-          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
-        },
-      });
-      this.assertUnlocked(log);
-      const replay = metadata.requestId
-        ? log.events.find(
-            (event) => event.clientEventUuid === metadata.requestId,
-          )
-        : undefined;
-      if (replay) {
-        if (replay.eventType !== eventType) {
-          throw new ConflictException({
-            code: 'ATTENDANCE_EVENT_CONFLICT',
-            message:
-              'The request ID is already used by another attendance action',
-          });
-        }
-        return this.todayResponse(runtime, log, true, now);
+      },
+      create: {
+        tenantId,
+        employeeId: employee.id,
+        attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+        appliedShiftId: runtime.appliedShiftId,
+        appliedPolicySnapshot: json(runtime.policy),
+        resolvedExceptionId: runtime.exceptionId,
+      },
+      update: {},
+    });
+    await tx.$queryRaw`SELECT id FROM attendance_logs WHERE id = ${initialLog.id}::uuid FOR UPDATE`;
+    const log = await tx.attendanceLog.findUniqueOrThrow({
+      where: { id: initialLog.id },
+      include: {
+        payrollLock: true,
+        events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+      },
+    });
+    this.assertUnlocked(log);
+    const replay = metadata.requestId
+      ? log.events.find((event) => event.clientEventUuid === metadata.requestId)
+      : undefined;
+    if (replay) {
+      if (replay.eventType !== eventType) {
+        throw new ConflictException({
+          code: 'ATTENDANCE_EVENT_CONFLICT',
+          message:
+            'The request ID is already used by another attendance action',
+        });
       }
+      return this.todayResponse(runtime, log, true, now);
+    }
 
-      const aggregate = this.restoreAggregate(log.events);
-      this.assertTransition(aggregate, eventType);
-      this.assertPunchWindow(runtime, eventType, now);
-      const event = await tx.attendanceEvent.create({
-        data: {
-          tenantId,
+    const aggregate = this.restoreAggregate(log.events);
+    this.assertTransition(aggregate, eventType);
+    this.assertPunchWindow(runtime, eventType, now);
+    const event = await tx.attendanceEvent.create({
+      data: {
+        tenantId,
+        attendanceLogId: log.id,
+        employeeId: employee.id,
+        clientEventUuid: metadata.requestId,
+        verificationLogId: metadata.verificationLogId,
+        eventType,
+        source: metadata.source ?? PunchSource.WEB,
+        eventTime: now,
+        latitude: metadata.latitude,
+        longitude: metadata.longitude,
+        accuracyM: metadata.accuracyM,
+        ipAddress: metadata.ipAddress,
+        userAgent: metadata.userAgent,
+        createdBy: userId,
+      },
+    });
+    const calculation = calculateAttendance({
+      attendanceDate: runtime.attendanceDate.value,
+      timezone: runtime.timezone,
+      policy: runtime.policy,
+      shift: runtime.shift,
+      events: [...log.events, event].map(domainEvent),
+      exceptionType: runtime.exceptionType,
+      holiday: runtime.holiday,
+      weeklyOff: runtime.weeklyOff,
+      finalizing: false,
+      evaluationTime: now,
+    });
+    const updated = await tx.attendanceLog.update({
+      where: { id: log.id },
+      data: calculatedLogData(calculation, runtime),
+      include: {
+        payrollLock: true,
+        events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+      },
+    });
+    await Promise.all([
+      this.audit.append(tx, {
+        tenantId,
+        action: `attendance.${eventKey(eventType)}`,
+        module: 'attendance',
+        entityType: 'AttendanceLog',
+        entityId: log.id,
+        newValue: {
+          eventId: event.id,
+          eventType,
+          attendanceDate: runtime.attendanceDate.value,
+        },
+      }),
+      this.outbox.append(tx, {
+        tenantId,
+        eventKey: `attendance.${eventKey(eventType)}`,
+        payload: {
           attendanceLogId: log.id,
           employeeId: employee.id,
-          clientEventUuid: metadata.requestId,
-          eventType,
-          source: PunchSource.WEB,
-          eventTime: now,
-          ipAddress: metadata.ipAddress,
-          userAgent: metadata.userAgent,
-          createdBy: userId,
+          attendanceDate: runtime.attendanceDate.value,
+          eventId: event.id,
         },
-      });
-      const calculation = calculateAttendance({
-        attendanceDate: runtime.attendanceDate.value,
-        timezone: runtime.timezone,
-        policy: runtime.policy,
-        shift: runtime.shift,
-        events: [...log.events, event].map(domainEvent),
-        exceptionType: runtime.exceptionType,
-        holiday: runtime.holiday,
-        weeklyOff: runtime.weeklyOff,
-        finalizing: false,
-        evaluationTime: now,
-      });
-      const updated = await tx.attendanceLog.update({
-        where: { id: log.id },
-        data: calculatedLogData(calculation, runtime),
-        include: {
-          payrollLock: true,
-          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
-        },
-      });
-      await Promise.all([
-        this.audit.append(tx, {
-          tenantId,
-          action: `attendance.${eventKey(eventType)}`,
-          module: 'attendance',
-          entityType: 'AttendanceLog',
-          entityId: log.id,
-          newValue: {
-            eventId: event.id,
-            eventType,
-            attendanceDate: runtime.attendanceDate.value,
-          },
-        }),
-        this.outbox.append(tx, {
-          tenantId,
-          eventKey: `attendance.${eventKey(eventType)}`,
-          payload: {
-            attendanceLogId: log.id,
-            employeeId: employee.id,
-            attendanceDate: runtime.attendanceDate.value,
-            eventId: event.id,
-          },
-        }),
-      ]);
-      return this.todayResponse(runtime, updated, false, now);
-    });
+      }),
+    ]);
+    return this.todayResponse(runtime, updated, false, now);
   }
 
   today(now = new Date()) {
@@ -203,6 +222,39 @@ export class AttendanceRuntimeService {
           attendanceDate: log.attendanceDate.toISOString().slice(0, 10),
         })),
         summary: summarizeLogs(logs),
+      };
+    });
+  }
+
+  day(date: string) {
+    const userId = this.requireUserId();
+    const attendanceDate = DateOnly.parse(date).toDatabaseDate();
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await this.resolver.employeeForUser(tx, userId);
+      const log = await tx.attendanceLog.findFirst({
+        where: { employeeId: employee.id, attendanceDate },
+        include: {
+          appliedShift: { select: { id: true, name: true } },
+          payrollLock: { select: { status: true } },
+          events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
+        },
+      });
+      return {
+        data: {
+          attendanceDate: date,
+          status: log?.attendanceStatus ?? 'ABSENT',
+          firstCheckin: log?.firstCheckin ?? null,
+          lastCheckout: log?.lastCheckout ?? null,
+          totals: {
+            workMinutes: log?.totalWorkMinutes ?? 0,
+            breakMinutes: log?.breakMinutes ?? 0,
+            lateMinutes: log?.lateMinutes ?? 0,
+            overtimeMinutes: log?.overtimeMinutes ?? 0,
+          },
+          shift: log?.appliedShift ?? null,
+          isLocked: !!log?.lockedAt || log?.payrollLock?.status === 'LOCKED',
+          timeline: (log?.events ?? []).map(safeEvent),
+        },
       };
     });
   }

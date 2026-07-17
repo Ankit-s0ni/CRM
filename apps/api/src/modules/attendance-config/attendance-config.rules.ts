@@ -1,4 +1,5 @@
 import { UnprocessableEntityException } from '@nestjs/common';
+import { BlockList, isIP } from 'node:net';
 
 export type PolicyCandidate<T> = {
   scope: 'EMPLOYEE' | 'DEPARTMENT' | 'TENANT_DEFAULT';
@@ -53,6 +54,40 @@ export function normalizeNetworkEntries(entries: string[] = []) {
       return entry;
     },
   );
+}
+
+export function networkIncludesAddress(entry: string, observedAddress: string) {
+  const normalizedObserved = normalizeIpAddress(observedAddress);
+  const [network, prefix, extra] = entry.split('/');
+  if (extra !== undefined || !isIP(normalizedObserved)) return false;
+
+  const normalizedNetwork = normalizeIpAddress(network);
+  const family = isIP(normalizedNetwork);
+  if (!family || isIP(normalizedObserved) !== family) return false;
+
+  try {
+    const blockList = new BlockList();
+    if (prefix === undefined) {
+      blockList.addAddress(normalizedNetwork, family === 4 ? 'ipv4' : 'ipv6');
+    } else {
+      const prefixLength = Number(prefix);
+      if (
+        !/^\d+$/.test(prefix) ||
+        prefixLength < 0 ||
+        prefixLength > (family === 4 ? 32 : 128)
+      ) {
+        return false;
+      }
+      blockList.addSubnet(
+        normalizedNetwork,
+        prefixLength,
+        family === 4 ? 'ipv4' : 'ipv6',
+      );
+    }
+    return blockList.check(normalizedObserved, family === 4 ? 'ipv4' : 'ipv6');
+  } catch {
+    return false;
+  }
 }
 
 export function assertPolicyRules(policy: {
@@ -130,15 +165,20 @@ function assertTime(value: string) {
 }
 
 function isIpOrCidr(value: string) {
-  const [address, prefix] = value.split('/');
-  const parts = address.split('.').map(Number);
-  if (
-    parts.length !== 4 ||
-    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
-  )
-    return false;
+  const [address, prefix, extra] = value.split('/');
+  const family = isIP(normalizeIpAddress(address));
+  if (!family || extra !== undefined) return false;
   return (
     prefix === undefined ||
-    (/^\d+$/.test(prefix) && Number(prefix) >= 0 && Number(prefix) <= 32)
+    (/^\d+$/.test(prefix) &&
+      Number(prefix) >= 0 &&
+      Number(prefix) <= (family === 4 ? 32 : 128))
   );
+}
+
+function normalizeIpAddress(value: string) {
+  const trimmed = value.trim();
+  return trimmed.startsWith('::ffff:') && isIP(trimmed.slice(7)) === 4
+    ? trimmed.slice(7)
+    : trimmed;
 }

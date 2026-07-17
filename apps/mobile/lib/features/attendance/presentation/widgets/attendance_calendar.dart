@@ -4,25 +4,27 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 
 class AttendanceCalendar extends StatelessWidget {
-  const AttendanceCalendar({super.key, required this.onDay});
-  final VoidCallback onDay;
+  const AttendanceCalendar({
+    super.key,
+    required this.month,
+    required this.records,
+    required this.onDay,
+  });
+  final DateTime month;
+  final List<Map<String, dynamic>> records;
+  final ValueChanged<String> onDay;
 
   @override
   Widget build(BuildContext context) {
-    const statuses = <int, Color>{
-      1: AppTheme.green,
-      2: AppTheme.green,
-      3: AppTheme.green,
-      6: AppTheme.green,
-      7: AppTheme.green,
-      8: Color(0xFFD97706),
-      9: AppTheme.green,
-      10: AppTheme.green,
-      13: AppTheme.green,
-      14: AppTheme.green,
-      15: AppTheme.danger,
-      16: AppTheme.green,
-    };
+    final statuses = <int, String>{};
+    for (final record in records) {
+      final date = DateTime.tryParse(record['attendanceDate'] as String? ?? '');
+      if (date != null) {
+        statuses[date.day] = record['attendanceStatus'] as String? ?? 'PRESENT';
+      }
+    }
+    final days = DateTime(month.year, month.month + 1, 0).day;
+    final offset = DateTime(month.year, month.month, 1).weekday % 7;
     return AppCard(
       child: Column(
         children: [
@@ -53,46 +55,61 @@ class AttendanceCalendar extends StatelessWidget {
               mainAxisSpacing: 5,
               crossAxisSpacing: 5,
             ),
-            itemCount: 35,
+            itemCount: ((offset + days + 6) ~/ 7) * 7,
             itemBuilder: (context, index) {
-              final day = index - 2;
-              if (day < 1 || day > 31) return const SizedBox.shrink();
-              final color = statuses[day];
-              return InkWell(
-                onTap: color == null ? null : onDay,
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: color?.withValues(alpha: .11),
+              final day = index - offset + 1;
+              if (day < 1 || day > days) return const SizedBox.shrink();
+              final status = statuses[day];
+              final color = status == null ? null : _statusColor(status);
+              final date =
+                  '${month.year}-${month.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+              return Semantics(
+                button: status != null,
+                label: status == null ? date : '$date, ${_statusLabel(status)}',
+                child: ExcludeSemantics(
+                  child: InkWell(
+                    onTap: status == null ? null : () => onDay(date),
                     borderRadius: BorderRadius.circular(10),
-                    border: day == 16
-                        ? Border.all(color: AppTheme.charcoal)
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$day',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: day == 16
-                              ? FontWeight.w800
-                              : FontWeight.w500,
-                        ),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: color?.withValues(alpha: .11),
+                        borderRadius: BorderRadius.circular(10),
+                        border:
+                            DateTime.now().year == month.year &&
+                                DateTime.now().month == month.month &&
+                                DateTime.now().day == day
+                            ? Border.all(color: AppTheme.charcoal)
+                            : null,
                       ),
-                      if (color != null)
-                        Container(
-                          width: 4,
-                          height: 4,
-                          margin: const EdgeInsets.only(top: 3),
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
+                      child: Center(
+                        child: MediaQuery.withNoTextScaling(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$day',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: day == 16
+                                      ? FontWeight.w800
+                                      : FontWeight.w500,
+                                ),
+                              ),
+                              if (color != null)
+                                Container(
+                                  width: 4,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(top: 3),
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -113,6 +130,19 @@ class AttendanceCalendar extends StatelessWidget {
     );
   }
 }
+
+Color _statusColor(Object? status) {
+  if (status == 'ABSENT') return AppTheme.danger;
+  if (status == 'LATE' || status == 'HALF_DAY') return const Color(0xFFD97706);
+  return AppTheme.green;
+}
+
+String _statusLabel(String status) => switch (status) {
+  'ABSENT' => 'Absent',
+  'LATE' => 'Late',
+  'HALF_DAY' => 'Half day',
+  _ => 'Present',
+};
 
 class _Legend extends StatelessWidget {
   const _Legend({required this.color, required this.label});

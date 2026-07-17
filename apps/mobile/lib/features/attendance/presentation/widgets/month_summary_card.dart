@@ -5,7 +5,8 @@ import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
 
 class MonthSummaryCard extends StatelessWidget {
-  const MonthSummaryCard({super.key});
+  const MonthSummaryCard({super.key, required this.records});
+  final List<Map<String, dynamic>> records;
 
   @override
   Widget build(BuildContext context) => AppCard(
@@ -15,28 +16,28 @@ class MonthSummaryCard extends StatelessWidget {
           children: [
             Expanded(
               child: _Metric(
-                value: '21',
+                value: '${_count('PRESENT')}',
                 label: context.l10n.present,
                 color: AppTheme.green,
               ),
             ),
             Expanded(
               child: _Metric(
-                value: '1',
+                value: '${_count('LATE')}',
                 label: context.l10n.late,
                 color: Color(0xFFD97706),
               ),
             ),
             Expanded(
               child: _Metric(
-                value: '1',
+                value: '${_count('ABSENT')}',
                 label: context.l10n.absent,
                 color: AppTheme.danger,
               ),
             ),
             Expanded(
               child: _Metric(
-                value: '2',
+                value: '${_count('ON_LEAVE')}',
                 label: context.l10n.leave,
                 color: Color(0xFF315B8A),
               ),
@@ -51,14 +52,14 @@ class MonthSummaryCard extends StatelessWidget {
             Expanded(
               child: _CompactMetric(
                 icon: Icons.schedule_rounded,
-                value: '168h 42m',
+                value: _minutes('totalWorkMinutes'),
                 label: context.l10n.worked,
               ),
             ),
             Expanded(
               child: _CompactMetric(
                 icon: Icons.trending_up_rounded,
-                value: '5h 30m',
+                value: _minutes('overtimeMinutes'),
                 label: context.l10n.overtime,
               ),
             ),
@@ -67,6 +68,17 @@ class MonthSummaryCard extends StatelessWidget {
       ],
     ),
   );
+
+  int _count(String status) =>
+      records.where((record) => record['attendanceStatus'] == status).length;
+
+  String _minutes(String key) {
+    final minutes = records.fold<int>(
+      0,
+      (total, record) => total + ((record[key] as num?)?.round() ?? 0),
+    );
+    return '${minutes ~/ 60}h ${minutes % 60}m';
+  }
 }
 
 class _Metric extends StatelessWidget {

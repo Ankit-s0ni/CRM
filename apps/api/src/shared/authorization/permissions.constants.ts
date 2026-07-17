@@ -47,6 +47,14 @@ export const PERMISSIONS = {
   ATTENDANCE_EXCEPTIONS_MANAGE: 'attendance.exceptions.manage',
   ATTENDANCE_APPROVALS_MANAGE: 'attendance.approvals.manage',
   ATTENDANCE_REPORTS_READ: 'attendance.reports.read',
+  ATTENDANCE_DEVICES_READ: 'attendance.devices.read',
+  ATTENDANCE_DEVICES_MANAGE: 'attendance.devices.manage',
+  ATTENDANCE_BIOMETRICS_READ: 'attendance.biometrics.read',
+  ATTENDANCE_BIOMETRICS_MANAGE: 'attendance.biometrics.manage',
+  ATTENDANCE_VERIFICATION_READ: 'attendance.verification.read',
+  ATTENDANCE_ALERT_RULES_MANAGE: 'attendance.alert-rules.manage',
+  ATTENDANCE_SECURITY_ALERTS_READ: 'attendance.security-alerts.read',
+  ATTENDANCE_SECURITY_ALERTS_MANAGE: 'attendance.security-alerts.manage',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -69,6 +77,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<
     PERMISSIONS.ATTENDANCE_RECORDS_READ,
     PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ,
     PERMISSIONS.ATTENDANCE_APPROVALS_MANAGE,
+    PERMISSIONS.ATTENDANCE_DEVICES_READ,
+    PERMISSIONS.ATTENDANCE_SECURITY_ALERTS_READ,
   ],
   EMPLOYEE: [
     PERMISSIONS.EMPLOYEES_SELF_READ,

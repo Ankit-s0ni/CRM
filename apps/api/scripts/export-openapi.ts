@@ -5,8 +5,10 @@ import { AppModule } from '../src/app.module';
 import { createOpenApiDocument } from '../src/openapi';
 
 async function exportOpenApi() {
+  process.env.NODE_ENV = 'test';
   process.env.IMPORT_QUEUE_MODE = 'inline';
   process.env.IMPORT_STORAGE_MODE = 'memory';
+  process.env.ATTENDANCE_QUEUE_MODE = 'disabled';
   const app = await NestFactory.create(AppModule, { logger: false });
   await app.init();
   const document = createOpenApiDocument(app);

@@ -12,9 +12,11 @@ import {
   LogOut,
   MapPinned,
   Menu,
+  MonitorSmartphone,
   Network,
   Search,
   Settings2,
+  Siren,
   ShieldCheck,
   TableProperties,
   SlidersHorizontal,
@@ -64,6 +66,18 @@ const businessNavigation = [
 ];
 
 const attendanceNavigation = [
+  {
+    label: "Employee Devices",
+    href: "/app/attendance/devices",
+    icon: MonitorSmartphone,
+    permission: "attendance.devices.read",
+  },
+  {
+    label: "Security Feed",
+    href: "/app/attendance/security",
+    icon: Siren,
+    permission: "attendance.security-alerts.read",
+  },
   {
     label: "Attendance Register",
     href: "/app/attendance/register",

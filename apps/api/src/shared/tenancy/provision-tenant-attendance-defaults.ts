@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 
 type AttendanceDefaultsTransaction = Pick<
   Prisma.TransactionClient,
-  'attendancePolicy' | 'policyAssignment' | 'shift'
+  'alertRule' | 'attendancePolicy' | 'policyAssignment' | 'shift'
 >;
 
 export async function provisionTenantAttendanceDefaults(
@@ -41,6 +41,33 @@ export async function provisionTenantAttendanceDefaults(
       data: { tenantId, policyId: policy.id, scope: 'TENANT_DEFAULT' },
     });
   }
+
+  await Promise.all(
+    [
+      'GEOFENCE_VIOLATION',
+      'FACE_MISMATCH',
+      'MOCK_LOCATION',
+      'ROOTED_DEVICE',
+      'CLOCK_TAMPER',
+      'DEVICE_MISMATCH',
+    ].map((ruleType) =>
+      tx.alertRule.upsert({
+        where: {
+          tenantId_ruleType: {
+            tenantId,
+            ruleType: ruleType as Prisma.AlertRuleCreateInput['ruleType'],
+          },
+        },
+        update: {},
+        create: {
+          tenantId,
+          ruleType: ruleType as Prisma.AlertRuleCreateInput['ruleType'],
+          cooldownMinutes: 60,
+          channels: ['IN_APP'],
+        },
+      }),
+    ),
+  );
 
   return { policy, shift };
 }

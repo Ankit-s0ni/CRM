@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Field Tracking Status - Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline": "#777587",
+            "tertiary-container": "#a44100",
+            "error-container": "#ffdad6",
+            "on-surface": "#1b1b24",
+            "on-secondary-fixed": "#0b1c30",
+            "on-primary-fixed-variant": "#3323cc",
+            "secondary-fixed-dim": "#b7c8e1",
+            "on-primary-fixed": "#0f0069",
+            "secondary-container": "#d0e1fb",
+            "tertiary": "#7e3000",
+            "secondary": "#505f76",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed": "#e2dfff",
+            "surface-bright": "#fcf8ff",
+            "surface-variant": "#e4e1ee",
+            "surface": "#fcf8ff",
+            "on-secondary-fixed-variant": "#38485d",
+            "on-error": "#ffffff",
+            "surface-container-highest": "#e4e1ee",
+            "primary": "#3525cd",
+            "surface-dim": "#dcd8e5",
+            "surface-container": "#f0ecf9",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#ffd2be",
+            "on-primary-container": "#dad7ff",
+            "background": "#fcf8ff",
+            "surface-tint": "#4d44e3",
+            "tertiary-fixed-dim": "#ffb695",
+            "on-tertiary-fixed-variant": "#7b2f00",
+            "on-surface-variant": "#464555",
+            "primary-container": "#4f46e5",
+            "on-background": "#1b1b24",
+            "surface-container-high": "#eae6f4",
+            "on-tertiary-fixed": "#351000",
+            "outline-variant": "#c7c4d8",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed": "#ffdbcc",
+            "secondary-fixed": "#d3e4fe",
+            "on-error-container": "#93000a",
+            "inverse-primary": "#c3c0ff",
+            "on-secondary-container": "#54647a",
+            "inverse-surface": "#302f39",
+            "on-primary": "#ffffff",
+            "primary-fixed-dim": "#c3c0ff",
+            "on-secondary": "#ffffff",
+            "inverse-on-surface": "#f3effc",
+            "surface-container-low": "#f5f2ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "12px",
+            "xs": "4px",
+            "container-margin": "16px",
+            "base": "8px",
+            "md": "16px",
+            "xl": "32px",
+            "sm": "8px",
+            "lg": "24px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.2); } }
+    .glass-effect { backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.8); }
+    .map-container { border-radius: 1.5rem; overflow: hidden; box-shadow: 0px 4px 6px rgba(15, 23, 42, 0.05); }
+    .floating-stats { transform: translateY(-30%); }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface flex items-center justify-between px-container-margin h-14 w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer active:opacity-80 transition-opacity">arrow_back</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Field Tracking</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full cursor-pointer">history</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full cursor-pointer">settings</span>
+</div>
+</header>
+<main class="flex-grow px-container-margin pt-4 space-y-6">
+<!-- Map Section -->
+<section class="relative map-container h-72 w-full">
+<div class="bg-cover bg-center w-full h-full grayscale-[20%]" data-alt="A clean, minimalist overhead digital map of Muscat, Oman, with soft muted colors following a deep indigo and slate palette. A faint, glowing breadcrumb trail in a soft primary blue indicates a path through city streets. A single prominent location marker with a subtle pulse animation sits atop the current position in a modern business district." data-location="Muscat" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB99UjliXsg6T1su7r-FEnCQ9G57x6-mHOkVY5-M_vZbl5DkfYRkStTRvIirsVtyeANkzqhVYj2Bwsj3bCm0Q24DBuccXhYdvMaWyQ_KBdP6K4eCm8ZgPZJlEvQuMQR3qe1-qrX74jDY0AfoCNgzQwH5eahU3w7LpD31_-zKJ3oICFoYI5R9vnAVcoh9ZU3qHpJwJYGU8N3G76iOBVVZ4MAVi-U_NGfLSPKxa8mvrovHIlNW3gmsSnXmkQiisuYJsvXX9iaLJx0kQ')"></div>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md rounded-full px-3 py-1 text-label-md font-label-md flex items-center gap-2 shadow-sm border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+        GPS High Accuracy
+      </div>
+</section>
+<!-- Tracking Status Card -->
+<section class="floating-stats px-2">
+<div class="bg-surface-container-lowest rounded-xl p-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(15,23,42,0.05)] border border-outline-variant/30 flex flex-col items-center justify-center text-center space-y-4">
+<div class="flex items-center gap-3 bg-green-50 px-4 py-2 rounded-full">
+<div class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></div>
+<span class="font-headline-sm text-headline-sm text-green-700">Field tracking: ON since 9:14</span>
+</div>
+<p class="text-on-surface-variant text-body-md font-body-md">Your location is being shared with the central dispatch team for active task management.</p>
+</div>
+</section>
+<!-- Stats Bento Row -->
+<section class="-mt-8 grid grid-cols-3 gap-md">
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-2">satellite_alt</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Pings</span>
+<span class="text-headline-sm font-headline-sm text-on-surface">34</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-2">route</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Distance</span>
+<span class="text-headline-sm font-headline-sm text-on-surface">21.6 km</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-2">battery_low</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Battery</span>
+<span class="text-headline-sm font-headline-sm text-on-surface">Low Impact</span>
+</div>
+</section>
+<!-- Information Section -->
+<section class="bg-surface-container-highest/50 rounded-xl p-lg border border-dashed border-outline-variant">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4">Tracking Protocol</h3>
+<div class="space-y-4">
+<div class="flex gap-4 items-start">
+<span class="material-symbols-outlined text-on-surface-variant mt-1">timer</span>
+<p class="text-body-md font-body-md text-on-surface-variant">Pings every 15 min during shift to maintain battery health and network efficiency.</p>
+</div>
+<div class="flex gap-4 items-start">
+<span class="material-symbols-outlined text-on-surface-variant mt-1">no_accounts</span>
+<p class="text-body-md font-body-md text-on-surface-variant">Tracking stops automatically at check-out. No data is recorded outside of working hours.</p>
+</div>
+</div>
+</section>
+<!-- Footer Action -->
+<div class="py-4">
+<button class="w-full bg-primary text-on-primary py-lg rounded-xl font-headline-sm text-headline-sm active:scale-95 transition-transform duration-200 flex items-center justify-center gap-2 shadow-lg">
+<span class="material-symbols-outlined">refresh</span>
+        Refresh Location
+      </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center h-20 pb-safe px-base shadow-sm">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</nav>
+<script>
+    // Micro-interaction for the refresh button
+    document.querySelector('button.bg-primary').addEventListener('click', function() {
+      const icon = this.querySelector('.material-symbols-outlined');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+      }, 1000);
+    });
+
+    // Simple interaction for stats cards
+    document.querySelectorAll('.bg-surface-container-low').forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.add('scale-95');
+        setTimeout(() => card.classList.remove('scale-95'), 100);
+      });
+    });
+  </script>
+</body></html>

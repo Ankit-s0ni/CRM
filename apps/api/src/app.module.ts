@@ -32,6 +32,10 @@ import { WorkspaceSettingsModule } from './modules/workspace-settings/workspace-
 import { AttendanceConfigModule } from './modules/attendance-config/attendance-config.module';
 import { AttendanceDashboardModule } from './modules/attendance-dashboard/attendance-dashboard.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
+import { DeviceTrustModule } from './modules/device-trust/device-trust.module';
+import { BiometricsModule } from './modules/biometrics/biometrics.module';
+import { AttendanceVerificationModule } from './modules/attendance-verification/attendance-verification.module';
+import { SecurityAlertsModule } from './modules/security-alerts/security-alerts.module';
 
 @Module({
   imports: [
@@ -46,6 +50,11 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
             'req.body.password',
             'req.body.refreshToken',
             'req.body.token',
+            'req.body.attestationToken',
+            'req.body.livenessProofToken',
+            'req.body.selfieKey',
+            'req.body.privateObjectKey',
+            'req.body.pushToken',
             'res.headers["set-cookie"]',
           ],
           censor: '[REDACTED]',
@@ -76,6 +85,10 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
     AttendanceConfigModule,
     AttendanceDashboardModule,
     AttendanceModule,
+    DeviceTrustModule,
+    BiometricsModule,
+    AttendanceVerificationModule,
+    SecurityAlertsModule,
   ],
   controllers: [AppController],
   providers: [

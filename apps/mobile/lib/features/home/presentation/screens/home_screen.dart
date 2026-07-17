@@ -35,8 +35,8 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(homeControllerProvider);
-    final summary = state.value;
-    final attendance = ref.watch(attendanceControllerProvider).value;
+    final summary = state.asData?.value;
+    final attendance = ref.watch(attendanceControllerProvider).asData?.value;
     final tenant = ref.watch(tenantControllerProvider);
     final isCheckedIn =
         attendance?.phase == AttendancePhase.checkedIn ||
@@ -67,6 +67,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            tooltip: 'Notifications',
             onPressed: onNotifications,
             icon: const Icon(Icons.notifications_none_rounded),
           ),

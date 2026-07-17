@@ -2,6 +2,8 @@ import {
   assertPolicyRules,
   haversineMeters,
   isOvernightShift,
+  networkIncludesAddress,
+  normalizeNetworkEntries,
   resolvePolicy,
   resolveShift,
 } from './attendance-config.rules';
@@ -52,5 +54,20 @@ describe('attendance configuration rules', () => {
         maxFaceAttempts: 3,
       }),
     ).toThrow();
+  });
+
+  it('matches exact and CIDR office networks without accepting adjacent addresses', () => {
+    expect(networkIncludesAddress('203.0.113.9', '203.0.113.9')).toBe(true);
+    expect(networkIncludesAddress('203.0.113.0/24', '203.0.113.99')).toBe(true);
+    expect(networkIncludesAddress('203.0.113.0/24', '203.0.114.1')).toBe(false);
+    expect(networkIncludesAddress('127.0.0.1', '::ffff:127.0.0.1')).toBe(true);
+  });
+
+  it('normalizes valid IPv4 and IPv6 network entries and rejects invalid CIDR', () => {
+    expect(
+      normalizeNetworkEntries([' 203.0.113.0/24 ', '2001:db8::/32']),
+    ).toEqual(['203.0.113.0/24', '2001:db8::/32']);
+    expect(() => normalizeNetworkEntries(['203.0.113.0/33'])).toThrow();
+    expect(() => normalizeNetworkEntries(['not-an-address'])).toThrow();
   });
 });

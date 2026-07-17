@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings & Permissions - Acme Industries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#777587",
+                    "tertiary-container": "#a44100",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-primary-fixed": "#0f0069",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary": "#7e3000",
+                    "secondary": "#505f76",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "surface-bright": "#fcf8ff",
+                    "surface-variant": "#e4e1ee",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary": "#3525cd",
+                    "surface-dim": "#dcd8e5",
+                    "surface-container": "#f0ecf9",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-primary-container": "#dad7ff",
+                    "background": "#fcf8ff",
+                    "surface-tint": "#4d44e3",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "on-surface-variant": "#464555",
+                    "primary-container": "#4f46e5",
+                    "on-background": "#1b1b24",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-fixed": "#351000",
+                    "outline-variant": "#c7c4d8",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-container": "#54647a",
+                    "inverse-surface": "#302f39",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container-low": "#f5f2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "container-margin": "16px",
+                    "base": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8fafc;
+            color: #1b1b24;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-shadow {
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 4px 6px rgba(15, 23, 42, 0.05);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #3525cd;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #dad7ff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="bg-surface sticky top-0 z-50 w-full flex items-center justify-between px-container-margin h-14 transition-colors">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container active:opacity-80 transition-all">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Settings</h1>
+</div>
+<div class="flex items-center">
+<span class="font-headline-md text-headline-md font-bold text-primary">Acme</span>
+</div>
+</header>
+<main class="px-container-margin py-md space-y-lg">
+<!-- Permissions Section -->
+<section class="space-y-sm">
+<h2 class="text-label-md font-label-md text-outline px-xs">PERMISSIONS</h2>
+<div class="bg-surface-container-lowest rounded-xl custom-shadow border border-outline-variant overflow-hidden">
+<!-- Camera -->
+<div class="flex items-center justify-between p-md border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">photo_camera</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Camera</p>
+<p class="font-label-sm text-label-sm text-outline">For identity verification</p>
+</div>
+</div>
+<div class="flex items-center gap-xs text-primary">
+<p class="font-label-md text-label-md">Granted</p>
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+</div>
+<!-- Location -->
+<div class="flex items-center justify-between p-md border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">location_on</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Location</p>
+<p class="font-label-sm text-label-sm text-outline">Used for geo-fencing</p>
+</div>
+</div>
+<div class="flex items-center gap-xs text-primary">
+<p class="font-label-md text-label-md">Always</p>
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+</div>
+<!-- Notifications -->
+<div class="flex items-center justify-between p-md border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Notifications</p>
+<p class="font-label-sm text-label-sm text-outline">Punch reminders & alerts</p>
+</div>
+</div>
+<div class="flex items-center gap-xs text-primary">
+<p class="font-label-md text-label-md">Granted</p>
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+</div>
+<!-- Battery Optimization -->
+<div class="flex flex-col p-md bg-tertiary-fixed/10">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">battery_charging_full</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Battery Optimization</p>
+<div class="flex items-center gap-xs text-tertiary">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<p class="font-label-sm text-label-sm font-semibold">Restricted</p>
+</div>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md text-label-md shadow-sm active:scale-95 transition-transform">
+                            Allow
+                        </button>
+</div>
+<p class="mt-sm font-label-sm text-label-sm text-outline-variant pl-14">Restricted mode may delay punch alerts. Change to "Unrestricted" for best performance.</p>
+</div>
+</div>
+</section>
+<!-- Preferences Section -->
+<section class="space-y-sm">
+<h2 class="text-label-md font-label-md text-outline px-xs">PREFERENCES</h2>
+<div class="bg-surface-container-lowest rounded-xl custom-shadow border border-outline-variant overflow-hidden">
+<!-- Language -->
+<button class="w-full flex items-center justify-between p-md border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">language</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">Language</p>
+</div>
+<div class="flex items-center gap-xs text-outline">
+<p class="font-body-md text-body-md">English</p>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</button>
+<!-- Punch Reminders Toggle -->
+<div class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">alarm</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-surface">Punch reminders</p>
+<p class="font-label-sm text-label-sm text-outline">Notify when near work zone</p>
+</div>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-outline-variant checked:border-primary" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer" for="toggle"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="space-y-sm">
+<h2 class="text-label-md font-label-md text-error px-xs">DANGER ZONE</h2>
+<div class="bg-surface-container-lowest rounded-xl custom-shadow border border-error-container overflow-hidden">
+<button class="w-full flex items-center gap-md p-md hover:bg-error-container/20 transition-colors">
+<div class="w-10 h-10 rounded-full bg-error-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-error">phonelink_erase</span>
+</div>
+<div class="text-left">
+<p class="font-body-lg text-body-lg text-error font-semibold">Unregister this device</p>
+<p class="font-label-sm text-label-sm text-outline">Requires re-authorization by HR</p>
+</div>
+</button>
+</div>
+</section>
+<!-- About Section -->
+<section class="space-y-sm">
+<h2 class="text-label-md font-label-md text-outline px-xs">ABOUT</h2>
+<div class="bg-surface-container-lowest rounded-xl custom-shadow border border-outline-variant overflow-hidden">
+<div class="flex items-center justify-between p-md border-b border-surface-container">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">info</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">Version</p>
+</div>
+<p class="font-body-md text-body-md text-outline">2.4.1 (Stable)</p>
+</div>
+<button class="w-full flex items-center justify-between p-md border-b border-surface-container hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">policy</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">Privacy Policy</p>
+</div>
+<span class="material-symbols-outlined text-outline">open_in_new</span>
+</button>
+<button class="w-full flex items-center justify-between p-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">description</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">Licenses</p>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Footer Logo/Branding -->
+<div class="pt-lg flex flex-col items-center justify-center gap-sm opacity-40">
+<div class="w-8 h-8 rounded-lg bg-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[20px]">corporate_fare</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">© 2024 Acme Industries Inc.</p>
+</div>
+</main>
+<!-- Navigation Shell (Bottom Nav Bar) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center h-20 pb-safe bg-surface-container-lowest border-t border-outline-variant shadow-sm px-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="font-label-sm text-label-sm">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">quickreply</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm text-label-sm">Alerts</span>
+</a>
+<!-- Active Tab: Profile (Closest to Settings context) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for the "Allow" button
+        document.querySelector('button.bg-primary').addEventListener('click', function() {
+            const btn = this;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span>';
+            setTimeout(() => {
+                const parent = btn.closest('.bg-tertiary-fixed\\/10');
+                parent.classList.remove('bg-tertiary-fixed/10');
+                parent.classList.add('bg-surface-container-lowest');
+                parent.innerHTML = `
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-md">
+                            <div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">battery_charging_full</span>
+                            </div>
+                            <div>
+                                <p class="font-body-lg text-body-lg text-on-surface">Battery Optimization</p>
+                                <div class="flex items-center gap-xs text-primary">
+                                    <p class="font-label-md text-label-md">Unrestricted</p>
+                                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1200);
+        });
+
+        // Danger zone alert simulation
+        document.querySelector('button.hover\\:bg-error-container\\/20').addEventListener('click', function() {
+            if(confirm('Are you sure you want to unregister this device? This will immediately revoke access to all company resources.')) {
+                alert('Request sent to HR. Your access will be terminated within 24 hours.');
+            }
+        });
+    </script>
+</body></html>

@@ -7,6 +7,7 @@ import 'core/logging/app_logger.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tenant/tenant_controller.dart';
+import 'core/widgets/app_availability_gate.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -35,6 +36,8 @@ class HrmsApp extends ConsumerWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         routerConfig: router,
+        builder: (context, child) =>
+            AppAvailabilityGate(child: child ?? const SizedBox.shrink()),
       ),
     );
   }

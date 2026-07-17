@@ -70,20 +70,43 @@ class _RegularizationScreenState extends State<RegularizationScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 10),
-          InkWell(
-            onTap: _submitting ? null : _pickTime,
-            borderRadius: BorderRadius.circular(12),
-            child: InputDecorator(
-              decoration: InputDecoration(
-                labelText: context.l10n.requestedCheckout,
-                prefixIcon: const Icon(Icons.schedule_rounded),
-              ),
-              child: Text(
-                _requestedTime?.format(context) ?? context.l10n.selectTime,
-                style: TextStyle(
-                  color: _requestedTime == null
-                      ? AppTheme.slate
-                      : AppTheme.charcoal,
+          Text(
+            context.l10n.requestedCheckout,
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: 6),
+          Semantics(
+            button: true,
+            label: context.l10n.requestedCheckout,
+            value: _requestedTime?.format(context) ?? context.l10n.selectTime,
+            child: InkWell(
+              onTap: _submitting ? null : _pickTime,
+              borderRadius: BorderRadius.circular(12),
+              child: Ink(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFCBC8D8)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule_rounded),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _requestedTime?.format(context) ??
+                            context.l10n.selectTime,
+                        style: TextStyle(
+                          color: _requestedTime == null
+                              ? AppTheme.slate
+                              : AppTheme.charcoal,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IndigoHR | Security Monitoring Feed</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#3525cd",
+                    "tertiary": "#703a00",
+                    "on-secondary-fixed-variant": "#005320",
+                    "on-surface": "#1b1b24",
+                    "on-secondary-container": "#007230",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#4d44e3",
+                    "secondary-fixed": "#7ffc97",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#4f46e5",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-container-low": "#f5f2ff",
+                    "surface-container-high": "#eae6f4",
+                    "on-tertiary-container": "#ffd2b1",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "secondary-container": "#7cf994",
+                    "on-secondary-fixed": "#002109",
+                    "on-tertiary-fixed": "#2f1500",
+                    "inverse-surface": "#302f39",
+                    "tertiary-container": "#934e00",
+                    "surface-variant": "#e4e1ee",
+                    "background": "#fcf8ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "surface-container": "#f0ecf9",
+                    "surface": "#fcf8ff",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#c7c4d8",
+                    "surface-bright": "#fcf8ff",
+                    "on-primary-fixed": "#0f0069",
+                    "surface-container-highest": "#e4e1ee",
+                    "primary-fixed": "#e2dfff",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "outline": "#777587",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-background": "#1b1b24",
+                    "tertiary-fixed": "#ffdcc3",
+                    "secondary": "#006e2d",
+                    "on-primary-container": "#dad7ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3effc",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "surface-dim": "#dcd8e5",
+                    "on-surface-variant": "#464555",
+                    "secondary-fixed-dim": "#62df7d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "sm": "8px",
+                    "sidebar-width": "280px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "3xl": "64px",
+                    "gutter": "24px",
+                    "2xl": "48px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fcf8ff;
+      }
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .custom-shadow {
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="flex flex-col h-screen fixed left-0 top-0 z-40 bg-inverse-surface dark:bg-surface-container-lowest w-sidebar-width border-r border-outline-variant shadow-md">
+<div class="px-lg py-xl flex items-center gap-md">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-surface-container-lowest dark:text-primary">IndigoHR</h1>
+<p class="text-label-sm text-surface-variant/70">Admin Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-sm">
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md border-l-4 border-primary bg-primary/10 text-primary-fixed-dim font-bold transition-all duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-md text-label-md">Security Feed</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Live Map</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md text-label-md">Policies</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-label-md text-label-md">Attendance</span>
+</a>
+<a class="flex items-center gap-md px-lg py-md text-surface-variant dark:text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all duration-150 ease-in-out rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">System Config</span>
+</a>
+</nav>
+<div class="p-lg border-t border-outline-variant/20">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+                    AD
+                </div>
+<div class="flex-1">
+<p class="text-label-md font-bold text-surface-container-lowest">Admin User</p>
+<p class="text-[10px] text-surface-variant/60 uppercase tracking-widest">Master Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-sidebar-width min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant z-30 flex items-center justify-between px-gutter">
+<div class="flex items-center gap-lg flex-1">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Admin Central</h2>
+<div class="relative max-w-md w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary text-body-sm" placeholder="Search employees or logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 hover:bg-surface-container-high transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-sm px-2 py-1 hover:bg-surface-container-high transition-colors rounded-lg">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center text-xs">HQ</div>
+<span class="font-label-md text-on-surface">Mumbai Main</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<div class="pt-24 pb-12 px-gutter max-w-container-max mx-auto">
+<!-- Header Section with Trend -->
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Security Monitoring Feed</h3>
+<p class="text-body-md text-on-surface-variant">Real-time integrity tracking for enterprise attendance and geofencing.</p>
+</div>
+<div class="bg-surface-container-lowest custom-shadow rounded-xl p-md flex items-center gap-lg border border-outline-variant/30">
+<div>
+<p class="text-label-sm text-outline uppercase tracking-wider">Violations this month</p>
+<h4 class="font-headline-md text-headline-md text-error flex items-baseline gap-xs">
+                            128 <span class="text-label-sm text-secondary font-medium">+12% vs LY</span>
+</h4>
+</div>
+<div class="w-32 h-12 flex items-end gap-1">
+<div class="flex-1 bg-primary/10 rounded-t-sm h-1/3"></div>
+<div class="flex-1 bg-primary/10 rounded-t-sm h-2/3"></div>
+<div class="flex-1 bg-primary/10 rounded-t-sm h-1/2"></div>
+<div class="flex-1 bg-primary/10 rounded-t-sm h-3/4"></div>
+<div class="flex-1 bg-primary/10 rounded-t-sm h-full"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-4/5"></div>
+<div class="flex-1 bg-error rounded-t-sm h-full animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-md mb-xl overflow-x-auto scrollbar-hide pb-2">
+<button class="px-lg py-2 rounded-full bg-primary text-white font-label-md flex items-center gap-xs">
+                    All Events <span class="bg-white/20 px-1.5 rounded-md text-[10px]">42</span>
+</button>
+<button class="px-lg py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-fixed transition-colors font-label-md">Mock location</button>
+<button class="px-lg py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-fixed transition-colors font-label-md">Face mismatch</button>
+<button class="px-lg py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-fixed transition-colors font-label-md">Outside geofence</button>
+<button class="px-lg py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-fixed transition-colors font-label-md">Blocked device</button>
+<button class="px-lg py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-fixed transition-colors font-label-md">Clock tampering</button>
+</div>
+<!-- Feed Bento Grid -->
+<div class="bento-grid">
+<!-- Card 1: Outside Geofence (Wide Card) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border-l-4 border-error custom-shadow rounded-xl p-lg flex flex-col md:flex-row gap-lg">
+<div class="flex-1">
+<div class="flex items-center gap-sm mb-md">
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container text-[10px] font-bold uppercase">Critical</span>
+<span class="text-label-sm text-outline">9:04 AM • Bengaluru HQ</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-sm text-on-surface">
+<a class="text-primary hover:underline" href="#">Rahul S.</a> attempted check-in 2.1 km outside HQ geofence
+                        </h4>
+<div class="flex items-center gap-xl mt-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase">Device Info</span>
+<span class="text-body-sm font-medium">Samsung Galaxy S23 (Verified)</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase">Violation</span>
+<span class="text-body-sm font-medium text-error">Proximity Violation</span>
+</div>
+</div>
+<div class="flex gap-md mt-lg">
+<button class="px-lg py-2 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all">View verification log</button>
+<button class="px-lg py-2 border border-outline text-on-surface-variant rounded-lg font-label-md hover:bg-surface-variant transition-all">Block device</button>
+</div>
+</div>
+<div class="w-full md:w-64 h-48 rounded-xl overflow-hidden relative border border-outline-variant bg-surface-container">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A clean, minimalist 3D rendering of a city map from a top-down isometric view. A large neon blue circle represents a geofence on a light grey grid. A bright red pin with a glowing pulse is located clearly outside of this circle on a cross-street, illustrating a geographic violation. The lighting is soft and corporate, utilizing a palette of light slates and indigos." data-location="Bengaluru" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA5AXW3TP4XO1cUS2YPI3u8EUcf6n0_QZurrByWgljPeJQSEFteqKB7Wb6uy0xuF3_KBw9-sqM57fLnP4JOBM2YQKz5XyqyiMacvt8ZtaB1Vt0t45wA-OS0OdMfRr9uL0__nsyYzUoqYgqWA2j9JdebfDgX2QIE4gUmyrdPqGEjWmaQtMmRvmyYZb6Rm8YcAKozh2Rz7YNjQacVgXsJu5rNN10sGKvmvIobIzLFaCauJZjB5-_is5h7JsvlIh9ELuCsEi4OzURLUA')"></div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="bg-surface-container-lowest/90 backdrop-blur-sm p-2 rounded-lg custom-shadow flex items-center gap-xs">
+<span class="material-symbols-outlined text-error text-sm">location_off</span>
+<span class="text-[10px] font-bold">2.1 KM OVER</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Face Mismatch (Square-ish Card) -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest custom-shadow rounded-xl p-lg flex flex-col border border-outline-variant/30">
+<div class="flex items-center justify-between mb-md">
+<span class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary-container text-[10px] font-bold uppercase">Identity Risk</span>
+<span class="text-label-sm text-outline">8:45 AM</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-lg text-on-surface">
+                        Face mismatch detected for <a class="text-primary hover:underline" href="#">Anjali P.</a>
+</h4>
+<div class="flex items-center justify-between gap-md mb-xl flex-1">
+<div class="flex-1 flex flex-col items-center">
+<div class="w-20 h-20 rounded-full border-2 border-outline-variant overflow-hidden mb-sm bg-surface-variant">
+<img class="w-full h-full object-cover grayscale opacity-60" data-alt="A professional studio portrait of a young South Asian woman in business attire, looking directly at the camera with a neutral expression. The lighting is bright and even, typical of an ID photo, with a solid white background. High resolution and clear detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2VYi9_GsoytoUYWyx7F9M1RpR4xEIydlOmQk0CZGf_wNApINlBfBHAgnSXAPam7pnOpZUoVVDaGElwDbutJ_GFICpd3g0_ZJAyeTh0IyRZEogrL8tZtDPS11eCWZ701IyDXnK-hIeFm7rFJoXQ8EkuLb-HhADEEyy1FjQ3psyM2OFpaUS9lBDoGqLDTS0lSk3jubrUWq27-Rx9-SBrtiZBVJ9B8vZGDOyOaoHgJbApDaHawU3vYLfyMu6glKaFa5M0oSY-j1JOw"/>
+</div>
+<span class="text-[10px] text-outline">DATABASE</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error mb-1">
+<span class="material-symbols-outlined">close</span>
+</div>
+<span class="font-headline-sm text-error">41%</span>
+<span class="text-[10px] text-outline">MATCH</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<div class="w-20 h-20 rounded-full border-2 border-error overflow-hidden mb-sm bg-surface-variant ring-4 ring-error/10">
+<img class="w-full h-full object-cover" data-alt="A grainy, slightly blurry smartphone selfie taken in low light of a person partially obscured by a face mask or hood. The image quality is poor and the angle is low, contrasting sharply with a clear ID photo. The background is a dim urban street at night." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB22_r5_HgeP9lJjKr-d_Y8yTRk-oyPaV9xTezUkLvCs4BIeQO7MFYjP207LfywTBBGZdDu9VfPDxyTRWahGv_OhGGj6MHxZ9PbG9eTjB0sDteP1EnrLI27PQV4wiT9FTZ7h74-thKGdv6L_h7cnXpVYjCt0jPY5YW7rGp-7s1Uc9_WdxqgoAsGpeGRL2LrPTEV5-Tq-VRGm-GY1bTUkDCGBfPSk98HudMRaJuQQa-M6AzdL4AtN99Q1PcQE1jsmYK4NEeNaAgP5w"/>
+</div>
+<span class="text-[10px] text-error font-bold">ATTEMPTED</span>
+</div>
+</div>
+<div class="p-md bg-surface-container-low rounded-lg mb-lg border border-outline-variant/30">
+<div class="flex justify-between text-label-sm mb-xs">
+<span>System Threshold</span>
+<span class="font-bold">85%</span>
+</div>
+<div class="h-1.5 w-full bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-error w-[41%]"></div>
+</div>
+</div>
+<div class="flex flex-col gap-sm">
+<button class="w-full py-2 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all">View full verification</button>
+<button class="w-full py-2 border border-error/50 text-error rounded-lg font-label-md hover:bg-error/5 transition-all">Suspend Account</button>
+</div>
+</div>
+<!-- Card 3: Mock Location (Horizontal Medium) -->
+<div class="col-span-12 md:col-span-6 lg:col-span-5 bg-surface-container-lowest custom-shadow rounded-xl p-lg flex flex-col border-t-4 border-primary">
+<div class="flex items-center gap-sm mb-md">
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-primary text-[10px] font-bold uppercase">Software Alert</span>
+<span class="text-label-sm text-outline">10:12 AM</span>
+</div>
+<div class="flex items-start gap-lg mb-lg">
+<div class="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-4xl">mobile_off</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Mock location enabled</h4>
+<p class="text-body-sm text-on-surface-variant mt-1">
+<span class="font-bold">Karan M.</span> using "Fake GPS Pro" on OnePlus 11 Pro.
+                            </p>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-2 gap-md py-md border-y border-outline-variant/20 mb-lg">
+<div>
+<p class="text-[10px] text-outline uppercase">Detected Method</p>
+<p class="text-label-md font-medium">Developer Options</p>
+</div>
+<div>
+<p class="text-[10px] text-outline uppercase">Device Integrity</p>
+<p class="text-label-md font-medium text-error">Compromised</p>
+</div>
+</div>
+<div class="flex gap-md">
+<button class="flex-1 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-md hover:bg-surface-variant transition-all">Audit logs</button>
+<button class="flex-1 py-2 bg-error text-white rounded-lg font-label-md hover:bg-error-container hover:text-on-error-container transition-all">Block device</button>
+</div>
+</div>
+<!-- Card 4: Recent Blocked Device (Small Card) -->
+<div class="col-span-12 md:col-span-4 lg:col-span-3 bg-inverse-surface text-surface-container-lowest custom-shadow rounded-xl p-lg flex flex-col">
+<div class="flex items-center justify-between mb-xl">
+<div class="w-10 h-10 rounded-full bg-error flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">block</span>
+</div>
+<span class="text-label-sm text-surface-variant/60">2m ago</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm mb-xs">Device Blacklisted</h4>
+<p class="text-body-sm text-surface-variant/80 mb-xl flex-1">iPhone 14 (ID: 8821-X) permanently blocked for persistent clock tampering attempts.</p>
+<a class="text-primary-fixed-dim hover:text-white transition-colors flex items-center gap-xs font-label-md" href="#">
+                        Review case details <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<!-- Card 5: Clock Tampering (Bento Bottom Small) -->
+<div class="col-span-12 md:col-span-8 lg:col-span-4 bg-surface-container-lowest custom-shadow rounded-xl p-lg flex items-center border border-outline-variant/30">
+<div class="flex-1">
+<span class="text-label-sm text-outline">System Log</span>
+<h5 class="font-headline-sm text-headline-sm text-on-surface mt-1">Clock Tampering</h5>
+<p class="text-body-sm text-on-surface-variant">4 devices detected with manual time overrides in the last 24h.</p>
+<div class="flex -space-x-2 mt-md">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-primary-container flex items-center justify-center text-[10px]">VP</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-secondary-container flex items-center justify-center text-[10px]">RJ</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-tertiary-container flex items-center justify-center text-[10px]">SM</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-highest flex items-center justify-center text-[10px] text-outline">+1</div>
+</div>
+</div>
+<div class="w-24 h-24 relative flex items-center justify-center shrink-0">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-high" cx="48" cy="48" fill="transparent" r="36" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="48" cy="48" fill="transparent" r="36" stroke="currentColor" stroke-dasharray="226" stroke-dashoffset="180" stroke-width="8"></circle>
+</svg>
+<span class="absolute font-bold text-lg">21%</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Security Banner (Interaction) -->
+<div class="fixed bottom-lg right-lg max-w-sm w-full bg-error text-white custom-shadow rounded-xl p-md translate-y-32 transition-transform duration-500 ease-out z-50 flex items-center gap-md" id="security-alert">
+<div class="bg-white/20 p-2 rounded-full animate-pulse">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<p class="text-label-sm font-bold">New Geofence Violation</p>
+<p class="text-[11px] opacity-90">Employee: Vikram Singh is at Marathahalli (5km off).</p>
+</div>
+<button class="p-1 hover:bg-white/10 rounded" onclick="document.getElementById('security-alert').classList.add('translate-y-32')">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<script>
+        // Simulate a real-time notification after 3 seconds
+        setTimeout(() => {
+            const alert = document.getElementById('security-alert');
+            alert.classList.remove('translate-y-32');
+            alert.classList.add('translate-y-0');
+        }, 3000);
+
+        // Interactive hover effects for Feed Cards
+        document.querySelectorAll('.bento-grid > div').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body></html>

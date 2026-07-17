@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hrms_attendance/core/router/app_router.dart';
 import 'package:hrms_attendance/core/router/app_routes.dart';
+import 'package:hrms_attendance/core/network/network_providers.dart';
 import 'package:hrms_attendance/core/tenant/tenant_config.dart';
 import 'package:hrms_attendance/core/tenant/tenant_controller.dart';
 import 'package:hrms_attendance/main.dart';
+
+import 'support/test_api_service.dart';
 
 void main() {
   testWidgets(
@@ -13,7 +16,11 @@ void main() {
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          apiServiceProvider.overrideWithValue(createTestApiService()),
+        ],
+      );
       addTearDown(container.dispose);
       await tester.pumpWidget(
         UncontrolledProviderScope(container: container, child: const HrmsApp()),

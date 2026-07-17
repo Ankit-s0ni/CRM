@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -45,6 +46,11 @@ export class LoginDto {
   @ApiProperty()
   @IsString()
   password!: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  deviceUuid?: string;
 }
 
 export class RefreshTokenDto {
@@ -52,6 +58,11 @@ export class RefreshTokenDto {
   @IsString()
   @MinLength(16)
   refreshToken!: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  deviceUuid?: string;
 }
 
 export class EmailDto {

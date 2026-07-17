@@ -19,6 +19,7 @@ import { JwtTenantGuard } from '../../identity/jwt-tenant.guard';
 import { AttendanceRuntimeService } from '../application/attendance-runtime.service';
 import {
   AttendanceHistoryQueryDto,
+  AttendanceDayQueryDto,
   WebPunchDto,
 } from './dto/attendance-runtime.dto';
 
@@ -78,6 +79,13 @@ export class AttendanceRuntimeController {
   })
   history(@Query() query: AttendanceHistoryQueryDto) {
     return this.runtime.history(query.month);
+  }
+
+  @Get('me/day')
+  @RequirePermissions(PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ)
+  @ApiOperation({ summary: 'Get an authenticated employee attendance day' })
+  day(@Query() query: AttendanceDayQueryDto) {
+    return this.runtime.day(query.date);
   }
 }
 

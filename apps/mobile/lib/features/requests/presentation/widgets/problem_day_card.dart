@@ -7,11 +7,25 @@ class ProblemDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
-    child: ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.error_outline, color: Colors.redAccent),
-      title: Text('5 Jul — ${context.l10n.missingCheckout}'),
-      subtitle: Text(context.l10n.requestsSevenDays),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.error_outline, color: Colors.redAccent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '5 Jul — ${context.l10n.missingCheckout}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(context.l10n.requestsSevenDays),
+            ],
+          ),
+        ),
+      ],
     ),
   );
 }
