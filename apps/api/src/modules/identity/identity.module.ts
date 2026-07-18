@@ -8,10 +8,14 @@ import { VerificationTokensService } from './verification-tokens.service';
 import { DatabaseModule } from '../../shared/database/database.module';
 import { JwtTenantGuard } from './jwt-tenant.guard';
 import { ImpersonationJwtStrategy } from '../platform/impersonation/impersonation-jwt.strategy';
+import { WorkspaceSettingsModule } from '../workspace-settings/workspace-settings.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    WorkspaceSettingsModule,
+    NotificationsModule,
     PassportModule,
     JwtModule.register({
       secret:

@@ -11,6 +11,7 @@ import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 import { JwtTenantGuard } from '../identity/jwt-tenant.guard';
 import { AttendanceVerificationService } from './attendance-verification.service';
 import {
+  DeviceIntegrityChallengeDto,
   PunchEvidencePresignDto,
   VerifiedPunchDto,
 } from './dto/verified-punch.dto';
@@ -28,6 +29,13 @@ export class AttendanceVerificationController {
   @ApiOperation({ summary: 'Create a private mobile punch selfie upload URL' })
   presign(@Body() dto: PunchEvidencePresignDto) {
     return this.verification.presignEvidence(dto);
+  }
+
+  @Post('integrity/challenges')
+  @RequirePermissions(PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ)
+  @ApiOperation({ summary: 'Issue a one-time device integrity challenge' })
+  challenge(@Body() dto: DeviceIntegrityChallengeDto) {
+    return this.verification.createIntegrityChallenge(dto);
   }
 
   @Post('punches')

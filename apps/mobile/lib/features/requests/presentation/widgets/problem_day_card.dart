@@ -3,7 +3,9 @@ import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
 
 class ProblemDayCard extends StatelessWidget {
-  const ProblemDayCard({super.key});
+  const ProblemDayCard({super.key, this.date});
+
+  final String? date;
 
   @override
   Widget build(BuildContext context) => AppCard(
@@ -17,7 +19,7 @@ class ProblemDayCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '5 Jul — ${context.l10n.missingCheckout}',
+                '${date ?? 'Select an attendance day'} — ${context.l10n.missingCheckout}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 4),

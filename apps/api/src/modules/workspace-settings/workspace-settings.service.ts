@@ -42,6 +42,16 @@ export class WorkspaceSettingsService {
       });
     }
     if (dto.timezone) assertTimezone(dto.timezone);
+    if (dto.locale) {
+      try {
+        new Intl.Locale(dto.locale);
+      } catch {
+        throw new BadRequestException({
+          code: 'LOCALE_INVALID',
+          message: 'Locale must be a valid BCP 47 language tag',
+        });
+      }
+    }
     for (const time of [
       dto.workingDayStart,
       dto.workingDayEnd,
@@ -68,6 +78,7 @@ export class WorkspaceSettingsService {
         update: {
           ...dto,
           weeklyOffs,
+          runtimeConfigVersion: { increment: 1 },
         },
       });
       await this.audit.append(tx, {
@@ -81,8 +92,12 @@ export class WorkspaceSettingsService {
       });
       await this.outbox.append(tx, {
         tenantId,
-        eventKey: 'workspace.settings.updated',
-        payload: { tenantId, updatedAt: settings.updatedAt.toISOString() },
+        eventKey: 'tenant.runtime-config.changed.v1',
+        payload: {
+          tenantId,
+          runtimeConfigVersion: settings.runtimeConfigVersion,
+          changed: Object.keys(dto),
+        },
       });
       return { data: settings };
     });
@@ -168,8 +183,11 @@ export class WorkspaceSettingsService {
       });
       const settings = await tx.tenantSettings.upsert({
         where: { tenantId },
-        create: { tenantId, companyLogoKey },
-        update: { companyLogoKey },
+        create: { tenantId, companyLogoKey, runtimeConfigVersion: 1 },
+        update: {
+          companyLogoKey,
+          runtimeConfigVersion: { increment: 1 },
+        },
       });
       await this.audit.append(tx, {
         tenantId,
@@ -182,8 +200,12 @@ export class WorkspaceSettingsService {
       });
       await this.outbox.append(tx, {
         tenantId,
-        eventKey: 'workspace.logo.updated',
-        payload: { tenantId, companyLogoKey },
+        eventKey: 'tenant.runtime-config.changed.v1',
+        payload: {
+          tenantId,
+          runtimeConfigVersion: settings.runtimeConfigVersion,
+          changed: ['companyLogoKey'],
+        },
       });
       return settings;
     });

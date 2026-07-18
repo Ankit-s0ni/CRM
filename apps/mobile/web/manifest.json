@@ -1,11 +1,11 @@
 {
-    "name": "hrms_attendance",
-    "short_name": "hrms_attendance",
+    "name": "DeltCRM Employee",
+    "short_name": "DeltCRM",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "DeltCRM employee attendance and workforce app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

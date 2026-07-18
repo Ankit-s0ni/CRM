@@ -19,6 +19,7 @@ import { networkIncludesAddress } from '../attendance-config/attendance-config.r
 import { PrivateEvidenceStorageService } from '../biometrics/private-evidence-storage.service';
 import { SecurityAlertEvaluatorService } from '../security-alerts/security-alert-evaluator.service';
 import {
+  DeviceIntegrityChallengeDto,
   PunchEvidencePresignDto,
   VerifiedPunchDto,
 } from './dto/verified-punch.dto';
@@ -27,6 +28,7 @@ import {
   FaceMatchProvider,
   IntegrityVerdict,
 } from './verification-providers';
+import { DeviceIntegrityChallengeService } from './device-integrity-challenge.service';
 
 type FailureCode =
   | 'DEVICE_NOT_REGISTERED'
@@ -38,6 +40,7 @@ type FailureCode =
   | 'MOCK_LOCATION'
   | 'CLOCK_TAMPER'
   | 'GPS_ACCURACY_TOO_LOW'
+  | 'LOCATION_REQUIRED'
   | 'NO_OFFICE_ASSIGNED'
   | 'OUTSIDE_GEOFENCE'
   | 'CONSENT_MISSING'
@@ -69,6 +72,12 @@ type VerificationOutcome = {
   livenessOk?: boolean;
 };
 
+export type VerificationExecutionOptions = {
+  offline?: boolean;
+  timeSuspect?: boolean;
+  clockSkewSeconds?: number;
+};
+
 @Injectable()
 export class AttendanceVerificationService {
   constructor(
@@ -81,7 +90,12 @@ export class AttendanceVerificationService {
     private readonly faces: FaceMatchProvider,
     private readonly storage: PrivateEvidenceStorageService,
     private readonly alerts: SecurityAlertEvaluatorService,
+    private readonly integrityChallenges: DeviceIntegrityChallengeService,
   ) {}
+
+  createIntegrityChallenge(dto: DeviceIntegrityChallengeDto) {
+    return this.integrityChallenges.create(dto);
+  }
 
   presignEvidence(dto: PunchEvidencePresignDto) {
     const tenantId = this.requireTenantId();
@@ -106,123 +120,9 @@ export class AttendanceVerificationService {
     dto: VerifiedPunchDto,
     request: { ipAddress?: string; userAgent?: string; jwtDeviceId?: string },
   ) {
-    const clientTime = new Date(dto.clientTime);
-    const result = await this.prisma.forTenant(async (tx) => {
-      const employee = await this.attendanceContext.employeeForUser(
-        tx,
-        this.requireUserId(),
-      );
-      const runtime = await this.attendanceContext.resolve(
-        tx,
-        employee,
-        clientTime,
-      );
-      if (dto.selfieKey) {
-        await this.storage.verifyPunchObject(
-          this.requireTenantId(),
-          employee.id,
-          dto.selfieKey,
-        );
-      }
-      const outcome = await this.evaluate(
-        tx,
-        dto,
-        request,
-        employee,
-        runtime.policy,
-      );
-      const log = await tx.attendanceVerificationLog.create({
-        data: {
-          tenantId: this.requireTenantId(),
-          employeeId: employee.id,
-          deviceId: outcome.deviceId,
-          verificationType:
-            dto.type === 'CHECKIN'
-              ? VerificationType.CHECKIN
-              : VerificationType.CHECKOUT,
-          attemptLatitude: dto.latitude,
-          attemptLongitude: dto.longitude,
-          attemptAccuracyM: dto.accuracyMeters,
-          matchedOfficeId: outcome.matchedOfficeId,
-          distanceFromGeofenceM: outcome.distanceMeters,
-          locationMethod: outcome.locationMethod,
-          faceMatchScore: outcome.faceScore,
-          livenessOk: outcome.livenessOk,
-          selfieKey: dto.selfieKey,
-          gpsValid: outcome.checks.some(
-            ({ check, passed }) => check === 'location' && passed,
-          ),
-          observedIp: request.ipAddress,
-          userAgent: request.userAgent,
-          appVersion: dto.appVersion,
-          osVersion: dto.osVersion,
-          mockLocation:
-            outcome.integrity?.mockLocation ?? dto.mockLocation ?? false,
-          isRooted: outcome.integrity?.rooted ?? false,
-          deviceValid: outcome.checks.find(({ check }) => check === 'device')
-            ?.passed,
-          clockSkewSeconds: Math.round(
-            (Date.now() - clientTime.getTime()) / 1000,
-          ),
-          integrityVerdict: outcome.integrity
-            ? (outcome.integrity.raw as Prisma.InputJsonValue)
-            : undefined,
-          verificationStatus: outcome.passed
-            ? VerificationStatus.PASSED
-            : VerificationStatus.FAILED,
-          failureReasons: outcome.code
-            ? ([outcome.code] as Prisma.InputJsonValue)
-            : [],
-        },
-      });
-
-      if (!outcome.passed) {
-        await this.alerts.evaluateRejection(tx, {
-          tenantId: this.requireTenantId(),
-          employeeId: employee.id,
-          verificationLogId: log.id,
-          code: outcome.code!,
-        });
-        await this.outbox.append(tx, {
-          tenantId: this.requireTenantId(),
-          eventKey: 'attendance.mobile_punch_rejected',
-          payload: {
-            employeeId: employee.id,
-            verificationLogId: log.id,
-            code: outcome.code!,
-          },
-        });
-        return { error: outcome.code!, details: outcome.details };
-      }
-
-      const attendance = await this.runtime.punchInTransaction(
-        tx,
-        dto.type === 'CHECKIN' ? EventType.CHECKIN : EventType.CHECKOUT,
-        {
-          requestId: dto.requestId,
-          ipAddress: request.ipAddress,
-          userAgent: request.userAgent,
-          source: PunchSource.MOBILE,
-          verificationLogId: log.id,
-          latitude: dto.latitude,
-          longitude: dto.longitude,
-          accuracyM: dto.accuracyMeters,
-        },
-        clientTime,
-      );
-      return {
-        data: attendance,
-        verification: {
-          id: log.id,
-          status: log.verificationStatus,
-          checks: outcome.checks.map(({ check, passed, skipped }) => ({
-            check,
-            passed,
-            skipped: skipped ?? false,
-          })),
-        },
-      };
-    });
+    const result = await this.prisma.forTenant((tx) =>
+      this.punchInTransaction(tx, dto, request),
+    );
 
     if ('error' in result && result.error) {
       throw new HttpException(
@@ -237,6 +137,141 @@ export class AttendanceVerificationService {
     return result;
   }
 
+  async punchInTransaction(
+    tx: PrismaTransaction,
+    dto: VerifiedPunchDto,
+    request: { ipAddress?: string; userAgent?: string; jwtDeviceId?: string },
+    options: VerificationExecutionOptions = {},
+  ) {
+    const clientTime = new Date(dto.clientTime);
+    const employee = await this.attendanceContext.employeeForUser(
+      tx,
+      this.requireUserId(),
+    );
+    const runtime = await this.attendanceContext.resolve(
+      tx,
+      employee,
+      clientTime,
+    );
+    if (dto.selfieKey) {
+      if (runtime.policy.selfieMode === 'DISABLED') {
+        throw new HttpException(
+          {
+            code: 'CAPABILITY_NOT_ENABLED',
+            message: 'Selfie evidence is disabled by the attendance policy',
+          },
+          403,
+        );
+      }
+      await this.storage.verifyPunchObject(
+        this.requireTenantId(),
+        employee.id,
+        dto.selfieKey,
+      );
+    }
+    const outcome = await this.evaluate(
+      tx,
+      dto,
+      request,
+      employee,
+      runtime.policy,
+      options,
+    );
+    const log = await tx.attendanceVerificationLog.create({
+      data: {
+        tenantId: this.requireTenantId(),
+        employeeId: employee.id,
+        deviceId: outcome.deviceId,
+        verificationType:
+          dto.type === 'CHECKIN'
+            ? VerificationType.CHECKIN
+            : VerificationType.CHECKOUT,
+        attemptLatitude: dto.latitude,
+        attemptLongitude: dto.longitude,
+        attemptAccuracyM: dto.accuracyMeters,
+        matchedOfficeId: outcome.matchedOfficeId,
+        distanceFromGeofenceM: outcome.distanceMeters,
+        locationMethod: outcome.locationMethod,
+        faceMatchScore: outcome.faceScore,
+        livenessOk: outcome.livenessOk,
+        selfieKey: dto.selfieKey,
+        gpsValid: outcome.checks.some(
+          ({ check, passed }) => check === 'location' && passed,
+        ),
+        observedIp: request.ipAddress,
+        userAgent: request.userAgent,
+        appVersion: dto.appVersion,
+        osVersion: dto.osVersion,
+        mockLocation:
+          outcome.integrity?.mockLocation ?? dto.mockLocation ?? false,
+        isRooted: outcome.integrity?.rooted ?? false,
+        deviceValid: outcome.checks.find(({ check }) => check === 'device')
+          ?.passed,
+        clockSkewSeconds:
+          options.clockSkewSeconds ??
+          Math.round((Date.now() - clientTime.getTime()) / 1000),
+        integrityVerdict: outcome.integrity
+          ? (outcome.integrity.raw as Prisma.InputJsonValue)
+          : undefined,
+        verificationStatus: outcome.passed
+          ? VerificationStatus.PASSED
+          : VerificationStatus.FAILED,
+        failureReasons: outcome.code
+          ? ([outcome.code] as Prisma.InputJsonValue)
+          : [],
+      },
+    });
+
+    if (!outcome.passed) {
+      await this.alerts.evaluateRejection(tx, {
+        tenantId: this.requireTenantId(),
+        employeeId: employee.id,
+        verificationLogId: log.id,
+        code: outcome.code!,
+      });
+      await this.outbox.append(tx, {
+        tenantId: this.requireTenantId(),
+        eventKey: 'attendance.mobile_punch_rejected',
+        payload: {
+          employeeId: employee.id,
+          verificationLogId: log.id,
+          code: outcome.code!,
+        },
+      });
+      return { error: outcome.code!, details: outcome.details };
+    }
+
+    const attendance = await this.runtime.punchInTransaction(
+      tx,
+      EventType[dto.type],
+      {
+        requestId: dto.requestId,
+        ipAddress: request.ipAddress,
+        userAgent: request.userAgent,
+        source: PunchSource.MOBILE,
+        verificationLogId: log.id,
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        accuracyM: dto.accuracyMeters,
+        isOfflineSync: options.offline ?? false,
+        timeSuspect: options.timeSuspect ?? false,
+      },
+      clientTime,
+    );
+    return {
+      data: attendance,
+      verification: {
+        id: log.id,
+        status: log.verificationStatus,
+        checks: outcome.checks.map(({ check, passed, skipped }) => ({
+          check,
+          passed,
+          skipped: skipped ?? false,
+        })),
+      },
+    };
+  }
+
   private async evaluate(
     tx: PrismaTransaction,
     dto: VerifiedPunchDto,
@@ -249,10 +284,13 @@ export class AttendanceVerificationService {
     policy: {
       requireRegisteredDevice?: boolean;
       requireGeofence?: boolean;
+      locationMode?: 'NONE' | 'OFFICE_GEOFENCE' | 'FIELD_GPS';
       requireFaceMatch?: boolean;
+      selfieMode?: 'DISABLED' | 'REQUIRED';
       allowBiometricOptOut?: boolean;
       maxFaceAttempts?: number;
     },
+    options: VerificationExecutionOptions = {},
   ): Promise<VerificationOutcome> {
     const checks: CheckResult[] = [];
     const completed: {
@@ -314,7 +352,13 @@ export class AttendanceVerificationService {
       evidence: { deviceId: device?.id },
     });
 
-    const integrity = await this.integrity.verify(dto.attestationToken);
+    const integrity = await this.integrity.verify(dto.attestationToken, {
+      tx,
+      tenantId: this.requireTenantId(),
+      employeeId: employee.id,
+      deviceId: device?.id ?? '',
+      platform: device?.platform ?? 'ANDROID',
+    });
     if (!integrity)
       return fail('integrity', 'VERIFICATION_PROVIDER_UNAVAILABLE');
     completed.integrity = integrity;
@@ -325,8 +369,9 @@ export class AttendanceVerificationService {
     }
     checks.push({ check: 'integrity', passed: true, evidence: {} });
 
-    const skewSeconds =
-      Math.abs(Date.now() - new Date(dto.clientTime).getTime()) / 1000;
+    const skewSeconds = options.offline
+      ? Math.abs(options.clockSkewSeconds ?? 0)
+      : Math.abs(Date.now() - new Date(dto.clientTime).getTime()) / 1000;
     if (skewSeconds > 300) {
       return fail('clock', 'CLOCK_TAMPER', {
         clockSkewSeconds: Math.round(skewSeconds),
@@ -334,15 +379,24 @@ export class AttendanceVerificationService {
     }
     checks.push({ check: 'clock', passed: true, evidence: {} });
 
+    const locationMode =
+      policy.locationMode ??
+      (policy.requireGeofence === false ? 'NONE' : 'OFFICE_GEOFENCE');
     const location =
-      policy.requireGeofence === false && employee.workType !== 'FIELD'
+      locationMode === 'NONE'
         ? {
             check: 'location',
             passed: true,
             skipped: true,
             evidence: { locationMethod: LocationMethod.NONE, skipped: true },
           }
-        : await this.locationCheck(tx, dto, request.ipAddress, employee);
+        : await this.locationCheck(
+            tx,
+            dto,
+            request.ipAddress,
+            employee,
+            locationMode,
+          );
     if (!location.passed)
       return fail('location', location.code!, location.evidence);
     checks.push(location);
@@ -352,7 +406,10 @@ export class AttendanceVerificationService {
       string | undefined;
     completed.distanceMeters = location.evidence.distanceMeters as
       number | undefined;
-    if (policy.requireFaceMatch === true) {
+    const selfieMode =
+      policy.selfieMode ??
+      (policy.requireFaceMatch === true ? 'REQUIRED' : 'DISABLED');
+    if (selfieMode === 'REQUIRED') {
       const maxFaceAttempts = policy.maxFaceAttempts ?? 3;
       const consent = await tx.biometricConsent.findFirst({
         where: { employeeId: employee.id },
@@ -434,16 +491,32 @@ export class AttendanceVerificationService {
     dto: VerifiedPunchDto,
     observedIp: string | undefined,
     employee: { id: string; workType: string },
+    locationMode: 'OFFICE_GEOFENCE' | 'FIELD_GPS',
   ): Promise<CheckResult> {
-    if (dto.accuracyMeters > 100) {
+    if (
+      dto.latitude === undefined ||
+      dto.longitude === undefined ||
+      dto.accuracyMeters === undefined
+    ) {
+      return {
+        check: 'location',
+        passed: false,
+        code: 'LOCATION_REQUIRED',
+        evidence: {},
+      };
+    }
+    const latitude = dto.latitude;
+    const longitude = dto.longitude;
+    const accuracyMeters = dto.accuracyMeters;
+    if (accuracyMeters > 100) {
       return {
         check: 'location',
         passed: false,
         code: 'GPS_ACCURACY_TOO_LOW',
-        evidence: { accuracyMeters: dto.accuracyMeters },
+        evidence: { accuracyMeters },
       };
     }
-    if (employee.workType === 'FIELD') {
+    if (locationMode === 'FIELD_GPS') {
       return {
         check: 'location',
         passed: true,
@@ -486,15 +559,15 @@ export class AttendanceVerificationService {
       officeId: officeLocationId,
       radiusMeters: office.radiusMeters,
       distanceMeters: haversine(
-        dto.latitude,
-        dto.longitude,
+        latitude,
+        longitude,
         Number(office.latitude),
         Number(office.longitude),
       ),
     }));
     distances.sort((a, b) => a.distanceMeters - b.distanceMeters);
     const nearest = distances[0];
-    if (nearest.distanceMeters <= nearest.radiusMeters + dto.accuracyMeters) {
+    if (nearest.distanceMeters <= nearest.radiusMeters + accuracyMeters) {
       return {
         check: 'location',
         passed: true,
@@ -512,7 +585,7 @@ export class AttendanceVerificationService {
       evidence: {
         distanceMeters: Math.round(nearest.distanceMeters),
         nearestOfficeId: nearest.officeId,
-        accuracyMeters: dto.accuracyMeters,
+        accuracyMeters,
       },
     };
   }
@@ -573,6 +646,7 @@ function failureMessage(code: FailureCode) {
     MOCK_LOCATION: 'Disable mock location and try again',
     CLOCK_TAMPER: 'Correct the device date and time and try again',
     GPS_ACCURACY_TOO_LOW: 'Improve GPS accuracy and try again',
+    LOCATION_REQUIRED: 'Location is required by your attendance policy',
     NO_OFFICE_ASSIGNED: 'No attendance office is assigned to your profile',
     OUTSIDE_GEOFENCE: 'You are outside the approved attendance location',
     CONSENT_MISSING: 'Biometric consent is required by your attendance policy',

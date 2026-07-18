@@ -44,13 +44,24 @@ export class TenantMiddleware implements NestMiddleware {
     );
 
     if (!tenant) {
-      throw new UnauthorizedException('Workspace not found');
+      throw new UnauthorizedException({
+        code: 'WORKSPACE_NOT_FOUND',
+        message: 'Workspace not found',
+      });
     }
 
     if (tenant.status === 'SUSPENDED') {
-      throw new ForbiddenException(
-        'Tenant is suspended. Please contact billing.',
-      );
+      throw new ForbiddenException({
+        code: 'TENANT_SUSPENDED',
+        message: 'Workspace is suspended. Please contact billing.',
+      });
+    }
+
+    if (tenant.status === 'CHURNED') {
+      throw new ForbiddenException({
+        code: 'WORKSPACE_UNAVAILABLE',
+        message: 'Workspace is no longer available.',
+      });
     }
 
     TenantContextService.run(

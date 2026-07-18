@@ -16,6 +16,7 @@ class ApiRoutes {
   static const enrollmentStatus = '/face-enrollments/me/status';
   static const punches = '/attendance/punches';
   static const punchEvidencePresign = '/attendance/punch-evidence/presign';
+  static const integrityChallenge = '/attendance/integrity/challenges';
   static const attendanceToday = '/attendance/me/today';
   static const attendanceHistory = '/attendance/me/history';
   static const breakStart = '/attendance/break-start';
@@ -23,13 +24,18 @@ class ApiRoutes {
   static const profile = '/employees/me';
   static const verificationLogs = '/verification-logs';
   static const securityAlerts = '/security-alerts';
+  static const fieldSessionStart = '/field-sessions/start';
+  static const fieldSessionActive = '/field-sessions/me/active';
+  static const fieldPingsBatch = '/field-pings/batch';
+  static const attendanceSync = '/attendance/sync';
+  static const mobileRuntimeConfig = '/mobile/runtime-config';
   static const regularizations = '/regularizations';
   static const myRegularizations = '/regularizations/me';
-  static const leaveRequests = '/leave/requests';
-  static const fieldSessions = '/field-sessions';
-  static const fieldPings = '/field-pings';
-  static const offlineSync = '/attendance/offline-sync';
+  static const leavePolicies = '/leave-policies';
+  static const myLeaveBalances = '/leave-balances/me';
+  static const leaveRequests = '/leave-requests';
   static const notifications = '/notifications';
+  static const notificationUnreadCount = '/notifications/unread-count';
   static const notificationReadAll = '/notifications/read-all';
   static const preferences = '/employees/me/preferences';
 
@@ -38,4 +44,11 @@ class ApiRoutes {
   static String replaceDevice(String id) => '/devices/$id/replace';
   static String attendanceDay(String date) => '/attendance/me/day?date=$date';
   static String securityAlert(String id) => '/security-alerts/$id';
+  static String fieldSessionStop(String id) => '/field-sessions/$id/stop';
+  static String attendanceSyncStatus(String clientEventUuid) =>
+      '/attendance/sync/$clientEventUuid';
+  static String cancelRegularization(String id) =>
+      '/regularizations/$id/cancel';
+  static String cancelLeaveRequest(String id) => '/leave-requests/$id/cancel';
+  static String markNotificationRead(String id) => '/notifications/$id/read';
 }

@@ -16,6 +16,7 @@ import {
   UpdatePlatformModuleDto,
 } from './dto/platform-module.dto';
 import { moduleAssignmentViolation } from '../platform-policy';
+import { bumpRuntimeConfigVersion } from '../../runtime-config/runtime-config-version';
 
 type RequestMetadata = {
   ipAddress?: string;
@@ -210,6 +211,7 @@ export class PlatformModulesService {
         eventKey: 'tenant.modules.replaced',
         payload: { tenantId, moduleKeys: keys },
       });
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return this.tenantModulesInTransaction(tx, tenantId);
     });
   }

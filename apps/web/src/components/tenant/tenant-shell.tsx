@@ -2,29 +2,20 @@
 
 import {
   Bell,
+  Blocks,
   Building2,
-  CalendarDays,
   ChevronDown,
   CircleHelp,
-  Clock3,
-  FileUp,
   LayoutDashboard,
   LogOut,
-  MapPinned,
   Menu,
-  MonitorSmartphone,
-  Network,
   Search,
   Settings2,
-  Siren,
-  ShieldCheck,
-  TableProperties,
-  SlidersHorizontal,
-  UserRoundPlus,
   UsersRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
@@ -34,99 +25,43 @@ import { cn } from "@/lib/utils";
 const businessNavigation = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
   {
-    label: "Organization",
-    href: "/app/organization",
-    icon: Network,
-    permission: "organization.departments.read",
-  },
-  {
     label: "Employees",
     href: "/app/employees",
     icon: UsersRound,
     permission: "organization.employees.read",
   },
   {
-    label: "Bulk Import",
-    href: "/app/imports/employees",
-    icon: FileUp,
-    permission: "organization.imports.read",
+    label: "Modules",
+    href: "/app/modules",
+    icon: Blocks,
+    permission: "workspace.modules.read",
   },
   {
-    label: "Users & Roles",
-    href: "/app/access",
-    icon: ShieldCheck,
-    permission: "identity.roles.read",
-  },
-  {
-    label: "Company Settings",
-    href: "/app/settings/company",
+    label: "Settings",
+    href: "/app/settings",
     icon: Settings2,
     permission: "workspace.settings.read",
   },
 ];
 
-const attendanceNavigation = [
-  {
-    label: "Employee Devices",
-    href: "/app/attendance/devices",
-    icon: MonitorSmartphone,
-    permission: "attendance.devices.read",
-  },
-  {
-    label: "Security Feed",
-    href: "/app/attendance/security",
-    icon: Siren,
-    permission: "attendance.security-alerts.read",
-  },
-  {
-    label: "Attendance Register",
-    href: "/app/attendance/register",
-    icon: TableProperties,
-    permission: "attendance.records.read",
-  },
-  {
-    label: "OD & WFH",
-    href: "/app/attendance/exceptions",
-    icon: CalendarDays,
-    permission: "attendance.exceptions.read",
-  },
-  {
-    label: "Attendance Defaults",
-    href: "/app/settings/attendance",
-    icon: SlidersHorizontal,
-    permission: "attendance.config.manage",
-  },
-  {
-    label: "Offices",
-    href: "/app/attendance/offices",
-    icon: MapPinned,
-    permission: "attendance.offices.read",
-  },
-  {
-    label: "Policies",
-    href: "/app/attendance/policies",
-    icon: ShieldCheck,
-    permission: "attendance.policies.read",
-  },
-  {
-    label: "Shifts",
-    href: "/app/attendance/shifts",
-    icon: Clock3,
-    permission: "attendance.shifts.read",
-  },
-  {
-    label: "Roster",
-    href: "/app/attendance/rosters",
-    icon: CalendarDays,
-    permission: "attendance.rosters.read",
-  },
-  {
-    label: "Holidays",
-    href: "/app/attendance/holidays",
-    icon: CalendarDays,
-    permission: "attendance.holidays.read",
-  },
-];
+const contextNavigation = {
+  employees: [
+    { label: "Directory", href: "/app/employees", permission: "organization.employees.read" },
+    { label: "Organization", href: "/app/organization", permission: "organization.departments.read" },
+    { label: "Bulk import", href: "/app/imports/employees", permission: "organization.imports.read" },
+  ],
+  modules: [
+    { label: "All modules", href: "/app/modules", permission: "workspace.modules.read" },
+    { label: "Attendance", href: "/app/modules/attendance", permission: "workspace.modules.read" },
+    { label: "Leave", href: "/app/modules/leave", permission: "leave.self" },
+  ],
+  settings: [
+    { label: "Settings home", href: "/app/settings", permission: "workspace.settings.read" },
+    { label: "Company", href: "/app/settings/company", permission: "workspace.settings.read" },
+    { label: "Users & roles", href: "/app/access", permission: "identity.roles.read" },
+    { label: "Billing", href: "/app/settings/billing", permission: "billing.subscription.read" },
+  ],
+};
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -166,7 +101,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           roles: string[];
           permissions: string[];
         };
-        workspace: { id: string; companyName: string; subdomain: string };
+        workspace: { id: string; companyName: string; subdomain: string; logoUrl?: string | null };
       }>("/auth/me")
       .then(({ data }) => {
         setUser({
@@ -177,6 +112,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           companyName: data.workspace.companyName,
           roles: data.user.roles,
           permissions: data.user.permissions,
+          logoUrl: data.workspace.logoUrl,
         });
       })
       .catch(() => undefined);
@@ -187,11 +123,17 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-[#fcf8ff]" />;
 
   const permissions = new Set(user.permissions ?? []);
-  const navigation = (
-    attendanceEnabled
-      ? [...businessNavigation, ...attendanceNavigation]
-      : businessNavigation
-  ).filter((item) => !item.permission || permissions.has(item.permission));
+  const navigation = businessNavigation.filter(
+    (item) =>
+      (!item.permission || permissions.has(item.permission)) &&
+      (item.href !== "/app/modules" || attendanceEnabled),
+  );
+  const currentContext = navigationContext(pathname);
+  const contextItems = currentContext
+    ? contextNavigation[currentContext].filter(
+        (item) => !item.permission || permissions.has(item.permission),
+      )
+    : [];
   return (
     <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b24]">
       {mobileOpen && (
@@ -208,13 +150,13 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="flex h-20 items-center gap-3 px-6">
-          <div className="grid size-10 place-items-center rounded-xl bg-[#4f46e5] text-white">
-            <Building2 className="size-5" />
+          <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-[#4f46e5] text-white">
+            {user.logoUrl ? <Image alt={`${user.companyName ?? "Workspace"} logo`} className="size-full bg-white object-contain p-1" height={40} src={user.logoUrl} unoptimized width={40} /> : <Building2 className="size-5" />}
           </div>
           <div>
-            <div className="text-lg font-bold text-[#e2dfff]">IndigoHR</div>
+            <div className="text-lg font-bold text-[#e2dfff]">{user.companyName || "DeltCRM"}</div>
             <div className="max-w-40 truncate text-[10px] font-semibold uppercase tracking-[.16em] text-[#c7c4d8]">
-              {user.companyName || user.workspace || "Workspace"}
+              DeltCRM workspace
             </div>
           </div>
           <button
@@ -226,9 +168,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           {navigation.map((item) => {
-            const active =
-              pathname === item.href ||
-              (item.href !== "/app" && pathname.startsWith(`${item.href}/`));
+            const active = topLevelActive(pathname, item.href);
             const Icon = item.icon;
             return (
               <Link
@@ -249,15 +189,6 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="border-t border-white/10 p-4">
-          {permissions.has("organization.employees.create") && (
-            <Link
-              href="/app/employees/new"
-              className="mb-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#e2dfff] text-sm font-semibold text-[#0f0069]"
-            >
-              <UserRoundPlus className="size-4" />
-              Add New Employee
-            </Link>
-          )}
           <button
             className="flex h-10 w-full items-center gap-4 px-4 text-sm text-[#c7c4d8]"
             onClick={() => {
@@ -286,7 +217,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             />
           </div>
           <div className="ml-auto flex items-center gap-5 text-[#464555]">
-            <Bell className="size-[18px]" />
+            <Link aria-label="Notifications" href="/app/notifications"><Bell className="size-[18px]" /></Link>
             <CircleHelp className="size-[18px]" />
             <div className="h-6 w-px bg-[#e4e1ee]" />
             <div className="grid size-9 place-items-center rounded-full bg-[#4f46e5] text-xs font-bold text-white">
@@ -303,8 +234,65 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             <ChevronDown className="size-4" />
           </div>
         </header>
+        {contextItems.length > 0 && (
+          <nav
+            aria-label={`${currentContext} navigation`}
+            className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-[#e4e1ee] bg-white px-4 lg:px-6"
+          >
+            {contextItems.map((item) => {
+              const active = contextLinkActive(pathname, item.href);
+              return (
+                <Link
+                  className={cn(
+                    "whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold transition",
+                    active
+                      ? "border-[#3525cd] text-[#3525cd]"
+                      : "border-transparent text-[#777587] hover:text-[#302f39]",
+                  )}
+                  href={item.href}
+                  key={item.href}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
         <main>{children}</main>
       </div>
     </div>
   );
+}
+
+function navigationContext(pathname: string): keyof typeof contextNavigation | null {
+  if (
+    pathname.startsWith("/app/employees") ||
+    pathname.startsWith("/app/imports/employees") ||
+    pathname.startsWith("/app/organization")
+  ) return "employees";
+  if (
+    pathname.startsWith("/app/modules") ||
+    pathname.startsWith("/app/attendance") ||
+    pathname.startsWith("/app/leave") ||
+    pathname.startsWith("/app/settings/attendance")
+  ) return "modules";
+  if (pathname.startsWith("/app/settings") || pathname.startsWith("/app/access")) {
+    return "settings";
+  }
+  return null;
+}
+
+function topLevelActive(pathname: string, href: string) {
+  if (href === "/app") return pathname === href;
+  if (href === "/app/employees") return navigationContext(pathname) === "employees";
+  if (href === "/app/modules") return navigationContext(pathname) === "modules";
+  if (href === "/app/settings") return navigationContext(pathname) === "settings";
+  return false;
+}
+
+function contextLinkActive(pathname: string, href: string) {
+  if (href === "/app/modules") return pathname === href;
+  if (href === "/app/settings") return pathname === href;
+  if (href === "/app/employees") return pathname.startsWith(href);
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

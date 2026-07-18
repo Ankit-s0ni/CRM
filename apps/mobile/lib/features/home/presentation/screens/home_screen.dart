@@ -98,6 +98,7 @@ class HomeScreen extends ConsumerWidget {
               onHistory: onHistory,
               onRequests: onRequests,
               onProfile: onProfile,
+              showRequests: tenant.hasModule(TenantModule.regularization),
             ),
             const SizedBox(height: 16),
             WorkToolsCard(

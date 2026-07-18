@@ -2,18 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hrms_attendance/core/network/network_providers.dart';
 import 'package:hrms_attendance/core/router/app_router.dart';
 import 'package:hrms_attendance/core/router/app_routes.dart';
 import 'package:hrms_attendance/core/theme/app_theme.dart';
+import 'package:hrms_attendance/core/tenant/tenant_controller.dart';
 import 'package:hrms_attendance/features/security/presentation/screens/verification_progress_screen.dart';
 import 'package:hrms_attendance/l10n/app_localizations.dart';
 import 'package:hrms_attendance/main.dart';
+import 'package:hrms_attendance/features/sync/presentation/sync_controller.dart';
+import 'package:hrms_attendance/features/tracking/presentation/tracking_controller.dart';
 
+import 'support/sprint6_test_controllers.dart';
 import 'support/test_api_service.dart';
 
 void main() {
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
   const routes = <(String, String)>[
     (AppRoutes.splash, 'M1-splash'),
     (AppRoutes.login, 'M2-login'),
@@ -42,10 +48,17 @@ void main() {
       final boundaryKey = GlobalKey();
       final container = ProviderContainer(
         overrides: [
-          apiServiceProvider.overrideWithValue(createTestApiService()),
+          apiServiceProvider.overrideWithValue(
+            createTestApiService(runtime: _runtimeForRoute(route.$1)),
+          ),
+          trackingControllerProvider.overrideWith(TestTrackingController.new),
+          syncControllerProvider.overrideWith(TestSyncController.new),
         ],
       );
       addTearDown(container.dispose);
+      await tester.runAsync(
+        () => container.read(tenantControllerProvider.notifier).loadRuntime(),
+      );
       await tester.pumpWidget(
         RepaintBoundary(
           key: boundaryKey,
@@ -115,4 +128,21 @@ Future<void> _configureReferenceViewport(WidgetTester tester) async {
   tester.view.physicalSize = const Size(780, 1768);
   addTearDown(tester.view.resetDevicePixelRatio);
   addTearDown(tester.view.resetPhysicalSize);
+}
+
+Map<String, dynamic> _runtimeForRoute(String route) {
+  if ({
+    AppRoutes.consent,
+    AppRoutes.enrollment,
+    AppRoutes.punchCamera,
+  }.contains(route)) {
+    return testRuntimeConfig(selfieMode: 'REQUIRED');
+  }
+  if (route == AppRoutes.device) {
+    return testRuntimeConfig(deviceRequired: true);
+  }
+  if (route == AppRoutes.tracking) {
+    return testRuntimeConfig(fieldTracking: true, locationMode: 'FIELD_GPS');
+  }
+  return testRuntimeConfig();
 }

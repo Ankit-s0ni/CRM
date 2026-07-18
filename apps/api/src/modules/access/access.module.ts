@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { BillingAccessController } from './billing-access.controller';
-import { BillingAccessService } from './billing-access.service';
 import {
   InvitationAcceptanceController,
   InvitationsController,
@@ -17,13 +15,7 @@ import { UsersService } from './users.service';
     UsersController,
     InvitationsController,
     InvitationAcceptanceController,
-    BillingAccessController,
   ],
-  providers: [
-    RolesService,
-    UsersService,
-    InvitationsService,
-    BillingAccessService,
-  ],
+  providers: [RolesService, UsersService, InvitationsService],
 })
 export class AccessModule {}

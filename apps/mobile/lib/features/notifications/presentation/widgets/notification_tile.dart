@@ -6,12 +6,14 @@ class NotificationTile extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.body,
     this.subtitle = 'Today',
     this.unread = false,
     this.onTap,
   });
   final IconData icon;
   final String title;
+  final String? body;
   final String subtitle;
   final bool unread;
   final VoidCallback? onTap;
@@ -27,7 +29,14 @@ class NotificationTile extends StatelessWidget {
           fontWeight: unread ? FontWeight.w700 : FontWeight.w500,
         ),
       ),
-      subtitle: Text(subtitle),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (body?.isNotEmpty == true) Text(body!),
+          const SizedBox(height: 3),
+          Text(subtitle),
+        ],
+      ),
       trailing: unread ? const CircleAvatar(radius: 4) : null,
     ),
   );

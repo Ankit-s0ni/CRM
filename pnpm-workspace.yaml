@@ -2,11 +2,16 @@ packages:
   - "apps/*"
   - "packages/*"
 
+overrides:
+  "@hono/node-server": "^1.19.13"
+  "postcss": "^8.5.10"
+
 allowBuilds:
   "@prisma/engines": true
   "@scarf/scarf": true
   "argon2": true
   "msgpackr-extract": true
   "prisma": true
+  protobufjs: true
   "sharp": true
   "unrs-resolver": true

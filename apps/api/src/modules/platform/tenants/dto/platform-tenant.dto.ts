@@ -3,6 +3,7 @@ import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsInt,
@@ -74,6 +75,25 @@ export class UpdatePlatformTenantDto {
 }
 
 export class TenantLifecycleDto {
+  @ApiProperty({ minLength: 10, maxLength: 1000 })
+  @IsString()
+  @MinLength(10)
+  @MaxLength(1000)
+  reason!: string;
+}
+
+export class ScheduleTenantDeletionDto extends TenantLifecycleDto {
+  @ApiPropertyOptional({
+    description:
+      'Optional legal-hold expiry. The purge cannot run before this timestamp.',
+    example: '2027-01-01T00:00:00.000Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  legalHoldUntil?: string;
+}
+
+export class RetryTenantDeletionDto {
   @ApiProperty({ minLength: 10, maxLength: 1000 })
   @IsString()
   @MinLength(10)

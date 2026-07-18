@@ -28,8 +28,8 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { label: "Dashboard", href: "/platform", icon: LayoutDashboard, enabled: true, exact: true },
   { label: "Tenants", href: "/platform/tenants", icon: Building2, enabled: true },
-  { label: "Plans", href: "/platform/plans", icon: CreditCard, enabled: false },
-  { label: "Billing", href: "/platform/billing", icon: ClipboardList, enabled: false },
+  { label: "Plans", href: "/platform/plans", icon: CreditCard, enabled: true },
+  { label: "Billing", href: "/platform/billing", icon: ClipboardList, enabled: true },
   { label: "Modules", href: "/platform/modules", icon: Blocks, enabled: true },
   { label: "Audit Logs", href: "/platform/audit", icon: ShieldCheck, enabled: true },
   { label: "Health", href: "/platform/health", icon: Activity, enabled: true },
@@ -70,7 +70,7 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
       <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-[#4f46e5] text-white shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex h-20 items-center gap-3 px-6">
           <div className="grid size-10 place-items-center rounded-xl bg-white text-[#4f46e5]"><Building2 className="size-5" /></div>
-          <div><div className="text-lg font-bold leading-5">IndigoHR</div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-indigo-100">Super Admin</div></div>
+          <div><div className="text-lg font-bold leading-5">DeltCRM</div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-indigo-100">Super Admin</div></div>
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button>
         </div>
         <nav className="space-y-1 px-3 pt-5">

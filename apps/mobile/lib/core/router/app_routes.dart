@@ -17,6 +17,7 @@ class AppRoutes {
   static const dayDetail = '/attendance/day-detail';
   static const regularization = '/requests/regularization';
   static const requests = '/requests';
+  static const leaveApply = '/requests/leave/apply';
   static const tracking = '/field-tracking';
   static const sync = '/offline-sync';
   static const notifications = '/notifications';

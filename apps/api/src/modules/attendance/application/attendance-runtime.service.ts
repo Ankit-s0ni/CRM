@@ -19,6 +19,7 @@ import {
 } from '../domain/attendance-day.aggregate';
 import { calculateAttendance } from '../domain/attendance-calculator';
 import { DateOnly } from '../domain/value-objects/date-only';
+import { assertAttendanceRangeUnlocked } from '../../../shared/attendance/attendance-lock';
 import { TimeWindow } from '../domain/value-objects/time-window';
 import {
   AttendanceContextService,
@@ -34,6 +35,8 @@ type PunchMetadata = {
   latitude?: number;
   longitude?: number;
   accuracyM?: number;
+  isOfflineSync?: boolean;
+  timeSuspect?: boolean;
 };
 
 @Injectable()
@@ -63,18 +66,25 @@ export class AttendanceRuntimeService {
     const employee = await this.resolver.employeeForUser(tx, userId);
     const runtime = await this.resolver.resolve(tx, employee, now);
     this.assertEmployeeDate(runtime);
+    const attendanceDate = runtime.attendanceDate.toDatabaseDate();
+    await assertAttendanceRangeUnlocked(
+      tx,
+      attendanceDate,
+      attendanceDate,
+      employee.id,
+    );
     const initialLog = await tx.attendanceLog.upsert({
       where: {
         tenantId_employeeId_attendanceDate: {
           tenantId,
           employeeId: employee.id,
-          attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+          attendanceDate,
         },
       },
       create: {
         tenantId,
         employeeId: employee.id,
-        attendanceDate: runtime.attendanceDate.toDatabaseDate(),
+        attendanceDate,
         appliedShiftId: runtime.appliedShiftId,
         appliedPolicySnapshot: json(runtime.policy),
         resolvedExceptionId: runtime.exceptionId,
@@ -122,9 +132,20 @@ export class AttendanceRuntimeService {
         accuracyM: metadata.accuracyM,
         ipAddress: metadata.ipAddress,
         userAgent: metadata.userAgent,
+        isOfflineSync: metadata.isOfflineSync ?? false,
+        timeSuspect: metadata.timeSuspect ?? false,
         createdBy: userId,
       },
     });
+    if (eventType === EventType.CHECKOUT) {
+      await tx.fieldTrackingSession.updateMany({
+        where: { employeeId: employee.id, endedAt: null },
+        data: {
+          endedAt: now,
+          endReason: 'CHECKOUT',
+        },
+      });
+    }
     const calculation = calculateAttendance({
       attendanceDate: runtime.attendanceDate.value,
       timezone: runtime.timezone,

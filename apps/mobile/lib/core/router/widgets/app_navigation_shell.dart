@@ -2,13 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n_context.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_feedback.dart';
 import '../app_routes.dart';
+import '../../tenant/tenant_controller.dart';
+import '../../tenant/tenant_config.dart';
 
-class AppNavigationShell extends StatelessWidget {
+class AppNavigationShell extends ConsumerWidget {
   const AppNavigationShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
@@ -36,8 +39,13 @@ class AppNavigationShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final selectedIndex = navigationShell.currentIndex;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tenant = ref.watch(tenantControllerProvider);
+    final showRequests =
+        tenant.hasModule(TenantModule.regularization) ||
+        tenant.hasModule(TenantModule.leave);
+    final branchIndexes = <int>[0, 1, if (showRequests) 2, 3];
+    final selectedIndex = branchIndexes.indexOf(navigationShell.currentIndex);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -68,10 +76,11 @@ class AppNavigationShell extends StatelessWidget {
                 elevation: 0,
                 backgroundColor: Colors.white,
                 indicatorColor: AppTheme.charcoal,
-                selectedIndex: selectedIndex,
+                selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
                 onDestinationSelected: (index) {
-                  if (index == selectedIndex) return;
-                  navigationShell.goBranch(index);
+                  final branchIndex = branchIndexes[index];
+                  if (branchIndex == navigationShell.currentIndex) return;
+                  navigationShell.goBranch(branchIndex);
                 },
                 destinations: [
                   NavigationDestination(
@@ -90,14 +99,15 @@ class AppNavigationShell extends StatelessWidget {
                     ),
                     label: context.l10n.attendance,
                   ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.inbox_outlined),
-                    selectedIcon: const Icon(
-                      Icons.inbox_rounded,
-                      color: Colors.white,
+                  if (showRequests)
+                    NavigationDestination(
+                      icon: const Icon(Icons.inbox_outlined),
+                      selectedIcon: const Icon(
+                        Icons.inbox_rounded,
+                        color: Colors.white,
+                      ),
+                      label: context.l10n.requests,
                     ),
-                    label: context.l10n.requests,
-                  ),
                   NavigationDestination(
                     icon: const Icon(Icons.person_outline_rounded),
                     selectedIcon: const Icon(

@@ -8,6 +8,7 @@ type JwtPayload = {
   tenantId: string;
   roles: string[];
   deviceId?: string;
+  exp?: number;
 };
 
 @Injectable()
@@ -29,6 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       tenantId: payload.tenantId,
       roles: payload.roles,
       deviceId: payload.deviceId,
+      exp: payload.exp,
     };
   }
 }

@@ -16,6 +16,7 @@ type AddJob = (
 type UpdateEvents = (args: unknown) => Promise<{ count: number }>;
 type RelayInternals = {
   queue: { add: jest.MockedFunction<AddJob> };
+  evidenceDeletionQueue: { add: jest.MockedFunction<AddJob> };
   publish(event: {
     id: string;
     tenantId: string | null;
@@ -34,7 +35,12 @@ describe('OutboxRelayService', () => {
     attemptCount: 0,
   };
 
-  function setup(add: jest.MockedFunction<AddJob>) {
+  function setup(
+    add: jest.MockedFunction<AddJob>,
+    deletionAdd: jest.MockedFunction<AddJob> = jest
+      .fn<Promise<unknown>, [string, unknown, unknown]>()
+      .mockResolvedValue(undefined),
+  ) {
     const updateMany: jest.MockedFunction<UpdateEvents> = jest
       .fn<Promise<{ count: number }>, [unknown]>()
       .mockResolvedValue({ count: 1 });
@@ -47,6 +53,7 @@ describe('OutboxRelayService', () => {
     const service = new OutboxRelayService(prisma);
     const relay = service as unknown as RelayInternals;
     relay.queue = { add };
+    relay.evidenceDeletionQueue = { add: deletionAdd };
     return { relay, updateMany };
   }
 
@@ -87,6 +94,33 @@ describe('OutboxRelayService', () => {
       lockedAt: null,
       lockedBy: null,
     });
+  });
+
+  it('routes evidence deletion to a retryable retained queue', async () => {
+    const add = jest
+      .fn<Promise<unknown>, [string, unknown, unknown]>()
+      .mockResolvedValue({ id: event.id });
+    const deletionAdd = jest
+      .fn<Promise<unknown>, [string, unknown, unknown]>()
+      .mockResolvedValue({ id: event.id });
+    const { relay } = setup(add, deletionAdd);
+
+    await relay.publish({
+      ...event,
+      eventKey: 'attendance.biometric_evidence.deletion_requested',
+      payload: { employeeId: 'employee-id', objectKeys: 'fixture' },
+    });
+
+    expect(deletionAdd).toHaveBeenCalledWith(
+      'delete',
+      expect.objectContaining({ eventId: event.id }),
+      expect.objectContaining({
+        jobId: event.id,
+        attempts: 12,
+        backoff: { type: 'exponential', delay: 5_000 },
+        removeOnFail: false,
+      }),
+    );
   });
 
   it('dead-letters an event after the configured attempt limit', async () => {

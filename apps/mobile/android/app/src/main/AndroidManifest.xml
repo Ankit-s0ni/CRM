@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
-        android:label="hrms_attendance"
+        android:label="DeltCRM"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

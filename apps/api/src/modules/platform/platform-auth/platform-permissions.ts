@@ -11,6 +11,11 @@ export const PLATFORM_PERMISSIONS = [
   'platform.alerts.read',
   'platform.alerts.manage',
   'platform.health.read',
+  'platform.plans.read',
+  'platform.plans.manage',
+  'platform.billing.read',
+  'platform.billing.manage',
+  'platform.dunning.manage',
 ] as const;
 
 export type PlatformPermissionKey = (typeof PLATFORM_PERMISSIONS)[number];

@@ -479,6 +479,92 @@ export class PlatformTenantsService {
     });
   }
 
+  billingSuspend(id: string, reason: string, requestId: string) {
+    return this.billingLifecycle(id, 'suspend', reason, requestId);
+  }
+
+  billingReactivate(id: string, reason: string, requestId: string) {
+    return this.billingLifecycle(id, 'reactivate', reason, requestId);
+  }
+
+  private billingLifecycle(
+    id: string,
+    action: 'suspend' | 'reactivate',
+    reason: string,
+    requestId: string,
+  ) {
+    return this.database.transaction(async (tx) => {
+      const tenant = await tx.tenant.findUnique({ where: { id } });
+      if (!tenant) this.notFound('Tenant');
+      if (!tenantLifecycleTarget(tenant.status, action)) {
+        return { data: tenant, replayed: true };
+      }
+      const now = new Date();
+      if (action === 'suspend') {
+        const users = await tx.user.findMany({
+          where: { tenantId: id },
+          select: { id: true },
+        });
+        await tx.refreshToken.updateMany({
+          where: {
+            userId: { in: users.map(({ id: userId }) => userId) },
+            revokedAt: null,
+          },
+          data: { revokedAt: now, revokedReason: 'ADMIN' },
+        });
+      }
+      const updated = await tx.tenant.update({
+        where: { id },
+        data:
+          action === 'suspend'
+            ? {
+                status: TenantStatus.SUSPENDED,
+                suspendedAt: now,
+                suspendedReason: reason,
+                suspendedByPlatformUserId: null,
+              }
+            : {
+                status: TenantStatus.ACTIVE,
+                suspendedAt: null,
+                suspendedReason: null,
+                suspendedByPlatformUserId: null,
+              },
+      });
+      await Promise.all([
+        this.outbox.append(tx, {
+          tenantId: id,
+          eventKey: `platform.tenant.${action === 'suspend' ? 'suspended' : 'reactivated'}`,
+          payload: { tenantId: id, reason, actor: 'billing-system' },
+        }),
+        tx.systemAuditLog.create({
+          data: {
+            tenantId: id,
+            action: `platform.tenant.billing_${action === 'suspend' ? 'suspended' : 'reactivated'}`,
+            module: 'platform.tenants',
+            oldValue: this.json(tenant),
+            newValue: this.json({
+              ...updated,
+              reason,
+              actor: 'billing-system',
+            }),
+            requestId,
+          },
+        }),
+        tx.tenantAuditLog.create({
+          data: {
+            tenantId: id,
+            action: `billing.tenant.${action === 'suspend' ? 'suspended' : 'reactivated'}`,
+            module: 'billing',
+            oldValue: this.json({ status: tenant.status }),
+            newValue: this.json({ status: updated.status, reason }),
+            requestId,
+          },
+        }),
+      ]);
+      return { data: updated, replayed: false };
+    });
+  }
+
   private async detail(tx: PlatformTransaction, id: string) {
     const tenant = await tx.tenant.findUnique({
       where: { id },

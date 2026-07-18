@@ -23,13 +23,17 @@ class AppConfig {
     'APP_ENV',
     defaultValue: 'development',
   );
+  static const appVersion = String.fromEnvironment(
+    'APP_VERSION',
+    defaultValue: '1.0.0',
+  );
   static const companyName = String.fromEnvironment(
     'COMPANY_NAME',
     defaultValue: 'Northstar Logistics LLC',
   );
   static const productName = String.fromEnvironment(
     'PRODUCT_NAME',
-    defaultValue: 'Northstar People',
+    defaultValue: 'DeltCRM',
   );
   static const defaultLocale = String.fromEnvironment(
     'DEFAULT_LOCALE',
@@ -49,7 +53,10 @@ class AppConfig {
   );
   static const supportEmail = String.fromEnvironment(
     'SUPPORT_EMAIL',
-    defaultValue: 'people@northstar.om',
+    defaultValue: 'support@deltcrm.com',
+  );
+  static const playIntegrityCloudProjectNumber = String.fromEnvironment(
+    'PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER',
   );
   static const brandColorHex = String.fromEnvironment(
     'BRAND_COLOR',

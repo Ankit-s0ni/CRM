@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  HttpException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -11,6 +10,7 @@ import type { PrismaTransaction } from '../../../shared/database/prisma.service'
 import { PrismaService } from '../../../shared/database/prisma.service';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import { TenantContextService } from '../../../shared/tenancy/tenant-context.service';
+import { assertAttendanceRangeUnlocked } from '../../../shared/attendance/attendance-lock';
 import { DateOnly } from '../domain/value-objects/date-only';
 import {
   AttendanceExceptionQueryDto,
@@ -206,25 +206,7 @@ export class AttendanceExceptionsService {
     startDate: Date,
     endDate: Date,
   ) {
-    const locked = await tx.attendanceLog.findFirst({
-      where: {
-        employeeId,
-        attendanceDate: { gte: startDate, lte: endDate },
-        OR: [
-          { lockedAt: { not: null } },
-          { payrollLock: { status: 'LOCKED' } },
-        ],
-      },
-    });
-    if (locked) {
-      throw new HttpException(
-        {
-          code: 'ATTENDANCE_DAY_LOCKED',
-          message: 'Exception overlaps payroll-locked attendance',
-        },
-        423,
-      );
-    }
+    await assertAttendanceRangeUnlocked(tx, startDate, endDate, employeeId);
   }
 
   private async record(

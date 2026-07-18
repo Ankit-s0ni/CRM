@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  GetObjectCommand,
   HeadBucketCommand,
   PutObjectCommand,
   S3Client,
@@ -51,5 +52,21 @@ export class TenantAssetStorageService {
       { expiresIn: 900 },
     );
     return { objectKey, uploadUrl, expiresIn: 900 };
+  }
+
+  async signedLogoUrl(tenantId: string, objectKey: string | null | undefined) {
+    if (!objectKey) return null;
+    if (!objectKey.startsWith(`${tenantId}/branding/`)) {
+      throw new BadRequestException({
+        code: 'TENANT_LOGO_INVALID',
+        message: 'The tenant logo does not belong to this workspace',
+      });
+    }
+    if (process.env.NODE_ENV === 'test') return `memory://${objectKey}`;
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+      { expiresIn: 900 },
+    );
   }
 }

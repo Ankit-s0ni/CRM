@@ -28,6 +28,7 @@ enum SubscriptionStatus {
   TRIALING
   ACTIVE
   PAST_DUE
+  SUSPENDED
   CANCELLED
 }
 
@@ -56,6 +57,44 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   REFUNDED
+}
+
+enum WebhookReceiptStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum PaymentMethodStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum PaymentMethodType {
+  CARD
+  BANK_ACCOUNT
+  UPI
+  WALLET
+}
+
+enum DunningAction {
+  PAYMENT_FAILED
+  REMINDER_SENT
+  GRACE_STARTED
+  SUSPEND_SCHEDULED
+  TENANT_SUSPENDED
+  PAYMENT_RECOVERED
+  TENANT_REACTIVATED
+}
+
+enum DeletionJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  LEGAL_HOLD
 }
 
 enum BillingPeriod {
@@ -230,6 +269,17 @@ enum LocationMethod {
   NONE
 }
 
+enum AttendanceLocationMode {
+  NONE
+  OFFICE_GEOFENCE
+  FIELD_GPS
+}
+
+enum SelfieMode {
+  DISABLED
+  REQUIRED
+}
+
 enum ExceptionType {
   ON_DUTY
   LEAVE
@@ -260,6 +310,19 @@ enum TrackingEndReason {
   MANUAL
   BATTERY
   STALE
+  ADMINISTRATOR
+}
+
+enum FieldIngestionStatus {
+  PENDING
+  PROCESSED
+  REJECTED
+}
+
+enum AttendanceSyncStatus {
+  ACCEPTED
+  RETRYABLE
+  REJECTED
 }
 
 enum LockStatus {
@@ -274,6 +337,24 @@ enum ReportType {
   LATE_OT
   VIOLATIONS
   FIELD_DISTANCE
+}
+
+enum ReportFormat {
+  CSV
+  XLSX
+  PDF
+}
+
+enum PayrollLockAction {
+  LOCKED
+  REOPENED
+}
+
+enum LeaveBalanceEntryType {
+  CREDIT
+  DEBIT
+  RESTORE
+  ADJUSTMENT
 }
 
 enum NotifChannel {
@@ -339,6 +420,10 @@ model Tenant {
 
   settings       TenantSettings?
   billingProfile TenantBillingProfile?
+  subscriptions  TenantSubscription[]
+  invoices       TenantInvoice[]
+  paymentMethods BillingPaymentMethod[]
+  deletionJobs   TenantDeletionJob[]
   users          User[]
   employees      Employee[]
 
@@ -361,49 +446,94 @@ model TenantBillingProfile {
 }
 
 model SubscriptionPlan {
-  id            String               @id @default(uuid(7)) @db.Uuid
-  name          String               @unique
-  pricePerUser  Decimal              @db.Decimal(10, 2)
-  currency      String               @default("INR")
+  id            String                      @id @default(uuid(7)) @db.Uuid
+  name          String                      @unique
+  pricePerUser  Decimal                     @db.Decimal(10, 2)
+  currency      String                      @default("INR")
   maxEmployees  Int
-  billingPeriod BillingPeriod        @default(MONTHLY)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  billingPeriod BillingPeriod               @default(MONTHLY)
+  description   String?
+  isActive      Boolean                     @default(true)
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
   subscriptions TenantSubscription[]
+  modules       SubscriptionPlanModule[]
+  history       TenantSubscriptionHistory[]
 
   @@map("subscription_plans")
 }
 
+model SubscriptionPlanModule {
+  planId   String           @db.Uuid
+  moduleId String           @db.Uuid
+  plan     SubscriptionPlan @relation(fields: [planId], references: [id])
+  module   Module           @relation(fields: [moduleId], references: [id])
+
+  @@id([planId, moduleId])
+  @@map("subscription_plan_modules")
+}
+
 model TenantSubscription {
-  id                 String             @id @default(uuid(7)) @db.Uuid
-  tenantId           String             @db.Uuid
-  planId             String             @db.Uuid
-  status             SubscriptionStatus @default(TRIALING)
-  seatCount          Int
-  currentPeriodStart DateTime           @db.Date
-  currentPeriodEnd   DateTime           @db.Date
-  dunningState       DunningState       @default(NONE)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  plan               SubscriptionPlan   @relation(fields: [planId], references: [id])
-  invoices           TenantInvoice[]
+  id                      String                      @id @default(uuid(7)) @db.Uuid
+  tenantId                String                      @db.Uuid
+  planId                  String                      @db.Uuid
+  status                  SubscriptionStatus          @default(TRIALING)
+  seatCount               Int
+  currentPeriodStart      DateTime                    @db.Date
+  currentPeriodEnd        DateTime                    @db.Date
+  dunningState            DunningState                @default(NONE)
+  provider                PaymentGateway?
+  providerCustomerRef     String?
+  providerSubscriptionRef String?
+  cancelAtPeriodEnd       Boolean                     @default(false)
+  pendingPlanId           String?                     @db.Uuid
+  scheduledChangeAt       DateTime?
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @updatedAt
+  tenant                  Tenant                      @relation(fields: [tenantId], references: [id])
+  plan                    SubscriptionPlan            @relation(fields: [planId], references: [id])
+  invoices                TenantInvoice[]
+  history                 TenantSubscriptionHistory[]
+  dunningHistory          DunningTransition[]
 
   @@index([tenantId, status])
   @@map("tenant_subscriptions")
 }
 
+model TenantSubscriptionHistory {
+  id                  String             @id @default(uuid(7)) @db.Uuid
+  tenantId            String             @db.Uuid
+  subscriptionId      String             @db.Uuid
+  planId              String             @db.Uuid
+  status              SubscriptionStatus
+  seatCount           Int
+  reason              String
+  actorUserId         String?            @db.Uuid
+  actorPlatformUserId String?            @db.Uuid
+  sourceEventId       String?
+  snapshot            Json
+  createdAt           DateTime           @default(now())
+  subscription        TenantSubscription @relation(fields: [subscriptionId], references: [id])
+  plan                SubscriptionPlan   @relation(fields: [planId], references: [id])
+
+  @@unique([tenantId, sourceEventId])
+  @@index([tenantId, subscriptionId, createdAt])
+  @@map("tenant_subscription_history")
+}
+
 model Module {
-  id             String             @id @default(uuid(7)) @db.Uuid
-  key            String             @unique
-  name           String
-  description    String?
-  icon           String?
-  availability   ModuleAvailability @default(AVAILABLE)
-  dependencyKeys String[]           @default([])
-  conflictKeys   String[]           @default([])
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  tenantModules  TenantModule[]
+  id                String                   @id @default(uuid(7)) @db.Uuid
+  key               String                   @unique
+  name              String
+  description       String?
+  icon              String?
+  availability      ModuleAvailability       @default(AVAILABLE)
+  dependencyKeys    String[]                 @default([])
+  conflictKeys      String[]                 @default([])
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  tenantModules     TenantModule[]
+  subscriptionPlans SubscriptionPlanModule[]
 
   @@map("modules")
 }
@@ -422,40 +552,167 @@ model TenantModule {
 }
 
 model TenantInvoice {
-  id             String               @id @default(uuid(7)) @db.Uuid
-  tenantId       String               @db.Uuid
-  subscriptionId String               @db.Uuid
-  invoiceNumber  String               @unique
-  amountDue      Decimal              @db.Decimal(12, 2)
-  taxAmount      Decimal              @default(0) @db.Decimal(12, 2)
-  totalAmount    Decimal              @db.Decimal(12, 2)
-  currency       String               @default("INR")
-  dueDate        DateTime             @db.Date
-  status         InvoiceStatus        @default(DRAFT)
-  pdfUrl         String?
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  subscription   TenantSubscription   @relation(fields: [subscriptionId], references: [id])
-  transactions   PaymentTransaction[]
+  id              String                  @id @default(uuid(7)) @db.Uuid
+  tenantId        String                  @db.Uuid
+  subscriptionId  String                  @db.Uuid
+  invoiceNumber   String                  @unique
+  fiscalYear      String
+  sequenceNumber  Int
+  subtotalAmount  Decimal                 @default(0) @db.Decimal(12, 2)
+  amountDue       Decimal                 @db.Decimal(12, 2)
+  taxAmount       Decimal                 @default(0) @db.Decimal(12, 2)
+  cgstAmount      Decimal                 @default(0) @db.Decimal(12, 2)
+  sgstAmount      Decimal                 @default(0) @db.Decimal(12, 2)
+  igstAmount      Decimal                 @default(0) @db.Decimal(12, 2)
+  totalAmount     Decimal                 @db.Decimal(12, 2)
+  currency        String                  @default("INR")
+  dueDate         DateTime                @db.Date
+  status          InvoiceStatus           @default(DRAFT)
+  pdfUrl          String?
+  objectKey       String?
+  pdfChecksum     String?
+  billingSnapshot Json
+  taxSnapshot     Json
+  issuedAt        DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id])
+  subscription    TenantSubscription      @relation(fields: [subscriptionId], references: [id])
+  transactions    PaymentTransaction[]
+  lineItems       TenantInvoiceLineItem[]
 
+  @@unique([fiscalYear, sequenceNumber])
   @@index([tenantId, status])
   @@map("tenant_invoices")
 }
 
-model PaymentTransaction {
-  id            String         @id @default(uuid(7)) @db.Uuid
-  invoiceId     String         @db.Uuid
-  gateway       PaymentGateway
-  gatewayRef    String?
-  amount        Decimal        @db.Decimal(12, 2)
-  currency      String         @default("INR")
-  status        PaymentStatus  @default(PENDING)
-  failureReason String?
-  attemptedAt   DateTime       @default(now())
-  invoice       TenantInvoice  @relation(fields: [invoiceId], references: [id])
+model TenantInvoiceLineItem {
+  id          String        @id @default(uuid(7)) @db.Uuid
+  tenantId    String        @db.Uuid
+  invoiceId   String        @db.Uuid
+  description String
+  quantity    Decimal       @db.Decimal(12, 3)
+  unitAmount  Decimal       @db.Decimal(12, 2)
+  amount      Decimal       @db.Decimal(12, 2)
+  taxRate     Decimal       @default(0) @db.Decimal(5, 2)
+  metadata    Json?
+  invoice     TenantInvoice @relation(fields: [invoiceId], references: [id])
 
-  @@index([invoiceId])
+  @@index([tenantId, invoiceId])
+  @@map("tenant_invoice_line_items")
+}
+
+model InvoiceSequence {
+  fiscalYear String   @id
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@map("invoice_sequences")
+}
+
+model PaymentTransaction {
+  id              String         @id @default(uuid(7)) @db.Uuid
+  tenantId        String         @db.Uuid
+  invoiceId       String         @db.Uuid
+  gateway         PaymentGateway
+  gatewayRef      String?
+  amount          Decimal        @db.Decimal(12, 2)
+  currency        String         @default("INR")
+  status          PaymentStatus  @default(PENDING)
+  failureReason   String?
+  providerEventId String?
+  idempotencyKey  String?
+  metadata        Json?
+  attemptedAt     DateTime       @default(now())
+  invoice         TenantInvoice  @relation(fields: [invoiceId], references: [id])
+
+  @@unique([gateway, gatewayRef])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, invoiceId, attemptedAt])
   @@map("payment_transactions")
+}
+
+model BillingPaymentMethod {
+  id                String              @id @default(uuid(7)) @db.Uuid
+  tenantId          String              @db.Uuid
+  gateway           PaymentGateway
+  providerMethodRef String
+  methodType        PaymentMethodType
+  displayName       String
+  lastFour          String?
+  expiryMonth       Int?
+  expiryYear        Int?
+  isDefault         Boolean             @default(false)
+  status            PaymentMethodStatus @default(ACTIVE)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  tenant            Tenant              @relation(fields: [tenantId], references: [id])
+
+  @@unique([gateway, providerMethodRef])
+  @@index([tenantId, status])
+  @@map("billing_payment_methods")
+}
+
+model BillingWebhookReceipt {
+  id              String               @id @default(uuid(7)) @db.Uuid
+  provider        PaymentGateway
+  providerEventId String
+  eventType       String
+  occurredAt      DateTime
+  payloadHash     String
+  status          WebhookReceiptStatus @default(RECEIVED)
+  attemptCount    Int                  @default(0)
+  normalizedEvent Json?
+  outcome         Json?
+  failureCode     String?
+  processedAt     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([provider, providerEventId])
+  @@index([status, createdAt])
+  @@map("billing_webhook_receipts")
+}
+
+model DunningTransition {
+  id             String             @id @default(uuid(7)) @db.Uuid
+  tenantId       String             @db.Uuid
+  subscriptionId String             @db.Uuid
+  action         DunningAction
+  fromState      DunningState
+  toState        DunningState
+  idempotencyKey String
+  reason         String
+  scheduledFor   DateTime?
+  completedAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime           @default(now())
+  subscription   TenantSubscription @relation(fields: [subscriptionId], references: [id])
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, subscriptionId, createdAt])
+  @@index([scheduledFor, completedAt])
+  @@map("dunning_transitions")
+}
+
+model TenantDeletionJob {
+  id                String            @id @default(uuid(7)) @db.Uuid
+  tenantId          String            @db.Uuid
+  status            DeletionJobStatus @default(PENDING)
+  requestedBy       String?           @db.Uuid
+  reason            String
+  legalHoldUntil    DateTime?
+  biometricPurgedAt DateTime?
+  completedAt       DateTime?
+  failureCode       String?
+  evidence          Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  tenant            Tenant            @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, status])
+  @@map("tenant_deletion_jobs")
 }
 
 model PlatformUser {
@@ -630,25 +887,28 @@ model SystemAuditLog {
 
 // ---------------- IDENTITY & ACCESS ----------------
 model User {
-  id                String     @id @default(uuid(7)) @db.Uuid
-  tenantId          String     @db.Uuid
-  email             String
-  phone             String?
-  passwordHash      String
-  status            UserStatus @default(ACTIVE)
-  emailVerifiedAt   DateTime?
-  passwordChangedAt DateTime?
-  failedLoginCount  Int        @default(0)
-  lockedUntil       DateTime?
-  lastLoginAt       DateTime?
-  lastLoginIp       String?
-  mfaSecret         String?
-  mfaEnabled        Boolean    @default(false)
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  tenant            Tenant     @relation(fields: [tenantId], references: [id])
-  roles             UserRole[]
-  employee          Employee?
+  id                      String                   @id @default(uuid(7)) @db.Uuid
+  tenantId                String                   @db.Uuid
+  email                   String
+  phone                   String?
+  passwordHash            String
+  status                  UserStatus               @default(ACTIVE)
+  emailVerifiedAt         DateTime?
+  passwordChangedAt       DateTime?
+  failedLoginCount        Int                      @default(0)
+  lockedUntil             DateTime?
+  lastLoginAt             DateTime?
+  lastLoginIp             String?
+  mfaSecret               String?
+  mfaEnabled              Boolean                  @default(false)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  tenant                  Tenant                   @relation(fields: [tenantId], references: [id])
+  roles                   UserRole[]
+  employee                Employee?
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
+  requestedReports        ReportExport[]
 
   @@unique([tenantId, email])
   @@index([tenantId, status])
@@ -809,6 +1069,9 @@ model Employee {
   employmentEvents  EmploymentEvent[]
   importedRows      EmployeeImportRow[]
   rosters           EmployeeShiftRoster[]
+  regularizations   RegularizationRequest[]
+  leaveBalances     LeaveBalance[]
+  leaveRequests     LeaveRequest[]
 
   @@unique([tenantId, employeeCode])
   @@index([tenantId, status])
@@ -917,12 +1180,16 @@ model EmployeeImportRow {
 model TenantSettings {
   tenantId                 String   @id @db.Uuid
   timezone                 String   @default("Asia/Kolkata")
+  locale                   String   @default("en")
   weeklyOffs               Json     @default("[\"SAT\",\"SUN\"]")
   requireFacialRecognition Boolean  @default(false)
   faceMatchThreshold       Int      @default(85)
+  fieldTrackingEnabled     Boolean  @default(false)
   fieldTrackingIntervalMin Int      @default(15)
+  runtimeConfigVersion     Int      @default(1)
   checkinReminderEnabled   Boolean  @default(true)
   checkoutReminderMinutes  Int      @default(15)
+  regularizationWindowDays Int      @default(7)
   absenteeAlertTime        String   @default("10:00")
   companyLogoKey           String?
   workingDayStart          String   @default("09:00")
@@ -968,26 +1235,30 @@ model EmployeeOfficeAssignment {
 }
 
 model AttendancePolicy {
-  id                      String             @id @default(uuid(7)) @db.Uuid
-  tenantId                String             @db.Uuid
-  name                    String
-  lateAfterMinutes        Int                @default(15)
-  halfDayAfterMinutes     Int                @default(240)
-  minimumWorkMinutes      Int                @default(480)
-  overtimeAfterMinutes    Int                @default(540)
-  allowEarlyCheckin       Boolean            @default(true)
-  allowEarlyCheckout      Boolean            @default(false)
-  requireFaceMatch        Boolean            @default(false)
-  allowBiometricOptOut    Boolean            @default(false)
-  requireRegisteredDevice Boolean            @default(true)
-  requireGeofence         Boolean            @default(true)
-  maxOfflineSyncHours     Int                @default(48)
-  maxFaceAttempts         Int                @default(3)
-  weeklyOffs              Json? // v4: overrides tenant default
-  breakRules              Json               @default("{}")
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
-  assignments             PolicyAssignment[]
+  id                       String                 @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                 @db.Uuid
+  name                     String
+  lateAfterMinutes         Int                    @default(15)
+  halfDayAfterMinutes      Int                    @default(240)
+  minimumWorkMinutes       Int                    @default(480)
+  overtimeAfterMinutes     Int                    @default(540)
+  allowEarlyCheckin        Boolean                @default(true)
+  allowEarlyCheckout       Boolean                @default(false)
+  requireFaceMatch         Boolean                @default(false)
+  allowBiometricOptOut     Boolean                @default(false)
+  requireRegisteredDevice  Boolean                @default(true)
+  requireGeofence          Boolean                @default(true)
+  locationMode             AttendanceLocationMode @default(OFFICE_GEOFENCE)
+  selfieMode               SelfieMode             @default(DISABLED)
+  fieldTrackingEnabled     Boolean                @default(false)
+  allowHybridFieldTracking Boolean                @default(false)
+  maxOfflineSyncHours      Int                    @default(48)
+  maxFaceAttempts          Int                    @default(3)
+  weeklyOffs               Json? // v4: overrides tenant default
+  breakRules               Json                   @default("{}")
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  assignments              PolicyAssignment[]
 
   @@unique([tenantId, name])
   @@map("attendance_policies")
@@ -1079,31 +1350,32 @@ model RegisteredDevice {
 }
 
 model AttendanceLog {
-  id                    String             @id @default(uuid(7)) @db.Uuid
-  tenantId              String             @db.Uuid
-  employeeId            String             @db.Uuid
-  attendanceDate        DateTime           @db.Date
-  appliedShiftId        String?            @db.Uuid // v4
+  id                    String                  @id @default(uuid(7)) @db.Uuid
+  tenantId              String                  @db.Uuid
+  employeeId            String                  @db.Uuid
+  attendanceDate        DateTime                @db.Date
+  appliedShiftId        String?                 @db.Uuid // v4
   firstCheckin          DateTime?
   lastCheckout          DateTime?
-  totalWorkMinutes      Int                @default(0)
-  lateMinutes           Int                @default(0)
-  overtimeMinutes       Int                @default(0)
-  earlyLeaveMinutes     Int                @default(0)
-  breakMinutes          Int                @default(0)
-  attendanceStatus      AttendanceStatus   @default(PRESENT_OPEN)
+  totalWorkMinutes      Int                     @default(0)
+  lateMinutes           Int                     @default(0)
+  overtimeMinutes       Int                     @default(0)
+  earlyLeaveMinutes     Int                     @default(0)
+  breakMinutes          Int                     @default(0)
+  attendanceStatus      AttendanceStatus        @default(PRESENT_OPEN)
   appliedPolicySnapshot Json?
-  resolvedExceptionId   String?            @db.Uuid
+  resolvedExceptionId   String?                 @db.Uuid
   finalizedAt           DateTime?
   lockedAt              DateTime?
-  lockedBy              String?            @db.Uuid
-  payrollLockId         String?            @db.Uuid // v4
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  employee              Employee           @relation(fields: [employeeId], references: [id])
-  appliedShift          Shift?             @relation("AppliedShift", fields: [appliedShiftId], references: [id])
-  payrollLock           PayrollLockPeriod? @relation(fields: [payrollLockId], references: [id])
+  lockedBy              String?                 @db.Uuid
+  payrollLockId         String?                 @db.Uuid // v4
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  employee              Employee                @relation(fields: [employeeId], references: [id])
+  appliedShift          Shift?                  @relation("AppliedShift", fields: [appliedShiftId], references: [id])
+  payrollLock           PayrollLockPeriod?      @relation(fields: [payrollLockId], references: [id])
   events                AttendanceEvent[]
+  regularizations       RegularizationRequest[]
 
   @@unique([tenantId, employeeId, attendanceDate])
   @@index([tenantId, attendanceDate, attendanceStatus])
@@ -1111,48 +1383,68 @@ model AttendanceLog {
 }
 
 model PayrollLockPeriod {
-  id           String          @id @default(uuid(7)) @db.Uuid
-  tenantId     String          @db.Uuid
+  id           String               @id @default(uuid(7)) @db.Uuid
+  tenantId     String               @db.Uuid
   period       String // "2026-07"
-  status       LockStatus      @default(OPEN)
-  lockedBy     String?         @db.Uuid
+  status       LockStatus           @default(OPEN)
+  lockedBy     String?              @db.Uuid
   lockedAt     DateTime?
-  reopenedBy   String?         @db.Uuid
+  reopenedBy   String?              @db.Uuid
   reopenedAt   DateTime?
   reopenReason String?
-  exportId     String?         @db.Uuid
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  exportId     String?              @db.Uuid
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   logs         AttendanceLog[]
+  export       ReportExport?        @relation(fields: [exportId], references: [id])
+  history      PayrollLockHistory[]
 
   @@unique([tenantId, period])
   @@map("payroll_lock_periods")
 }
 
+model PayrollLockHistory {
+  id            String            @id @default(uuid(7)) @db.Uuid
+  tenantId      String            @db.Uuid
+  payrollLockId String            @db.Uuid
+  action        PayrollLockAction
+  actorUserId   String            @db.Uuid
+  reason        String?
+  exportId      String?           @db.Uuid
+  createdAt     DateTime          @default(now())
+  payrollLock   PayrollLockPeriod @relation(fields: [payrollLockId], references: [id])
+
+  @@index([tenantId, payrollLockId, createdAt])
+  @@map("payroll_lock_history")
+}
+
 /// PARTITIONED monthly on eventTime (raw SQL).
 model AttendanceEvent {
-  id                String        @id @default(uuid(7)) @db.Uuid
-  tenantId          String        @db.Uuid
-  attendanceLogId   String        @db.Uuid
-  employeeId        String        @db.Uuid
-  verificationLogId String?       @db.Uuid
-  clientEventUuid   String?       @db.Uuid
-  eventType         EventType
-  source            PunchSource
-  eventTime         DateTime
-  latitude          Decimal?      @db.Decimal(9, 6)
-  longitude         Decimal?      @db.Decimal(9, 6)
-  accuracyM         Int?
-  ipAddress         String?
-  userAgent         String?
-  syncTime          DateTime      @default(now())
-  isOfflineSync     Boolean       @default(false)
-  timeSuspect       Boolean       @default(false)
-  createdBy         String?       @db.Uuid
-  log               AttendanceLog @relation(fields: [attendanceLogId], references: [id])
+  id                      String                 @id @default(uuid(7)) @db.Uuid
+  tenantId                String                 @db.Uuid
+  attendanceLogId         String                 @db.Uuid
+  employeeId              String                 @db.Uuid
+  verificationLogId       String?                @db.Uuid
+  clientEventUuid         String?                @db.Uuid
+  eventType               EventType
+  source                  PunchSource
+  eventTime               DateTime
+  latitude                Decimal?               @db.Decimal(9, 6)
+  longitude               Decimal?               @db.Decimal(9, 6)
+  accuracyM               Int?
+  ipAddress               String?
+  userAgent               String?
+  syncTime                DateTime               @default(now())
+  isOfflineSync           Boolean                @default(false)
+  timeSuspect             Boolean                @default(false)
+  createdBy               String?                @db.Uuid
+  regularizationRequestId String?                @db.Uuid
+  log                     AttendanceLog          @relation(fields: [attendanceLogId], references: [id])
+  regularization          RegularizationRequest? @relation(fields: [regularizationRequestId], references: [id])
 
   @@unique([tenantId, employeeId, clientEventUuid])
   @@index([tenantId, employeeId, eventTime])
+  @@index([tenantId, regularizationRequestId])
   @@map("attendance_events")
 }
 
@@ -1192,17 +1484,21 @@ model AttendanceVerificationLog {
 }
 
 model AttendanceException {
-  id            String          @id @default(uuid(7)) @db.Uuid
-  tenantId      String          @db.Uuid
-  employeeId    String          @db.Uuid
-  exceptionType ExceptionType
-  source        ExceptionSource @default(MANUAL)
-  startDate     DateTime        @db.Date
-  endDate       DateTime        @db.Date
-  reason        String?
-  approvedBy    String?         @db.Uuid
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id             String          @id @default(uuid(7)) @db.Uuid
+  tenantId       String          @db.Uuid
+  employeeId     String          @db.Uuid
+  exceptionType  ExceptionType
+  source         ExceptionSource @default(MANUAL)
+  startDate      DateTime        @db.Date
+  endDate        DateTime        @db.Date
+  reason         String?
+  approvedBy     String?         @db.Uuid
+  leaveRequestId String?         @unique @db.Uuid
+  halfDayStart   Boolean         @default(false)
+  halfDayEnd     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  leaveRequest   LeaveRequest?   @relation(fields: [leaveRequestId], references: [id])
 
   @@index([tenantId, employeeId, startDate, endDate])
   @@map("attendance_exceptions")
@@ -1228,67 +1524,148 @@ model AttendanceJobRun {
 }
 
 model FieldTrackingSession {
-  id         String             @id @default(uuid(7)) @db.Uuid
-  tenantId   String             @db.Uuid
-  employeeId String             @db.Uuid
-  deviceId   String?            @db.Uuid
-  startedAt  DateTime
-  endedAt    DateTime?
-  endReason  TrackingEndReason?
+  id              String             @id @default(uuid(7)) @db.Uuid
+  tenantId        String             @db.Uuid
+  employeeId      String             @db.Uuid
+  deviceId        String             @db.Uuid
+  clientStartUuid String             @db.Uuid
+  startedAt       DateTime           @default(now())
+  lastPingAt      DateTime?
+  endedAt         DateTime?
+  endReason       TrackingEndReason?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
+  @@unique([tenantId, employeeId, clientStartUuid])
   @@index([tenantId, employeeId, startedAt])
+  @@index([tenantId, deviceId, endedAt])
   @@map("field_tracking_sessions")
 }
 
 /// PARTITIONED monthly on capturedAt; 90-day retention.
 model FieldLocationPing {
-  id            String   @id @default(uuid(7)) @db.Uuid
-  tenantId      String   @db.Uuid
-  sessionId     String   @db.Uuid
-  employeeId    String   @db.Uuid
-  latitude      Decimal  @db.Decimal(9, 6)
-  longitude     Decimal  @db.Decimal(9, 6)
-  accuracyM     Int?
-  speedMps      Decimal? @db.Decimal(6, 2)
-  isMock        Boolean  @default(false)
-  batteryLevel  Int?
-  capturedAt    DateTime
-  isOfflineSync Boolean  @default(false)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  tenantId       String   @db.Uuid
+  sessionId      String   @db.Uuid
+  employeeId     String   @db.Uuid
+  deviceId       String   @db.Uuid
+  clientPingUuid String   @db.Uuid
+  latitude       Decimal  @db.Decimal(9, 6)
+  longitude      Decimal  @db.Decimal(9, 6)
+  accuracyM      Int?
+  speedMps       Decimal? @db.Decimal(6, 2)
+  isMock         Boolean  @default(false)
+  batteryLevel   Int?
+  capturedAt     DateTime
+  receivedAt     DateTime @default(now())
+  isOfflineSync  Boolean  @default(false)
 
   @@index([tenantId, employeeId, capturedAt])
+  @@index([tenantId, sessionId, capturedAt])
   @@map("field_location_pings")
 }
 
+model FieldPingReceipt {
+  id             String               @id @default(uuid(7)) @db.Uuid
+  tenantId       String               @db.Uuid
+  sessionId      String               @db.Uuid
+  employeeId     String               @db.Uuid
+  deviceId       String               @db.Uuid
+  clientPingUuid String               @db.Uuid
+  payloadHash    String
+  payload        Json
+  status         FieldIngestionStatus @default(PENDING)
+  errorCode      String?
+  pingId         String?              @db.Uuid
+  capturedAt     DateTime
+  processedAt    DateTime?
+  createdAt      DateTime             @default(now())
+
+  @@unique([tenantId, deviceId, clientPingUuid])
+  @@index([tenantId, sessionId, status, createdAt])
+  @@map("field_ping_receipts")
+}
+
 model FieldRouteSummary {
-  id                 String   @id @default(uuid(7)) @db.Uuid
-  tenantId           String   @db.Uuid
-  employeeId         String   @db.Uuid
-  routeDate          DateTime @db.Date
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  tenantId           String    @db.Uuid
+  employeeId         String    @db.Uuid
+  routeDate          DateTime  @db.Date
   simplifiedPath     Json
   distanceMeters     Int
   pingCount          Int
-  trackingGapMinutes Int      @default(0)
+  trackingGapMinutes Int       @default(0)
+  stops              Json      @default("[]")
+  gaps               Json      @default("[]")
+  sourceStartedAt    DateTime?
+  sourceEndedAt      DateTime?
+  algorithmVersion   Int       @default(1)
+  updatedAt          DateTime  @updatedAt
 
   @@unique([tenantId, employeeId, routeDate])
   @@map("field_route_summaries")
 }
 
+model AttendanceSyncReceipt {
+  id                      String               @id @default(uuid(7)) @db.Uuid
+  tenantId                String               @db.Uuid
+  employeeId              String               @db.Uuid
+  clientEventUuid         String               @db.Uuid
+  payloadHash             String
+  status                  AttendanceSyncStatus
+  attendanceEventId       String?              @db.Uuid
+  errorCode               String?
+  message                 String?
+  regularizationSuggested Boolean              @default(false)
+  clientTime              DateTime
+  outcome                 Json
+  processedAt             DateTime             @default(now())
+  createdAt               DateTime             @default(now())
+
+  @@unique([tenantId, clientEventUuid])
+  @@index([tenantId, employeeId, processedAt])
+  @@map("attendance_sync_receipts")
+}
+
+model DeviceIntegrityChallenge {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  tenantId   String    @db.Uuid
+  employeeId String    @db.Uuid
+  deviceId   String    @db.Uuid
+  nonceHash  String
+  action     String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([tenantId, deviceId, expiresAt])
+  @@index([tenantId, consumedAt, expiresAt])
+  @@map("device_integrity_challenges")
+}
+
 model RegularizationRequest {
-  id                String        @id @default(uuid(7)) @db.Uuid
-  tenantId          String        @db.Uuid
-  attendanceLogId   String        @db.Uuid
-  employeeId        String        @db.Uuid
+  id                String            @id @default(uuid(7)) @db.Uuid
+  tenantId          String            @db.Uuid
+  attendanceLogId   String            @db.Uuid
+  employeeId        String            @db.Uuid
   requestedCheckin  DateTime?
   requestedCheckout DateTime?
   reason            String
   attachmentKey     String?
   managerComments   String?
-  status            RequestStatus @default(PENDING)
-  approvedBy        String?       @db.Uuid
+  status            RequestStatus     @default(PENDING)
+  approvedBy        String?           @db.Uuid
   approvedAt        DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  cancelledAt       DateTime?
+  idempotencyKey    String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  attendanceLog     AttendanceLog     @relation(fields: [attendanceLogId], references: [id])
+  employee          Employee          @relation(fields: [employeeId], references: [id])
+  syntheticEvents   AttendanceEvent[]
 
+  @@unique([tenantId, employeeId, attendanceLogId])
+  @@unique([tenantId, employeeId, idempotencyKey])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, employeeId])
   @@map("regularization_requests")
@@ -1352,18 +1729,31 @@ model TenantAuditLog {
 }
 
 model ReportExport {
-  id          String     @id @default(uuid(7)) @db.Uuid
-  tenantId    String     @db.Uuid
-  requestedBy String     @db.Uuid
-  reportType  ReportType
-  period      String
-  status      JobStatus  @default(PENDING)
-  fileUrl     String?
-  expiresAt   DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String              @id @default(uuid(7)) @db.Uuid
+  tenantId        String              @db.Uuid
+  requestedBy     String              @db.Uuid
+  reportType      ReportType
+  period          String
+  format          ReportFormat        @default(CSV)
+  contractVersion Int                 @default(1)
+  filters         Json                @default("{}")
+  sourceCutoff    DateTime
+  sourceWatermark String?
+  status          JobStatus           @default(PENDING)
+  objectKey       String?
+  checksum        String?
+  failureCode     String?
+  failureMessage  String?
+  fileUrl         String?
+  expiresAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  requester       User                @relation(fields: [requestedBy], references: [id])
+  payrollLocks    PayrollLockPeriod[]
 
   @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
   @@map("report_exports")
 }
 
@@ -1374,6 +1764,10 @@ model LeavePolicy {
   name         String
   leaveType    String
   accrualLogic Json           @default("{}")
+  version      Int            @default(1)
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   balances     LeaveBalance[]
   requests     LeaveRequest[]
 
@@ -1382,49 +1776,78 @@ model LeavePolicy {
 }
 
 model LeaveBalance {
-  id            String      @id @default(uuid(7)) @db.Uuid
-  tenantId      String      @db.Uuid
-  employeeId    String      @db.Uuid
-  policyId      String      @db.Uuid
-  remainingDays Decimal     @db.Decimal(5, 2)
-  policy        LeavePolicy @relation(fields: [policyId], references: [id])
+  id            String               @id @default(uuid(7)) @db.Uuid
+  tenantId      String               @db.Uuid
+  employeeId    String               @db.Uuid
+  policyId      String               @db.Uuid
+  remainingDays Decimal              @db.Decimal(5, 2)
+  policy        LeavePolicy          @relation(fields: [policyId], references: [id])
+  employee      Employee             @relation(fields: [employeeId], references: [id])
+  ledger        LeaveBalanceLedger[]
+  updatedAt     DateTime             @updatedAt
 
   @@unique([tenantId, employeeId, policyId])
   @@map("leave_balances")
 }
 
+model LeaveBalanceLedger {
+  id             String                @id @default(uuid(7)) @db.Uuid
+  tenantId       String                @db.Uuid
+  balanceId      String                @db.Uuid
+  leaveRequestId String?               @db.Uuid
+  entryType      LeaveBalanceEntryType
+  days           Decimal               @db.Decimal(5, 2)
+  balanceAfter   Decimal               @db.Decimal(5, 2)
+  reason         String
+  actorUserId    String?               @db.Uuid
+  idempotencyKey String
+  createdAt      DateTime              @default(now())
+  balance        LeaveBalance          @relation(fields: [balanceId], references: [id])
+  leaveRequest   LeaveRequest?         @relation(fields: [leaveRequestId], references: [id])
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, balanceId, createdAt])
+  @@map("leave_balance_ledger")
+}
+
 model LeaveRequest {
-  id              String        @id @default(uuid(7)) @db.Uuid
-  tenantId        String        @db.Uuid
-  employeeId      String        @db.Uuid
-  policyId        String        @db.Uuid
-  startDate       DateTime      @db.Date
-  endDate         DateTime      @db.Date
-  halfDayStart    Boolean       @default(false)
-  halfDayEnd      Boolean       @default(false)
-  totalDays       Decimal       @db.Decimal(5, 2)
-  reason          String?
-  status          RequestStatus @default(PENDING)
-  approvedBy      String?       @db.Uuid
-  approvedAt      DateTime?
-  managerComments String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  policy          LeavePolicy   @relation(fields: [policyId], references: [id])
+  id                  String               @id @default(uuid(7)) @db.Uuid
+  tenantId            String               @db.Uuid
+  employeeId          String               @db.Uuid
+  policyId            String               @db.Uuid
+  startDate           DateTime             @db.Date
+  endDate             DateTime             @db.Date
+  halfDayStart        Boolean              @default(false)
+  halfDayEnd          Boolean              @default(false)
+  totalDays           Decimal              @db.Decimal(5, 2)
+  reason              String?
+  status              RequestStatus        @default(PENDING)
+  approvedBy          String?              @db.Uuid
+  approvedAt          DateTime?
+  managerComments     String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  policy              LeavePolicy          @relation(fields: [policyId], references: [id])
+  employee            Employee             @relation(fields: [employeeId], references: [id])
+  balanceEntries      LeaveBalanceLedger[]
+  attendanceException AttendanceException?
 
   @@index([tenantId, status, createdAt])
+  @@index([tenantId, employeeId, startDate, endDate])
   @@map("leave_requests")
 }
 
 // ---------------- NOTIFICATIONS & ALERTS ----------------
 model NotificationTemplate {
-  id           String       @id @default(uuid(7)) @db.Uuid
-  eventKey     String
-  channel      NotifChannel
-  locale       String       @default("en")
-  subject      String?
-  bodyTemplate String
-  isActive     Boolean      @default(true)
+  id                String       @id @default(uuid(7)) @db.Uuid
+  eventKey          String
+  channel           NotifChannel
+  locale            String       @default("en")
+  subject           String?
+  bodyTemplate      String
+  requiredVariables Json         @default("[]")
+  version           Int          @default(1)
+  isActive          Boolean      @default(true)
 
   @@unique([eventKey, channel, locale])
   @@map("notification_templates")
@@ -1482,6 +1905,7 @@ model NotificationPreference {
   eventKey String
   channel  NotifChannel
   enabled  Boolean      @default(true)
+  user     User         @relation(fields: [userId], references: [id])
 
   @@unique([tenantId, userId, eventKey, channel])
   @@map("notification_preferences")
@@ -1492,6 +1916,7 @@ model Notification {
   tenantId      String                 @db.Uuid
   userId        String                 @db.Uuid
   eventKey      String
+  dedupeKey     String
   severity      AlertSeverity          @default(INFO)
   title         String
   body          String
@@ -1505,7 +1930,9 @@ model Notification {
   expiresAt     DateTime?
   createdAt     DateTime               @default(now())
   deliveries    NotificationDelivery[]
+  user          User                   @relation(fields: [userId], references: [id])
 
+  @@unique([tenantId, userId, dedupeKey])
   @@index([tenantId, userId, isRead, createdAt])
   @@map("notifications")
 }
@@ -1515,10 +1942,13 @@ model NotificationDelivery {
   notificationId String          @db.Uuid
   channel        DeliveryChannel
   status         DeliveryStatus  @default(PENDING)
+  attemptNumber  Int             @default(1)
   providerRef    String?
+  providerCode   String?
   errorMessage   String?
   retryCount     Int             @default(0)
   deviceId       String?         @db.Uuid
+  nextAttemptAt  DateTime?
   attemptedAt    DateTime        @default(now())
   deliveredAt    DateTime?
   notification   Notification    @relation(fields: [notificationId], references: [id])

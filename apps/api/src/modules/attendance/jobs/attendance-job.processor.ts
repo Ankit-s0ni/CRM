@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { JobStatus, Prisma, SecurityAlertType } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { AuditService } from '../../../shared/audit/audit.service';
@@ -8,6 +8,7 @@ import { TenantJobContextRunner } from '../../../shared/tenancy/tenant-job-conte
 import { calculateAttendance } from '../domain/attendance-calculator';
 import { DateOnly } from '../domain/value-objects/date-only';
 import { AttendanceContextService } from '../application/attendance-context.service';
+import { assertAttendanceRangeUnlocked } from '../../../shared/attendance/attendance-lock';
 
 @Injectable()
 export class AttendanceJobProcessor {
@@ -144,10 +145,21 @@ export class AttendanceJobProcessor {
     return { referenceMonth, ensured: 2 };
   }
 
+  recomputeEmployeeDay(
+    tenantId: string,
+    employeeId: string,
+    attendanceDate: string,
+  ) {
+    return this.runner.run({ tenantId }, () =>
+      this.finalizeEmployee(tenantId, employeeId, attendanceDate, true),
+    );
+  }
+
   private async finalizeEmployee(
     tenantId: string,
     employeeId: string,
     attendanceDate: string,
+    force = false,
   ) {
     return this.prisma.forTenant(async (tx) => {
       const employee = await tx.employee.findUnique({
@@ -172,6 +184,9 @@ export class AttendanceJobProcessor {
       }).toJSDate();
       const runtime = await this.resolver.resolve(tx, employee, evaluationTime);
       const date = DateOnly.parse(attendanceDate).toDatabaseDate();
+      if (force) {
+        await assertAttendanceRangeUnlocked(tx, date, date, employeeId);
+      }
       const initial = await tx.attendanceLog.upsert({
         where: {
           tenantId_employeeId_attendanceDate: {
@@ -188,11 +203,19 @@ export class AttendanceJobProcessor {
         where: { id: initial.id },
         include: { payrollLock: true, events: true },
       });
-      if (
-        log.finalizedAt ||
-        log.lockedAt ||
-        log.payrollLock?.status === 'LOCKED'
-      ) {
+      if (log.lockedAt || log.payrollLock?.status === 'LOCKED') {
+        if (force) {
+          throw new HttpException(
+            {
+              code: 'ATTENDANCE_DAY_LOCKED',
+              message: 'Attendance is locked for payroll',
+            },
+            423,
+          );
+        }
+        return false;
+      }
+      if (log.finalizedAt && !force) {
         return false;
       }
       const calculation = calculateAttendance({
@@ -207,6 +230,7 @@ export class AttendanceJobProcessor {
           createdAt: event.syncTime,
         })),
         exceptionType: runtime.exceptionType,
+        leaveFraction: runtime.leaveFraction,
         holiday: runtime.holiday,
         weeklyOff: runtime.weeklyOff,
         finalizing: true,

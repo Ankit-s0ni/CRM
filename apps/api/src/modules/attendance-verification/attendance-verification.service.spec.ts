@@ -12,6 +12,7 @@ import type { PrivateEvidenceStorageService } from '../biometrics/private-eviden
 import type { SecurityAlertEvaluatorService } from '../security-alerts/security-alert-evaluator.service';
 import type { VerifiedPunchDto } from './dto/verified-punch.dto';
 import { AttendanceVerificationService } from './attendance-verification.service';
+import type { DeviceIntegrityChallengeService } from './device-integrity-challenge.service';
 import type {
   DeviceIntegrityProvider,
   FaceMatchProvider,
@@ -35,6 +36,9 @@ type MatrixCase = {
   accuracyMeters?: number;
   requireRegisteredDevice?: boolean;
   requireGeofence?: boolean;
+  locationMode?: 'NONE' | 'OFFICE_GEOFENCE' | 'FIELD_GPS';
+  selfieMode?: 'DISABLED' | 'REQUIRED';
+  omitCoordinates?: boolean;
   requireFaceMatch?: boolean;
   allowBiometricOptOut?: boolean;
   consentAction?: 'GRANTED' | 'WITHDRAWN' | null;
@@ -90,8 +94,16 @@ describe('AttendanceVerificationService check matrix', () => {
     {
       name: 'skips location when geofence policy is disabled',
       requireGeofence: false,
+      locationMode: 'NONE',
+      omitCoordinates: true,
       expectedChecks: ['device', 'integrity', 'clock', 'location'],
       expectedSkippedChecks: ['location'],
+    },
+    {
+      name: 'requires coordinates for an office-geofence policy',
+      locationMode: 'OFFICE_GEOFENCE',
+      omitCoordinates: true,
+      expectedCode: 'LOCATION_REQUIRED',
     },
     {
       name: 'fails mandatory field GPS accuracy',
@@ -251,7 +263,11 @@ function createFixture(matrix: MatrixCase) {
       policy: {
         requireRegisteredDevice: matrix.requireRegisteredDevice ?? true,
         requireGeofence: matrix.requireGeofence ?? true,
+        locationMode:
+          matrix.locationMode ??
+          (matrix.workType === WorkType.FIELD ? 'FIELD_GPS' : undefined),
         requireFaceMatch: matrix.requireFaceMatch ?? false,
+        selfieMode: matrix.selfieMode,
         allowBiometricOptOut: matrix.allowBiometricOptOut ?? false,
         maxFaceAttempts: 3,
       },
@@ -297,6 +313,7 @@ function createFixture(matrix: MatrixCase) {
     faces,
     storage,
     alerts,
+    {} as DeviceIntegrityChallengeService,
   );
   const dto: VerifiedPunchDto = {
     type: 'CHECKIN',
@@ -304,9 +321,13 @@ function createFixture(matrix: MatrixCase) {
     attestationToken: 'unit-token',
     clientTime: matrix.clientTime ?? '2026-07-17T10:00:00.000Z',
     requestId: '70000000-0000-4000-8000-000000000001',
-    latitude: 23.588,
-    longitude: 58.3829,
-    accuracyMeters: matrix.accuracyMeters ?? 8,
+    ...(matrix.omitCoordinates
+      ? {}
+      : {
+          latitude: 23.588,
+          longitude: 58.3829,
+          accuracyMeters: matrix.accuracyMeters ?? 8,
+        }),
     selfieKey: matrix.selfieKey,
     appVersion: '1.0.0',
     osVersion: '16',

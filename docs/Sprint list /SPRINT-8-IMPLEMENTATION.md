@@ -2,7 +2,7 @@
 
 ## Billing, Revenue Operations, Hardening and General Availability
 
-**Status:** Not started  
+**Status:** In progress
 **Depends on:** Sprint 2 platform control plane and product gates from Sprints 3-7  
 **Primary references:** roadmap Phase 6; feature section 1 and Business Admin B10  
 **Sprint exit:** The existing platform control plane can sell plans, collect payments, issue GST invoices, run dunning and expose real revenue/payment health; production security, recovery, retention and release gates are satisfied.
@@ -52,86 +52,86 @@
 
 ## 4. Billing Rules
 
-- [ ] Plans define currency, interval, per-seat price, employee maximum and module bundle
-- [ ] Employee count synchronizes seats through idempotent events
-- [ ] Webhook event ID is unique and replay returns prior outcome
-- [ ] Every charge attempt creates a payment transaction
-- [ ] Invoice numbers are sequential under a database lock and include GST breakdown
-- [ ] Invoice PDFs are immutable private objects with signed downloads
-- [ ] Dunning progresses reminder, grace, suspend-pending and suspension idempotently
-- [ ] Suspension immediately blocks tenant sessions/routes while preserving platform support access
+- [x] Plans define currency, interval, per-seat price, employee maximum and module bundle
+- [x] Employee count synchronizes seats through idempotent events
+- [x] Webhook event ID is unique and replay returns prior outcome
+- [x] Every charge attempt creates a payment transaction
+- [x] Invoice numbers are sequential under a database lock and include GST breakdown
+- [x] Invoice PDFs are immutable private objects with signed downloads
+- [x] Dunning progresses reminder, grace, suspend-pending and suspension idempotently
+- [x] Suspension immediately blocks tenant sessions/routes while preserving platform support access
 
 ## 5. Sprint 2 Platform Integration
 
-- [ ] S1 replaces deferred billing cards with authoritative MRR, plan mix, failed-payment and recent-subscription data
-- [ ] S11 adds Razorpay/Stripe latency, webhook lag and payment failure health
-- [ ] Plan/payment/dunning actions reuse Sprint 2 MFA, platform permissions and system audit
-- [ ] Dunning suspension calls the Sprint 2 idempotent tenant lifecycle command rather than updating tenant status directly
-- [ ] Module bundles call Sprint 2 module validation and assignment contracts
-- [ ] Sprint 2 impersonation restrictions continue to forbid billing mutation
+- [x] S1 replaces deferred billing cards with authoritative MRR, plan mix, failed-payment and recent-subscription data
+- [x] S11 adds Razorpay/Stripe latency, webhook lag and payment failure health
+- [x] Plan/payment/dunning actions reuse Sprint 2 MFA, platform permissions and system audit
+- [x] Dunning suspension calls the Sprint 2 idempotent tenant lifecycle command rather than updating tenant status directly
+- [x] Module bundles call Sprint 2 module validation and assignment contracts
+- [x] Sprint 2 impersonation restrictions continue to forbid billing mutation
 
 ## 6. Web Implementation
 
-- [ ] B10 billing profile, plan, usage, method, invoice and quota UI
-- [ ] S5/S6 plan list/editor
-- [ ] S7/S8 invoices, payments and dunning
-- [ ] S1 billing/revenue dashboard enhancement
-- [ ] S11 payment-provider health enhancement
-- [ ] A2/A3 production self-serve signup if retained for GA
+- [x] B10 billing profile, plan, usage, method, invoice and quota UI
+- [x] S5/S6 plan list/editor
+- [x] S7/S8 invoices, payments and dunning
+- [x] S1 billing/revenue dashboard enhancement
+- [x] S11 payment-provider health enhancement
+- [x] A2/A3 production self-serve signup retained for GA with email-gateway delivery and recovery state
 
 ## 7. Hardening and Operations
 
-- [ ] API/web/mobile production build and environment validation
+- [x] API/web/mobile production build and environment validation
 - [ ] External penetration test; close all critical/high findings
 - [ ] Backup and point-in-time recovery drill with measured RPO/RTO
-- [ ] Verify partition creation and retention jobs for pings, notifications and tokens
-- [ ] k6 punch, sync, ping, report and live-board targets with documented budgets
+- [x] Verify partition creation and retention jobs for pings, notifications and tokens
+- [x] k6 punch, sync, ping, report and live-board targets with documented budgets
 - [ ] Sentry/OTel dashboards and alert routing
-- [ ] Runbooks for on-call, dunning, provider outage, impersonation and data deletion
-- [ ] Biometric deletion/churn workflow and evidence
+- [x] Runbooks for on-call, dunning, provider outage, impersonation and data deletion
+- [x] Biometric deletion/churn workflow and evidence
 - [ ] Store submissions, privacy disclosures and background-location justification
-- [ ] Force-upgrade/minimum-version gate for mobile
+- [x] Force-upgrade/minimum-version gate for mobile
 
 ## 8. Ordered Work Packages
 
-- [ ] 8.0 Billing schema, money/tax domain and provider ports
-- [ ] 8.1 Plans, subscriptions, billing profile and B10/S5-S6
-- [ ] 8.2 Gateway, webhooks, transactions, invoices and S7-S8
-- [ ] 8.3 Dunning, Sprint 2 suspension integration and S1/S11 enhancements
-- [ ] 8.4 A2/A3 GA signup decision and implementation
+- [x] 8.0 Billing schema, money/tax domain and provider ports
+- [x] 8.1 Plans, subscriptions, billing profile and B10/S5-S6
+- [x] 8.2 Gateway, webhooks, transactions, invoices and S7-S8
+- [x] 8.3 Dunning, Sprint 2 suspension integration and S1/S11 enhancements
+- [x] 8.4 A2/A3 GA signup decision and implementation
 - [ ] 8.5 Security, recovery, retention, load and release gates
 
 ## 9. Test Plan
 
-- [ ] Webhook replay and out-of-order delivery idempotency
-- [ ] Concurrent invoice numbering and seat synchronization
-- [ ] Failed payment dunning to suspension and successful recovery
-- [ ] Suspended tenant access/refresh rejection across all modules
-- [ ] Regression: Sprint 2 MFA, least privilege, impersonation restrictions and admin-connection isolation
-- [ ] Plan module-bundle changes respect Sprint 2 module guards and hidden UI navigation
-- [ ] Backup restore, retention dry run and partition boundary tests
+- [x] Webhook replay and out-of-order delivery idempotency
+- [x] Concurrent invoice numbering and seat synchronization
+- [x] Failed payment dunning to suspension and successful recovery
+- [x] Suspended tenant access/refresh rejection across all modules
+- [x] Regression: Sprint 2 MFA, least privilege, impersonation restrictions and admin-connection isolation
+- [x] Plan module-bundle changes respect Sprint 2 module guards and hidden UI navigation
+- [x] Backup restore, retention dry run and partition boundary tests
 - [ ] Load targets and external security findings regression suite
 
 ## 10. Definition of Done
 
-- [ ] Tenant can sign up/onboard, subscribe, pay and retrieve a valid invoice
-- [ ] Dunning and suspension are automated and reversible safely
-- [ ] Platform support actions are strongly authenticated and fully audited
+- [x] Tenant can sign up/onboard, subscribe, pay and retrieve a valid invoice
+- [x] Dunning and suspension are automated and reversible safely
+- [x] Platform support actions are strongly authenticated and fully audited
 - [ ] No critical/high penetration-test findings remain
 - [ ] Recovery, retention, monitoring and runbooks are exercised
-- [ ] API reference and administrator/HR/employee guidance are published
+- [x] API reference and administrator/HR/employee guidance are published in repository release artifacts
 - [ ] Production deployment and mobile store release gates pass
 
 ## 11. Progress Tracker
 
 | Work package | Status | Evidence |
 |---|---|---|
-| 8.0 Billing domain and provider ports | Not started | |
-| 8.1 Plans and subscriptions | Not started | |
-| 8.2 Payments and invoices | Not started | |
-| 8.3 Dunning and platform enhancements | Not started | |
-| 8.4 Self-serve signup GA | Not started | |
-| 8.5 Hardening and release | Not started | |
+| 8.0 Billing domain and provider ports | Complete | Billing migrations/domain/provider tests; API build |
+| 8.1 Plans and subscriptions | Complete | `sprint8-billing-ga.e2e-spec.ts`; B10/S5-S6 Playwright |
+| 8.2 Payments and invoices | Complete | Connected signup-to-paid-invoice e2e; signed webhook, concurrent invoice, PDF and S7-S8 tests |
+| 8.3 Dunning and platform enhancements | Complete | Suspension/recovery e2e; S1/S11 implementation |
+| 8.4 Self-serve signup GA | Complete | Email delivery integration; auth-flow e2e; A2/A3 responsive Playwright |
+| 8.5 Hardening and release | In progress | Builds, retention, deletion, force-upgrade, k6 profiles and runbooks complete; external/infrastructure gates pending |
 
 Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
 
@@ -210,12 +210,12 @@ Money is decimal minor-unit safe. Clients never submit totals, tax, invoice numb
 
 ### 12.7 Required schema/migrations
 
-- [ ] Plan-to-module bundle relation and subscription/plan history if absent
-- [ ] Webhook receipt table with provider/event ID, payload hash, state, attempts and processed timestamp
-- [ ] Invoice billing/tax snapshot, line items, checksum and sequence mechanism
-- [ ] Payment-method token references only; never card/bank secrets
-- [ ] Dunning transition/history records and scheduled-action idempotency
-- [ ] Churn/deletion job state with legal retention and biometric purge evidence
+- [x] Plan-to-module bundle relation and subscription/plan history if absent
+- [x] Webhook receipt table with provider/event ID, payload hash, state, attempts and processed timestamp
+- [x] Invoice billing/tax snapshot, line items, checksum and sequence mechanism
+- [x] Payment-method token references only; never card/bank secrets
+- [x] Dunning transition/history records and scheduled-action idempotency
+- [x] Churn/deletion job state with legal retention and biometric purge evidence
 
 ### 12.8 Stitch acceptance
 
@@ -230,6 +230,47 @@ Money is decimal minor-unit safe. Clients never submit totals, tax, invoice numb
 
 Required artifacts: threat model, external penetration report and closure evidence, SBOM/dependency scan, secrets scan, backup/PITR drill log, retention dry-run, load report, provider outage drill, dunning runbook, impersonation policy, biometric deletion runbook, privacy/DPA documents, API/admin/HR/employee guides and release rollback plan.
 
+Repository-owned artifacts completed on July 18, 2026:
+
+- `docs/SPRINT-8-SECURITY-THREAT-MODEL.md`
+- `docs/SPRINT-8-OPERATIONS-RUNBOOK.md`
+- `docs/SPRINT-8-PRIVACY-AND-STORE-CHECKLIST.md`
+- `docs/SPRINT-8-USER-GUIDE.md`
+- `docs/SPRINT-8-RELEASE-AND-ROLLBACK.md`
+- `docs/SPRINT-8-RELEASE-EVIDENCE.md`
+- `docs/SPRINT-8-LOCAL-DRILL-REPORT.md`
+- `docs/SPRINT-8-OBSERVABILITY-GATE.md` dashboard, alert budgets and correlated drill
+- `docs/legal/` privacy notice, DPA, subprocessor and mobile permission/store drafts
+- `scripts/operations/` backup, guarded restore smoke and retention audit tools
+- `scripts/mobile-release-check.mjs` native DeltCRM identity/store guard
+- `scripts/validate-ga-evidence.mjs` strict machine-readable GA gate validator
+- `apps/api/scripts/observability-drill.ts` Sentry/OTel/on-call receipt probe
+- `tests/load/sprint8/` punch, sync, ping, report and live-board budgets
+- `artifacts/sbom/deltcrm.cdx.json` CycloneDX 1.6 production SBOM and checksum
+- `artifacts/release/sprint8-ga-evidence.json` release gate status/evidence manifest
+
+Local verification now covers the CycloneDX SBOM/checksum, dependency and
+repository-secret scans, partition/retention audit, PostgreSQL backup/restore
+smoke, payment-provider transport outage with reconciled audits, and short
+punch/sync/report k6 smoke profiles. Still requiring environment/external
+evidence: independent penetration report and closure, managed PostgreSQL
+restore/PITR with measured RPO/RTO, production-like k6 results for all five
+profiles, configured Sentry/OTel dashboard and alert receipt, approved
+privacy/DPA text, production deployment and store submissions. These gates
+intentionally keep Work Package 8.5 and the sprint status `In progress`.
+
+Native store identity is now release-safe: Android and iOS use DeltCRM with
+`com.deltcrm.employee`, OpenStreetMap identifies the same package, placeholder
+native product names were removed, and an Android APK build proves the package
+move. Signed store binaries and console approvals remain external release gates.
+
 ### 12.10 GA acceptance journey
 
 A fresh tenant signs up or is manually invited, verifies email, completes onboarding, selects a plan, adds a payment method, receives modules, staffs employees, generates a GST invoice, experiences failed-payment reminder/grace/suspension, pays successfully and regains access. Support impersonates with MFA and reason, performs a permitted read, exits, and both audit trails reconcile. Webhook replay, duplicate jobs and process crashes do not duplicate invoices, charges, dunning transitions or audit outcomes.
+
+Repository acceptance evidence: `apps/api/test/sprint8-billing-ga.e2e-spec.ts`
+passes a connected signup, email verification, login, idempotent onboarding,
+billing-profile, tokenized-method, immediate paid-plan change, signed payment
+webhook, immutable paid invoice and private PDF retrieval journey. The same
+suite covers webhook replay/conflict/out-of-order handling, provider outage,
+dunning suspension/recovery, seat synchronization and platform billing access.

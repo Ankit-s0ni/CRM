@@ -43,32 +43,33 @@ export class VerificationTokensService {
   async consumeToken(token: string, purpose: TokenPurpose) {
     const tokenHash = this.hashToken(token);
 
-    const verificationToken = await this.prisma.forTenant((tx) =>
-      tx.verificationToken.findFirst({
+    const verificationToken = await this.prisma.forTenant(async (tx) => {
+      const candidate = await tx.verificationToken.findFirst({
         where: { tokenHash, purpose, consumedAt: null },
-      }),
-    );
+      });
 
-    if (!verificationToken) {
-      throw new BadRequestException('Invalid or expired token');
-    }
+      if (!candidate) {
+        throw new BadRequestException('Invalid or expired token');
+      }
 
-    if (verificationToken.expiresAt < new Date()) {
-      await this.prisma.forTenant((tx) =>
-        tx.verificationToken.update({
-          where: { id: verificationToken.id },
+      if (candidate.expiresAt < new Date()) {
+        await tx.verificationToken.updateMany({
+          where: { id: candidate.id, consumedAt: null },
           data: { consumedAt: new Date() },
-        }),
-      );
-      throw new BadRequestException('Token has expired');
-    }
+        });
+        throw new BadRequestException('Token has expired');
+      }
 
-    await this.prisma.forTenant((tx) =>
-      tx.verificationToken.update({
-        where: { id: verificationToken.id },
+      const claimed = await tx.verificationToken.updateMany({
+        where: { id: candidate.id, consumedAt: null },
         data: { consumedAt: new Date() },
-      }),
-    );
+      });
+      if (claimed.count !== 1) {
+        throw new BadRequestException('Invalid or expired token');
+      }
+
+      return candidate;
+    });
 
     return verificationToken;
   }

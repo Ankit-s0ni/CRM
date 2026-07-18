@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hrms_attendance/core/router/app_routes.dart';
@@ -37,10 +38,12 @@ void main() {
 
   tearDown(() => router.dispose());
 
-  Widget app() => MaterialApp.router(
-    routerConfig: router,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
+  Widget app() => ProviderScope(
+    child: MaterialApp.router(
+      routerConfig: router,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+    ),
   );
 
   testWidgets('tabs navigate, back returns home, then asks before exit', (

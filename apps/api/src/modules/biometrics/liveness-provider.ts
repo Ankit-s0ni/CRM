@@ -3,7 +3,7 @@ import {
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 export type LivenessResult = {
   embeddingRef: string;
@@ -12,7 +12,7 @@ export type LivenessResult = {
 
 @Injectable()
 export class LivenessProvider {
-  verify(objectKey: string, proofToken: string): LivenessResult {
+  async verify(objectKey: string, proofToken: string): Promise<LivenessResult> {
     if (
       process.env.NODE_ENV !== 'production' &&
       (proofToken === `test-live:${objectKey}` ||
@@ -20,30 +20,18 @@ export class LivenessProvider {
     ) {
       return this.result(objectKey, 'local-development');
     }
-    const secret = process.env.LIVENESS_PROOF_SECRET;
-    if (!secret) {
-      throw new ServiceUnavailableException({
-        code: 'VERIFICATION_PROVIDER_UNAVAILABLE',
-        message: 'Face verification is temporarily unavailable',
-      });
-    }
-    const [timestampText, supplied] = proofToken.split('.');
-    const timestamp = Number(timestampText);
-    if (!timestamp || !supplied || Math.abs(Date.now() - timestamp) > 300_000) {
-      this.throwFailed();
-    }
-    const expected = createHmac('sha256', secret)
-      .update(`${objectKey}:${timestampText}`)
-      .digest('hex');
-    const expectedBuffer = Buffer.from(expected);
-    const suppliedBuffer = Buffer.from(supplied);
+    const response = await livenessRequest(objectKey, proofToken);
+    if (!response) this.throwUnavailable();
     if (
-      expectedBuffer.length !== suppliedBuffer.length ||
-      !timingSafeEqual(expectedBuffer, suppliedBuffer)
+      response.livenessOk !== true ||
+      !isOpaqueReference(response.embeddingRef)
     ) {
       this.throwFailed();
     }
-    return this.result(objectKey, 'signed-proof');
+    return {
+      embeddingRef: response.embeddingRef,
+      provider: 'face-liveness-gateway',
+    };
   }
 
   private result(objectKey: string, provider: string): LivenessResult {
@@ -53,10 +41,57 @@ export class LivenessProvider {
     };
   }
 
+  private throwUnavailable(): never {
+    throw new ServiceUnavailableException({
+      code: 'VERIFICATION_PROVIDER_UNAVAILABLE',
+      message: 'Face verification is temporarily unavailable',
+    });
+  }
+
   private throwFailed(): never {
     throw new UnprocessableEntityException({
       code: 'LIVENESS_FAILED',
       message: 'Liveness verification failed. Please capture your face again',
     });
   }
+}
+
+type LivenessGatewayResponse = {
+  embeddingRef?: unknown;
+  livenessOk?: unknown;
+};
+
+async function livenessRequest(
+  objectKey: string,
+  captureProof: string,
+): Promise<{ embeddingRef: string; livenessOk: boolean } | null> {
+  const url = process.env.FACE_LIVENESS_PROVIDER_URL;
+  const token = process.env.FACE_LIVENESS_PROVIDER_TOKEN;
+  if (!url?.startsWith('https://') || !token) return null;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ objectKey, captureProof }),
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (!response.ok) return null;
+    const result = (await response.json()) as LivenessGatewayResponse;
+    if (
+      typeof result.embeddingRef !== 'string' ||
+      typeof result.livenessOk !== 'boolean'
+    ) {
+      return null;
+    }
+    return result as { embeddingRef: string; livenessOk: boolean };
+  } catch {
+    return null;
+  }
+}
+
+function isOpaqueReference(value: string) {
+  return value.length >= 16 && value.length <= 500;
 }

@@ -12,7 +12,7 @@ class DayDetailScreen extends ConsumerWidget {
     required this.onCorrection,
   });
   final String date;
-  final VoidCallback onCorrection;
+  final void Function(String attendanceLogId, String date) onCorrection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,7 +95,9 @@ class DayDetailScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           PrimaryButton(
             label: context.l10n.requestCorrection,
-            onPressed: data?['isLocked'] == true ? null : onCorrection,
+            onPressed: data?['isLocked'] == true || data?['id'] is! String
+                ? null
+                : () => onCorrection(data!['id'] as String, date),
           ),
           if (day.hasError)
             const Text('This attendance day could not be loaded.'),

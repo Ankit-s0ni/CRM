@@ -279,7 +279,7 @@ List endpoints use `{ data, pagination }`; resolvers use `{ data, resolution: { 
 - Required variants: initial loading, skeleton, empty, populated, inline validation, API error, 403, suspended workspace, unsaved changes and destructive confirmation.
 - Use actual Stitch assets locally with provenance; do not hotlink expiring Stitch URLs.
 
-### 11.7 Acceptance fixtures
+### 11.7 Acceptance fixtureswhh cn
 
 - Tenant `Acme Logistics`, timezone `Asia/Kolkata`, second/fourth Saturday off
 - Offices: Bengaluru HQ (100 m) and Mumbai Hub (150 m), each with distinct timezone/IP data

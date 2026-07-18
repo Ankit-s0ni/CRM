@@ -1,37 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hrms_attendance/core/network/network_providers.dart';
+import 'package:hrms_attendance/core/tenant/tenant_controller.dart';
 import 'package:hrms_attendance/features/permissions/domain/app_capability.dart';
 import 'package:hrms_attendance/features/permissions/domain/capability_repository.dart';
 import 'package:hrms_attendance/features/permissions/presentation/permissions_controller.dart';
 import 'package:hrms_attendance/features/permissions/presentation/screens/permissions_onboarding_screen.dart';
 import 'package:hrms_attendance/l10n/app_localizations.dart';
 
+import 'support/test_api_service.dart';
+
 void main() {
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
   testWidgets('renders permission recovery actions and degraded continuation', (
     tester,
   ) async {
     var continued = false;
-    await tester.pumpWidget(
-      _host(
-        repository: const _CapabilityRepository(
-          CapabilitySnapshot(
-            permissions: {
-              AppCapability.camera: CapabilityPermission(
-                capability: AppCapability.camera,
-                status: CapabilityStatus.denied,
-              ),
-              AppCapability.locationWhileUsing: CapabilityPermission(
-                capability: AppCapability.locationWhileUsing,
-                status: CapabilityStatus.permanentlyDenied,
-              ),
-            },
-            isOnline: true,
-            batteryLevel: 75,
-            isWeb: false,
+    final container = ProviderContainer(
+      overrides: [
+        apiServiceProvider.overrideWithValue(
+          createTestApiService(
+            runtime: testRuntimeConfig(selfieMode: 'REQUIRED'),
           ),
         ),
-        onContinue: () => continued = true,
+        capabilityRepositoryProvider.overrideWithValue(
+          const _CapabilityRepository(
+            CapabilitySnapshot(
+              permissions: {
+                AppCapability.camera: CapabilityPermission(
+                  capability: AppCapability.camera,
+                  status: CapabilityStatus.denied,
+                ),
+                AppCapability.locationWhileUsing: CapabilityPermission(
+                  capability: AppCapability.locationWhileUsing,
+                  status: CapabilityStatus.permanentlyDenied,
+                ),
+              },
+              isOnline: true,
+              batteryLevel: 75,
+              isWeb: false,
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.runAsync(
+      () => container.read(tenantControllerProvider.notifier).loadRuntime(),
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: _app(onContinue: () => continued = true),
       ),
     );
     await tester.pumpAndSettle();
@@ -71,11 +94,13 @@ Widget _host({
   required VoidCallback onContinue,
 }) => ProviderScope(
   overrides: [capabilityRepositoryProvider.overrideWithValue(repository)],
-  child: MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: PermissionsOnboardingScreen(onContinue: onContinue),
-  ),
+  child: _app(onContinue: onContinue),
+);
+
+Widget _app({required VoidCallback onContinue}) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: PermissionsOnboardingScreen(onContinue: onContinue),
 );
 
 class _CapabilityRepository implements CapabilityRepository {

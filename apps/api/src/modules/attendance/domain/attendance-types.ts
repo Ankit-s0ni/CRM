@@ -36,7 +36,12 @@ export type AttendancePolicySnapshot = {
   allowBiometricOptOut?: boolean;
   requireRegisteredDevice?: boolean;
   requireGeofence?: boolean;
+  locationMode?: 'NONE' | 'OFFICE_GEOFENCE' | 'FIELD_GPS';
+  selfieMode?: 'DISABLED' | 'REQUIRED';
+  fieldTrackingEnabled?: boolean;
+  allowHybridFieldTracking?: boolean;
   maxFaceAttempts?: number;
+  maxOfflineSyncHours?: number;
   breakRules?: { paid?: boolean };
 };
 

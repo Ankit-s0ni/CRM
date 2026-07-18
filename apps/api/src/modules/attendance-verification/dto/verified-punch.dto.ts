@@ -32,10 +32,20 @@ export class PunchEvidencePresignDto {
   fileSize!: number;
 }
 
+export class DeviceIntegrityChallengeDto {
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  deviceUuid!: string;
+
+  @ApiProperty({ enum: ['PUNCH', 'OFFLINE_PUNCH'] })
+  @IsIn(['PUNCH', 'OFFLINE_PUNCH'])
+  action!: 'PUNCH' | 'OFFLINE_PUNCH';
+}
+
 export class VerifiedPunchDto {
-  @ApiProperty({ enum: ['CHECKIN', 'CHECKOUT'] })
-  @IsIn(['CHECKIN', 'CHECKOUT'])
-  type!: 'CHECKIN' | 'CHECKOUT';
+  @ApiProperty({ enum: ['CHECKIN', 'CHECKOUT', 'BREAK_START', 'BREAK_END'] })
+  @IsIn(['CHECKIN', 'CHECKOUT', 'BREAK_START', 'BREAK_END'])
+  type!: 'CHECKIN' | 'CHECKOUT' | 'BREAK_START' | 'BREAK_END';
 
   @ApiProperty({ format: 'uuid' })
   @IsUUID()
@@ -44,7 +54,7 @@ export class VerifiedPunchDto {
   @ApiProperty({ writeOnly: true })
   @IsString()
   @MinLength(8)
-  @MaxLength(4096)
+  @MaxLength(16384)
   attestationToken!: string;
 
   @ApiProperty({ format: 'date-time' })
@@ -55,24 +65,27 @@ export class VerifiedPunchDto {
   @IsUUID()
   requestId!: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Type(() => Number)
   @Min(-90)
   @Max(90)
-  latitude!: number;
+  latitude?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Type(() => Number)
   @Min(-180)
   @Max(180)
-  longitude!: number;
+  longitude?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(5000)
-  accuracyMeters!: number;
+  accuracyMeters?: number;
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()

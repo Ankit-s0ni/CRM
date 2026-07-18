@@ -296,6 +296,321 @@
         ]
       }
     },
+    "/tenant-settings": {
+      "get": {
+        "operationId": "WorkspaceSettingsController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get tenant attendance and company settings",
+        "tags": [
+          "Tenant settings"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkspaceSettingsController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update tenant attendance and company settings",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/tenant-settings/logo/presign": {
+      "post": {
+        "operationId": "WorkspaceSettingsController_presignLogo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoPresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private tenant-prefixed company-logo upload URL",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/onboarding/status": {
+      "get": {
+        "operationId": "WorkspaceSettingsController_onboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get resumable onboarding progress",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/onboarding/complete": {
+      "post": {
+        "operationId": "WorkspaceSettingsController_completeOnboarding",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteOnboardingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Idempotently complete workspace onboarding",
+        "tags": [
+          "Tenant settings"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List authenticated user inbox notifications",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authenticated user unread count",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark one owned notification as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_markAllRead",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark all owned notifications as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification-preferences": {
+      "get": {
+        "operationId": "NotificationsController_preferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authenticated user delivery preferences",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "put": {
+        "operationId": "NotificationsController_updatePreferences",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPreferencesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update optional notification preferences",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/workspace/status": {
       "get": {
         "operationId": "WorkspaceController_getStatus",
@@ -1820,26 +2135,6 @@
         ]
       }
     },
-    "/billing/subscription": {
-      "get": {
-        "operationId": "BillingAccessController_subscription",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get the current workspace subscription",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
     "/healthz": {
       "get": {
         "operationId": "HealthController_healthz",
@@ -2294,9 +2589,122 @@
         ]
       }
     },
-    "/platform/plans": {
+    "/platform/tenants/{id}/deletion": {
       "get": {
-        "operationId": "PlatformPlansController_list",
+        "operationId": "PlatformTenantsController_deletionStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read the latest tenant deletion job and evidence",
+        "tags": [
+          "Platform Tenants"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformTenantsController_scheduleDeletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleTenantDeletionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Schedule tenant churn and privacy-safe data deletion",
+        "tags": [
+          "Platform Tenants"
+        ]
+      }
+    },
+    "/platform/tenants/{id}/deletion/{jobId}/retry": {
+      "post": {
+        "operationId": "PlatformTenantsController_retryDeletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryTenantDeletionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry a failed tenant deletion job",
+        "tags": [
+          "Platform Tenants"
+        ]
+      }
+    },
+    "/biometric-consents/me": {
+      "get": {
+        "operationId": "BiometricsController_currentConsent",
         "parameters": [],
         "responses": {
           "200": {
@@ -2308,9 +2716,205 @@
             "bearer": []
           }
         ],
-        "summary": "List subscription plans available for onboarding",
+        "summary": "Get the authenticated employee biometric consent",
         "tags": [
-          "Platform Plans"
+          "Biometrics"
+        ]
+      },
+      "delete": {
+        "operationId": "BiometricsController_withdrawConsent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw the authenticated employee consent",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/biometric-consents": {
+      "post": {
+        "operationId": "BiometricsController_createConsent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBiometricConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accept the current biometric consent policy",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/presign": {
+      "post": {
+        "operationId": "BiometricsController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentPresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private face enrollment upload URL",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments": {
+      "post": {
+        "operationId": "BiometricsController_complete",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete liveness-backed face enrollment",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/me/status": {
+      "get": {
+        "operationId": "BiometricsController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe face enrollment eligibility status",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/{employeeId}/status": {
+      "get": {
+        "operationId": "BiometricsController_employeeStatus",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe employee biometric enrollment status",
+        "tags": [
+          "Biometrics"
+        ]
+      }
+    },
+    "/face-enrollments/{employeeId}/reset": {
+      "post": {
+        "operationId": "BiometricsController_resetEmployeeFace",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetFaceEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset a locked employee face profile for re-enrollment",
+        "tags": [
+          "Biometrics"
         ]
       }
     },
@@ -2922,134 +3526,6 @@
         "summary": "Get non-throwing dependency health snapshot",
         "tags": [
           "Platform Operations"
-        ]
-      }
-    },
-    "/tenant-settings": {
-      "get": {
-        "operationId": "WorkspaceSettingsController_getSettings",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get tenant attendance and company settings",
-        "tags": [
-          "Tenant settings"
-        ]
-      },
-      "patch": {
-        "operationId": "WorkspaceSettingsController_updateSettings",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTenantSettingsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update tenant attendance and company settings",
-        "tags": [
-          "Tenant settings"
-        ]
-      }
-    },
-    "/tenant-settings/logo/presign": {
-      "post": {
-        "operationId": "WorkspaceSettingsController_presignLogo",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LogoPresignDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a private tenant-prefixed company-logo upload URL",
-        "tags": [
-          "Tenant settings"
-        ]
-      }
-    },
-    "/onboarding/status": {
-      "get": {
-        "operationId": "WorkspaceSettingsController_onboardingStatus",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get resumable onboarding progress",
-        "tags": [
-          "Tenant settings"
-        ]
-      }
-    },
-    "/onboarding/complete": {
-      "post": {
-        "operationId": "WorkspaceSettingsController_completeOnboarding",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompleteOnboardingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Idempotently complete workspace onboarding",
-        "tags": [
-          "Tenant settings"
         ]
       }
     },
@@ -4819,222 +5295,6 @@
         ]
       }
     },
-    "/biometric-consents/me": {
-      "get": {
-        "operationId": "BiometricsController_currentConsent",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get the authenticated employee biometric consent",
-        "tags": [
-          "Biometrics"
-        ]
-      },
-      "delete": {
-        "operationId": "BiometricsController_withdrawConsent",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Withdraw the authenticated employee consent",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/biometric-consents": {
-      "post": {
-        "operationId": "BiometricsController_createConsent",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateBiometricConsentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Accept the current biometric consent policy",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/face-enrollments/presign": {
-      "post": {
-        "operationId": "BiometricsController_presign",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EnrollmentPresignDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a private face enrollment upload URL",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/face-enrollments": {
-      "post": {
-        "operationId": "BiometricsController_complete",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompleteEnrollmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Complete liveness-backed face enrollment",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/face-enrollments/me/status": {
-      "get": {
-        "operationId": "BiometricsController_status",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get safe face enrollment eligibility status",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/face-enrollments/{employeeId}/status": {
-      "get": {
-        "operationId": "BiometricsController_employeeStatus",
-        "parameters": [
-          {
-            "name": "employeeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get safe employee biometric enrollment status",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
-    "/face-enrollments/{employeeId}/reset": {
-      "post": {
-        "operationId": "BiometricsController_resetEmployeeFace",
-        "parameters": [
-          {
-            "name": "employeeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetFaceEnrollmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Reset a locked employee face profile for re-enrollment",
-        "tags": [
-          "Biometrics"
-        ]
-      }
-    },
     "/attendance/punch-evidence/presign": {
       "post": {
         "operationId": "AttendanceVerificationController_presign",
@@ -5060,6 +5320,36 @@
           }
         ],
         "summary": "Create a private mobile punch selfie upload URL",
+        "tags": [
+          "Attendance verification"
+        ]
+      }
+    },
+    "/attendance/integrity/challenges": {
+      "post": {
+        "operationId": "AttendanceVerificationController_challenge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceIntegrityChallengeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Issue a one-time device integrity challenge",
         "tags": [
           "Attendance verification"
         ]
@@ -5589,6 +5879,1848 @@
           "Attendance security"
         ]
       }
+    },
+    "/field-sessions/start": {
+      "post": {
+        "operationId": "FieldTrackingController_start",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartFieldSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Start an idempotent field tracking session",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field-sessions/{id}/stop": {
+      "post": {
+        "operationId": "FieldTrackingController_stop",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StopFieldSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stop the authenticated employee field session",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field-sessions/me/active": {
+      "get": {
+        "operationId": "FieldTrackingController_active",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated employee active session",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field-pings/batch": {
+      "post": {
+        "operationId": "FieldTrackingController_ingest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldPingBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ingest a bounded idempotent location batch",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field/employees/live": {
+      "get": {
+        "operationId": "FieldTrackingController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List live, stale, and offline field employees",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field/employees/{employeeId}/routes/{date}": {
+      "get": {
+        "operationId": "FieldTrackingController_route",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a deterministic employee route summary",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/field/stream": {
+      "get": {
+        "operationId": "FieldTrackingController_stream",
+        "parameters": [
+          {
+            "name": "last-event-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Subscribe to scoped field presence updates",
+        "tags": [
+          "Field tracking"
+        ]
+      }
+    },
+    "/mobile/runtime-config": {
+      "get": {
+        "operationId": "MobileRuntimeConfigController_getRuntimeConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve the authenticated employee tenant runtime configuration",
+        "tags": [
+          "Mobile runtime"
+        ]
+      }
+    },
+    "/workspace/attendance-capabilities": {
+      "get": {
+        "operationId": "AttendanceCapabilitiesController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read entitled tenant attendance capabilities",
+        "tags": [
+          "Attendance capabilities"
+        ]
+      },
+      "patch": {
+        "operationId": "AttendanceCapabilitiesController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceCapabilitiesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update entitled tenant attendance capabilities",
+        "tags": [
+          "Attendance capabilities"
+        ]
+      }
+    },
+    "/attendance/sync": {
+      "post": {
+        "operationId": "AttendanceSyncController_sync",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceSyncDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replay an ordered offline attendance batch",
+        "tags": [
+          "Attendance offline sync"
+        ]
+      }
+    },
+    "/attendance/sync/{clientEventUuid}": {
+      "get": {
+        "operationId": "AttendanceSyncController_status",
+        "parameters": [
+          {
+            "name": "clientEventUuid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the durable outcome for an offline event",
+        "tags": [
+          "Attendance offline sync"
+        ]
+      }
+    },
+    "/regularizations": {
+      "get": {
+        "operationId": "RegularizationController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List regularization requests in caller scope",
+        "tags": [
+          "Regularizations"
+        ]
+      },
+      "post": {
+        "operationId": "RegularizationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegularizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit an attendance correction request",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/me": {
+      "get": {
+        "operationId": "RegularizationController_mine",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List authenticated employee correction requests",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/attachments/presign": {
+      "post": {
+        "operationId": "RegularizationController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegularizationAttachmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private correction-evidence upload URL",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/{id}": {
+      "get": {
+        "operationId": "RegularizationController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one scoped regularization request",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/{id}/approve": {
+      "post": {
+        "operationId": "RegularizationController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegularizationDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve and recompute a correction request",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/{id}/reject": {
+      "post": {
+        "operationId": "RegularizationController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegularizationDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject a correction request",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/regularizations/{id}/cancel": {
+      "post": {
+        "operationId": "RegularizationController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel an owned pending correction request",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
+    "/reports/muster": {
+      "post": {
+        "operationId": "ReportingController_muster",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue a versioned muster export",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/payroll-export": {
+      "post": {
+        "operationId": "ReportingController_payroll",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue a payroll contract v1 export",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/late-ot": {
+      "post": {
+        "operationId": "ReportingController_lateOt",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue a late and overtime export",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/violations": {
+      "post": {
+        "operationId": "ReportingController_violations",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue a verification violations export",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/field-distance": {
+      "post": {
+        "operationId": "ReportingController_fieldDistance",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue a field-distance export",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports": {
+      "get": {
+        "operationId": "ReportingController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List report jobs and their current states",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/{id}/download": {
+      "get": {
+        "operationId": "ReportingController_download",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a short-lived private report download URL",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/{id}": {
+      "get": {
+        "operationId": "ReportingController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one report job and immutable snapshot metadata",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/payroll-locks": {
+      "post": {
+        "operationId": "PayrollLockController_lock",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollLockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lock a finalized payroll period against a completed export",
+        "tags": [
+          "Payroll locks"
+        ]
+      },
+      "get": {
+        "operationId": "PayrollLockController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List payroll periods and immutable transition history",
+        "tags": [
+          "Payroll locks"
+        ]
+      }
+    },
+    "/payroll-locks/{id}/reopen": {
+      "post": {
+        "operationId": "PayrollLockController_reopen",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReopenPayrollLockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reopen a payroll period with an audited reason",
+        "tags": [
+          "Payroll locks"
+        ]
+      }
+    },
+    "/leave-policies": {
+      "get": {
+        "operationId": "LeaveController_listPolicies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List active and historical leave policy versions",
+        "tags": [
+          "Leave"
+        ]
+      },
+      "post": {
+        "operationId": "LeaveController_createPolicy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeavePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a versioned leave policy and initial balances",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-policies/{id}": {
+      "patch": {
+        "operationId": "LeaveController_updatePolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLeavePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create the next version of a leave policy configuration",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-balances/me": {
+      "get": {
+        "operationId": "LeaveController_balancesMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authenticated employee leave balances",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-balances": {
+      "get": {
+        "operationId": "LeaveController_balances",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant leave balances in HR scope",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-requests": {
+      "get": {
+        "operationId": "LeaveController_requests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List leave requests in caller approval scope",
+        "tags": [
+          "Leave"
+        ]
+      },
+      "post": {
+        "operationId": "LeaveController_createRequest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeaveRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit leave and reserve available entitlement",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-requests/{id}": {
+      "get": {
+        "operationId": "LeaveController_getRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one scoped leave request",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-requests/{id}/approve": {
+      "post": {
+        "operationId": "LeaveController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaveDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve leave and emit LeaveApproved",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-requests/{id}/reject": {
+      "post": {
+        "operationId": "LeaveController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaveDecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject leave and restore reserved entitlement",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/leave-requests/{id}/cancel": {
+      "post": {
+        "operationId": "LeaveController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel owned pending leave and restore entitlement",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
+    "/billing/profile": {
+      "get": {
+        "operationId": "BillingController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get tenant legal and tax billing profile",
+        "tags": [
+          "Billing"
+        ]
+      },
+      "patch": {
+        "operationId": "BillingController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBillingProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update tenant legal and tax billing profile",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/subscription": {
+      "get": {
+        "operationId": "BillingController_subscription",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current subscription, bundle and seat usage",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/subscription/change-plan": {
+      "post": {
+        "operationId": "BillingController_changePlan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview or confirm a validated plan change",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices": {
+      "get": {
+        "operationId": "BillingController_invoices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant GST invoices",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices/{id}": {
+      "get": {
+        "operationId": "BillingController_invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get immutable invoice and payment evidence",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices/{id}/download": {
+      "get": {
+        "operationId": "BillingController_download",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a short-lived private invoice download",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/payment-methods": {
+      "get": {
+        "operationId": "BillingController_paymentMethods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List masked tokenized payment methods",
+        "tags": [
+          "Billing"
+        ]
+      },
+      "post": {
+        "operationId": "BillingController_addPaymentMethod",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPaymentMethodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Attach a provider-tokenized payment method",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/payment-methods/{id}": {
+      "delete": {
+        "operationId": "BillingController_deletePaymentMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke a tokenized payment method",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/webhooks/{provider}": {
+      "post": {
+        "operationId": "BillingWebhookController_handle",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-razorpay-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "stripe-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-razorpay-event-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Provider-native JSON verified against its exact raw bytes"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Consume an authenticated payment provider event",
+        "tags": [
+          "Billing Webhooks"
+        ]
+      }
+    },
+    "/platform/plans": {
+      "get": {
+        "operationId": "PlatformBillingController_plans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List plans and module bundles",
+        "tags": [
+          "Platform Billing"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformBillingController_createPlan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a subscription plan with fresh MFA",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/plans/{id}": {
+      "patch": {
+        "operationId": "PlatformBillingController_updatePlan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update plan pricing, limits, and module bundle",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/invoices": {
+      "get": {
+        "operationId": "PlatformBillingController_invoices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search invoices across tenants",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/invoices/{id}": {
+      "get": {
+        "operationId": "PlatformBillingController_invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get invoice, tax snapshot and payment attempts",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/payment-transactions": {
+      "get": {
+        "operationId": "PlatformBillingController_transactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search provider payment attempts",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dunning": {
+      "get": {
+        "operationId": "PlatformBillingController_dunning",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List subscriptions in dunning",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dunning/{subscriptionId}/retry": {
+      "post": {
+        "operationId": "PlatformBillingController_retry",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DunningRetryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry payment with permission and fresh MFA",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dashboard/billing": {
+      "get": {
+        "operationId": "PlatformBillingController_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authoritative revenue and billing KPIs",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/health/payment-providers": {
+      "get": {
+        "operationId": "PlatformBillingController_providerHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get provider latency and webhook health",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
     }
   },
   "info": {
@@ -5647,6 +7779,77 @@
         "required": [
           "refreshToken"
         ]
+      },
+      "UpdateTenantSettingsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kolkata"
+          },
+          "locale": {
+            "type": "string",
+            "example": "en-AE"
+          },
+          "weeklyOffs": {
+            "type": "object",
+            "example": [
+              {
+                "weekday": "SAT",
+                "occurrences": [
+                  2,
+                  4
+                ]
+              },
+              {
+                "weekday": "SUN"
+              }
+            ]
+          }
+        }
+      },
+      "LogoPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "company-logo.png"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 245760
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "CompleteOnboardingDto": {
+        "type": "object",
+        "properties": {
+          "progress": {
+            "type": "object",
+            "description": "Final client-side progress snapshot"
+          }
+        }
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "NotificationPreferencesDto": {
+        "type": "object",
+        "properties": {}
       },
       "CreateDepartmentDto": {
         "type": "object",
@@ -6057,10 +8260,6 @@
           "refreshToken"
         ]
       },
-      "Object": {
-        "type": "object",
-        "properties": {}
-      },
       "CreatePlatformTenantDto": {
         "type": "object",
         "properties": {
@@ -6129,6 +8328,111 @@
             "type": "string",
             "minLength": 10,
             "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "ScheduleTenantDeletionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "legalHoldUntil": {
+            "type": "string",
+            "description": "Optional legal-hold expiry. The purge cannot run before this timestamp.",
+            "example": "2027-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RetryTenantDeletionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CreateBiometricConsentDto": {
+        "type": "object",
+        "properties": {
+          "policyVersion": {
+            "type": "string",
+            "example": "1.2"
+          },
+          "accepted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "policyVersion",
+          "accepted"
+        ]
+      },
+      "EnrollmentPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "face.jpg"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "minimum": 1024,
+            "maximum": 5000000
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "CompleteEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "privateObjectKey": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "livenessProofToken": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "privateObjectKey",
+          "livenessProofToken"
+        ]
+      },
+      "ResetFaceEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
           }
         },
         "required": [
@@ -6288,65 +8592,6 @@
           "note"
         ]
       },
-      "UpdateTenantSettingsDto": {
-        "type": "object",
-        "properties": {
-          "timezone": {
-            "type": "string",
-            "example": "Asia/Kolkata"
-          },
-          "weeklyOffs": {
-            "type": "object",
-            "example": [
-              {
-                "weekday": "SAT",
-                "occurrences": [
-                  2,
-                  4
-                ]
-              },
-              {
-                "weekday": "SUN"
-              }
-            ]
-          }
-        }
-      },
-      "LogoPresignDto": {
-        "type": "object",
-        "properties": {
-          "filename": {
-            "type": "string",
-            "example": "company-logo.png"
-          },
-          "contentType": {
-            "type": "string",
-            "enum": [
-              "image/png",
-              "image/jpeg",
-              "image/webp"
-            ]
-          },
-          "fileSize": {
-            "type": "number",
-            "example": 245760
-          }
-        },
-        "required": [
-          "filename",
-          "contentType",
-          "fileSize"
-        ]
-      },
-      "CompleteOnboardingDto": {
-        "type": "object",
-        "properties": {
-          "progress": {
-            "type": "object",
-            "description": "Final client-side progress snapshot"
-          }
-        }
-      },
       "CreateOfficeDto": {
         "type": "object",
         "properties": {}
@@ -6361,7 +8606,23 @@
       },
       "CreatePolicyDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "locationMode": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "OFFICE_GEOFENCE",
+              "FIELD_GPS"
+            ]
+          },
+          "selfieMode": {
+            "type": "string",
+            "enum": [
+              "DISABLED",
+              "REQUIRED"
+            ]
+          }
+        }
       },
       "BulkResolveDto": {
         "type": "object",
@@ -6385,7 +8646,23 @@
       },
       "UpdatePolicyDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "locationMode": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "OFFICE_GEOFENCE",
+              "FIELD_GPS"
+            ]
+          },
+          "selfieMode": {
+            "type": "string",
+            "enum": [
+              "DISABLED",
+              "REQUIRED"
+            ]
+          }
+        }
       },
       "ReplacePolicyAssignmentsDto": {
         "type": "object",
@@ -6517,80 +8794,6 @@
           "newDeviceId"
         ]
       },
-      "CreateBiometricConsentDto": {
-        "type": "object",
-        "properties": {
-          "policyVersion": {
-            "type": "string",
-            "example": "1.2"
-          },
-          "accepted": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "policyVersion",
-          "accepted"
-        ]
-      },
-      "EnrollmentPresignDto": {
-        "type": "object",
-        "properties": {
-          "filename": {
-            "type": "string",
-            "example": "face.jpg"
-          },
-          "contentType": {
-            "type": "string",
-            "enum": [
-              "image/jpeg",
-              "image/png",
-              "image/webp"
-            ]
-          },
-          "fileSize": {
-            "type": "number",
-            "minimum": 1024,
-            "maximum": 5000000
-          }
-        },
-        "required": [
-          "filename",
-          "contentType",
-          "fileSize"
-        ]
-      },
-      "CompleteEnrollmentDto": {
-        "type": "object",
-        "properties": {
-          "privateObjectKey": {
-            "type": "string",
-            "writeOnly": true
-          },
-          "livenessProofToken": {
-            "type": "string",
-            "writeOnly": true
-          }
-        },
-        "required": [
-          "privateObjectKey",
-          "livenessProofToken"
-        ]
-      },
-      "ResetFaceEnrollmentDto": {
-        "type": "object",
-        "properties": {
-          "reason": {
-            "type": "string",
-            "minLength": 5,
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "reason"
-        ]
-      },
       "PunchEvidencePresignDto": {
         "type": "object",
         "properties": {
@@ -6618,6 +8821,26 @@
           "fileSize"
         ]
       },
+      "DeviceIntegrityChallengeDto": {
+        "type": "object",
+        "properties": {
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "PUNCH",
+              "OFFLINE_PUNCH"
+            ]
+          }
+        },
+        "required": [
+          "deviceUuid",
+          "action"
+        ]
+      },
       "VerifiedPunchDto": {
         "type": "object",
         "properties": {
@@ -6625,7 +8848,9 @@
             "type": "string",
             "enum": [
               "CHECKIN",
-              "CHECKOUT"
+              "CHECKOUT",
+              "BREAK_START",
+              "BREAK_END"
             ]
           },
           "deviceUuid": {
@@ -6673,10 +8898,7 @@
           "deviceUuid",
           "attestationToken",
           "clientTime",
-          "requestId",
-          "latitude",
-          "longitude",
-          "accuracyMeters"
+          "requestId"
         ]
       },
       "CreateAlertRuleDto": {
@@ -6824,6 +9046,325 @@
         "required": [
           "note"
         ]
+      },
+      "StartFieldSessionDto": {
+        "type": "object",
+        "properties": {
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientStartUuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "deviceUuid",
+          "clientStartUuid"
+        ]
+      },
+      "StopFieldSessionDto": {
+        "type": "object",
+        "properties": {
+          "endReason": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "BATTERY"
+            ]
+          }
+        },
+        "required": [
+          "endReason"
+        ]
+      },
+      "FieldPingDto": {
+        "type": "object",
+        "properties": {
+          "clientPingUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "accuracyM": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "speedMps": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "batteryLevel": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isMock": {
+            "type": "boolean",
+            "default": false
+          },
+          "capturedAt": {
+            "type": "string"
+          },
+          "isOfflineSync": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "clientPingUuid",
+          "sessionId",
+          "latitude",
+          "longitude",
+          "capturedAt"
+        ]
+      },
+      "FieldPingBatchDto": {
+        "type": "object",
+        "properties": {
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "minItems": 1,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldPingDto"
+            }
+          }
+        },
+        "required": [
+          "deviceUuid",
+          "items"
+        ]
+      },
+      "UpdateAttendanceCapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "fieldTrackingEnabled": {
+            "type": "boolean"
+          },
+          "fieldTrackingIntervalMin": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 120
+          }
+        }
+      },
+      "SyncAttendanceItemDto": {
+        "type": "object",
+        "properties": {
+          "clientEventUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CHECKIN",
+              "CHECKOUT",
+              "BREAK_START",
+              "BREAK_END"
+            ]
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attestationToken": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "integrityIssuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "integrityExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clientTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clientClockOffsetSeconds": {
+            "type": "number",
+            "description": "Client clock minus trusted server clock"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "accuracyMeters": {
+            "type": "number"
+          },
+          "mockLocation": {
+            "type": "boolean",
+            "default": false
+          },
+          "selfieKey": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "appVersion": {
+            "type": "string"
+          },
+          "osVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "clientEventUuid",
+          "type",
+          "deviceUuid",
+          "attestationToken",
+          "integrityIssuedAt",
+          "integrityExpiresAt",
+          "clientTime",
+          "clientClockOffsetSeconds"
+        ]
+      },
+      "AttendanceSyncDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncAttendanceItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateRegularizationDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RegularizationAttachmentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RegularizationDecisionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateReportDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePayrollLockDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ReopenPayrollLockDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateLeavePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateLeavePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateLeaveRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LeaveDecisionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateBillingProfileDto": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string"
+          },
+          "billingEmail": {
+            "type": "string"
+          },
+          "gstin": {
+            "type": "string"
+          },
+          "pan": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "INR",
+              "AED",
+              "OMR",
+              "QAR",
+              "SAR",
+              "USD"
+            ]
+          }
+        },
+        "required": [
+          "legalName",
+          "billingEmail",
+          "currency"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "object",
+            "default": false
+          }
+        }
+      },
+      "AddPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "providerMethodRef": {
+            "type": "string",
+            "description": "Token/reference returned by the provider SDK"
+          }
+        },
+        "required": [
+          "providerMethodRef"
+        ]
+      },
+      "CreatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "DunningRetryDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

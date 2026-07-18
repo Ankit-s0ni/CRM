@@ -22,19 +22,25 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OutboxRelayService.name);
   private readonly workerId = `${process.pid}-${randomUUID()}`;
   private readonly queue: Queue;
+  private readonly evidenceDeletionQueue: Queue;
+  private readonly notificationQueue: Queue;
+  private readonly leaveEventQueue: Queue;
   private timer?: NodeJS.Timeout;
   private draining = false;
 
   constructor(private readonly prisma: PrismaService) {
     const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379');
     this.queue = new Queue('domain-events', {
-      connection: {
-        host: url.hostname,
-        port: Number(url.port || 6379),
-        username: url.username || undefined,
-        password: url.password || undefined,
-        db: url.pathname.length > 1 ? Number(url.pathname.slice(1)) : 0,
-      },
+      connection: redisConnection(url),
+    });
+    this.evidenceDeletionQueue = new Queue('private-evidence-deletion', {
+      connection: redisConnection(url),
+    });
+    this.notificationQueue = new Queue('notification-events', {
+      connection: redisConnection(url),
+    });
+    this.leaveEventQueue = new Queue('leave-events', {
+      connection: redisConnection(url),
     });
   }
 
@@ -47,7 +53,12 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     if (this.timer) clearInterval(this.timer);
-    await this.queue.close();
+    await Promise.all([
+      this.queue.close(),
+      this.evidenceDeletionQueue.close(),
+      this.notificationQueue.close(),
+      this.leaveEventQueue.close(),
+    ]);
   }
 
   async drain() {
@@ -109,6 +120,61 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
           removeOnFail: 1000,
         },
       );
+      if (event.tenantId) {
+        await this.notificationQueue.add(
+          event.eventKey,
+          {
+            eventId: event.id,
+            tenantId: event.tenantId,
+            eventKey: event.eventKey,
+            payload: event.payload,
+          },
+          {
+            jobId: event.id,
+            attempts: Number(process.env.NOTIFICATION_MAX_ATTEMPTS ?? 8),
+            backoff: { type: 'exponential', delay: 5_000 },
+            removeOnComplete: 1_000,
+            removeOnFail: false,
+          },
+        );
+      }
+      if (event.tenantId && event.eventKey === 'leave.approved') {
+        await this.leaveEventQueue.add(
+          event.eventKey,
+          {
+            eventId: event.id,
+            tenantId: event.tenantId,
+            eventKey: event.eventKey,
+            payload: event.payload,
+          },
+          {
+            jobId: event.id,
+            attempts: Number(process.env.LEAVE_EVENT_MAX_ATTEMPTS ?? 10),
+            backoff: { type: 'exponential', delay: 3_000 },
+            removeOnComplete: 1_000,
+            removeOnFail: false,
+          },
+        );
+      }
+      if (
+        event.eventKey === 'attendance.biometric_evidence.deletion_requested'
+      ) {
+        await this.evidenceDeletionQueue.add(
+          'delete',
+          {
+            eventId: event.id,
+            tenantId: event.tenantId,
+            payload: event.payload,
+          },
+          {
+            jobId: event.id,
+            attempts: Number(process.env.EVIDENCE_DELETION_MAX_ATTEMPTS ?? 12),
+            backoff: { type: 'exponential', delay: 5_000 },
+            removeOnComplete: 1_000,
+            removeOnFail: false,
+          },
+        );
+      }
 
       await this.prisma.forAdmin((tx) =>
         tx.outboxEvent.updateMany({
@@ -142,4 +208,14 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
       );
     }
   }
+}
+
+function redisConnection(url: URL) {
+  return {
+    host: url.hostname,
+    port: Number(url.port || 6379),
+    username: url.username || undefined,
+    password: url.password || undefined,
+    db: url.pathname.length > 1 ? Number(url.pathname.slice(1)) : 0,
+  };
 }

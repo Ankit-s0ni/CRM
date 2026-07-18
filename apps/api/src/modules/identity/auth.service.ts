@@ -22,6 +22,8 @@ import {
   PERMISSIONS,
 } from '../../shared/authorization/permissions.constants';
 import { provisionTenantAttendanceDefaults } from '../../shared/tenancy/provision-tenant-attendance-defaults';
+import { TenantAssetStorageService } from '../workspace-settings/tenant-asset-storage.service';
+import { TransactionalEmailService } from '../notifications/transactional-email.service';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +31,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly verificationTokensService: VerificationTokensService,
+    private readonly tenantAssets: TenantAssetStorageService,
+    private readonly transactionalEmail: TransactionalEmailService,
   ) {}
 
   async signup(input: {
@@ -183,6 +187,10 @@ export class AuthService {
           tenant.user.id,
         ),
     );
+    const emailDelivery = await this.transactionalEmail.sendVerificationCode(
+      tenant.user.email,
+      verificationToken,
+    );
 
     return {
       message: 'Workspace created. Verify your email to continue.',
@@ -190,6 +198,7 @@ export class AuthService {
       tenantId: tenant.tenant.id,
       email: tenant.user.email,
       subdomain: tenant.tenant.subdomain,
+      emailDelivery,
       debugVerificationToken:
         process.env.NODE_ENV === 'production' ? undefined : verificationToken,
     };
@@ -247,9 +256,17 @@ export class AuthService {
       { userId: user.id },
       user.id,
     );
+    const emailDelivery = await this.transactionalEmail.sendVerificationCode(
+      user.email,
+      token,
+    );
 
     return {
-      message: 'A fresh verification code has been issued',
+      message:
+        emailDelivery === 'SENT'
+          ? 'A fresh verification code has been sent'
+          : 'The code was created, but email delivery is temporarily unavailable',
+      emailDelivery,
       debugVerificationToken:
         process.env.NODE_ENV === 'production' ? undefined : token,
     };
@@ -482,7 +499,7 @@ export class AuthService {
       tx.user.findUnique({
         where: { id: userId },
         include: {
-          tenant: true,
+          tenant: { include: { settings: true } },
           roles: {
             include: {
               role: {
@@ -501,6 +518,18 @@ export class AuthService {
     }
 
     this.assertTenantAvailable(user.tenant.status);
+
+    let logoUrl = safeLogoUrl(user.tenant.companyLogo);
+    if (user.tenant.settings?.companyLogoKey) {
+      try {
+        logoUrl = await this.tenantAssets.signedLogoUrl(
+          user.tenant.id,
+          user.tenant.settings.companyLogoKey,
+        );
+      } catch {
+        logoUrl = null;
+      }
+    }
 
     return {
       user: {
@@ -523,7 +552,7 @@ export class AuthService {
         companyName: user.tenant.companyName,
         subdomain: user.tenant.subdomain,
         status: user.tenant.status,
-        logoUrl: user.tenant.companyLogo,
+        logoUrl,
       },
     };
   }
@@ -749,13 +778,17 @@ export class AuthService {
 
   private assertTenantAvailable(status: TenantStatus) {
     if (status === TenantStatus.SUSPENDED) {
-      throw new ForbiddenException(
-        'Workspace is suspended. Please contact billing.',
-      );
+      throw new ForbiddenException({
+        code: 'TENANT_SUSPENDED',
+        message: 'Workspace is suspended. Please contact billing.',
+      });
     }
 
     if (status === TenantStatus.CHURNED) {
-      throw new ForbiddenException('Workspace is no longer available.');
+      throw new ForbiddenException({
+        code: 'WORKSPACE_UNAVAILABLE',
+        message: 'Workspace is no longer available.',
+      });
     }
   }
 
@@ -763,5 +796,15 @@ export class AuthService {
     const counts = employeeCount?.match(/\d+/g)?.map(Number) ?? [];
     const requestedSeats = counts.length ? Math.max(...counts) : 25;
     return Math.max(1, Math.min(requestedSeats, 500));
+  }
+}
+
+function safeLogoUrl(value: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' ? url.toString() : null;
+  } catch {
+    return null;
   }
 }

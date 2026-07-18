@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { AttendanceLocationMode, SelfieMode } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -6,6 +7,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsIn,
   IsInt,
   IsObject,
@@ -63,6 +65,16 @@ export class CreatePolicyDto {
   @IsOptional() @IsBoolean() allowBiometricOptOut?: boolean;
   @IsOptional() @IsBoolean() requireRegisteredDevice?: boolean;
   @IsOptional() @IsBoolean() requireGeofence?: boolean;
+  @ApiPropertyOptional({ enum: AttendanceLocationMode })
+  @IsOptional()
+  @IsEnum(AttendanceLocationMode)
+  locationMode?: AttendanceLocationMode;
+  @ApiPropertyOptional({ enum: SelfieMode })
+  @IsOptional()
+  @IsEnum(SelfieMode)
+  selfieMode?: SelfieMode;
+  @IsOptional() @IsBoolean() fieldTrackingEnabled?: boolean;
+  @IsOptional() @IsBoolean() allowHybridFieldTracking?: boolean;
   @IsOptional() @IsInt() @Min(0) @Max(168) maxOfflineSyncHours?: number;
   @IsOptional() @IsInt() @Min(1) @Max(10) maxFaceAttempts?: number;
   @IsOptional() weeklyOffs?: unknown;

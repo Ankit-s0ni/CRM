@@ -9,6 +9,7 @@ export interface User {
   roles?: string[];
   permissions?: string[];
   companyName?: string;
+  logoUrl?: string | null;
 }
 
 interface PendingAuthContext {

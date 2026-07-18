@@ -16,6 +16,7 @@ const routes = [
   ['enrollmentStatus', '/face-enrollments/me/status', true],
   ['punches', '/attendance/punches', true],
   ['punchEvidencePresign', '/attendance/punch-evidence/presign', true],
+  ['integrityChallenge', '/attendance/integrity/challenges', true],
   ['attendanceToday', '/attendance/me/today', true],
   ['attendanceHistory', '/attendance/me/history', true],
   ['breakStart', '/attendance/break-start', true],
@@ -23,15 +24,19 @@ const routes = [
   ['profile', '/employees/me', true],
   ['verificationLogs', '/verification-logs', true],
   ['securityAlerts', '/security-alerts', true],
-  // These repositories belong to later sprints and remain feature-gated.
-  ['regularizations', '/regularizations', false],
-  ['myRegularizations', '/regularizations/me', false],
-  ['leaveRequests', '/leave/requests', false],
-  ['fieldSessions', '/field-sessions', false],
-  ['fieldPings', '/field-pings', false],
-  ['offlineSync', '/attendance/offline-sync', false],
-  ['notifications', '/notifications', false],
-  ['notificationReadAll', '/notifications/read-all', false],
+  ['fieldSessionStart', '/field-sessions/start', true],
+  ['fieldSessionActive', '/field-sessions/me/active', true],
+  ['fieldPingsBatch', '/field-pings/batch', true],
+  ['attendanceSync', '/attendance/sync', true],
+  ['mobileRuntimeConfig', '/mobile/runtime-config', true],
+  ['regularizations', '/regularizations', true],
+  ['myRegularizations', '/regularizations/me', true],
+  ['leavePolicies', '/leave-policies', true],
+  ['myLeaveBalances', '/leave-balances/me', true],
+  ['leaveRequests', '/leave-requests', true],
+  ['notifications', '/notifications', true],
+  ['notificationUnreadCount', '/notifications/unread-count', true],
+  ['notificationReadAll', '/notifications/read-all', true],
   ['preferences', '/employees/me/preferences', false],
 ];
 
@@ -44,6 +49,11 @@ for (const path of [
   '/devices/{id}/replace',
   '/attendance/me/day',
   '/security-alerts/{id}',
+  '/field-sessions/{id}/stop',
+  '/attendance/sync/{clientEventUuid}',
+  '/regularizations/{id}/cancel',
+  '/leave-requests/{id}/cancel',
+  '/notifications/{id}/read',
 ]) {
   if (!contract.paths[path]) missing.push(path);
 }
@@ -65,6 +75,13 @@ ${constants}
   static String replaceDevice(String id) => '/devices/\$id/replace';
   static String attendanceDay(String date) => '/attendance/me/day?date=\$date';
   static String securityAlert(String id) => '/security-alerts/\$id';
+  static String fieldSessionStop(String id) => '/field-sessions/\$id/stop';
+  static String attendanceSyncStatus(String clientEventUuid) =>
+      '/attendance/sync/\$clientEventUuid';
+  static String cancelRegularization(String id) =>
+      '/regularizations/\$id/cancel';
+  static String cancelLeaveRequest(String id) => '/leave-requests/\$id/cancel';
+  static String markNotificationRead(String id) => '/notifications/\$id/read';
 }
 `;
 

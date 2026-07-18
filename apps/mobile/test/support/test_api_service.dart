@@ -6,13 +6,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hrms_attendance/core/network/api_service.dart';
 import 'package:hrms_attendance/core/network/token_store.dart';
 
-ApiService createTestApiService() {
-  final dio = Dio()..httpClientAdapter = const _ImmediateAdapter();
+ApiService createTestApiService({Map<String, dynamic>? runtime}) {
+  final dio = Dio()..httpClientAdapter = _ImmediateAdapter(runtime);
   return ApiService(TokenStore(const FlutterSecureStorage()), dio: dio);
 }
 
 class _ImmediateAdapter implements HttpClientAdapter {
-  const _ImmediateAdapter();
+  const _ImmediateAdapter(this.runtime);
+
+  final Map<String, dynamic>? runtime;
 
   @override
   Future<ResponseBody> fetch(
@@ -20,7 +22,7 @@ class _ImmediateAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async => ResponseBody.fromString(
-    jsonEncode(_payload(options.path)),
+    jsonEncode(_payload(options.path, runtime)),
     200,
     headers: {
       Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -31,7 +33,10 @@ class _ImmediateAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-Object _payload(String path) {
+Object _payload(String path, Map<String, dynamic>? runtime) {
+  if (path == '/mobile/runtime-config') {
+    return {'data': runtime ?? testRuntimeConfig()};
+  }
   if (path == '/employees/me') {
     return {
       'data': {
@@ -72,6 +77,7 @@ Object _payload(String path) {
   if (path.startsWith('/attendance/me/day')) {
     return {
       'data': {
+        'id': '40000000-0000-4000-8000-000000000001',
         'status': 'PRESENT',
         'isLocked': false,
         'totals': {'workMinutes': 480, 'breakMinutes': 45},
@@ -116,27 +122,99 @@ Object _payload(String path) {
     };
   }
   if (path == '/notifications') {
-    return [
-      {
-        'title': 'Punch reminder',
-        'message': 'Your shift begins in 15 minutes.',
-        'createdAt': '2026-07-17T04:45:00.000Z',
-        'read': false,
-      },
-    ];
+    return {
+      'data': [
+        {
+          'id': '70000000-0000-4000-8000-000000000001',
+          'eventKey': 'attendance.shift_reminder',
+          'title': 'Punch reminder',
+          'body': 'Your shift begins in 15 minutes.',
+          'createdAt': '2026-07-17T04:45:00.000Z',
+          'isRead': false,
+        },
+      ],
+    };
   }
   if (path == '/regularizations/me') {
-    return [
-      {
-        'id': 'regularization-1',
-        'requestDate': '2026-07-16',
-        'status': 'PENDING',
-        'reason': 'Missed check-out',
-      },
-    ];
+    return {
+      'data': [
+        {
+          'id': '50000000-0000-4000-8000-000000000001',
+          'status': 'PENDING',
+          'reason': 'Missed check-out',
+          'createdAt': '2026-07-16T13:00:00.000Z',
+          'attendanceLog': {'attendanceDate': '2026-07-16'},
+        },
+      ],
+    };
   }
+  if (path == '/leave-policies') return {'data': <Object>[]};
+  if (path == '/leave-balances/me') return {'data': <Object>[]};
+  if (path == '/leave-requests') return {'data': <Object>[]};
   return <String, dynamic>{};
 }
+
+Map<String, dynamic> testRuntimeConfig({
+  String tenantId = '10000000-0000-4000-8000-000000000001',
+  String tenantName = 'Acme Logistics',
+  bool attendance = true,
+  bool fieldTracking = false,
+  bool regularization = true,
+  bool leave = false,
+  String locationMode = 'OFFICE_GEOFENCE',
+  String selfieMode = 'DISABLED',
+  bool deviceRequired = false,
+}) => {
+  'configVersion': 7,
+  'product': {'name': 'DeltCRM', 'logoUrl': null},
+  'release': {
+    'minimumVersion': '1.0.0',
+    'recommendedVersion': '1.0.0',
+    'androidUpdateUrl':
+        'https://play.google.com/store/apps/details?id=com.deltcrm.employee',
+    'iosUpdateUrl': 'https://apps.apple.com/app/deltcrm/id000000000',
+  },
+  'tenant': {
+    'id': tenantId,
+    'name': tenantName,
+    'logoUrl': null,
+    'timezone': 'Asia/Dubai',
+    'locale': 'en-AE',
+  },
+  'employee': {
+    'id': '30000000-0000-4000-8000-000000000001',
+    'displayName': 'Aisha Employee',
+    'workType': fieldTracking ? 'FIELD' : 'OFFICE',
+    'status': 'ACTIVE',
+  },
+  'modules': {
+    'attendance': {'enabled': attendance},
+    'fieldTracking': {'enabled': fieldTracking},
+    'regularization': {'enabled': regularization},
+    'leave': {'enabled': leave},
+  },
+  'attendance': {
+    'canPunch': attendance,
+    'locationMode': locationMode,
+    'selfieMode': selfieMode,
+    'registeredDeviceRequired': deviceRequired,
+    'integrityRequired': attendance,
+    'maxOfflineSyncHours': 48,
+  },
+  'fieldTracking': {
+    'enabled': fieldTracking,
+    'intervalMinutes': fieldTracking ? 15 : null,
+  },
+  'onboarding': {
+    'deviceRegistrationRequired': deviceRequired,
+    'deviceRegistrationComplete': !deviceRequired,
+    'locationPermissionRequired': locationMode != 'NONE' || fieldTracking,
+    'biometricConsentRequired': selfieMode == 'REQUIRED',
+    'biometricConsentComplete': selfieMode != 'REQUIRED',
+    'faceEnrollmentRequired': selfieMode == 'REQUIRED',
+    'faceEnrollmentComplete': selfieMode != 'REQUIRED',
+  },
+};
 
 Map<String, dynamic> _history(
   String date,

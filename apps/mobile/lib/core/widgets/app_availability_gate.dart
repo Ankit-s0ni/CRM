@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../network/api_availability.dart';
 import '../network/api_availability_provider.dart';
 import '../network/network_providers.dart';
 import '../router/app_routes.dart';
 import '../theme/app_theme.dart';
+import '../tenant/tenant_controller.dart';
 
 class AppAvailabilityGate extends ConsumerWidget {
   const AppAvailabilityGate({super.key, required this.child});
@@ -16,6 +18,22 @@ class AppAvailabilityGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final event = ref.watch(apiAvailabilityProvider).asData?.value;
+    final release = ref.watch(tenantControllerProvider).release;
+    if (release.updateRequired) {
+      return _BlockingAvailability(
+        icon: Icons.system_update_alt,
+        title: 'Update DeltCRM to continue',
+        message:
+            'Version ${release.minimumVersion} or newer is required for security and compatibility.',
+        actionLabel: 'Update app',
+        onPressed: () {
+          final url = release.updateUrl;
+          if (url != null) {
+            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          }
+        },
+      );
+    }
     return switch (event?.state) {
       ApiAvailability.sessionExpired => _BlockingAvailability(
         icon: Icons.lock_clock_outlined,
@@ -24,6 +42,7 @@ class AppAvailabilityGate extends ConsumerWidget {
         actionLabel: 'Sign in again',
         onPressed: () async {
           await ref.read(apiServiceProvider).clearSession();
+          await ref.read(tenantControllerProvider.notifier).clearRuntime();
           if (context.mounted) context.go(AppRoutes.login);
         },
       ),
@@ -34,7 +53,11 @@ class AppAvailabilityGate extends ConsumerWidget {
             event?.message ??
             'This workspace is suspended or temporarily unavailable.',
         actionLabel: 'Back to sign in',
-        onPressed: () => context.go(AppRoutes.login),
+        onPressed: () async {
+          await ref.read(apiServiceProvider).clearSession();
+          await ref.read(tenantControllerProvider.notifier).clearRuntime();
+          if (context.mounted) context.go(AppRoutes.login);
+        },
       ),
       ApiAvailability.offline => _AvailabilityBanner(
         icon: Icons.cloud_off_outlined,

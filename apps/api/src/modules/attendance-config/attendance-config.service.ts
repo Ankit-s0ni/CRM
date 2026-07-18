@@ -38,6 +38,8 @@ import {
   normalizeWeeklyOffs,
 } from '../workspace-settings/workspace-settings.rules';
 import { PolicyResolverCache } from './policy-resolver-cache.service';
+import { canEnforceBiometrics } from '../../shared/config/production-runtime-config';
+import { bumpRuntimeConfigVersion } from '../runtime-config/runtime-config-version';
 
 @Injectable()
 export class AttendanceConfigService {
@@ -96,6 +98,7 @@ export class AttendanceConfigService {
         undefined,
         office,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { data: office };
     });
   }
@@ -130,6 +133,7 @@ export class AttendanceConfigService {
         current,
         office,
       );
+      await bumpRuntimeConfigVersion(tx, this.tenantId());
       return { data: office };
     });
   }
@@ -164,6 +168,7 @@ export class AttendanceConfigService {
         office,
         undefined,
       );
+      await bumpRuntimeConfigVersion(tx, this.tenantId());
       return { success: true };
     });
   }
@@ -227,6 +232,7 @@ export class AttendanceConfigService {
         oldValue,
         assignments,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { data: assignments };
     });
   }
@@ -255,6 +261,7 @@ export class AttendanceConfigService {
     const tenantId = this.tenantId();
     const data = this.policyData(dto);
     const result = await this.prisma.forTenant(async (tx) => {
+      await this.validatePolicyCapabilities(tx, data);
       await this.ensurePolicyName(tx, data.name);
       const policy = await this.uniqueConflict(
         tx.attendancePolicy.create({ data: { tenantId, ...data } }),
@@ -269,6 +276,7 @@ export class AttendanceConfigService {
         undefined,
         policy,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { data: policy };
     });
     await this.policyCache.invalidate(tenantId);
@@ -283,11 +291,26 @@ export class AttendanceConfigService {
       const data = this.policyData({
         ...current,
         ...dto,
+        locationMode:
+          dto.locationMode ??
+          (dto.requireGeofence === undefined
+            ? current.locationMode
+            : dto.requireGeofence
+              ? 'OFFICE_GEOFENCE'
+              : 'NONE'),
+        selfieMode:
+          dto.selfieMode ??
+          (dto.requireFaceMatch === undefined
+            ? current.selfieMode
+            : dto.requireFaceMatch
+              ? 'REQUIRED'
+              : 'DISABLED'),
         weeklyOffs:
           dto.weeklyOffs === undefined ? current.weeklyOffs : dto.weeklyOffs,
         breakRules:
           dto.breakRules ?? (current.breakRules as Record<string, unknown>),
       });
+      await this.validatePolicyCapabilities(tx, data);
       await this.ensurePolicyName(tx, data.name, id);
       const policy = await this.uniqueConflict(
         tx.attendancePolicy.update({ where: { id }, data }),
@@ -302,6 +325,7 @@ export class AttendanceConfigService {
         current,
         policy,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { data: policy };
     });
     await this.policyCache.invalidate(tenantId);
@@ -330,6 +354,7 @@ export class AttendanceConfigService {
         policy,
         undefined,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { success: true };
     });
     await this.policyCache.invalidate(tenantId);
@@ -342,6 +367,7 @@ export class AttendanceConfigService {
     const result = await this.prisma.forTenant(async (tx) => {
       await this.requirePolicy(tx, id);
       await this.validateAssignmentTargets(tx, dto);
+      await this.validatePolicyActivation(tx, id, dto);
       const oldValue = await tx.policyAssignment.findMany({
         where: { policyId: id },
       });
@@ -377,6 +403,7 @@ export class AttendanceConfigService {
         oldValue,
         assignments,
       );
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return { data: assignments };
     });
     await this.policyCache.invalidate(tenantId);
@@ -990,6 +1017,11 @@ export class AttendanceConfigService {
   }
 
   private policyData(dto: CreatePolicyDto) {
+    const locationMode =
+      dto.locationMode ??
+      (dto.requireGeofence === false ? 'NONE' : 'OFFICE_GEOFENCE');
+    const selfieMode =
+      dto.selfieMode ?? (dto.requireFaceMatch ? 'REQUIRED' : 'DISABLED');
     const data = {
       name: normalizeName(dto.name),
       lateAfterMinutes: dto.lateAfterMinutes ?? 15,
@@ -998,10 +1030,14 @@ export class AttendanceConfigService {
       overtimeAfterMinutes: dto.overtimeAfterMinutes ?? 540,
       allowEarlyCheckin: dto.allowEarlyCheckin ?? true,
       allowEarlyCheckout: dto.allowEarlyCheckout ?? false,
-      requireFaceMatch: dto.requireFaceMatch ?? false,
+      requireFaceMatch: selfieMode === 'REQUIRED',
       allowBiometricOptOut: dto.allowBiometricOptOut ?? false,
       requireRegisteredDevice: dto.requireRegisteredDevice ?? true,
-      requireGeofence: dto.requireGeofence ?? true,
+      requireGeofence: locationMode !== 'NONE',
+      locationMode,
+      selfieMode,
+      fieldTrackingEnabled: dto.fieldTrackingEnabled ?? false,
+      allowHybridFieldTracking: dto.allowHybridFieldTracking ?? false,
       maxOfflineSyncHours: dto.maxOfflineSyncHours ?? 48,
       maxFaceAttempts: dto.maxFaceAttempts ?? 3,
       weeklyOffs:
@@ -1010,8 +1046,113 @@ export class AttendanceConfigService {
           : (normalizeWeeklyOffs(dto.weeklyOffs) as Prisma.InputJsonValue),
       breakRules: (dto.breakRules ?? {}) as Prisma.InputJsonValue,
     };
+    if (data.selfieMode === 'REQUIRED' && !canEnforceBiometrics()) {
+      throw new BadRequestException({
+        code: 'BIOMETRICS_NOT_CERTIFIED',
+        message:
+          'Face matching cannot be required until production biometric certification is enabled',
+      });
+    }
     assertPolicyRules(data);
     return data;
+  }
+
+  private async validatePolicyCapabilities(
+    tx: PrismaTransaction,
+    policy: {
+      fieldTrackingEnabled: boolean;
+      selfieMode: string;
+      locationMode: string;
+    },
+  ) {
+    if (policy.selfieMode === 'REQUIRED' && !canEnforceBiometrics()) {
+      throw new BadRequestException({
+        code: 'BIOMETRIC_PROVIDER_UNAVAILABLE',
+        message: 'Face verification is not available in this environment',
+      });
+    }
+    if (!policy.fieldTrackingEnabled && policy.locationMode !== 'FIELD_GPS')
+      return;
+    const entitled = await tx.tenantModule.findFirst({
+      where: {
+        tenantId: this.tenantId(),
+        isActive: true,
+        module: { key: 'FIELD_TRACKING', availability: 'AVAILABLE' },
+      },
+      select: { id: true },
+    });
+    if (!entitled) {
+      throw new BadRequestException({
+        code: 'MODULE_ACCESS_DENIED',
+        message: 'FIELD_TRACKING must be entitled before enabling this policy',
+      });
+    }
+  }
+
+  private async validatePolicyActivation(
+    tx: PrismaTransaction,
+    policyId: string,
+    dto: ReplacePolicyAssignmentsDto,
+  ) {
+    if (!dto.assignments.length) return;
+    const policy = await tx.attendancePolicy.findUnique({
+      where: { id: policyId },
+    });
+    if (!policy) this.notFound('Policy');
+    if (policy.locationMode !== 'OFFICE_GEOFENCE') return;
+    const [employees, existingAssignments] = await Promise.all([
+      tx.employee.findMany({
+        where: { status: 'ACTIVE' },
+        select: {
+          id: true,
+          deptId: true,
+          officeAssignments: { select: { id: true }, take: 1 },
+        },
+      }),
+      tx.policyAssignment.findMany({
+        where: { policyId: { not: policyId } },
+        select: {
+          policyId: true,
+          scope: true,
+          deptId: true,
+          employeeId: true,
+        },
+      }),
+    ]);
+    const prospective = [
+      ...existingAssignments,
+      ...dto.assignments.map((assignment) => ({
+        policyId,
+        scope: assignment.scope,
+        deptId: assignment.deptId ?? null,
+        employeeId: assignment.employeeId ?? null,
+      })),
+    ];
+    const missingOffice = employees.filter((employee) => {
+      const effective =
+        prospective.find(
+          (assignment) =>
+            assignment.scope === 'EMPLOYEE' &&
+            assignment.employeeId === employee.id,
+        ) ??
+        prospective.find(
+          (assignment) =>
+            assignment.scope === 'DEPARTMENT' &&
+            assignment.deptId === employee.deptId,
+        ) ??
+        prospective.find((assignment) => assignment.scope === 'TENANT_DEFAULT');
+      return (
+        effective?.policyId === policyId && !employee.officeAssignments.length
+      );
+    });
+    if (missingOffice.length) {
+      throw new BadRequestException({
+        code: 'OFFICE_CONFIGURATION_REQUIRED',
+        message:
+          'Assign an office to every affected employee before activating an office-geofence policy',
+        details: { affectedEmployeeCount: missingOffice.length },
+      });
+    }
   }
 
   private validatePolicyAssignments(dto: ReplacePolicyAssignmentsDto) {

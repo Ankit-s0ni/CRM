@@ -28,6 +28,7 @@ export type ResolvedAttendanceContext = {
   weeklyOff: boolean;
   exceptionId: string | null;
   exceptionType: AttendanceExceptionValue | null;
+  leaveFraction: number | null;
 };
 
 @Injectable()
@@ -160,8 +161,30 @@ export class AttendanceContextService {
       weeklyOff: isWeeklyOff(weeklyOffs, attendanceDate.value, timezone),
       exceptionId: exception?.id ?? null,
       exceptionType: exception ? exceptionType(exception.exceptionType) : null,
+      leaveFraction: exception
+        ? exceptionLeaveFraction(exception, attendanceDate.value)
+        : null,
     };
   }
+}
+
+function exceptionLeaveFraction(
+  exception: {
+    exceptionType: ExceptionType;
+    startDate: Date;
+    endDate: Date;
+    halfDayStart: boolean;
+    halfDayEnd: boolean;
+  },
+  attendanceDate: string,
+) {
+  if (exception.exceptionType !== ExceptionType.LEAVE) return null;
+  const isStart =
+    exception.startDate.toISOString().slice(0, 10) === attendanceDate;
+  const isEnd = exception.endDate.toISOString().slice(0, 10) === attendanceDate;
+  return (isStart && exception.halfDayStart) || (isEnd && exception.halfDayEnd)
+    ? 0.5
+    : 1;
 }
 
 function shiftSnapshot(
@@ -198,7 +221,12 @@ function policySnapshot(policy: {
   allowBiometricOptOut: boolean;
   requireRegisteredDevice: boolean;
   requireGeofence: boolean;
+  locationMode: 'NONE' | 'OFFICE_GEOFENCE' | 'FIELD_GPS';
+  selfieMode: 'DISABLED' | 'REQUIRED';
+  fieldTrackingEnabled: boolean;
+  allowHybridFieldTracking: boolean;
   maxFaceAttempts: number;
+  maxOfflineSyncHours: number;
   breakRules: Prisma.JsonValue;
 }): AttendancePolicySnapshot {
   const breakRules = jsonObject(policy.breakRules);
@@ -215,7 +243,12 @@ function policySnapshot(policy: {
     allowBiometricOptOut: policy.allowBiometricOptOut,
     requireRegisteredDevice: policy.requireRegisteredDevice,
     requireGeofence: policy.requireGeofence,
+    locationMode: policy.locationMode,
+    selfieMode: policy.selfieMode,
+    fieldTrackingEnabled: policy.fieldTrackingEnabled,
+    allowHybridFieldTracking: policy.allowHybridFieldTracking,
     maxFaceAttempts: policy.maxFaceAttempts,
+    maxOfflineSyncHours: policy.maxOfflineSyncHours,
     breakRules: { paid: breakRules.paid === true },
   };
 }
@@ -233,7 +266,12 @@ function fallbackPolicy(): AttendancePolicySnapshot {
     allowBiometricOptOut: false,
     requireRegisteredDevice: true,
     requireGeofence: true,
+    locationMode: 'OFFICE_GEOFENCE',
+    selfieMode: 'DISABLED',
+    fieldTrackingEnabled: false,
+    allowHybridFieldTracking: false,
     maxFaceAttempts: 3,
+    maxOfflineSyncHours: 48,
     breakRules: { paid: false },
   };
 }

@@ -61,14 +61,16 @@ void main() {
     },
   );
 
-  test('tenant configuration exposes policy and module boundaries', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final tenant = container.read(tenantControllerProvider);
-    expect(tenant.tenantId, isNotEmpty);
-    expect(tenant.timezone, 'Asia/Muscat');
-    expect(tenant.hasModule(TenantModule.attendance), isTrue);
-    expect(tenant.attendancePolicy.geofenceRadiusMeters, greaterThan(0));
-    expect(tenant.attendancePolicy.trackingIntervalMinutes, greaterThan(0));
-  });
+  test(
+    'unauthenticated configuration exposes no tenant capability or brand',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final tenant = container.read(tenantControllerProvider);
+      expect(tenant.tenantId, isEmpty);
+      expect(tenant.branding.companyName, 'DeltCRM');
+      expect(tenant.hasModule(TenantModule.attendance), isFalse);
+      expect(tenant.attendancePolicy.canPunch, isFalse);
+    },
+  );
 }

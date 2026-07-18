@@ -11,12 +11,14 @@ class RequestStatusCard extends StatelessWidget {
     required this.detail,
     this.requestId = 'REG-2026-0042',
     this.submitted = 'Submitted 1 day ago',
+    this.onCancel,
   });
   final String title;
   final String status;
   final String detail;
   final String requestId;
   final String submitted;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +86,17 @@ class RequestStatusCard extends StatelessWidget {
               ),
             ],
           ),
+          if (onCancel != null) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: onCancel,
+                icon: const Icon(Icons.close_rounded),
+                label: const Text('Cancel request'),
+              ),
+            ),
+          ],
         ],
       ),
     );

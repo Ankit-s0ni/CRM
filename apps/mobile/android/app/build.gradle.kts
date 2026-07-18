@@ -5,8 +5,27 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val storeRelease = providers.gradleProperty("storeRelease").orNull == "true"
+val uploadStoreFile = providers.gradleProperty("DELTCRM_UPLOAD_STORE_FILE").orNull
+val uploadStorePassword = providers.gradleProperty("DELTCRM_UPLOAD_STORE_PASSWORD").orNull
+val uploadKeyAlias = providers.gradleProperty("DELTCRM_UPLOAD_KEY_ALIAS").orNull
+val uploadKeyPassword = providers.gradleProperty("DELTCRM_UPLOAD_KEY_PASSWORD").orNull
+val releaseSigningConfigured = listOf(
+    uploadStoreFile,
+    uploadStorePassword,
+    uploadKeyAlias,
+    uploadKeyPassword,
+).all { !it.isNullOrBlank() }
+
+if (storeRelease && !releaseSigningConfigured) {
+    throw GradleException(
+        "Store release requires DELTCRM_UPLOAD_STORE_FILE, DELTCRM_UPLOAD_STORE_PASSWORD, " +
+            "DELTCRM_UPLOAD_KEY_ALIAS, and DELTCRM_UPLOAD_KEY_PASSWORD Gradle properties.",
+    )
+}
+
 android {
-    namespace = "com.yourcompany.hrms_attendance"
+    namespace = "com.deltcrm.employee"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,8 +39,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.yourcompany.hrms_attendance"
+        applicationId = "com.deltcrm.employee"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -30,13 +48,30 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(uploadStoreFile!!)
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
+            }
         }
     }
+
+    buildTypes {
+        release {
+            // Local release builds may use the debug key. Store builds must pass
+            // -PstoreRelease=true and the four upload-key properties above.
+            signingConfig = signingConfigs.getByName(
+                if (releaseSigningConfigured) "release" else "debug",
+            )
+        }
+    }
+}
+
+dependencies {
+    implementation("com.google.android.play:integrity:1.6.0")
 }
 
 flutter {

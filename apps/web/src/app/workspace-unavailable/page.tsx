@@ -41,7 +41,7 @@ export default async function WorkspaceUnavailablePage({
         <div className="mb-12">
           <div className="flex items-center justify-center gap-2">
             <span className="material-symbols-outlined text-[32px] text-[#3525cd]">hub</span>
-            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-[#1b1b24]">IndigoHR</h1>
+            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-[#1b1b24]">DeltCRM</h1>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export default async function WorkspaceUnavailablePage({
       </main>
 
       <footer className="relative z-10 mt-auto py-6 text-center">
-        <p className="text-[14px] leading-5 text-[#777587]">© 2024 IndigoHR Solutions Private Limited. Mumbai, India.</p>
+        <p className="text-[14px] leading-5 text-[#777587]">DeltCRM workspace services</p>
       </footer>
     </div>
   );

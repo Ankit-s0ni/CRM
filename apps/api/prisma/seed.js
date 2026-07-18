@@ -38,10 +38,14 @@ const permissions = [
   'workspace.settings.update',
   'workspace.dashboard.admin.read',
   'workspace.modules.read',
+  'mobile.runtime.read',
   'billing.subscription.read',
+  'billing.subscription.manage',
+  'billing.profile.manage',
   'billing.invoices.read',
   'billing.payment-methods.manage',
   'attendance.config.manage',
+  'attendance.config.read',
   'attendance.offices.read',
   'attendance.offices.manage',
   'attendance.policies.read',
@@ -66,6 +70,16 @@ const permissions = [
   'attendance.alert-rules.manage',
   'attendance.security-alerts.read',
   'attendance.security-alerts.manage',
+  'attendance.field.live.read',
+  'attendance.field.routes.read',
+  'attendance.regularizations.self',
+  'attendance.regularizations.manage',
+  'notifications.self',
+  'attendance.reports.generate',
+  'attendance.payroll-lock.manage',
+  'leave.self',
+  'leave.approve',
+  'leave.manage',
 ];
 
 const rolePermissions = {
@@ -83,10 +97,20 @@ const rolePermissions = {
     'attendance.approvals.manage',
     'attendance.devices.read',
     'attendance.security-alerts.read',
+    'attendance.field.live.read',
+    'attendance.field.routes.read',
+    'attendance.regularizations.self',
+    'notifications.self',
+    'leave.self',
+    'leave.approve',
   ],
   EMPLOYEE: [
     'organization.employees.self.read',
     'attendance.records.self.read',
+    'mobile.runtime.read',
+    'attendance.regularizations.self',
+    'notifications.self',
+    'leave.self',
   ],
 };
 
@@ -103,6 +127,11 @@ const platformPermissions = [
   'platform.alerts.read',
   'platform.alerts.manage',
   'platform.health.read',
+  'platform.plans.read',
+  'platform.plans.manage',
+  'platform.billing.read',
+  'platform.billing.manage',
+  'platform.dunning.manage',
 ];
 
 const supportPlatformPermissions = [
@@ -113,7 +142,56 @@ const supportPlatformPermissions = [
   'platform.audit.read',
   'platform.alerts.read',
   'platform.health.read',
+  'platform.plans.read',
+  'platform.billing.read',
 ];
+
+const notificationEvents = [
+  ['attendance.checked_in', 'Check-in recorded', '{{employeeName}} checked in successfully.'],
+  ['attendance.marked_late', 'Late arrival recorded', '{{employeeName}} was marked late.'],
+  ['attendance.missed_checkout', 'Checkout missing', '{{employeeName}} has a missing checkout.'],
+  ['regularization.submitted', 'Correction request submitted', '{{employeeName}} submitted an attendance correction.'],
+  ['regularization.approved', 'Correction approved', 'The attendance correction for {{employeeName}} was approved.'],
+  ['regularization.rejected', 'Correction rejected', 'The attendance correction for {{employeeName}} was rejected.'],
+  ['security.violation', 'Attendance security alert', 'A security verification issue was recorded for {{employeeName}}.'],
+  ['offline.sync_completed', 'Offline attendance synced', 'Offline attendance for {{employeeName}} has been synchronized.'],
+  ['quota.warning', 'Employee quota warning', 'The workspace employee quota is nearly reached.'],
+  ['billing.invoice_due', 'Invoice due', 'A DeltCRM workspace invoice is due.'],
+  ['leave.submitted', 'Leave request submitted', '{{employeeName}} submitted a leave request.'],
+  ['leave.approved', 'Leave approved', 'The leave request for {{employeeName}} was approved.'],
+  ['leave.rejected', 'Leave rejected', 'The leave request for {{employeeName}} was rejected.'],
+];
+
+async function seedNotificationTemplates() {
+  for (const [eventKey, subject, bodyTemplate] of notificationEvents) {
+    const requiredVariables = bodyTemplate.includes('{{employeeName}}')
+      ? ['employeeName']
+      : [];
+    for (const channel of ['IN_APP', 'PUSH', 'EMAIL']) {
+      await prisma.notificationTemplate.upsert({
+        where: {
+          eventKey_channel_locale: { eventKey, channel, locale: 'en' },
+        },
+        update: {
+          subject,
+          bodyTemplate,
+          requiredVariables,
+          version: 1,
+          isActive: true,
+        },
+        create: {
+          eventKey,
+          channel,
+          locale: 'en',
+          subject,
+          bodyTemplate,
+          requiredVariables,
+          version: 1,
+        },
+      });
+    }
+  }
+}
 
 async function seedPlatformIdentity() {
   await prisma.platformPermission.createMany({
@@ -269,18 +347,40 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
 
   await prisma.tenantBillingProfile.upsert({
     where: { tenantId: tenant.id },
-    update: { billingEmail: seed.email },
+    update: {
+      billingEmail: seed.email,
+      gstin: '27ABCDE1234F1Z5',
+      pan: 'ABCDE1234F',
+      currency: 'INR',
+      address: {
+        line1: 'DeltCRM Acceptance Office',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        postalCode: '400001',
+        countryCode: 'IN',
+      },
+    },
     create: {
       tenantId: tenant.id,
       legalName: seed.companyName,
       billingEmail: seed.email,
+      gstin: '27ABCDE1234F1Z5',
+      pan: 'ABCDE1234F',
+      currency: 'INR',
+      address: {
+        line1: 'DeltCRM Acceptance Office',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        postalCode: '400001',
+        countryCode: 'IN',
+      },
     },
   });
 
   const currentSubscription = await prisma.tenantSubscription.findFirst({
     where: {
       tenantId: tenant.id,
-      status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE'] },
+      status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] },
     },
   });
   const currentPeriodStart = new Date();
@@ -371,12 +471,34 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
       activatedBy: user.id,
     },
   });
+  const operationalModules = await prisma.module.findMany({
+    where: { key: { in: ['REGULARIZATION', 'LEAVE', 'PAYROLL'] } },
+  });
+  for (const operationalModule of operationalModules) {
+    await prisma.tenantModule.upsert({
+      where: {
+        tenantId_moduleId: {
+          tenantId: tenant.id,
+          moduleId: operationalModule.id,
+        },
+      },
+      update: { isActive: true },
+      create: {
+        tenantId: tenant.id,
+        moduleId: operationalModule.id,
+        isActive: true,
+        activatedAt: new Date(),
+        activatedBy: user.id,
+      },
+    });
+  }
 
   if (seed.subdomain === 'acme') {
     await seedSprint3AcceptanceFixture(
       tenant.id,
       defaultShift.id,
       roleIdByName.get('EMPLOYEE'),
+      user.id,
     );
   }
 
@@ -387,6 +509,7 @@ async function seedSprint3AcceptanceFixture(
   tenantId,
   defaultShiftId,
   employeeRoleId,
+  adminUserId,
 ) {
   await prisma.tenantSettings.update({
     where: { tenantId },
@@ -505,6 +628,14 @@ async function seedSprint3AcceptanceFixture(
     where: { id: employees[0].id },
     data: { userId: mobileEmployee.id },
   });
+  await prisma.employee.update({
+    where: { id: employees[24].id },
+    data: { userId: adminUserId },
+  });
+  await prisma.employee.updateMany({
+    where: { id: { in: employees.slice(0, 12).map(({ id }) => id) } },
+    data: { managerId: employees[24].id },
+  });
 
   const offices = [];
   for (const office of [
@@ -604,6 +735,58 @@ async function seedSprint3AcceptanceFixture(
     employeeId: employees[0].id,
   });
 
+  const annualLeave = await prisma.leavePolicy.upsert({
+    where: { tenantId_name: { tenantId, name: 'Annual Leave' } },
+    update: {
+      leaveType: 'ANNUAL',
+      accrualLogic: { annualEntitlement: 24, carryForwardLimit: 5 },
+      isActive: true,
+    },
+    create: {
+      tenantId,
+      name: 'Annual Leave',
+      leaveType: 'ANNUAL',
+      accrualLogic: { annualEntitlement: 24, carryForwardLimit: 5 },
+    },
+  });
+  for (const employee of employees) {
+    const balance = await prisma.leaveBalance.upsert({
+      where: {
+        tenantId_employeeId_policyId: {
+          tenantId,
+          employeeId: employee.id,
+          policyId: annualLeave.id,
+        },
+      },
+      update: {},
+      create: {
+        tenantId,
+        employeeId: employee.id,
+        policyId: annualLeave.id,
+        remainingDays: 24,
+      },
+    });
+    await prisma.leaveBalanceLedger.upsert({
+      where: {
+        tenantId_idempotencyKey: {
+          tenantId,
+          idempotencyKey: `policy:${annualLeave.id}:employee:${employee.id}:initial`,
+        },
+      },
+      update: {},
+      create: {
+        tenantId,
+        balanceId: balance.id,
+        entryType: 'CREDIT',
+        days: 24,
+        balanceAfter: balance.remainingDays,
+        reason: 'Initial policy entitlement',
+        actorUserId: adminUserId,
+        idempotencyKey: `policy:${annualLeave.id}:employee:${employee.id}:initial`,
+      },
+    });
+  }
+
   await prisma.shift.deleteMany({
     where: {
       tenantId,
@@ -677,17 +860,73 @@ async function main() {
     },
   });
   for (const module of [
+    { key: 'REGULARIZATION', name: 'Attendance Regularization', icon: 'file-pen-line' },
     { key: 'LEAVE', name: 'Leave Management', icon: 'calendar-days' },
     { key: 'PAYROLL', name: 'Payroll', icon: 'wallet-cards' },
   ]) {
     await prisma.module.upsert({
       where: { key: module.key },
-      update: { ...module, availability: 'COMING_SOON' },
+      update: { ...module, availability: 'AVAILABLE' },
       create: {
         ...module,
-        description: `${module.name} module is planned for a later sprint`,
-        availability: 'COMING_SOON',
+        description: `${module.name} operations for DeltCRM workspaces`,
+        availability: 'AVAILABLE',
       },
+    });
+  }
+
+  const modules = await prisma.module.findMany({
+    where: {
+      key: {
+        in: ['ATTENDANCE', 'FIELD_TRACKING', 'REGULARIZATION', 'LEAVE', 'PAYROLL'],
+      },
+    },
+  });
+  const moduleIdByKey = new Map(modules.map((module) => [module.key, module.id]));
+  const seededPlans = [
+    {
+      name: 'Growth Monthly',
+      description: 'Attendance, regularization, and leave for growing teams',
+      pricePerUser: '299.00',
+      maxEmployees: 500,
+      billingPeriod: 'MONTHLY',
+      moduleKeys: ['ATTENDANCE', 'REGULARIZATION', 'LEAVE'],
+    },
+    {
+      name: 'Enterprise Monthly',
+      description: 'Complete workforce operations and field tracking bundle',
+      pricePerUser: '499.00',
+      maxEmployees: 5000,
+      billingPeriod: 'MONTHLY',
+      moduleKeys: ['ATTENDANCE', 'FIELD_TRACKING', 'REGULARIZATION', 'LEAVE', 'PAYROLL'],
+    },
+  ];
+  await prisma.subscriptionPlan.update({
+    where: { id: plan.id },
+    data: {
+      description: 'No-cost product evaluation with core attendance',
+      isActive: true,
+    },
+  });
+  await prisma.subscriptionPlanModule.createMany({
+    data: [{ planId: plan.id, moduleId: attendanceModule.id }],
+    skipDuplicates: true,
+  });
+  for (const planSeed of seededPlans) {
+    const { moduleKeys, ...data } = planSeed;
+    const seededPlan = await prisma.subscriptionPlan.upsert({
+      where: { name: data.name },
+      update: { ...data, currency: 'INR', isActive: true },
+      create: { ...data, currency: 'INR', isActive: true },
+    });
+    await prisma.subscriptionPlanModule.deleteMany({
+      where: { planId: seededPlan.id },
+    });
+    await prisma.subscriptionPlanModule.createMany({
+      data: moduleKeys.map((key) => ({
+        planId: seededPlan.id,
+        moduleId: moduleIdByKey.get(key),
+      })),
     });
   }
 
@@ -711,6 +950,41 @@ async function main() {
     );
   }
 
+  for (const tenantSeed of tenantSeeds) {
+    const tenant = await prisma.tenant.findUnique({
+      where: { subdomain: tenantSeed.subdomain },
+    });
+    if (!tenant) continue;
+    const activeEmployees = await prisma.employee.count({
+      where: { tenantId: tenant.id, status: 'ACTIVE' },
+    });
+    await prisma.tenantSubscription.updateMany({
+      where: { tenantId: tenant.id, status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] } },
+      data: { seatCount: activeEmployees },
+    });
+    await prisma.billingPaymentMethod.upsert({
+      where: {
+        gateway_providerMethodRef: {
+          gateway: 'RAZORPAY',
+          providerMethodRef: `seed_${tenantSeed.subdomain}_razorpay_method`,
+        },
+      },
+      update: { status: 'ACTIVE', isDefault: true },
+      create: {
+        tenantId: tenant.id,
+        gateway: 'RAZORPAY',
+        providerMethodRef: `seed_${tenantSeed.subdomain}_razorpay_method`,
+        methodType: 'CARD',
+        displayName: 'Seed Visa',
+        lastFour: '4242',
+        expiryMonth: 12,
+        expiryYear: 2030,
+        isDefault: true,
+      },
+    });
+  }
+
+  await seedNotificationTemplates();
   await seedPlatformIdentity();
 }
 

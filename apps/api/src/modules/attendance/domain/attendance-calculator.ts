@@ -21,6 +21,7 @@ export type AttendanceCalculationInput = {
   shift?: AttendanceShiftSnapshot | null;
   events: readonly AttendanceEventValue[];
   exceptionType?: AttendanceExceptionValue | null;
+  leaveFraction?: number | null;
   holiday?: boolean;
   weeklyOff?: boolean;
   employeeActive?: boolean;
@@ -130,7 +131,7 @@ export function pairEvents(
   let firstCheckin: Date | null = null;
   let lastCheckout: Date | null = null;
 
-  for (const event of normalizeEvents(events)) {
+  for (const event of effectiveEvents(events)) {
     if (isCheckin(event.eventType)) {
       if (workStart) {
         anomalies.push('DUPLICATE_CHECKIN');
@@ -194,6 +195,35 @@ export function pairEvents(
   };
 }
 
+export function effectiveEvents(
+  events: readonly AttendanceEventValue[],
+): AttendanceEventValue[] {
+  const regularizedCheckin = latestRegularized(events, 'REGULARIZED_CHECKIN');
+  const regularizedCheckout = latestRegularized(events, 'REGULARIZED_CHECKOUT');
+  return normalizeEvents([
+    ...events.filter((event) => {
+      if (regularizedCheckin && isCheckin(event.eventType)) return false;
+      if (regularizedCheckout && isCheckout(event.eventType)) return false;
+      return true;
+    }),
+    ...(regularizedCheckin ? [regularizedCheckin] : []),
+    ...(regularizedCheckout ? [regularizedCheckout] : []),
+  ]);
+}
+
+function latestRegularized(
+  events: readonly AttendanceEventValue[],
+  eventType: 'REGULARIZED_CHECKIN' | 'REGULARIZED_CHECKOUT',
+) {
+  return events
+    .filter((event) => event.eventType === eventType)
+    .sort(
+      (left, right) =>
+        (right.createdAt?.getTime() ?? 0) - (left.createdAt?.getTime() ?? 0) ||
+        right.id.localeCompare(left.id),
+    )[0];
+}
+
 function resolveStatus(
   input: AttendanceCalculationInput,
   pairing: Pairing,
@@ -202,7 +232,9 @@ function resolveStatus(
 ): AttendanceStatusValue {
   if (input.employeeActive === false) return 'ABSENT';
   if (!pairing.firstCheckin) {
-    if (input.exceptionType === 'LEAVE') return 'ON_LEAVE';
+    if (input.exceptionType === 'LEAVE') {
+      return input.leaveFraction === 0.5 ? 'HALF_DAY' : 'ON_LEAVE';
+    }
     if (input.exceptionType === 'ON_DUTY' || input.exceptionType === 'WFH') {
       return 'ON_DUTY';
     }

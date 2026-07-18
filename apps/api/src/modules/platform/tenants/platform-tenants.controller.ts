@@ -29,17 +29,23 @@ import { RequirePlatformPermissions } from '../platform-auth/require-platform-pe
 import {
   CreatePlatformTenantDto,
   ListPlatformTenantsQueryDto,
+  RetryTenantDeletionDto,
+  ScheduleTenantDeletionDto,
   TenantLifecycleDto,
   UpdatePlatformTenantDto,
 } from './dto/platform-tenant.dto';
 import { PlatformTenantsService } from './platform-tenants.service';
+import { TenantDeletionService } from './tenant-deletion.service';
 
 @ApiTags('Platform Tenants')
 @ApiBearerAuth()
 @UseGuards(PlatformJwtGuard, PlatformPermissionGuard)
 @Controller('platform/tenants')
 export class PlatformTenantsController {
-  constructor(private readonly tenants: PlatformTenantsService) {}
+  constructor(
+    private readonly tenants: PlatformTenantsService,
+    private readonly deletion: TenantDeletionService,
+  ) {}
 
   @Get()
   @RequirePlatformPermissions('platform.tenants.read')
@@ -119,6 +125,46 @@ export class PlatformTenantsController {
     @Req() request: Request,
   ) {
     return this.tenants.reactivate(id, dto, actor, this.metadata(request));
+  }
+
+  @Get(':id/deletion')
+  @RequirePlatformPermissions('platform.tenants.lifecycle')
+  @ApiOperation({ summary: 'Read the latest tenant deletion job and evidence' })
+  deletionStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.deletion.latest(id);
+  }
+
+  @Post(':id/deletion')
+  @RequirePlatformPermissions('platform.tenants.lifecycle')
+  @ApiOperation({
+    summary: 'Schedule tenant churn and privacy-safe data deletion',
+  })
+  scheduleDeletion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ScheduleTenantDeletionDto,
+    @CurrentUser() actor: AuthenticatedPlatformUser,
+    @Req() request: Request,
+  ) {
+    return this.deletion.schedule(id, dto, actor, this.metadata(request));
+  }
+
+  @Post(':id/deletion/:jobId/retry')
+  @RequirePlatformPermissions('platform.tenants.lifecycle')
+  @ApiOperation({ summary: 'Retry a failed tenant deletion job' })
+  retryDeletion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() dto: RetryTenantDeletionDto,
+    @CurrentUser() actor: AuthenticatedPlatformUser,
+    @Req() request: Request,
+  ) {
+    return this.deletion.retry(
+      id,
+      jobId,
+      dto.reason,
+      actor,
+      this.metadata(request),
+    );
   }
 
   private metadata(request: Request) {

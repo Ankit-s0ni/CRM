@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "",
+    "gitSha": "",
+    "environment": "",
+    "decisionOwner": "",
+    "approvedAt": ""
+  },
+  "gates": {
+    "builds": {
+      "status": "PENDING",
+      "owner": "Engineering release owner",
+      "summary": "Signed CI build artifacts and checksums must be attached for the frozen release SHA.",
+      "completedAt": null,
+      "evidence": []
+    },
+    "migrations": {
+      "status": "PENDING",
+      "owner": "Database owner",
+      "summary": "Production-like migration deploy log and rollback compatibility decision are required.",
+      "completedAt": null,
+      "evidence": []
+    },
+    "billingJourney": {
+      "status": "PASS",
+      "owner": "Billing engineering",
+      "summary": "Connected PostgreSQL signup-to-paid-GST-invoice and dunning recovery acceptance passed locally.",
+      "completedAt": "2026-07-18T00:00:00+05:30",
+      "evidence": [
+        "apps/api/test/sprint8-billing-ga.e2e-spec.ts",
+        "docs/SPRINT-8-LOCAL-DRILL-REPORT.md"
+      ]
+    },
+    "securityScans": {
+      "status": "PENDING",
+      "owner": "Security owner",
+      "summary": "Local secret, boundary, dependency and SBOM checks pass; signed CI SAST evidence is still required.",
+      "completedAt": null,
+      "evidence": [
+        "artifacts/sbom/deltcrm.cdx.json",
+        "artifacts/sbom/deltcrm.cdx.json.sha256"
+      ]
+    },
+    "externalPenetrationTest": {
+      "status": "PENDING",
+      "owner": "Security owner",
+      "summary": "Independent report and closure evidence for every critical/high finding are required.",
+      "completedAt": null,
+      "evidence": []
+    },
+    "managedBackupPitr": {
+      "status": "PENDING",
+      "owner": "Database owner",
+      "summary": "Managed snapshot restore and timestamp PITR must record measured RPO/RTO.",
+      "completedAt": null,
+      "evidence": ["docs/SPRINT-8-LOCAL-DRILL-REPORT.md"]
+    },
+    "retentionPartitions": {
+      "status": "PASS",
+      "owner": "Platform engineering",
+      "summary": "Retention dry run and partition boundary probes passed locally.",
+      "completedAt": "2026-07-18T00:00:00+05:30",
+      "evidence": ["docs/SPRINT-8-LOCAL-DRILL-REPORT.md"]
+    },
+    "productionLikeLoad": {
+      "status": "PENDING",
+      "owner": "Performance owner",
+      "summary": "All five k6 profiles must pass target rates and durations in an isolated production-like environment.",
+      "completedAt": null,
+      "evidence": ["tests/load/sprint8/README.md"]
+    },
+    "providerOutageDunning": {
+      "status": "PASS",
+      "owner": "Billing engineering",
+      "summary": "Provider transport failure, durable dunning, suspension, audit reconciliation and recovery passed locally.",
+      "completedAt": "2026-07-18T00:00:00+05:30",
+      "evidence": [
+        "apps/api/test/sprint8-billing-ga.e2e-spec.ts",
+        "docs/SPRINT-8-LOCAL-DRILL-REPORT.md"
+      ]
+    },
+    "monitoringAlertReceipt": {
+      "status": "PENDING",
+      "owner": "On-call owner",
+      "summary": "A production-like Sentry issue, OTel trace and on-call alert receipt must be captured.",
+      "completedAt": null,
+      "evidence": ["docs/SPRINT-8-OBSERVABILITY-GATE.md"]
+    },
+    "privacyStoreApproval": {
+      "status": "PENDING",
+      "owner": "Product/legal owner",
+      "summary": "Privacy/DPA text, background-location declaration and Android/iOS store reviews require approval.",
+      "completedAt": null,
+      "evidence": [
+        "docs/legal/PRIVACY-NOTICE-DRAFT.md",
+        "docs/legal/DATA-PROCESSING-ADDENDUM-DRAFT.md",
+        "docs/legal/SUBPROCESSOR-REGISTER.md",
+        "docs/legal/BACKGROUND-LOCATION-AND-BIOMETRICS-DISCLOSURE.md"
+      ]
+    },
+    "deploymentRollback": {
+      "status": "PENDING",
+      "owner": "Engineering release owner",
+      "summary": "Production-like progressive deploy and schema-compatible rollback rehearsal must be recorded.",
+      "completedAt": null,
+      "evidence": ["docs/SPRINT-8-RELEASE-AND-ROLLBACK.md"]
+    }
+  }
+}

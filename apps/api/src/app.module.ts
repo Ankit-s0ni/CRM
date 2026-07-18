@@ -36,6 +36,16 @@ import { DeviceTrustModule } from './modules/device-trust/device-trust.module';
 import { BiometricsModule } from './modules/biometrics/biometrics.module';
 import { AttendanceVerificationModule } from './modules/attendance-verification/attendance-verification.module';
 import { SecurityAlertsModule } from './modules/security-alerts/security-alerts.module';
+import { FieldTrackingModule } from './modules/field-tracking/field-tracking.module';
+import { AttendanceSyncModule } from './modules/attendance-sync/attendance-sync.module';
+import { RuntimeConfigModule } from './modules/runtime-config/runtime-config.module';
+import { RegularizationModule } from './modules/regularization/regularization.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReportingModule } from './modules/reporting/reporting.module';
+import { PayrollLockModule } from './modules/payroll-lock/payroll-lock.module';
+import { LeaveModule } from './modules/leave/leave.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { PlatformBillingModule } from './modules/platform/billing/platform-billing.module';
 
 @Module({
   imports: [
@@ -89,6 +99,16 @@ import { SecurityAlertsModule } from './modules/security-alerts/security-alerts.
     BiometricsModule,
     AttendanceVerificationModule,
     SecurityAlertsModule,
+    FieldTrackingModule,
+    AttendanceSyncModule,
+    RuntimeConfigModule,
+    RegularizationModule,
+    NotificationsModule,
+    ReportingModule,
+    PayrollLockModule,
+    LeaveModule,
+    BillingModule,
+    PlatformBillingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -109,6 +129,7 @@ export class AppModule implements NestModule {
         { path: 'readyz', method: RequestMethod.GET },
         { path: 'api/docs', method: RequestMethod.ALL },
         { path: 'platform/*path', method: RequestMethod.ALL },
+        { path: 'billing/webhooks/*path', method: RequestMethod.ALL },
       )
       .forRoutes('*');
   }

@@ -26,6 +26,16 @@ const shift = {
 };
 
 describe('calculateAttendance golden matrix', () => {
+  it('marks an attributed half-day leave without discarding the exception evidence', () => {
+    const result = calculateAttendance({
+      ...input([]),
+      exceptionType: 'LEAVE',
+      leaveFraction: 0.5,
+      finalizing: true,
+    });
+    expect(result.attendanceStatus).toBe('HALF_DAY');
+  });
+
   const durationCases = Array.from({ length: 20 }, (_, index) => {
     const minutes = 60 + index * 25;
     return [minutes, minutes] as const;
@@ -187,6 +197,24 @@ describe('calculateAttendance golden matrix', () => {
     );
     expect(result.totalWorkMinutes).toBe(480);
     expect(result.anomalies).toEqual([]);
+  });
+
+  it('uses append-only regularized events as the effective check-in and checkout', () => {
+    const result = calculateAttendance(
+      input([
+        event('CHECKIN', at(10, 0), 'original-in'),
+        event('CHECKOUT', at(16, 0), 'original-out'),
+        event('REGULARIZED_CHECKIN', at(9, 0), 'regularized-in'),
+        event('REGULARIZED_CHECKOUT', at(18, 0), 'regularized-out'),
+      ]),
+    );
+
+    expect(result).toMatchObject({
+      firstCheckin: at(9, 0),
+      lastCheckout: at(18, 0),
+      totalWorkMinutes: 540,
+      anomalies: [],
+    });
   });
 
   it('flags unpaired legacy streams without inventing finalized work', () => {

@@ -17,6 +17,12 @@ export class UpdateTenantSettingsDto {
   @MaxLength(100)
   timezone?: string;
 
+  @ApiPropertyOptional({ example: 'en-AE' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(35)
+  locale?: string;
+
   @ApiPropertyOptional({
     example: [{ weekday: 'SAT', occurrences: [2, 4] }, { weekday: 'SUN' }],
   })
@@ -46,6 +52,10 @@ export class UpdateTenantSettingsDto {
   @Min(1)
   @Max(120)
   fieldTrackingIntervalMin?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  fieldTrackingEnabled?: boolean;
 
   @IsOptional()
   @IsBoolean()

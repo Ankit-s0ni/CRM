@@ -13,39 +13,42 @@ class AttendanceApiRepository implements AttendanceRepository {
   @override
   Future<PunchResult> punch({
     required String type,
-    required String filePath,
+    String? filePath,
     required Map<String, String> device,
-    required double latitude,
-    required double longitude,
-    required int accuracyMeters,
-    required bool mockLocation,
+    double? latitude,
+    double? longitude,
+    int? accuracyMeters,
+    bool? mockLocation,
     required String attestationToken,
   }) async {
-    late final List<int> bytes;
     try {
-      bytes = await _imageProcessor.process(filePath);
-    } on EvidenceImageException {
-      throw const PunchFailure(
-        code: 'PUNCH_EVIDENCE_INVALID',
-        message: 'Capture a clear JPEG photo under 5 MB and try again.',
-      );
-    }
-    try {
-      final presign = await _api.post<Map<String, dynamic>>(
-        ApiRoutes.punchEvidencePresign,
-        data: {
-          'filename': 'attendance.jpg',
-          'contentType': 'image/jpeg',
-          'fileSize': bytes.length,
-        },
-      );
-      final upload = presign.data?['data'] as Map<String, dynamic>?;
-      final objectKey = upload?['objectKey'] as String?;
-      final uploadUrl = upload?['uploadUrl'] as String?;
-      if (objectKey == null || uploadUrl == null) {
-        throw const FormatException('Invalid evidence upload contract');
+      String? objectKey;
+      if (filePath != null) {
+        late final List<int> bytes;
+        try {
+          bytes = await _imageProcessor.process(filePath);
+        } on EvidenceImageException {
+          throw const PunchFailure(
+            code: 'PUNCH_EVIDENCE_INVALID',
+            message: 'Capture a clear JPEG photo under 5 MB and try again.',
+          );
+        }
+        final presign = await _api.post<Map<String, dynamic>>(
+          ApiRoutes.punchEvidencePresign,
+          data: {
+            'filename': 'attendance.jpg',
+            'contentType': 'image/jpeg',
+            'fileSize': bytes.length,
+          },
+        );
+        final upload = presign.data?['data'] as Map<String, dynamic>?;
+        objectKey = upload?['objectKey'] as String?;
+        final uploadUrl = upload?['uploadUrl'] as String?;
+        if (objectKey == null || uploadUrl == null) {
+          throw const FormatException('Invalid evidence upload contract');
+        }
+        await _api.putBytes(uploadUrl, bytes, 'image/jpeg');
       }
-      await _api.putBytes(uploadUrl, bytes, 'image/jpeg');
       final response = await _api.post<Map<String, dynamic>>(
         ApiRoutes.punches,
         data: {
@@ -54,11 +57,11 @@ class AttendanceApiRepository implements AttendanceRepository {
           'attestationToken': attestationToken,
           'clientTime': DateTime.now().toUtc().toIso8601String(),
           'requestId': _requestId(),
-          'latitude': latitude,
-          'longitude': longitude,
-          'accuracyMeters': accuracyMeters,
-          'mockLocation': mockLocation,
-          'selfieKey': objectKey,
+          'latitude': ?latitude,
+          'longitude': ?longitude,
+          'accuracyMeters': ?accuracyMeters,
+          'mockLocation': ?mockLocation,
+          'selfieKey': ?objectKey,
           'appVersion': device['appVersion'],
           'osVersion': device['osVersion'],
         },

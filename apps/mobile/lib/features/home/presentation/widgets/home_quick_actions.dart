@@ -9,11 +9,13 @@ class HomeQuickActions extends StatelessWidget {
     required this.onHistory,
     required this.onRequests,
     required this.onProfile,
+    required this.showRequests,
   });
 
   final VoidCallback onHistory;
   final VoidCallback onRequests;
   final VoidCallback onProfile;
+  final bool showRequests;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -25,14 +27,16 @@ class HomeQuickActions extends StatelessWidget {
           onTap: onHistory,
         ),
       ),
-      const SizedBox(width: 10),
-      Expanded(
-        child: _Action(
-          icon: Icons.article_outlined,
-          label: context.l10n.requests,
-          onTap: onRequests,
+      if (showRequests) ...[
+        const SizedBox(width: 10),
+        Expanded(
+          child: _Action(
+            icon: Icons.article_outlined,
+            label: context.l10n.requests,
+            onTap: onRequests,
+          ),
         ),
-      ),
+      ],
       const SizedBox(width: 10),
       Expanded(
         child: _Action(

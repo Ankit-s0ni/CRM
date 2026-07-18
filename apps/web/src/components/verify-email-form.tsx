@@ -20,13 +20,20 @@ export function VerifyEmailForm() {
   const workspace = searchParams.get("workspace") ?? pendingAuth.workspace ?? "";
   const tenantId = searchParams.get("tenantId") ?? pendingAuth.tenantId ?? "";
   const initialCode = sanitizeCode(searchParams.get("token") ?? "");
+  const initialDelivery = searchParams.get("delivery");
   const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [resendMessage, setResendMessage] = useState("");
+  const [resendMessage, setResendMessage] = useState(
+    initialDelivery === "FAILED"
+      ? "Email delivery is temporarily unavailable. Please try resending now."
+      : "",
+  );
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(42);
+  const [secondsLeft, setSecondsLeft] = useState(
+    initialDelivery === "FAILED" ? 0 : 42,
+  );
 
   const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
   const digits = useMemo(() => {
@@ -113,8 +120,13 @@ export function VerifyEmailForm() {
         setCode(debugToken);
       }
 
-      setResendMessage("A fresh verification code is ready.");
-      setSecondsLeft(42);
+      if (response.data?.emailDelivery === "FAILED") {
+        setResendMessage("Email delivery is still unavailable. Please try again shortly.");
+        setSecondsLeft(0);
+      } else {
+        setResendMessage("A fresh verification code has been sent.");
+        setSecondsLeft(42);
+      }
     } catch (error: unknown) {
       setError(getApiErrorMessage(error, "Unable to resend the code right now."));
     } finally {
@@ -198,13 +210,13 @@ export function VerifyEmailForm() {
           >
             {loading ? (
               <>
-                <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                <span aria-hidden="true" className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
                 Verifying...
               </>
             ) : (
               <>
                 Verify
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </>
             )}
           </button>

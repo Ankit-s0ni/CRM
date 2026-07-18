@@ -2,7 +2,7 @@
 
 ## Field Tracking, Offline Sync and Live Monitoring
 
-**Status:** Not started
+**Status:** In progress
 **Depends on:** Sprint 5 trusted mobile identity and Sprint 4 aggregate
 **Primary references:** roadmap Phase 4; feature sections 3.3 and 4.3
 **Sprint exit:** A field employee can work through intermittent connectivity with exactly-once punch replay; HR sees live/stale location and deterministic daily route summaries with tracking gaps.
@@ -26,7 +26,7 @@ This work package is a release prerequisite, not optional cleanup. Sprint 5 prov
 - [ ] Android client obtains nonce-bound Play Integrity evidence and the API verifies it server-side with replay protection
 - [ ] iOS client obtains App Attest/DeviceCheck evidence and the API verifies it server-side with replay protection
 - [ ] Selected face/liveness provider processes private evidence server-side; clients cannot submit their own verdict or score
-- [ ] Map provider renders H2/H3 real tiles, geofences and routes with environment/domain/application-restricted credentials
+- [ ] OpenStreetMap provider renders H2/H3/M16 real tiles, geofences and routes with required attribution and a production-compliant tile-usage policy
 - [ ] Production object storage uses encryption, private networking, lifecycle controls and retryable deletion with dead-letter visibility
 - [ ] Reverse-proxy allowlists are configured per environment; office exact-IP, CIDR and spoofed-forwarded-header cases pass deployment tests
 - [ ] Biometric DPA, consent text, regional transfer, deletion SLA and incident process receive legal/security approval
@@ -64,72 +64,72 @@ Sync response classifies each item as accepted, duplicate, retryable rejection o
 
 ## 4. Field Session Rules
 
-- [ ] Only active field-enabled employees/devices can start sessions
-- [ ] One active session per employee/device; start is idempotent
-- [ ] Stop records end reason: checkout, manual, battery, stale or administrator
-- [ ] Checkout auto-stops the active session through a domain-event handler
-- [ ] Stale-session job closes abandoned sessions deterministically
-- [ ] Ping validation covers coordinates, accuracy, speed, battery, mock flag, captured time and monotonic ordering
-- [ ] Per-tenant/device rate limits return coded retry guidance
+- [X] Only active field-enabled employees/devices can start sessions
+- [X] One active session per employee/device; start is idempotent
+- [X] Stop records end reason: checkout, manual, battery, stale or administrator
+- [X] Checkout auto-stops the active session through a domain-event handler
+- [X] Stale-session job closes abandoned sessions deterministically
+- [X] Ping validation covers coordinates, accuracy, speed, battery, mock flag, captured time and monotonic ordering
+- [X] Per-tenant/device rate limits return coded retry guidance
 
 ## 5. Offline Sync Rules
 
-- [ ] `clientEventUuid` is globally unique for the tenant event stream
-- [ ] Duplicate delivery returns original outcome without appending another event
-- [ ] Validate device binding, integrity evidence age and maximum offline window
-- [ ] Compare client/server clocks and mark `timeSuspect`; severe tamper rejects and alerts
-- [ ] Replay calls the same verification and attendance aggregate paths as online punches
-- [ ] Events are processed in client order under an attendance-day lock
-- [ ] Partial batches preserve per-item outcomes and safe retry semantics
+- [X] `clientEventUuid` is globally unique for the tenant event stream
+- [X] Duplicate delivery returns original outcome without appending another event
+- [X] Validate device binding, integrity evidence age and maximum offline window
+- [X] Compare client/server clocks and mark `timeSuspect`; severe tamper rejects and alerts
+- [X] Replay calls the same verification and attendance aggregate paths as online punches
+- [X] Events are processed in client order under an attendance-day lock
+- [X] Partial batches preserve per-item outcomes and safe retry semantics
 
 ## 6. Ingestion and Route Processing
 
-- [ ] API accepts bounded compressed batches and enqueues tenant-bearing jobs
-- [ ] Worker bulk inserts partition-ready pings and updates Redis presence
-- [ ] Route summarizer computes Haversine distance, stops/dwell and tracking gaps
-- [ ] Simplified path is read-optimized while raw pings remain authoritative
-- [ ] Retention job prunes pings after 90 days without deleting summaries/audit evidence
-- [ ] SSE publishes presence/location deltas with reconnect cursor and authorization
+- [X] API accepts bounded compressed batches and enqueues tenant-bearing jobs
+- [X] Worker bulk inserts partition-ready pings and updates Redis presence
+- [X] Route summarizer computes Haversine distance, stops/dwell and tracking gaps
+- [X] Simplified path is read-optimized while raw pings remain authoritative
+- [X] Retention job prunes pings after 90 days without deleting summaries/audit evidence
+- [X] SSE publishes presence/location deltas with reconnect cursor and authorization
 
 ## 7. Client and Web
 
-- [ ] Flutter background tracking uses workmanager and battery-aware intervals
-- [ ] Isar stores pending punches and ping batches with retry/backoff metadata
-- [ ] M16 shows tracking session, permission and battery state
-- [ ] M17 shows pending/failed/synced items and safe manual retry
-- [ ] H2 renders live/stale/offline employees and geofence overlays
-- [ ] H3 renders route, stops, gaps, punch markers and playback controls
-- [ ] Map provider is abstracted and no unrestricted provider key ships to clients
+- [X] Flutter background tracking uses workmanager and battery-aware intervals
+- [X] Isar stores pending punches and ping batches with retry/backoff metadata
+- [X] M16 shows tracking session, permission and battery state
+- [X] M17 shows pending/failed/synced items and safe manual retry
+- [X] H2 renders live/stale/offline employees and geofence overlays
+- [X] H3 renders route, stops, gaps, punch markers and playback controls
+- [X] Map provider is abstracted and no unrestricted provider key ships to clients
 
 ## 8. Ordered Work Packages
 
 - [ ] 6.0 Production trust providers, privacy and physical-device certification
-- [ ] 6.1 Schema constraints, partitions, RLS and retention policy
-- [ ] 6.2 Field session and ping ingestion APIs
-- [ ] 6.3 Worker, Redis presence and authenticated SSE
-- [ ] 6.4 Offline queue/sync idempotency and tamper handling
-- [ ] 6.5 Route summarizer and H2/H3
-- [ ] 6.6 M16/M17 and resilience hardening
+- [X] 6.1 Schema constraints, partitions, RLS and retention policy
+- [X] 6.2 Field session and ping ingestion APIs
+- [X] 6.3 Worker, Redis presence and authenticated SSE
+- [X] 6.4 Offline queue/sync idempotency and tamper handling
+- [X] 6.5 Route summarizer and H2/H3
+- [X] 6.6 M16/M17 and resilience hardening
 
 ## 9. Test Plan
 
-- [ ] Duplicate replay creates one attendance event
-- [ ] Offline ordered in/break/out events recompute correctly
-- [ ] Expired window and clock tamper return permanent coded outcomes
-- [ ] Worker retry does not duplicate pings or route summaries
-- [ ] Session auto-stop and stale close are idempotent
-- [ ] Tenant/device rate limits and oversized batches are rejected safely
-- [ ] SSE cannot subscribe across tenants and resumes after disconnect
-- [ ] Route fixtures validate distance, stops and gap rendering
-- [ ] k6 targets for `/field-pings/batch`, `/attendance/sync` and SSE fan-out
+- [X] Duplicate replay creates one attendance event
+- [X] Offline ordered in/break/out events recompute correctly
+- [X] Expired window and clock tamper return permanent coded outcomes
+- [X] Worker retry does not duplicate pings or route summaries
+- [X] Session auto-stop and stale close are idempotent
+- [X] Tenant/device rate limits and oversized batches are rejected safely
+- [X] SSE cannot subscribe across tenants and resumes after disconnect
+- [X] Route fixtures validate distance, stops and gap rendering
+- [X] k6 targets for `/field-pings/batch`, `/attendance/sync` and SSE fan-out
 - [ ] Production provider contract, outage, replay, spoofing, deletion-recovery and physical-device certification matrix passes
 
 ## 10. Definition of Done
 
-- [ ] Offline punch replay is exactly-once logically
-- [ ] Field evidence remains tenant/device scoped and retention compliant
-- [ ] Live board degrades safely when Redis/SSE is unavailable
-- [ ] H2/H3 and M16/M17 run against real APIs
+- [X] Offline punch replay is exactly-once logically
+- [X] Field evidence remains tenant/device scoped and retention compliant
+- [X] Live board degrades safely when Redis/SSE is unavailable
+- [X] H2/H3 and M16/M17 run against real APIs
 - [ ] Load, battery, retry, RLS, security and reconciliation gates pass
 - [ ] Sprint 5 production deferrals in work package 6.0 are implemented, independently evidenced and no longer use development fakes
 
@@ -137,13 +137,13 @@ Sync response classifies each item as accepted, duplicate, retryable rejection o
 
 | Work package                         | Status      | Evidence                                                     |
 | ------------------------------------ | ----------- | ------------------------------------------------------------ |
-| 6.0 Production trust certification   | Not started | Explicit carry-over from Sprint 5; blocks production release |
-| 6.1 Schema, partitions and retention | Not started |                                                              |
-| 6.2 Sessions and ping ingestion      | Not started |                                                              |
-| 6.3 Worker, presence and SSE         | Not started |                                                              |
-| 6.4 Offline sync and tamper handling | Not started |                                                              |
-| 6.5 Route summaries and web maps     | Not started |                                                              |
-| 6.6 Mobile resilience/hardening      | Not started |                                                              |
+| 6.0 Production trust certification   | In progress | Native Android/iOS bridges compile; one-time challenge/replay controls, Google map adapter, durable evidence deletion and provider record implemented. Production startup rejects placeholder secrets, insecure/default private evidence storage and enabled integrity enforcement without a real gateway. Face-match policies are locked behind an explicit production biometric flag; enabled use requires server-side HTTPS liveness and face-match gateways. Vendor gateway, Gulf face/liveness selection, deployment credentials, legal approval and physical-device certification remain |
+| 6.1 Schema, partitions and retention | Complete | Four Sprint 6 migrations applied; partition boundary, retention, anonymization and RLS tests pass |
+| 6.2 Sessions and ping ingestion      | Complete | Session lifecycle, bounded 100-ping batches, receipts, idempotency and coded rate/body limits pass database e2e |
+| 6.3 Worker, presence and SSE         | Complete | Idempotent worker retry, Redis-backed presence, tenant/manager SSE scope, cursor reconnect and connection expiry tests pass |
+| 6.4 Offline sync and tamper handling | Complete | Isar queue, ordered day locks, global idempotency, per-item outcomes, clock/integrity expiry and duplicate replay pass |
+| 6.5 Route summaries and web maps     | Complete | 240-ping/six-stop/22-minute-gap fixture and H2/H3 production build pass; deterministic CI fallback plus OpenStreetMap Leaflet web and flutter_map mobile adapters available |
+| 6.6 Mobile resilience/hardening      | Complete | Workmanager, battery-aware tracking, secure token/evidence cleanup, bounded backoff, M16/M17 goldens and 66 Flutter tests pass |
 
 Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
 
@@ -214,14 +214,14 @@ Batch response is ordered by client UUID and never fails the entire batch for a 
 
 ### 12.6 Migration, database and infrastructure
 
-- [ ] Unique ping client UUID per tenant/device or ingestion dedupe table
-- [ ] Unique route summary per employee/date and summary algorithm version field
-- [ ] Partial unique active field session per tenant/employee
-- [ ] Partition and retention jobs tested across month boundaries
-- [ ] Redis presence TTL is derived from tracking interval and never marks stale data live
-- [ ] Queue job IDs use tenant/session/batch identity; retries are idempotent
-- [ ] RLS covers session, ping and route tables with no-context fail closed
-- [ ] Raw ping deletion retains aggregate/audit proof without personal path after policy expiry
+- [X] Unique ping client UUID per tenant/device or ingestion dedupe table
+- [X] Unique route summary per employee/date and summary algorithm version field
+- [X] Partial unique active field session per tenant/employee
+- [X] Partition and retention jobs tested across month boundaries
+- [X] Redis presence TTL is derived from tracking interval and never marks stale data live
+- [X] Queue job IDs use tenant/session/batch identity; retries are idempotent
+- [X] RLS covers session, ping and route tables with no-context fail closed
+- [X] Raw ping deletion retains aggregate/audit proof without personal path after policy expiry
 
 ### 12.7 Route algorithm contract
 

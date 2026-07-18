@@ -11,12 +11,14 @@ import { WeeklyOffEditor, type WeeklyOffValue } from "./weekly-off-editor";
 
 type Settings = {
   timezone: string;
+  locale: string;
   weeklyOffs: WeeklyOffValue;
   workingDayStart: string;
   workingDayEnd: string;
   requireFacialRecognition: boolean;
   faceMatchThreshold: number;
   fieldTrackingIntervalMin: number;
+  fieldTrackingEnabled: boolean;
   checkinReminderEnabled: boolean;
   checkoutReminderMinutes: number;
   absenteeAlertTime: string;
@@ -26,12 +28,14 @@ type Settings = {
 
 const defaultSettings: Settings = {
   timezone: "Asia/Kolkata",
+  locale: "en",
   weeklyOffs: [{ weekday: "SAT", occurrences: [2, 4] }, "SUN"],
   workingDayStart: "09:00",
   workingDayEnd: "18:00",
   requireFacialRecognition: false,
   faceMatchThreshold: 85,
   fieldTrackingIntervalMin: 15,
+  fieldTrackingEnabled: false,
   checkinReminderEnabled: true,
   checkoutReminderMinutes: 15,
   absenteeAlertTime: "10:00",
@@ -41,12 +45,14 @@ const defaultSettings: Settings = {
 function writableSettings(settings: Settings) {
   const {
     timezone,
+    locale,
     weeklyOffs,
     workingDayStart,
     workingDayEnd,
     requireFacialRecognition,
     faceMatchThreshold,
     fieldTrackingIntervalMin,
+    fieldTrackingEnabled,
     checkinReminderEnabled,
     checkoutReminderMinutes,
     absenteeAlertTime,
@@ -55,12 +61,14 @@ function writableSettings(settings: Settings) {
 
   return {
     timezone,
+    locale,
     weeklyOffs,
     workingDayStart,
     workingDayEnd,
     requireFacialRecognition,
     faceMatchThreshold,
     fieldTrackingIntervalMin,
+    fieldTrackingEnabled,
     checkinReminderEnabled,
     checkoutReminderMinutes,
     absenteeAlertTime,
@@ -128,7 +136,7 @@ export function OnboardingWizard() {
 
   if (!hasHydrated || loading) return <div className="min-h-screen bg-[#fcf8ff] p-12"><LoadingState /></div>;
   return <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b24]">
-    <header className="flex h-20 items-center justify-between border-b border-[#e4e1ee] bg-white px-8"><div className="flex items-center gap-4"><strong className="text-xl text-[#3525cd]">IndigoHR</strong><span className="h-6 w-px bg-[#c7c4d8]" /><span className="text-sm text-[#464555]">Setup Wizard</span></div><span className="text-sm text-[#777587]">Support</span></header>
+    <header className="flex h-20 items-center justify-between border-b border-[#e4e1ee] bg-white px-8"><div className="flex items-center gap-4"><strong className="text-xl text-[#3525cd]">DeltCRM</strong><span className="h-6 w-px bg-[#c7c4d8]" /><span className="text-sm text-[#464555]">Setup Wizard</span></div><span className="text-sm text-[#777587]">Support</span></header>
     <main className="mx-auto max-w-[1440px] px-6 py-12">
       <div className="mx-auto mb-12 flex max-w-[800px] items-start">
         {["Company profile", "Working days", "Verification rules", "Invite HR"].map((label, index) => <div key={label} className="flex flex-1 items-start last:flex-none"><div className="grid justify-items-center gap-2"><div className={`grid size-10 place-items-center rounded-full font-bold ${index + 1 <= step ? "bg-[#3525cd] text-white" : "bg-[#e4e1ee] text-[#464555]"}`}>{index + 1 < step ? <Check className="size-4" /> : index + 1}</div><span className={`whitespace-nowrap text-xs font-semibold ${index + 1 === step ? "text-[#3525cd]" : "text-[#777587]"}`}>{label}</span></div>{index < 3 && <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-[#3525cd]" : "bg-[#e4e1ee]"}`} />}</div>)}
@@ -157,7 +165,7 @@ export function CompanySettingsView() {
   function change(patch: Partial<Settings>) { setSettings((current) => current ? { ...current, ...patch } : current); setDirty(true); setSaved(false); }
   async function save() { if (!settings) return; setError(""); await apiClient.patch("/tenant-settings", writableSettings(settings)).then(() => { setSaved(true); setDirty(false); }).catch(() => setError("Company settings could not be saved.")); }
   async function upload(file: File) { setUploading(true); setError(""); try { const result = await uploadCompanyLogo(file); change({ companyLogoKey: result.objectKey }); setLogoPreview(URL.createObjectURL(file)); } catch { setError("Logo upload failed. Use PNG, JPEG or WebP up to 2 MB."); } finally { setUploading(false); } }
-  return <AdminPage title="Company Settings" description="Manage your workspace identity, timezone and working-week defaults." action={<PrimaryButton disabled={!dirty} onClick={save}>Save changes</PrimaryButton>}>{error && <ErrorState message={error} />}{!settings ? <LoadingState /> : <><div className="grid gap-6 xl:grid-cols-[1fr_360px]"><Panel className="p-7"><div className="grid gap-6 sm:grid-cols-2"><Field label="Timezone"><input className={inputClass} value={settings.timezone} onChange={(e) => change({ timezone: e.target.value })} /></Field><Field label="Absentee alert time"><input type="time" className={inputClass} value={settings.absenteeAlertTime} onChange={(e) => change({ absenteeAlertTime: e.target.value })} /></Field><Field label="Working day start"><input type="time" className={inputClass} value={settings.workingDayStart} onChange={(e) => change({ workingDayStart: e.target.value })} /></Field><Field label="Working day end"><input type="time" className={inputClass} value={settings.workingDayEnd} onChange={(e) => change({ workingDayEnd: e.target.value })} /></Field></div><div className="mt-8"><WeeklyOffEditor mode="advanced" value={settings.weeklyOffs} onChange={(weeklyOffs) => change({ weeklyOffs })} /></div>{saved && <p className="mt-4 text-sm font-medium text-[#006e2d]">Settings saved.</p>}</Panel><Panel className="p-7"><h2 className="font-semibold">Company logo</h2><label className="mt-5 grid aspect-square max-h-56 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-[#c7c4d8] bg-[#f5f2ff]">{logoPreview ? <img src={logoPreview} alt="Company logo preview" className="size-full object-contain p-4" /> : <UploadCloud className="size-10 text-[#3525cd]" />}<input className="hidden" type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} /></label><p className="mt-4 text-xs text-[#777587]">{uploading ? "Uploading..." : settings.companyLogoKey ? "Private logo uploaded." : "Private, tenant-prefixed uploads only."}</p></Panel></div>{dirty && <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#c7c4d8] bg-white p-4 shadow-xl"><p className="text-sm font-medium text-[#464555]">Unsaved changes detected</p><PrimaryButton onClick={save}>Save changes</PrimaryButton></div>}</>}</AdminPage>;
+  return <AdminPage title="Company Settings" description="Manage your workspace identity, language, timezone and working-week defaults." action={<PrimaryButton disabled={!dirty} onClick={save}>Save changes</PrimaryButton>}>{error && <ErrorState message={error} />}{!settings ? <LoadingState /> : <><div className="grid gap-6 xl:grid-cols-[1fr_360px]"><Panel className="p-7"><div className="grid gap-6 sm:grid-cols-2"><Field label="Timezone"><input className={inputClass} value={settings.timezone} onChange={(e) => change({ timezone: e.target.value })} /></Field><Field label="Language and locale"><select className={inputClass} value={settings.locale} onChange={(e) => change({ locale: e.target.value })}><option value="en">English</option><option value="en-AE">English (UAE)</option><option value="ar-AE">Arabic (UAE)</option><option value="ar-SA">Arabic (Saudi Arabia)</option></select></Field><Field label="Absentee alert time"><input type="time" className={inputClass} value={settings.absenteeAlertTime} onChange={(e) => change({ absenteeAlertTime: e.target.value })} /></Field><Field label="Working day start"><input type="time" className={inputClass} value={settings.workingDayStart} onChange={(e) => change({ workingDayStart: e.target.value })} /></Field><Field label="Working day end"><input type="time" className={inputClass} value={settings.workingDayEnd} onChange={(e) => change({ workingDayEnd: e.target.value })} /></Field></div><div className="mt-8"><WeeklyOffEditor mode="advanced" value={settings.weeklyOffs} onChange={(weeklyOffs) => change({ weeklyOffs })} /></div>{saved && <p className="mt-4 text-sm font-medium text-[#006e2d]">Settings saved.</p>}</Panel><Panel className="p-7"><h2 className="font-semibold">Company logo</h2><p className="mt-1 text-xs leading-5 text-[#777587]">Employees see this tenant identity after signing in. Public login remains DeltCRM branded.</p><label className="mt-5 grid aspect-square max-h-56 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-[#c7c4d8] bg-[#f5f2ff]">{logoPreview ? <img src={logoPreview} alt="Company logo preview" className="size-full object-contain p-4" /> : <UploadCloud className="size-10 text-[#3525cd]" />}<input className="hidden" type="file" accept="image/png,image/jpeg,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} /></label><p className="mt-4 text-xs text-[#777587]">{uploading ? "Uploading..." : settings.companyLogoKey ? "Private logo uploaded." : "Private, tenant-prefixed uploads only."}</p></Panel></div>{dirty && <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#c7c4d8] bg-white p-4 shadow-xl"><p className="text-sm font-medium text-[#464555]">Unsaved changes detected</p><PrimaryButton onClick={save}>Save changes</PrimaryButton></div>}</>}</AdminPage>;
 }
 
 export function AttendanceDefaultsView() {

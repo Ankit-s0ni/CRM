@@ -5,6 +5,8 @@ import '../../domain/app_capability.dart';
 import '../permissions_controller.dart';
 import '../widgets/capability_permission_card.dart';
 import '../../../../l10n/l10n_context.dart';
+import '../../../../core/tenant/tenant_controller.dart';
+import '../../../../core/tenant/tenant_config.dart';
 
 class PermissionsOnboardingScreen extends ConsumerStatefulWidget {
   const PermissionsOnboardingScreen({super.key, required this.onContinue});
@@ -41,6 +43,7 @@ class _PermissionsOnboardingScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(permissionsControllerProvider);
     final snapshot = state.asData?.value;
+    final tenant = ref.watch(tenantControllerProvider);
     return AppPage(
       title: context.l10n.attendancePermissions,
       child: Column(
@@ -64,8 +67,9 @@ class _PermissionsOnboardingScreenState
             ),
           if (snapshot?.isWeb ?? false) const SizedBox(height: 12),
           for (final capability in AppCapability.values)
-            if (snapshot?.permission(capability).status !=
-                CapabilityStatus.unavailable) ...[
+            if (_isRequired(capability, tenant) &&
+                snapshot?.permission(capability).status !=
+                    CapabilityStatus.unavailable) ...[
               CapabilityPermissionCard(
                 capability: capability,
                 status:
@@ -94,3 +98,13 @@ class _PermissionsOnboardingScreenState
     );
   }
 }
+
+bool _isRequired(AppCapability capability, TenantConfig tenant) =>
+    switch (capability) {
+      AppCapability.camera => tenant.attendancePolicy.requiresFace,
+      AppCapability.locationWhileUsing =>
+        tenant.onboarding.locationPermissionRequired,
+      AppCapability.backgroundLocation || AppCapability.batteryOptimization =>
+        tenant.hasModule(TenantModule.fieldTracking),
+      AppCapability.notifications => true,
+    };

@@ -17,6 +17,7 @@ import {
   parseEmployeeCsv,
 } from './employee-import-parser';
 import { EmployeeImportStorageService } from './employee-import-storage.service';
+import { synchronizeSubscriptionSeats } from '../../billing/application/seat-sync';
 
 type ImportTask = { tenantId: string; importJobId: string };
 type PreparedRow = {
@@ -294,6 +295,12 @@ export class EmployeeImportProcessor {
               used: quota.used + index,
             });
           }
+          await synchronizeSubscriptionSeats(
+            tx,
+            tenantId,
+            `employee-import:${importJobId}:batch:${offset}`,
+            requestedBy,
+          );
         });
       } catch (error) {
         const code = this.safeErrorCode(error);

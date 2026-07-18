@@ -22,7 +22,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "openapi:export": "ts-node scripts/export-openapi.ts"
+    "openapi:export": "ts-node scripts/export-openapi.ts",
+    "ops:observability-drill": "ts-node scripts/observability-drill.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1087.0",
@@ -35,8 +36,14 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.4.5",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.220.0",
+    "@opentelemetry/resources": "^2.9.0",
+    "@opentelemetry/sdk-node": "^0.220.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@sentry/node": "^10.66.0",
     "argon2": "^0.44.0",
     "bullmq": "^5.80.3",
     "class-transformer": "^0.5.1",
@@ -111,6 +118,7 @@
       "@scarf/scarf",
       "argon2",
       "msgpackr-extract",
+      "protobufjs",
       "prisma",
       "unrs-resolver"
     ]

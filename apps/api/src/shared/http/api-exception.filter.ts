@@ -28,17 +28,28 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const context = host.switchToHttp();
     const request = context.getRequest<Request>();
     const response = context.getResponse<Response>();
-    const status =
+    const status: number =
       exception instanceof HttpException
         ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+        : (numericStatus(exception) ?? HttpStatus.INTERNAL_SERVER_ERROR);
     const exceptionBody = this.getExceptionBody(exception);
     const requestId = String(request.headers['x-request-id'] ?? '');
+    if (
+      status === 429 &&
+      typeof exceptionBody.details === 'object' &&
+      exceptionBody.details &&
+      'retryAfterSeconds' in exceptionBody.details
+    ) {
+      response.setHeader(
+        'Retry-After',
+        String(exceptionBody.details.retryAfterSeconds),
+      );
+    }
 
     if (status >= 500) {
       this.errorReporter.captureException(exception, {
         requestId,
-        path: request.originalUrl,
+        path: safeRequestPath(request),
       });
     }
 
@@ -83,10 +94,32 @@ export class ApiExceptionFilter implements ExceptionFilter {
       [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
       [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
       [HttpStatus.CONFLICT]: 'CONFLICT',
+      [HttpStatus.PAYLOAD_TOO_LARGE]: 'PING_BATCH_TOO_LARGE',
       [HttpStatus.UNPROCESSABLE_ENTITY]: 'UNPROCESSABLE_ENTITY',
       [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
     };
 
     return codeByStatus[status] ?? 'INTERNAL_SERVER_ERROR';
   }
+}
+
+function safeRequestPath(request: Request) {
+  const route = request.route as { path?: unknown } | undefined;
+  if (typeof route?.path === 'string') {
+    return `${request.baseUrl}${route.path}` || '/';
+  }
+  return request.path
+    .replace(
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi,
+      ':id',
+    )
+    .replace(/\b\d+\b/g, ':number');
+}
+
+function numericStatus(exception: unknown) {
+  if (!exception || typeof exception !== 'object') return undefined;
+  const value = 'status' in exception ? exception.status : undefined;
+  return typeof value === 'number' && value >= 400 && value < 600
+    ? value
+    : undefined;
 }

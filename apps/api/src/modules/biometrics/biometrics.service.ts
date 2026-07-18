@@ -182,7 +182,13 @@ export class BiometricsService {
         this.outbox.append(tx, {
           tenantId,
           eventKey: 'attendance.biometric_evidence.deletion_requested',
-          payload: { employeeId: employee.id, consentId: consent.id },
+          payload: {
+            employeeId: employee.id,
+            consentId: consent.id,
+            objectKeys: activeEnrollments.map(
+              ({ privateObjectKey }) => privateObjectKey,
+            ),
+          },
         }),
       ]);
       return {
@@ -196,15 +202,6 @@ export class BiometricsService {
         ),
       };
     });
-    await Promise.all(
-      result.objectKeys.map((objectKey) =>
-        this.storage.deleteEnrollmentObject(
-          tenantId,
-          result.employeeId,
-          objectKey,
-        ),
-      ),
-    );
     return result.response;
   }
 
@@ -234,7 +231,7 @@ export class BiometricsService {
       employee.id,
       dto.privateObjectKey,
     );
-    const proof = this.liveness.verify(
+    const proof = await this.liveness.verify(
       dto.privateObjectKey,
       dto.livenessProofToken,
     );
@@ -411,17 +408,23 @@ export class BiometricsService {
           eventKey: 'attendance.face_enrollment.reset',
           payload: { employeeId, reason, revokedAt },
         }),
+        this.outbox.append(tx, {
+          tenantId,
+          eventKey: 'attendance.biometric_evidence.deletion_requested',
+          payload: {
+            employeeId,
+            reason: 'FACE_ENROLLMENT_RESET',
+            objectKeys: enrollments.map(
+              ({ privateObjectKey }) => privateObjectKey,
+            ),
+          },
+        }),
       ]);
       return {
         objectKeys: enrollments.map(({ privateObjectKey }) => privateObjectKey),
         idempotent: false,
       };
     });
-    await Promise.all(
-      result.objectKeys.map((objectKey) =>
-        this.storage.deleteEnrollmentObject(tenantId, employeeId, objectKey),
-      ),
-    );
     return { data: { enrolled: false }, idempotent: result.idempotent };
   }
 

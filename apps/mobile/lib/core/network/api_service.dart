@@ -60,10 +60,13 @@ class ApiService {
   final Dio _refreshDio;
   final StreamController<ApiAvailabilityEvent> _availability =
       StreamController<ApiAvailabilityEvent>.broadcast(sync: true);
+  final StreamController<void> _sessionRefreshed =
+      StreamController<void>.broadcast(sync: true);
   String? _accessToken;
   Future<String?>? _refreshing;
 
   Stream<ApiAvailabilityEvent> get availability => _availability.stream;
+  Stream<void> get sessionRefreshed => _sessionRefreshed.stream;
 
   static BaseOptions _options() => BaseOptions(
     baseUrl: AppConfig.apiBaseUrl,
@@ -128,6 +131,7 @@ class ApiService {
       final session = response.data;
       if (session == null) return null;
       await establishSession(session);
+      _sessionRefreshed.add(null);
       return _accessToken;
     } on DioException {
       await clearSession();

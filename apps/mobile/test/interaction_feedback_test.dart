@@ -5,14 +5,19 @@ import 'package:hrms_attendance/features/auth/presentation/screens/login_screen.
 import 'package:hrms_attendance/features/requests/presentation/screens/regularization_screen.dart';
 import 'package:hrms_attendance/features/tracking/presentation/screens/tracking_screen.dart';
 import 'package:hrms_attendance/l10n/app_localizations.dart';
+import 'package:hrms_attendance/features/tracking/presentation/tracking_controller.dart';
 
-Widget _host(Widget child) => ProviderScope(
-  child: MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: child,
-  ),
-);
+import 'support/sprint6_test_controllers.dart';
+
+Widget _host(Widget child, {List<Override> overrides = const []}) =>
+    ProviderScope(
+      overrides: overrides,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: child,
+      ),
+    );
 
 void main() {
   testWidgets(
@@ -46,14 +51,22 @@ void main() {
   testWidgets('field tracking requires confirmation and updates status', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(const TrackingScreen()));
+    await tester.pumpWidget(
+      _host(
+        const TrackingScreen(),
+        overrides: [
+          trackingControllerProvider.overrideWith(TestTrackingController.new),
+        ],
+      ),
+    );
+    await tester.pump();
 
     await tester.ensureVisible(find.text('Start field tracking'));
     await tester.tap(find.text('Start field tracking'));
     await tester.pumpAndSettle();
     expect(find.text('Start field tracking?'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Start tracking'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
     expect(find.text('Field tracking is active'), findsOneWidget);
   });
 }

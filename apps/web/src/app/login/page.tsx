@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form";
+import { publicLinks } from "@/lib/public-links";
 import { Suspense } from "react";
 
 export default function LoginPage() {
@@ -48,9 +49,9 @@ export default function LoginPage() {
         {/* Footer */}
         <footer className="mt-auto pt-12 w-full flex flex-col items-center gap-4">
           <div className="flex gap-6">
-            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
-            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
-            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Help Center</a>
+            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href={publicLinks.privacy}>Privacy Policy</a>
+            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href={publicLinks.terms}>Terms of Service</a>
+            <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href={publicLinks.help}>Help Center</a>
           </div>
           <p className="font-label-sm text-label-sm text-outline">© 2024 DELTCRM. All rights reserved.</p>
         </footer>

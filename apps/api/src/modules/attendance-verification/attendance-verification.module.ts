@@ -8,6 +8,7 @@ import {
   DeviceIntegrityProvider,
   FaceMatchProvider,
 } from './verification-providers';
+import { DeviceIntegrityChallengeService } from './device-integrity-challenge.service';
 
 @Module({
   imports: [AttendanceModule, BiometricsModule, SecurityAlertsModule],
@@ -16,7 +17,8 @@ import {
     AttendanceVerificationService,
     DeviceIntegrityProvider,
     FaceMatchProvider,
+    DeviceIntegrityChallengeService,
   ],
-  exports: [AttendanceVerificationService],
+  exports: [AttendanceVerificationService, DeviceIntegrityChallengeService],
 })
 export class AttendanceVerificationModule {}

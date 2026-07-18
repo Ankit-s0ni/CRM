@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
+import { publicLinks } from "@/lib/public-links";
 
 const employeeBands = [
   { label: "Select range", value: "" },
@@ -67,6 +68,7 @@ export function SignupForm() {
       const payload = response.data as {
         email: string;
         subdomain: string;
+        emailDelivery: "SENT" | "FAILED";
         debugVerificationToken?: string;
       };
 
@@ -74,6 +76,7 @@ export function SignupForm() {
         email: payload.email,
         workspace: payload.subdomain,
         tenantId: response.data.tenantId,
+        delivery: payload.emailDelivery,
       });
 
       if (payload.debugVerificationToken) {
@@ -252,11 +255,11 @@ export function SignupForm() {
           </div>
           <label className="text-[14px] leading-6 text-[#464555]" htmlFor="terms">
             By creating a workspace, you agree to our{" "}
-            <a className="font-medium text-[#3525cd] hover:underline" href="#">
+            <a className="font-medium text-[#3525cd] hover:underline" href={publicLinks.terms} target="_blank" rel="noreferrer">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a className="font-medium text-[#3525cd] hover:underline" href="#">
+            <a className="font-medium text-[#3525cd] hover:underline" href={publicLinks.privacy} target="_blank" rel="noreferrer">
               Privacy Policy
             </a>
             .

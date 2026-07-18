@@ -31,6 +31,8 @@ import {
   normalizeEmployeeName,
   parseDateOnly,
 } from './employee-rules';
+import { bumpRuntimeConfigVersion } from '../runtime-config/runtime-config-version';
+import { synchronizeSubscriptionSeats } from '../billing/application/seat-sync';
 
 const EMPLOYEE_RELATIONS = {
   department: { select: { id: true, name: true } },
@@ -221,6 +223,13 @@ export class EmployeesService {
           status: employee.status,
         },
       });
+      await bumpRuntimeConfigVersion(tx, tenantId);
+      await synchronizeSubscriptionSeats(
+        tx,
+        tenantId,
+        `employee-created:${employee.id}`,
+        createdBy,
+      );
 
       return { data: employee };
     });
@@ -339,6 +348,9 @@ export class EmployeesService {
           managerId: updated.managerId,
         },
       });
+      if (dto.workType !== undefined || dto.deptId !== undefined) {
+        await bumpRuntimeConfigVersion(tx, tenantId);
+      }
 
       return { data: updated };
     });
@@ -377,6 +389,13 @@ export class EmployeesService {
         oldValue: { status: employee.status, dateOfExit: employee.dateOfExit },
         newValue: { status: updated.status, dateOfExit: updated.dateOfExit },
       });
+      await bumpRuntimeConfigVersion(tx, tenantId);
+      await synchronizeSubscriptionSeats(
+        tx,
+        tenantId,
+        `employee-terminated:${employee.id}:${exitDate.toISOString()}`,
+        createdBy,
+      );
 
       return { data: updated };
     });
@@ -422,6 +441,13 @@ export class EmployeesService {
         oldValue: { status: employee.status, dateOfExit: employee.dateOfExit },
         newValue: { status: updated.status, dateOfExit: null },
       });
+      await bumpRuntimeConfigVersion(tx, tenantId);
+      await synchronizeSubscriptionSeats(
+        tx,
+        tenantId,
+        `employee-reactivated:${employee.id}:${effectiveDate.toISOString()}`,
+        createdBy,
+      );
 
       return { data: updated };
     });

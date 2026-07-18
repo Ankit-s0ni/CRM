@@ -1,12 +1,12 @@
 abstract interface class AttendanceRepository {
   Future<PunchResult> punch({
     required String type,
-    required String filePath,
+    String? filePath,
     required Map<String, String> device,
-    required double latitude,
-    required double longitude,
-    required int accuracyMeters,
-    required bool mockLocation,
+    double? latitude,
+    double? longitude,
+    int? accuracyMeters,
+    bool? mockLocation,
     required String attestationToken,
   });
   Future<void> toggleBreak(String action);

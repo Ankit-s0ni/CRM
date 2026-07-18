@@ -32,7 +32,7 @@ class AttendanceState {
 }
 
 class PunchCapture {
-  const PunchCapture({required this.filePath, required this.isCheckOut});
-  final String filePath;
+  const PunchCapture({this.filePath, required this.isCheckOut});
+  final String? filePath;
   final bool isCheckOut;
 }

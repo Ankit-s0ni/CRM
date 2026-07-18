@@ -2,6 +2,8 @@ import {
   DeviceIntegrityProvider,
   FaceMatchProvider,
 } from './verification-providers';
+import type { PrismaTransaction } from '../../shared/database/prisma.service';
+import { DeviceIntegrityChallengeService } from './device-integrity-challenge.service';
 
 describe('verification providers', () => {
   const originalEnvironment = process.env.NODE_ENV;
@@ -16,7 +18,16 @@ describe('verification providers', () => {
   });
 
   describe('DeviceIntegrityProvider', () => {
-    const provider = new DeviceIntegrityProvider();
+    const resolve = jest.fn().mockResolvedValue({
+      id: '70000000-0000-4000-8000-000000000001',
+      nonceHash: 'expected-nonce-hash',
+      action: 'PUNCH',
+    });
+    const consume = jest.fn().mockResolvedValue(undefined);
+    const provider = new DeviceIntegrityProvider({
+      resolve,
+      consume,
+    } as unknown as DeviceIntegrityChallengeService);
 
     it.each([
       ['test-valid', true, false, false],
@@ -60,17 +71,45 @@ describe('verification providers', () => {
         ),
       );
 
-      await expect(provider.verify('opaque-token')).resolves.toEqual({
+      const envelope = JSON.stringify({
+        challengeId: '70000000-0000-4000-8000-000000000001',
+        platform: 'ANDROID',
+        evidence: 'opaque-provider-token',
+        mode: 'STANDARD',
+      });
+      await expect(
+        provider.verify(envelope, {
+          tx: {} as PrismaTransaction,
+          tenantId: 'tenant-1',
+          employeeId: 'employee-1',
+          deviceId: 'device-1',
+          platform: 'ANDROID',
+        }),
+      ).resolves.toEqual({
         genuineDevice: true,
         mockLocation: false,
         rooted: false,
         raw: {
           provider: 'integrity-gateway',
+          platform: 'ANDROID',
           genuineDevice: true,
           mockLocation: false,
           rooted: false,
         },
       });
+      expect(resolve).toHaveBeenCalledWith(
+        expect.anything(),
+        '70000000-0000-4000-8000-000000000001',
+        expect.objectContaining({
+          tenantId: 'tenant-1',
+          employeeId: 'employee-1',
+          deviceId: 'device-1',
+        }),
+      );
+      expect(consume).toHaveBeenCalledWith(
+        expect.anything(),
+        '70000000-0000-4000-8000-000000000001',
+      );
     });
   });
 

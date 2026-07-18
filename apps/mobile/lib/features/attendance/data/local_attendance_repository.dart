@@ -6,12 +6,12 @@ class LocalAttendanceRepository implements AttendanceRepository {
   @override
   Future<PunchResult> punch({
     required String type,
-    required String filePath,
+    String? filePath,
     required Map<String, String> device,
-    required double latitude,
-    required double longitude,
-    required int accuracyMeters,
-    required bool mockLocation,
+    double? latitude,
+    double? longitude,
+    int? accuracyMeters,
+    bool? mockLocation,
     required String attestationToken,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
