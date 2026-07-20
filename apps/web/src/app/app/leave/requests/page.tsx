@@ -1,3 +1,15 @@
-import { LeaveRequestsView } from "@/components/tenant/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function LeaveRequestsPage() { return <LeaveRequestsView />; }
+export default async function LeaveRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") query.set(key, value);
+    else value?.forEach((item) => query.append(key, item));
+  }
+  const suffix = query.size ? `?${query.toString()}` : "";
+  redirect(`/app/attendance/leave/requests${suffix}`);
+}

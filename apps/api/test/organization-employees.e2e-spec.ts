@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+import { BillingPeriod, PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import request, { Test as SupertestTest } from 'supertest';
 import { App } from 'supertest/types';
@@ -22,8 +22,14 @@ type EmployeeBody = {
     designationId: string | null;
     managerId: string | null;
   };
+  temporaryCredentials: { email: string; password: string };
 };
 type ErrorBody = { code: string };
+type MobileLoginBody = {
+  accessToken: string;
+  refreshToken: string;
+  user: { tenantId: string; roles: string[] };
+};
 
 describe('Employees API (e2e)', () => {
   let app: INestApplication<App>;
@@ -32,7 +38,9 @@ describe('Employees API (e2e)', () => {
   let adminPool: Pool;
   let factory: TestDataFactory;
   let workspaceSequence = 0;
+  let employeeAccountSequence = 0;
   const tenantIds = new Set<string>();
+  const temporaryPlanIds = new Set<string>();
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -57,6 +65,9 @@ describe('Employees API (e2e)', () => {
     for (const tenantId of tenantIds) {
       await cleanupTenant(adminPrisma, tenantId);
     }
+    await adminPrisma.subscriptionPlan.deleteMany({
+      where: { id: { in: [...temporaryPlanIds] } },
+    });
     await app.close();
     await adminPrisma.$disconnect();
 
@@ -105,6 +116,52 @@ describe('Employees API (e2e)', () => {
       employeeCode: 'EMP-2',
       fullName: 'Aarav Sharma',
       managerId: manager.data.id,
+    });
+    expect(employee.temporaryCredentials.email).toContain('@employee.test');
+    expect(employee.temporaryCredentials.password).toBe('AaravSharma987654');
+
+    const mobileLogin = await request(app.getHttpServer())
+      .post('/auth/mobile-login')
+      .send({
+        email: employee.temporaryCredentials.email,
+        password: employee.temporaryCredentials.password,
+      })
+      .expect(200);
+    const mobileSession = mobileLogin.body as MobileLoginBody;
+    expect(mobileSession.accessToken).toBeTruthy();
+    expect(mobileSession.refreshToken).toBeTruthy();
+    expect(mobileSession.user.tenantId).toBe(workspace.tenantId);
+    expect(mobileSession.user.roles).toContain('EMPLOYEE');
+
+    const workspaceResponse = await api(workspace)
+      .get(`/employees/${employee.data.id}/workspace`)
+      .expect(200);
+    expect(workspaceResponse.body).toMatchObject({
+      data: {
+        employee: {
+          id: employee.data.id,
+          fullName: 'Aarav Sharma',
+        },
+        assignments: {
+          offices: [],
+          defaultShift: null,
+          effectiveAttendancePolicy: {
+            scope: 'TENANT_DEFAULT',
+            policy: { name: 'Default Office' },
+          },
+        },
+        attendance: { recentDays: [], resolvedExceptionCount: 0 },
+        leave: { balances: [], recentRequests: [] },
+        devices: [],
+        readiness: {
+          accountLinked: true,
+          managerAssigned: true,
+          officeAssigned: false,
+          shiftAssigned: false,
+          attendancePolicyAssigned: true,
+          approvedDevice: false,
+        },
+      },
     });
 
     const listResponse = await api(workspace)
@@ -217,6 +274,8 @@ describe('Employees API (e2e)', () => {
       .send({
         employeeCode: 'lead-1',
         fullName: 'Duplicate Lead',
+        email: 'duplicate.lead@employee.test',
+        phone: '+919000000099',
         workType: 'OFFICE',
         dateOfJoining: '2026-01-01',
         deptId: department.id,
@@ -248,6 +307,9 @@ describe('Employees API (e2e)', () => {
     });
 
     await api(workspace).get(`/employees/${foreignManager.id}`).expect(404);
+    await api(workspace)
+      .get(`/employees/${foreignManager.id}/workspace`)
+      .expect(404);
 
     const foreignManagerResponse = await api(workspace)
       .patch(`/employees/${report.data.id}`)
@@ -262,6 +324,8 @@ describe('Employees API (e2e)', () => {
       .send({
         employeeCode: 'FOREIGN-1',
         fullName: 'Foreign Relationship',
+        email: 'foreign.relationship@employee.test',
+        phone: '+919000000098',
         workType: 'OFFICE',
         dateOfJoining: '2026-01-01',
         deptId: foreignDepartment.id,
@@ -272,20 +336,181 @@ describe('Employees API (e2e)', () => {
     );
   });
 
+  it('stores private employee documents with audit and tenant isolation', async () => {
+    const workspace = await createAuthenticatedWorkspace();
+    const department = await factory.createDepartment({
+      tenantId: workspace.tenantId,
+      name: 'Document Team',
+    });
+    const employee = await createEmployee(workspace, {
+      employeeCode: 'DOC-1',
+      fullName: 'Document Owner',
+      workType: 'OFFICE',
+      dateOfJoining: '2026-07-01',
+      deptId: department.id,
+    });
+
+    const presign = await api(workspace)
+      .post(`/employees/${employee.data.id}/documents/presign`)
+      .send({
+        filename: 'employment-contract.pdf',
+        contentType: 'application/pdf',
+        fileSize: 512,
+      })
+      .expect(201);
+    const presignBody = presign.body as {
+      data: { objectKey: string; uploadUrl: string; expiresIn: number };
+    };
+    expect(presignBody.data).toMatchObject({ expiresIn: 300 });
+    expect(presignBody.data.objectKey).toContain(
+      `/employee-documents/${employee.data.id}/`,
+    );
+
+    const created = await api(workspace)
+      .post(`/employees/${employee.data.id}/documents`)
+      .send({
+        objectKey: presignBody.data.objectKey,
+        filename: 'employment-contract.pdf',
+        contentType: 'application/pdf',
+        fileSize: 512,
+        title: 'Employment contract',
+        documentType: 'EMPLOYMENT',
+        expiresAt: '2028-07-01',
+      })
+      .expect(201);
+    const createdBody = created.body as {
+      data: {
+        id: string;
+        employeeId: string;
+        title: string;
+        documentType: string;
+      };
+    };
+    expect(createdBody.data).toMatchObject({
+      employeeId: employee.data.id,
+      title: 'Employment contract',
+      documentType: 'EMPLOYMENT',
+    });
+    expect(createdBody.data).not.toHaveProperty('objectKey');
+
+    const listed = await api(workspace)
+      .get(`/employees/${employee.data.id}/documents`)
+      .expect(200);
+    const listedBody = listed.body as { data: Array<Record<string, unknown>> };
+    expect(listedBody.data).toHaveLength(1);
+    expect(listedBody.data[0]).not.toHaveProperty('objectKey');
+
+    const download = await api(workspace)
+      .get(
+        `/employees/${employee.data.id}/documents/${createdBody.data.id}/download`,
+      )
+      .expect(200);
+    const downloadBody = download.body as {
+      data: { url: string; expiresIn: number };
+    };
+    expect(downloadBody.data).toMatchObject({ expiresIn: 300 });
+    expect(downloadBody.data.url).toMatch(/^memory:\/\//);
+
+    const foreignWorkspace = await createAuthenticatedWorkspace();
+    await api(foreignWorkspace)
+      .get(`/employees/${employee.data.id}/documents`)
+      .expect(404);
+
+    await api(workspace)
+      .delete(`/employees/${employee.data.id}/documents/${createdBody.data.id}`)
+      .expect(200);
+    await api(workspace)
+      .get(
+        `/employees/${employee.data.id}/documents/${createdBody.data.id}/download`,
+      )
+      .expect(404);
+
+    const auditActions = await adminPrisma.tenantAuditLog.findMany({
+      where: {
+        tenantId: workspace.tenantId,
+        entityId: employee.data.id,
+        action: { startsWith: 'organization.employee-document.' },
+      },
+      select: { action: true },
+    });
+    expect(auditActions.map(({ action }) => action)).toEqual(
+      expect.arrayContaining([
+        'organization.employee-document.created',
+        'organization.employee-document.deleted',
+      ]),
+    );
+
+    const tenantAudit = await api(workspace)
+      .get('/audit-logs')
+      .query({
+        entityId: employee.data.id,
+        action: 'employee-document',
+        module: 'organization',
+      })
+      .expect(200);
+    const tenantAuditBody = tenantAudit.body as {
+      data: Array<{
+        action: string;
+        actor: { email: string } | null;
+        impersonated: boolean;
+      }>;
+      pagination: { total: number };
+    };
+    expect(tenantAuditBody.pagination.total).toBe(2);
+    const documentCreatedAudit = tenantAuditBody.data.find(
+      ({ action }) => action === 'organization.employee-document.created',
+    );
+    expect(documentCreatedAudit?.actor?.email).toContain(
+      '@employee.example.com',
+    );
+    expect(documentCreatedAudit?.impersonated).toBe(false);
+
+    const foreignAudit = await api(foreignWorkspace)
+      .get('/audit-logs')
+      .query({ entityId: employee.data.id })
+      .expect(200);
+    expect((foreignAudit.body as { data: unknown[] }).data).toEqual([]);
+
+    const businessAdminRole = await adminPrisma.role.findFirstOrThrow({
+      where: { tenantId: workspace.tenantId, name: 'BUSINESS_ADMIN' },
+    });
+    const auditPermission = await adminPrisma.permission.findUniqueOrThrow({
+      where: { key: 'workspace.audit.read' },
+    });
+    await adminPrisma.rolePermission.deleteMany({
+      where: {
+        roleId: businessAdminRole.id,
+        permissionId: auditPermission.id,
+      },
+    });
+    await api(workspace).get('/audit-logs').expect(403);
+  });
+
   it('serializes concurrent creation at the quota boundary and emits thresholds once', async () => {
     const workspace = await createAuthenticatedWorkspace();
     const department = await factory.createDepartment({
       tenantId: workspace.tenantId,
       name: 'Quota Team',
     });
+    const quotaPlan = await adminPrisma.subscriptionPlan.create({
+      data: {
+        name: `Employee quota test ${Date.now()}`,
+        pricePerUser: '0',
+        maxEmployees: 1,
+        billingPeriod: BillingPeriod.MONTHLY,
+      },
+    });
+    temporaryPlanIds.add(quotaPlan.id);
     await adminPrisma.tenantSubscription.updateMany({
       where: { tenantId: workspace.tenantId },
-      data: { seatCount: 1 },
+      data: { planId: quotaPlan.id },
     });
 
     const payload = (code: string) => ({
       employeeCode: code,
       fullName: `Quota Employee ${code}`,
+      email: `quota.${code.toLowerCase()}@employee.test`,
+      phone: code === 'Q-1' ? '+919000000091' : '+919000000092',
       workType: 'OFFICE',
       dateOfJoining: '2026-07-01',
       deptId: department.id,
@@ -357,6 +582,8 @@ describe('Employees API (e2e)', () => {
       .send({
         employeeCode: 'NO-SUB-1',
         fullName: 'No Subscription',
+        email: 'no.subscription@employee.test',
+        phone: '+919000000097',
         workType: 'OFFICE',
         dateOfJoining: '2026-07-01',
         deptId: department.id,
@@ -378,14 +605,29 @@ describe('Employees API (e2e)', () => {
         withHeaders(request(app.getHttpServer()).post(path)),
       patch: (path: string) =>
         withHeaders(request(app.getHttpServer()).patch(path)),
+      delete: (path: string) =>
+        withHeaders(request(app.getHttpServer()).delete(path)),
     };
   }
 
   async function createEmployee(workspace: Workspace, payload: object) {
+    employeeAccountSequence += 1;
+    const input = payload as { email?: string; phone?: string };
     const response = await api(workspace)
       .post('/employees')
-      .send(payload)
-      .expect(201);
+      .send({
+        ...payload,
+        email:
+          input.email ?? `employee-${employeeAccountSequence}@employee.test`,
+        phone:
+          input.phone ??
+          `+919000${String(employeeAccountSequence).padStart(6, '0')}`,
+      });
+    if (response.status !== 201) {
+      throw new Error(
+        `Employee creation failed with ${response.status}: ${JSON.stringify(response.body)}`,
+      );
+    }
     return response.body as EmployeeBody;
   }
 
@@ -401,6 +643,18 @@ describe('Employees API (e2e)', () => {
       employeeCount: '1-25 employees',
     });
     tenantIds.add(signup.tenantId);
+    const subscription = await adminPrisma.tenantSubscription.findFirstOrThrow({
+      where: { tenantId: signup.tenantId },
+      select: { planId: true },
+    });
+    await adminPrisma.tenantSubscription.updateMany({
+      where: { tenantId: signup.tenantId },
+      data: { seatCount: 25 },
+    });
+    await adminPrisma.subscriptionPlan.update({
+      where: { id: subscription.planId },
+      data: { maxEmployees: 25 },
+    });
 
     await TenantContextService.run({ tenantId: signup.tenantId }, () =>
       authService.verifyToken(
@@ -440,6 +694,7 @@ async function cleanupTenant(prisma: PrismaClient, tenantId: string) {
   await prisma.verificationToken.deleteMany({ where: { tenantId } });
   await prisma.loginAttempt.deleteMany({ where: { tenantId } });
   await prisma.employmentEvent.deleteMany({ where: { tenantId } });
+  await prisma.employeeDocument.deleteMany({ where: { tenantId } });
   await prisma.employee.deleteMany({ where: { tenantId } });
   await prisma.department.deleteMany({ where: { tenantId } });
   await prisma.designation.deleteMany({ where: { tenantId } });

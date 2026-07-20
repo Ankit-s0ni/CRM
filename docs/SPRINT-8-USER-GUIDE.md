@@ -15,6 +15,10 @@ the Attendance hub for policy, office, shift, roster, security, field, report an
 payroll-lock workflows. Billing is under Settings and requires billing permissions;
 normal HR roles do not receive billing access.
 
+The task-oriented Attendance navigation, role visibility, dynamic capability
+behavior, contextual help, and payroll-close workflow are documented in
+[`ATTENDANCE-HR-PORTAL-GUIDE.md`](./ATTENDANCE-HR-PORTAL-GUIDE.md).
+
 ## Employee
 
 The mobile login screen uses DeltCRM branding. After login, the app loads the

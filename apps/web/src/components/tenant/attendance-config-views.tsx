@@ -1,106 +1,2304 @@
 "use client";
 
-import { CalendarDays, Check, Clock3, MapPin, Plus, ShieldCheck, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  Check,
+  Clock3,
+  Crosshair,
+  Plus,
+  ShieldCheck,
+  Upload,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useEffectEvent, useState } from "react";
+import { createPortal } from "react-dom";
+import timezoneLookup from "tz-lookup";
+import { FeatureInfo } from "@/components/help/feature-info";
 import { apiClient } from "@/lib/api-client";
-import { AdminPage, EmptyState, ErrorState, Field, LoadingState, Panel, PrimaryButton, inputClass } from "./page-primitives";
+import { useAuthStore } from "@/lib/auth-store";
+import { FieldMap, type MapCoordinate } from "./field-map";
+import { TimezoneSelect } from "./timezone-select";
+import {
+  AdminPage,
+  EmptyState,
+  ErrorState,
+  Field,
+  LoadingState,
+  Panel,
+  PrimaryButton,
+  inputClass,
+} from "./page-primitives";
 
-type Office = { id: string; officeName: string; latitude: string; longitude: string; radiusMeters: number; timezone?: string; egressIps: string[]; wifiSsids: string[]; _count?: { assignments: number; holidays: number } };
-type PolicyAssignment = { id?: string; scope: "TENANT_DEFAULT" | "DEPARTMENT" | "EMPLOYEE"; deptId?: string | null; employeeId?: string | null };
+type Office = {
+  id: string;
+  officeName: string;
+  latitude: string;
+  longitude: string;
+  radiusMeters: number;
+  timezone?: string;
+  egressIps: string[];
+  wifiSsids: string[];
+  _count?: { assignments: number; holidays: number };
+};
+type PolicyAssignment = {
+  id?: string;
+  scope: "TENANT_DEFAULT" | "DEPARTMENT" | "EMPLOYEE";
+  deptId?: string | null;
+  employeeId?: string | null;
+};
 type LocationMode = "NONE" | "OFFICE_GEOFENCE" | "FIELD_GPS";
 type SelfieMode = "DISABLED" | "REQUIRED";
-type Policy = { id: string; name: string; lateAfterMinutes: number; halfDayAfterMinutes: number; minimumWorkMinutes: number; overtimeAfterMinutes: number; requireFaceMatch: boolean; requireRegisteredDevice: boolean; requireGeofence: boolean; locationMode: LocationMode; selfieMode: SelfieMode; fieldTrackingEnabled: boolean; allowHybridFieldTracking: boolean; maxOfflineSyncHours: number; maxFaceAttempts: number; assignments: PolicyAssignment[] };
-type Shift = { id: string; name: string; startTime: string; endTime: string; isOvernight: boolean };
-type Roster = { id: string; rosterDate: string; employee: { fullName: string; employeeCode: string }; shift: Shift };
-type Employee = { id: string; fullName: string; employeeCode: string };
+type Policy = {
+  id: string;
+  name: string;
+  lateAfterMinutes: number;
+  halfDayAfterMinutes: number;
+  minimumWorkMinutes: number;
+  overtimeAfterMinutes: number;
+  requireFaceMatch: boolean;
+  requireRegisteredDevice: boolean;
+  requireGeofence: boolean;
+  locationMode: LocationMode;
+  selfieMode: SelfieMode;
+  fieldTrackingEnabled: boolean;
+  allowHybridFieldTracking: boolean;
+  maxOfflineSyncHours: number;
+  maxFaceAttempts: number;
+  assignments: PolicyAssignment[];
+};
+type Shift = {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  isOvernight: boolean;
+};
+type Roster = {
+  id: string;
+  rosterDate: string;
+  employee: { fullName: string; employeeCode: string };
+  shift: Shift;
+};
+type Employee = {
+  id: string;
+  fullName: string;
+  employeeCode: string;
+  deptId?: string;
+};
 type Department = { id: string; name: string };
-type Holiday = { id: string; holidayName: string; holidayDate: string; officeLocationId?: string; office?: Office };
+type Holiday = {
+  id: string;
+  holidayName: string;
+  holidayDate: string;
+  officeLocationId?: string;
+  office?: Office;
+};
 
 export function OfficesView() {
-  const [data, setData] = useState<Office[] | null>(null); const [employees, setEmployees] = useState<Employee[]>([]); const [error, setError] = useState(""); const [open, setOpen] = useState(false); const [editing, setEditing] = useState<Office | null>(null); const [assigning, setAssigning] = useState<Office | null>(null); const [assignedIds, setAssignedIds] = useState<string[]>([]); const [primaryIds, setPrimaryIds] = useState<string[]>([]);
-  const [form, setForm] = useState({ officeName: "", latitude: "19.0760", longitude: "72.8777", radiusMeters: "150", timezone: "Asia/Kolkata", egressIps: "", wifiSsids: "" });
-  const load = () => Promise.all([apiClient.get("/offices"), apiClient.get("/employees?limit=100")]).then(([offices, employeeResult]) => { setData(offices.data.data); setEmployees(employeeResult.data.data); }).catch(() => setError("Office locations could not be loaded."));
-  useEffect(() => { void load(); }, []);
-  async function saveOffice() { setError(""); const payload = { officeName: form.officeName, latitude: Number(form.latitude), longitude: Number(form.longitude), radiusMeters: Number(form.radiusMeters), timezone: form.timezone, egressIps: form.egressIps.split(",").map(trim).filter(Boolean), wifiSsids: form.wifiSsids.split(",").map(trim).filter(Boolean) }; await (editing ? apiClient.patch(`/offices/${editing.id}`, payload) : apiClient.post("/offices", payload)).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Office could not be saved. Check the geofence, network values, and references.")); }
-  function openCreate() { setEditing(null); setForm({ officeName: "", latitude: "19.0760", longitude: "72.8777", radiusMeters: "150", timezone: "Asia/Kolkata", egressIps: "", wifiSsids: "" }); setOpen(true); }
-  function openEdit(office: Office) { setEditing(office); setForm({ officeName: office.officeName, latitude: String(office.latitude), longitude: String(office.longitude), radiusMeters: String(office.radiusMeters), timezone: office.timezone ?? "", egressIps: office.egressIps.join(", "), wifiSsids: office.wifiSsids.join(", ") }); setOpen(true); }
-  async function removeOffice() { if (!editing || !window.confirm(`Delete ${editing.officeName}?`)) return; await apiClient.delete(`/offices/${editing.id}`).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Office cannot be deleted while assignments, holidays, or attendance evidence reference it.")); }
-  async function openAssignments(office: Office) { setError(""); try { const result = await apiClient.get(`/offices/${office.id}/employees`); const rows = result.data.data as Array<{ employeeId: string; isPrimary: boolean }>; setAssignedIds(rows.map((row) => row.employeeId)); setPrimaryIds(rows.filter((row) => row.isPrimary).map((row) => row.employeeId)); setAssigning(office); } catch { setError("Office assignments could not be loaded."); } }
-  async function saveAssignments() { if (!assigning) return; try { await apiClient.put(`/offices/${assigning.id}/employees`, { employeeIds: assignedIds, primaryEmployeeIds: primaryIds.filter((id) => assignedIds.includes(id)) }); setAssigning(null); await load(); } catch { setError("Office assignments could not be saved."); } }
-  return <AdminPage title="Office Locations & Geofences" description="Control where employees may securely record attendance." action={<PrimaryButton onClick={openCreate}><Plus className="size-4" />Add office</PrimaryButton>}>
-    {error && <ErrorState message={error} />}{!data ? <LoadingState /> : <div className="grid gap-6 xl:grid-cols-[1fr_420px]"><Panel className="overflow-hidden"><div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-[#e4e1ee] bg-[#f5f2ff] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#777587]"><span>Office</span><span>Employees</span><span>Radius</span><span>Action</span></div>{data.length ? data.map((office) => <div key={office.id} className="grid grid-cols-[1fr_100px_90px_130px] items-center border-b border-[#e4e1ee] px-6 py-5 last:border-0"><div><div className="font-semibold">{office.officeName}</div><div className="mt-1 text-xs text-[#777587]">{office.timezone || "Tenant timezone"} · {(office.egressIps as string[]).length} trusted networks</div></div><span className="text-sm">{office._count?.assignments ?? 0}</span><span className="text-sm">{office.radiusMeters} m</span><div className="flex gap-3"><button className="text-left text-xs font-semibold text-[#3525cd]" onClick={() => openAssignments(office)}>Assign</button><button className="text-left text-xs font-semibold text-[#3525cd]" onClick={() => openEdit(office)}>Edit</button></div></div>) : <EmptyState title="No offices yet" body="Add an office to configure its circular geofence and network allow-list." />}</Panel><OfficeMap offices={data} /></div>}
-    {open && <Dialog title={editing ? "Edit office" : "Add office"} onClose={() => { setOpen(false); setEditing(null); }}><div className="grid gap-4"><Field label="Office name"><input autoFocus className={inputClass} value={form.officeName} onChange={(e) => setForm({ ...form, officeName: e.target.value })} /></Field><div className="grid grid-cols-2 gap-4"><Field label="Latitude"><input className={inputClass} value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} /></Field><Field label="Longitude"><input className={inputClass} value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} /></Field></div><Field label="Radius in meters"><input type="number" className={inputClass} value={form.radiusMeters} onChange={(e) => setForm({ ...form, radiusMeters: e.target.value })} /></Field><Field label="Timezone"><input className={inputClass} value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })} /></Field><Field label="Egress IPs or CIDRs"><input className={inputClass} placeholder="203.0.113.10, 10.0.0.0/24" value={form.egressIps} onChange={(e) => setForm({ ...form, egressIps: e.target.value })} /></Field><Field label="Advisory Wi-Fi SSIDs"><input className={inputClass} value={form.wifiSsids} onChange={(e) => setForm({ ...form, wifiSsids: e.target.value })} /></Field><div className="flex gap-3">{editing && <button className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]" onClick={removeOffice}>Delete</button>}<PrimaryButton className="flex-1" onClick={saveOffice}>Save office</PrimaryButton></div></div></Dialog>}
-    {assigning && <Dialog title={`Assign employees · ${assigning.officeName}`} onClose={() => setAssigning(null)}><div className="grid max-h-96 gap-2 overflow-auto">{employees.map((employee) => <div key={employee.id} className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-[#f5f2ff] p-3"><label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={assignedIds.includes(employee.id)} onChange={(event) => { setAssignedIds((current) => event.target.checked ? [...current, employee.id] : current.filter((id) => id !== employee.id)); if (!event.target.checked) setPrimaryIds((current) => current.filter((id) => id !== employee.id)); }} /><span><strong>{employee.fullName}</strong><span className="block text-xs text-[#777587]">{employee.employeeCode}</span></span></label><label className="flex items-center gap-2 text-xs"><input type="checkbox" disabled={!assignedIds.includes(employee.id)} checked={primaryIds.includes(employee.id)} onChange={(event) => setPrimaryIds((current) => event.target.checked ? [...current, employee.id] : current.filter((id) => id !== employee.id))} />Primary</label></div>)}</div><PrimaryButton className="mt-5 w-full" onClick={saveAssignments}>Save assignments</PrimaryButton></Dialog>}
-  </AdminPage>;
+  const [data, setData] = useState<Office[] | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Office | null>(null);
+  const [assigning, setAssigning] = useState<Office | null>(null);
+  const [assignedIds, setAssignedIds] = useState<string[]>([]);
+  const [primaryIds, setPrimaryIds] = useState<string[]>([]);
+  const [form, setForm] = useState({
+    officeName: "",
+    latitude: "",
+    longitude: "",
+    radiusMeters: "150",
+    timezone: "",
+    egressIps: "",
+    wifiSsids: "",
+  });
+  const load = () =>
+    Promise.all([
+      apiClient.get("/offices"),
+      apiClient.get("/employees?limit=100"),
+    ])
+      .then(([offices, employeeResult]) => {
+        setData(offices.data.data);
+        setEmployees(employeeResult.data.data);
+      })
+      .catch(() => setError("Office locations could not be loaded."));
+  useEffect(() => {
+    void load();
+  }, []);
+  async function saveOffice() {
+    setError("");
+    const latitude = Number(form.latitude);
+    const longitude = Number(form.longitude);
+    const radiusMeters = Number(form.radiusMeters);
+    if (
+      !form.officeName.trim() ||
+      !form.latitude.trim() ||
+      !form.longitude.trim() ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180 ||
+      !form.timezone ||
+      !Number.isInteger(radiusMeters) ||
+      radiusMeters < 25 ||
+      radiusMeters > 10_000
+    ) {
+      setError(
+        "Choose the office on the map, confirm its timezone, and enter a geofence radius between 25 and 10,000 meters.",
+      );
+      return;
+    }
+    const payload = {
+      officeName: form.officeName.trim(),
+      latitude,
+      longitude,
+      radiusMeters,
+      timezone: form.timezone,
+      egressIps: form.egressIps.split(",").map(trim).filter(Boolean),
+      wifiSsids: form.wifiSsids.split(",").map(trim).filter(Boolean),
+    };
+    await (
+      editing
+        ? apiClient.patch(`/offices/${editing.id}`, payload)
+        : apiClient.post("/offices", payload)
+    )
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() =>
+        setError(
+          "Office could not be saved. Check the geofence, network values, and references.",
+        ),
+      );
+  }
+  function openCreate() {
+    setError("");
+    setEditing(null);
+    setForm({
+      officeName: "",
+      latitude: "",
+      longitude: "",
+      radiusMeters: "150",
+      timezone: "",
+      egressIps: "",
+      wifiSsids: "",
+    });
+    setOpen(true);
+  }
+  function openEdit(office: Office) {
+    setError("");
+    setEditing(office);
+    setForm({
+      officeName: office.officeName,
+      latitude: String(office.latitude),
+      longitude: String(office.longitude),
+      radiusMeters: String(office.radiusMeters),
+      timezone:
+        timezoneForCoordinate(office.latitude, office.longitude) ??
+        office.timezone ??
+        "",
+      egressIps: office.egressIps.join(", "),
+      wifiSsids: office.wifiSsids.join(", "),
+    });
+    setOpen(true);
+  }
+  function updateOfficeCoordinate(latitude: number, longitude: number) {
+    setForm((current) => ({
+      ...current,
+      latitude: latitude.toFixed(6),
+      longitude: longitude.toFixed(6),
+      timezone:
+        timezoneForCoordinate(latitude, longitude) ?? current.timezone,
+    }));
+  }
+  function detectTimezoneFromInputs() {
+    const timezone = timezoneForCoordinate(form.latitude, form.longitude);
+    if (timezone) setForm((current) => ({ ...current, timezone }));
+  }
+  async function removeOffice() {
+    if (!editing || !window.confirm(`Delete ${editing.officeName}?`)) return;
+    await apiClient
+      .delete(`/offices/${editing.id}`)
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() =>
+        setError(
+          "Office cannot be deleted while assignments, holidays, or attendance evidence reference it.",
+        ),
+      );
+  }
+  async function openAssignments(office: Office) {
+    setError("");
+    try {
+      const result = await apiClient.get(`/offices/${office.id}/employees`);
+      const rows = result.data.data as Array<{
+        employeeId: string;
+        isPrimary: boolean;
+      }>;
+      setAssignedIds(rows.map((row) => row.employeeId));
+      setPrimaryIds(
+        rows.filter((row) => row.isPrimary).map((row) => row.employeeId),
+      );
+      setAssigning(office);
+    } catch {
+      setError("Office assignments could not be loaded.");
+    }
+  }
+  async function saveAssignments() {
+    if (!assigning) return;
+    try {
+      await apiClient.put(`/offices/${assigning.id}/employees`, {
+        employeeIds: assignedIds,
+        primaryEmployeeIds: primaryIds.filter((id) => assignedIds.includes(id)),
+      });
+      setAssigning(null);
+      await load();
+    } catch {
+      setError("Office assignments could not be saved.");
+    }
+  }
+  return (
+    <AdminPage
+      title="Office Locations & Geofences"
+      description="Control where employees may securely record attendance."
+      action={
+        <PrimaryButton onClick={openCreate}>
+          <Plus className="size-4" />
+          Add office
+        </PrimaryButton>
+      }
+    >
+      {error && <ErrorState message={error} />}
+      <Panel className="mb-5 p-5">
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <h2 className="font-bold">How policy assignment works</h2>
+            <p className="mt-1 text-sm leading-6 text-[#646171]">
+              DeltCRM resolves one effective policy for each employee. A direct
+              employee assignment wins over a department assignment, and a
+              department assignment wins over the tenant default.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[#3525cd]">
+            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Employee</span>
+            <span>overrides</span>
+            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Department</span>
+            <span>overrides</span>
+            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Tenant</span>
+          </div>
+        </div>
+      </Panel>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e1a84b] bg-[#fff7e7] px-5 py-4 text-sm text-[#654500]">
+        <p>
+          <strong>Important:</strong> Saving an office does not enforce its
+          geofence by itself. Assign employees to the office and give them an
+          attendance policy whose location rule is <strong>Office geofence</strong>.
+        </p>
+        <a
+          className="font-bold text-[#3525cd]"
+          href="/app/attendance/policies"
+        >
+          Review attendance policies
+        </a>
+      </div>
+      {!data ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+          <Panel className="overflow-hidden">
+            <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-[#e4e1ee] bg-[#f5f2ff] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#777587]">
+              <span>Office</span>
+              <span>Employees</span>
+              <span>Radius</span>
+              <span>Action</span>
+            </div>
+            {data.length ? (
+              data.map((office) => (
+                <div
+                  key={office.id}
+                  className="grid grid-cols-[1fr_100px_90px_130px] items-center border-b border-[#e4e1ee] px-6 py-5 last:border-0"
+                >
+                  <div>
+                    <div className="font-semibold">{office.officeName}</div>
+                    <div className="mt-1 text-xs text-[#777587]">
+                      {office.timezone || "Tenant timezone"} ·{" "}
+                      {(office.egressIps as string[]).length} trusted networks
+                    </div>
+                    <div className="mt-1 text-xs text-[#777587]">
+                      {Number(office.latitude).toFixed(6)}, {Number(office.longitude).toFixed(6)}
+                    </div>
+                  </div>
+                  <span className="text-sm">
+                    {office._count?.assignments ?? 0}
+                  </span>
+                  <span className="text-sm">{office.radiusMeters} m</span>
+                  <div className="flex gap-3">
+                    <button
+                      className="text-left text-xs font-semibold text-[#3525cd]"
+                      onClick={() => openAssignments(office)}
+                    >
+                      Assign
+                    </button>
+                    <button
+                      className="text-left text-xs font-semibold text-[#3525cd]"
+                      onClick={() => openEdit(office)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                title="No offices yet"
+                body="Add an office to configure its circular geofence and network allow-list."
+              />
+            )}
+          </Panel>
+          <OfficeMap offices={data} />
+        </div>
+      )}
+      {open && (
+        <Dialog
+          error={error}
+          wide
+          title={editing ? "Edit office" : "Add office"}
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+        >
+          <div className="grid gap-4">
+            <OfficeLocationPicker
+              latitude={form.latitude}
+              longitude={form.longitude}
+              radiusMeters={form.radiusMeters}
+              onChange={({ latitude, longitude }) =>
+                updateOfficeCoordinate(latitude, longitude)
+              }
+            />
+            <Field label="Office name">
+              <input
+                autoFocus
+                className={inputClass}
+                value={form.officeName}
+                onChange={(e) =>
+                  setForm({ ...form, officeName: e.target.value })
+                }
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Latitude">
+                <input
+                  className={inputClass}
+                  value={form.latitude}
+                  onBlur={detectTimezoneFromInputs}
+                  onChange={(e) =>
+                    setForm({ ...form, latitude: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Longitude">
+                <input
+                  className={inputClass}
+                  value={form.longitude}
+                  onBlur={detectTimezoneFromInputs}
+                  onChange={(e) =>
+                    setForm({ ...form, longitude: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+            <Field label="Radius in meters" helpKey="location-verification">
+              <input
+                type="number"
+                className={inputClass}
+                value={form.radiusMeters}
+                onChange={(e) =>
+                  setForm({ ...form, radiusMeters: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Timezone">
+              <TimezoneSelect
+                value={form.timezone}
+                onChange={(timezone) => setForm({ ...form, timezone })}
+                description="Detected from the office pin. You can override it if the location is near a timezone boundary."
+                showDetect={false}
+              />
+            </Field>
+            <Field label="Egress IPs or CIDRs">
+              <input
+                className={inputClass}
+                placeholder="203.0.113.10, 10.0.0.0/24"
+                value={form.egressIps}
+                onChange={(e) =>
+                  setForm({ ...form, egressIps: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Advisory Wi-Fi SSIDs">
+              <input
+                className={inputClass}
+                value={form.wifiSsids}
+                onChange={(e) =>
+                  setForm({ ...form, wifiSsids: e.target.value })
+                }
+              />
+            </Field>
+            <div className="flex gap-3">
+              {editing && (
+                <button
+                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  onClick={removeOffice}
+                >
+                  Delete
+                </button>
+              )}
+              <PrimaryButton className="flex-1" onClick={saveOffice}>
+                Save office
+              </PrimaryButton>
+            </div>
+          </div>
+        </Dialog>
+      )}
+      {assigning && (
+        <Dialog
+          error={error}
+          title={`Assign employees · ${assigning.officeName}`}
+          onClose={() => setAssigning(null)}
+        >
+          <div className="grid max-h-96 gap-2 overflow-auto">
+            {employees.map((employee) => (
+              <div
+                key={employee.id}
+                className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-[#f5f2ff] p-3"
+              >
+                <label className="flex items-center gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={assignedIds.includes(employee.id)}
+                    onChange={(event) => {
+                      setAssignedIds((current) =>
+                        event.target.checked
+                          ? [...current, employee.id]
+                          : current.filter((id) => id !== employee.id),
+                      );
+                      if (!event.target.checked)
+                        setPrimaryIds((current) =>
+                          current.filter((id) => id !== employee.id),
+                        );
+                    }}
+                  />
+                  <span>
+                    <strong>{employee.fullName}</strong>
+                    <span className="block text-xs text-[#777587]">
+                      {employee.employeeCode}
+                    </span>
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    disabled={!assignedIds.includes(employee.id)}
+                    checked={primaryIds.includes(employee.id)}
+                    onChange={(event) =>
+                      setPrimaryIds((current) =>
+                        event.target.checked
+                          ? [...current, employee.id]
+                          : current.filter((id) => id !== employee.id),
+                      )
+                    }
+                  />
+                  Primary
+                </label>
+              </div>
+            ))}
+          </div>
+          <PrimaryButton className="mt-5 w-full" onClick={saveAssignments}>
+            Save assignments
+          </PrimaryButton>
+        </Dialog>
+      )}
+    </AdminPage>
+  );
 }
 
 export function PoliciesView() {
-  const [data, setData] = useState<Policy[] | null>(null); const [departments, setDepartments] = useState<Department[]>([]); const [employees, setEmployees] = useState<Employee[]>([]); const [error, setError] = useState(""); const [open, setOpen] = useState(false); const [name, setName] = useState(""); const [editing, setEditing] = useState<Policy | null>(null); const [ruleEditing, setRuleEditing] = useState<Policy | null>(null); const [ruleForm, setRuleForm] = useState({ name: "", lateAfterMinutes: 15, halfDayAfterMinutes: 240, minimumWorkMinutes: 480, overtimeAfterMinutes: 540, maxOfflineSyncHours: 48, maxFaceAttempts: 3, locationMode: "OFFICE_GEOFENCE" as LocationMode, selfieMode: "DISABLED" as SelfieMode, requireRegisteredDevice: true, fieldTrackingEnabled: false, allowHybridFieldTracking: false }); const [assignments, setAssignments] = useState<PolicyAssignment[]>([]); const [assignmentForm, setAssignmentForm] = useState<{ scope: PolicyAssignment["scope"]; targetId: string }>({ scope: "TENANT_DEFAULT", targetId: "" });
-  const load = () => Promise.all([apiClient.get("/attendance-policies"), apiClient.get("/departments"), apiClient.get("/employees?limit=100")]).then(([policies, departmentResult, employeeResult]) => { setData(policies.data.data); setDepartments(departmentResult.data.data); setEmployees(employeeResult.data.data); }).catch(() => setError("Policies could not be loaded.")); useEffect(() => { void load(); }, []);
-  async function create() { await apiClient.post("/attendance-policies", { name }).then(() => { setOpen(false); setName(""); load(); }).catch(() => setError("Policy could not be created.")); }
-  function addAssignment() { const next: PolicyAssignment = assignmentForm.scope === "TENANT_DEFAULT" ? { scope: "TENANT_DEFAULT" } : assignmentForm.scope === "DEPARTMENT" ? { scope: "DEPARTMENT", deptId: assignmentForm.targetId } : { scope: "EMPLOYEE", employeeId: assignmentForm.targetId }; const key = assignmentKey(next); if (!assignmentForm.targetId && assignmentForm.scope !== "TENANT_DEFAULT") return; if (!assignments.some((item) => assignmentKey(item) === key)) setAssignments((current) => [...current, next]); }
-  async function saveAssignments() { if (!editing) return; try { await apiClient.put(`/attendance-policies/${editing.id}/assignments`, { assignments: assignments.map(({ scope, deptId, employeeId }) => ({ scope, ...(deptId ? { deptId } : {}), ...(employeeId ? { employeeId } : {}) })) }); setEditing(null); await load(); } catch { setError("Policy assignments conflict with an existing scope or target."); } }
-  function openRuleEditor(policy: Policy) { setRuleEditing(policy); setRuleForm({ name: policy.name, lateAfterMinutes: policy.lateAfterMinutes, halfDayAfterMinutes: policy.halfDayAfterMinutes, minimumWorkMinutes: policy.minimumWorkMinutes, overtimeAfterMinutes: policy.overtimeAfterMinutes, maxOfflineSyncHours: policy.maxOfflineSyncHours, maxFaceAttempts: policy.maxFaceAttempts, locationMode: policy.locationMode, selfieMode: policy.selfieMode, requireRegisteredDevice: policy.requireRegisteredDevice, fieldTrackingEnabled: policy.fieldTrackingEnabled, allowHybridFieldTracking: policy.allowHybridFieldTracking }); }
-  async function saveRules() { if (!ruleEditing) return; setError(""); await apiClient.patch(`/attendance-policies/${ruleEditing.id}`, ruleForm).then(() => { setRuleEditing(null); load(); }).catch((requestError: unknown) => { const response = requestError as { response?: { data?: { message?: string } } }; setError(response.response?.data?.message ?? "Policy rules could not be saved. Review the thresholds and tenant capabilities."); }); }
-  async function removePolicy() { if (!ruleEditing || !window.confirm(`Delete ${ruleEditing.name}?`)) return; await apiClient.delete(`/attendance-policies/${ruleEditing.id}`).then(() => { setRuleEditing(null); load(); }).catch(() => setError("Assigned policies cannot be deleted.")); }
-  return <AdminPage title="Attendance Policies" description="Define verification and work-time rules, then assign by employee, department or tenant default." action={<PrimaryButton onClick={() => setOpen(true)}><Plus className="size-4" />Create policy</PrimaryButton>}>
-    {error && <ErrorState message={error} />}{!data ? <LoadingState /> : <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{data.map((policy) => <Panel key={policy.id} className="p-6"><div className="flex items-start justify-between"><div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]"><ShieldCheck /></div><span className="rounded-full bg-[#7cf994]/35 px-3 py-1 text-xs font-semibold text-[#005320]">{policy.assignments.length} assignments</span></div><h2 className="mt-5 text-xl font-semibold">{policy.name}</h2><div className="mt-5 grid grid-cols-2 gap-3 text-sm"><Metric label="Late after" value={`${policy.lateAfterMinutes} min`} /><Metric label="Half day" value={`${policy.halfDayAfterMinutes} min`} /><Metric label="Minimum work" value={`${policy.minimumWorkMinutes} min`} /><Metric label="Overtime" value={`${policy.overtimeAfterMinutes} min`} /></div><div className="mt-5 flex flex-wrap gap-2 text-[11px]">{policy.locationMode !== "NONE" && <Tag>{policy.locationMode === "OFFICE_GEOFENCE" ? "Office geofence" : "Field GPS"}</Tag>}{policy.requireRegisteredDevice && <Tag>Registered device</Tag>}{policy.selfieMode === "REQUIRED" && <Tag>Selfie</Tag>}{policy.fieldTrackingEnabled && <Tag>Field tracking</Tag>}</div><div className="mt-5 flex gap-4"><button className="text-sm font-semibold text-[#3525cd]" onClick={() => openRuleEditor(policy)}>Edit rules</button><button className="text-sm font-semibold text-[#3525cd]" onClick={() => { setEditing(policy); setAssignments(policy.assignments); }}>Manage assignments</button></div></Panel>)}{!data.length && <Panel className="lg:col-span-2 xl:col-span-3"><EmptyState title="No policies" body="Create a policy and assign one tenant default before attendance begins." /></Panel>}</div>}
-    {open && <Dialog title="Create attendance policy" onClose={() => setOpen(false)}><Field label="Policy name"><input autoFocus className={inputClass} value={name} onChange={(e) => setName(e.target.value)} /></Field><div className="mt-5 rounded-xl bg-[#f5f2ff] p-4 text-sm text-[#464555]">New policies start with secure default thresholds and can be refined after creation.</div><PrimaryButton className="mt-5 w-full" onClick={create}>Create policy</PrimaryButton></Dialog>}
-    {editing && <Dialog title={`Assignments · ${editing.name}`} onClose={() => setEditing(null)}><div className="grid gap-3">{assignments.map((assignment) => <div key={assignmentKey(assignment)} className="flex items-center justify-between rounded-lg bg-[#f5f2ff] p-3 text-sm"><span>{assignmentLabel(assignment, departments, employees)}</span><button className="text-xs font-semibold text-[#ba1a1a]" onClick={() => setAssignments((current) => current.filter((item) => assignmentKey(item) !== assignmentKey(assignment)))}>Remove</button></div>)}</div><div className="mt-5 grid gap-3 rounded-xl border border-[#e4e1ee] p-4"><Field label="Scope"><select className={inputClass} value={assignmentForm.scope} onChange={(event) => setAssignmentForm({ scope: event.target.value as PolicyAssignment["scope"], targetId: "" })}><option value="TENANT_DEFAULT">Tenant default</option><option value="DEPARTMENT">Department</option><option value="EMPLOYEE">Employee</option></select></Field>{assignmentForm.scope === "DEPARTMENT" && <Field label="Department"><select className={inputClass} value={assignmentForm.targetId} onChange={(event) => setAssignmentForm({ ...assignmentForm, targetId: event.target.value })}><option value="">Select department</option>{departments.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}</select></Field>}{assignmentForm.scope === "EMPLOYEE" && <Field label="Employee"><select className={inputClass} value={assignmentForm.targetId} onChange={(event) => setAssignmentForm({ ...assignmentForm, targetId: event.target.value })}><option value="">Select employee</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.fullName}</option>)}</select></Field>}<button className="h-10 rounded-lg border border-[#3525cd] text-sm font-semibold text-[#3525cd]" onClick={addAssignment}>Add assignment</button></div><PrimaryButton className="mt-5 w-full" onClick={saveAssignments}>Save assignments</PrimaryButton></Dialog>}
-    {ruleEditing && <Dialog title="Edit policy rules" onClose={() => setRuleEditing(null)}><div className="grid gap-4"><Field label="Policy name"><input className={inputClass} value={ruleForm.name} onChange={(event) => setRuleForm({ ...ruleForm, name: event.target.value })} /></Field><div className="grid grid-cols-2 gap-3">{(["lateAfterMinutes", "halfDayAfterMinutes", "minimumWorkMinutes", "overtimeAfterMinutes", "maxOfflineSyncHours", "maxFaceAttempts"] as const).map((key) => <Field key={key} label={key.replaceAll(/([A-Z])/g, " $1")}><input type="number" className={inputClass} value={ruleForm[key]} onChange={(event) => setRuleForm({ ...ruleForm, [key]: Number(event.target.value) })} /></Field>)}</div><div className="grid gap-3 sm:grid-cols-2"><Field label="Location verification"><select className={inputClass} value={ruleForm.locationMode} onChange={(event) => setRuleForm({ ...ruleForm, locationMode: event.target.value as LocationMode })}><option value="NONE">No location required</option><option value="OFFICE_GEOFENCE">Office geofence</option><option value="FIELD_GPS">Field GPS</option></select></Field><Field label="Selfie verification"><select className={inputClass} value={ruleForm.selfieMode} onChange={(event) => setRuleForm({ ...ruleForm, selfieMode: event.target.value as SelfieMode })}><option value="DISABLED">Disabled</option><option value="REQUIRED">Required</option></select></Field></div>{(["requireRegisteredDevice", "fieldTrackingEnabled", "allowHybridFieldTracking"] as const).map((key) => <label key={key} className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm"><input type="checkbox" checked={ruleForm[key]} disabled={key === "allowHybridFieldTracking" && !ruleForm.fieldTrackingEnabled} onChange={(event) => setRuleForm({ ...ruleForm, [key]: event.target.checked })} />{policyOptionLabel(key)}</label>)}<div className="rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4"><p className="text-xs font-bold uppercase tracking-wide text-[#686575]">Employee app impact</p><p className="mt-2 text-sm leading-6 text-[#464555]">Employees using this policy will {ruleForm.locationMode === "NONE" ? "not be asked for location" : ruleForm.locationMode === "OFFICE_GEOFENCE" ? "verify an office geofence" : "submit field GPS"}, {ruleForm.selfieMode === "REQUIRED" ? "take a selfie" : "skip the selfie step"}, and {ruleForm.fieldTrackingEnabled ? "see field tracking when their work type allows it" : "not see field tracking"}.</p></div><div className="flex gap-3"><button className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]" onClick={removePolicy}>Delete</button><PrimaryButton className="flex-1" onClick={saveRules}>Save rules</PrimaryButton></div></div></Dialog>}
-  </AdminPage>;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const focusedEmployeeId = searchParams.get("employeeId");
+  const requestedReturnTo = searchParams.get("returnTo");
+  const returnTo =
+    requestedReturnTo?.startsWith("/app/employees/")
+      ? requestedReturnTo
+      : focusedEmployeeId
+        ? `/app/employees/${focusedEmployeeId}?tab=assignments`
+        : "/app/employees";
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const [data, setData] = useState<Policy[] | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [capabilities, setCapabilities] = useState<{
+    biometricEnforcementAvailable: boolean;
+    fieldTrackingEntitled: boolean;
+    fieldTrackingEnabled: boolean;
+    fieldTrackingIntervalMin: number;
+  } | null>(null);
+  const [error, setError] = useState("");
+  const [focusedEmployee, setFocusedEmployee] = useState<Employee | null>(null);
+  const [focusedPolicyId, setFocusedPolicyId] = useState("");
+  const [focusedResolution, setFocusedResolution] = useState<{
+    policyName: string;
+    source: string;
+  } | null>(null);
+  const [focusedError, setFocusedError] = useState("");
+  const [focusedSaving, setFocusedSaving] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [editing, setEditing] = useState<Policy | null>(null);
+  const [ruleEditing, setRuleEditing] = useState<Policy | null>(null);
+  const [ruleForm, setRuleForm] = useState({
+    name: "",
+    lateAfterMinutes: 15,
+    halfDayAfterMinutes: 240,
+    minimumWorkMinutes: 480,
+    overtimeAfterMinutes: 540,
+    maxOfflineSyncHours: 48,
+    maxFaceAttempts: 3,
+    locationMode: "OFFICE_GEOFENCE" as LocationMode,
+    selfieMode: "DISABLED" as SelfieMode,
+    requireRegisteredDevice: true,
+    fieldTrackingEnabled: false,
+    allowHybridFieldTracking: false,
+  });
+  const [assignments, setAssignments] = useState<PolicyAssignment[]>([]);
+  const [assignmentForm, setAssignmentForm] = useState<{
+    scope: PolicyAssignment["scope"];
+    targetId: string;
+  }>({ scope: "TENANT_DEFAULT", targetId: "" });
+  const load = () =>
+    Promise.all([
+      apiClient.get("/attendance-policies"),
+      apiClient.get("/departments"),
+      apiClient.get("/employees?limit=100"),
+      permissions.includes("attendance.config.read") ||
+      permissions.includes("attendance.config.manage")
+        ? apiClient.get("/workspace/attendance-capabilities").catch(() => null)
+        : Promise.resolve(null),
+      focusedEmployeeId
+        ? apiClient.get(`/employees/${focusedEmployeeId}`)
+        : Promise.resolve(null),
+      focusedEmployeeId
+        ? apiClient
+            .get(
+              `/attendance-policies/resolve?employeeId=${focusedEmployeeId}&date=${new Date().toISOString().slice(0, 10)}`,
+            )
+            .catch(() => null)
+        : Promise.resolve(null),
+    ])
+      .then(
+        ([
+          policies,
+          departmentResult,
+          employeeResult,
+          capabilityResult,
+          focusedEmployeeResult,
+          resolutionResult,
+        ]) => {
+          const policyRows = policies.data.data as Policy[];
+          setData(policyRows);
+          setDepartments(departmentResult.data.data);
+          setEmployees(employeeResult.data.data);
+          if (capabilityResult) setCapabilities(capabilityResult.data.data);
+          if (focusedEmployeeResult) {
+            setFocusedEmployee(focusedEmployeeResult.data.data);
+            const directPolicy = policyRows.find((policy) =>
+              policy.assignments.some(
+                (assignment) =>
+                  assignment.scope === "EMPLOYEE" &&
+                  assignment.employeeId === focusedEmployeeId,
+              ),
+            );
+            setFocusedPolicyId(directPolicy?.id ?? "");
+          }
+          if (resolutionResult) {
+            setFocusedResolution({
+              policyName: resolutionResult.data.data.name,
+              source: resolutionResult.data.resolution.source,
+            });
+          }
+        },
+      )
+      .catch(() => setError("Policies could not be loaded."));
+  const loadPolicies = useEffectEvent(load);
+  useEffect(() => {
+    void loadPolicies();
+  }, [focusedEmployeeId]);
+  async function create() {
+    await apiClient
+      .post("/attendance-policies", { name })
+      .then(() => {
+        setOpen(false);
+        setName("");
+        load();
+      })
+      .catch(() => setError("Policy could not be created."));
+  }
+  function addAssignment() {
+    const next: PolicyAssignment =
+      assignmentForm.scope === "TENANT_DEFAULT"
+        ? { scope: "TENANT_DEFAULT" }
+        : assignmentForm.scope === "DEPARTMENT"
+          ? { scope: "DEPARTMENT", deptId: assignmentForm.targetId }
+          : { scope: "EMPLOYEE", employeeId: assignmentForm.targetId };
+    const key = assignmentKey(next);
+    if (!assignmentForm.targetId && assignmentForm.scope !== "TENANT_DEFAULT")
+      return;
+    if (!assignments.some((item) => assignmentKey(item) === key))
+      setAssignments((current) => [...current, next]);
+  }
+  async function saveAssignments() {
+    if (!editing) return;
+    try {
+      await apiClient.put(`/attendance-policies/${editing.id}/assignments`, {
+        assignments: assignments.map(({ scope, deptId, employeeId }) => ({
+          scope,
+          ...(deptId ? { deptId } : {}),
+          ...(employeeId ? { employeeId } : {}),
+        })),
+      });
+      setEditing(null);
+      await load();
+    } catch (caught) {
+      setError(
+        requestErrorMessage(
+          caught,
+          "Policy assignments conflict with an existing scope or target.",
+        ),
+      );
+    }
+  }
+  async function saveFocusedEmployeePolicy() {
+    if (!focusedEmployeeId) return;
+    setFocusedSaving(true);
+    setFocusedError("");
+    try {
+      await apiClient.put(
+        `/attendance-policies/employees/${focusedEmployeeId}`,
+        { policyId: focusedPolicyId || null },
+      );
+      router.push(returnTo);
+    } catch (caught) {
+      setFocusedError(
+        requestErrorMessage(
+          caught,
+          "This employee policy could not be updated.",
+        ),
+      );
+    } finally {
+      setFocusedSaving(false);
+    }
+  }
+  function openRuleEditor(policy: Policy) {
+    setRuleEditing(policy);
+    setRuleForm({
+      name: policy.name,
+      lateAfterMinutes: policy.lateAfterMinutes,
+      halfDayAfterMinutes: policy.halfDayAfterMinutes,
+      minimumWorkMinutes: policy.minimumWorkMinutes,
+      overtimeAfterMinutes: policy.overtimeAfterMinutes,
+      maxOfflineSyncHours: policy.maxOfflineSyncHours,
+      maxFaceAttempts: policy.maxFaceAttempts,
+      locationMode: policy.locationMode,
+      selfieMode: policy.selfieMode,
+      requireRegisteredDevice: policy.requireRegisteredDevice,
+      fieldTrackingEnabled: policy.fieldTrackingEnabled,
+      allowHybridFieldTracking: policy.allowHybridFieldTracking,
+    });
+  }
+  async function saveRules() {
+    if (!ruleEditing) return;
+    setError("");
+    try {
+      if (
+        ruleForm.fieldTrackingEnabled &&
+        capabilities?.fieldTrackingEnabled === false
+      ) {
+        const capabilityResponse = await apiClient.patch(
+          "/workspace/attendance-capabilities",
+          {
+            fieldTrackingEnabled: true,
+            fieldTrackingIntervalMin:
+              capabilities.fieldTrackingIntervalMin || 15,
+          },
+        );
+        setCapabilities(capabilityResponse.data.data);
+      }
+      await apiClient.patch(
+        `/attendance-policies/${ruleEditing.id}`,
+        ruleForm,
+      );
+      setRuleEditing(null);
+      await load();
+    } catch (requestError: unknown) {
+      const response = requestError as {
+        response?: { data?: { message?: string } };
+      };
+      setError(
+        response.response?.data?.message ??
+          "Policy rules could not be saved. Review the thresholds and tenant capabilities.",
+      );
+    }
+  }
+  async function removePolicy() {
+    if (!ruleEditing || !window.confirm(`Delete ${ruleEditing.name}?`)) return;
+    await apiClient
+      .delete(`/attendance-policies/${ruleEditing.id}`)
+      .then(() => {
+        setRuleEditing(null);
+        load();
+      })
+      .catch(() => setError("Assigned policies cannot be deleted."));
+  }
+  return (
+    <AdminPage
+      title="Attendance Policies"
+      description="Define verification and work-time rules, then assign by employee, department or tenant default."
+      action={
+        <PrimaryButton onClick={() => setOpen(true)}>
+          <Plus className="size-4" />
+          Create policy
+        </PrimaryButton>
+      }
+    >
+      {error && <ErrorState message={error} />}
+      {!data ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+          {data.map((policy) => (
+            <Panel key={policy.id} className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                  <ShieldCheck />
+                </div>
+                <span className="rounded-full bg-[#7cf994]/35 px-3 py-1 text-xs font-semibold text-[#005320]">
+                  {policyCoverage(policy.assignments, employees)} employees
+                </span>
+              </div>
+              <h2 className="mt-5 text-xl font-semibold">{policy.name}</h2>
+              <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                <Metric
+                  label="Late after"
+                  value={`${policy.lateAfterMinutes} min`}
+                />
+                <Metric
+                  label="Half day"
+                  value={`${policy.halfDayAfterMinutes} min`}
+                />
+                <Metric
+                  label="Minimum work"
+                  value={`${policy.minimumWorkMinutes} min`}
+                />
+                <Metric
+                  label="Overtime"
+                  value={`${policy.overtimeAfterMinutes} min`}
+                />
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2 text-[11px]">
+                {policy.locationMode !== "NONE" && (
+                  <Tag>
+                    {policy.locationMode === "OFFICE_GEOFENCE"
+                      ? "Office geofence"
+                      : "Field GPS"}
+                  </Tag>
+                )}
+                {policy.requireRegisteredDevice && <Tag>Registered device</Tag>}
+                {policy.selfieMode === "REQUIRED" && <Tag>Selfie</Tag>}
+                {policy.fieldTrackingEnabled && <Tag>Field tracking</Tag>}
+              </div>
+              <div className="mt-5 flex gap-4">
+                <button
+                  className="text-sm font-semibold text-[#3525cd]"
+                  onClick={() => openRuleEditor(policy)}
+                >
+                  Edit rules
+                </button>
+                <button
+                  className="text-sm font-semibold text-[#3525cd]"
+                  onClick={() => {
+                    setEditing(policy);
+                    setAssignments(policy.assignments);
+                  }}
+                >
+                  Manage assignments
+                </button>
+              </div>
+            </Panel>
+          ))}
+          {!data.length && (
+            <Panel className="lg:col-span-2 xl:col-span-3">
+              <EmptyState
+                title="No policies"
+                body="Create a policy and assign one tenant default before attendance begins."
+              />
+            </Panel>
+          )}
+        </div>
+      )}
+      {open && (
+        <Dialog
+          error={error}
+          title="Create attendance policy"
+          onClose={() => setOpen(false)}
+        >
+          <Field label="Policy name">
+            <input
+              autoFocus
+              className={inputClass}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Field>
+          <div className="mt-5 rounded-xl bg-[#f5f2ff] p-4 text-sm text-[#464555]">
+            New policies start with secure default thresholds and can be refined
+            after creation.
+          </div>
+          <PrimaryButton className="mt-5 w-full" onClick={create}>
+            Create policy
+          </PrimaryButton>
+        </Dialog>
+      )}
+      {editing && (
+        <Dialog
+          error={error}
+          title={`Assignments · ${editing.name}`}
+          onClose={() => setEditing(null)}
+        >
+          <div className="mb-5 rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4 text-sm leading-6 text-[#464555]">
+            Assign the broad tenant default first, use department assignments
+            for team-specific rules, and use employee assignments only for
+            approved exceptions. This policy currently resolves directly for
+            approximately {policyCoverage(assignments, employees)} employees;
+            a higher-priority assignment on another policy may override it.
+          </div>
+          <div className="grid gap-3">
+            {assignments.map((assignment) => (
+              <div
+                key={assignmentKey(assignment)}
+                className="flex items-center justify-between rounded-lg bg-[#f5f2ff] p-3 text-sm"
+              >
+                <span>
+                  {assignmentLabel(assignment, departments, employees)}
+                </span>
+                <button
+                  className="text-xs font-semibold text-[#ba1a1a]"
+                  onClick={() =>
+                    setAssignments((current) =>
+                      current.filter(
+                        (item) =>
+                          assignmentKey(item) !== assignmentKey(assignment),
+                      ),
+                    )
+                  }
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 grid gap-3 rounded-xl border border-[#e4e1ee] p-4">
+            <Field label="Scope" helpKey="policies">
+              <select
+                className={inputClass}
+                value={assignmentForm.scope}
+                onChange={(event) =>
+                  setAssignmentForm({
+                    scope: event.target.value as PolicyAssignment["scope"],
+                    targetId: "",
+                  })
+                }
+              >
+                <option value="TENANT_DEFAULT">Tenant default</option>
+                <option value="DEPARTMENT">Department</option>
+                <option value="EMPLOYEE">Employee</option>
+              </select>
+            </Field>
+            {assignmentForm.scope === "DEPARTMENT" && (
+              <Field label="Department">
+                <select
+                  className={inputClass}
+                  value={assignmentForm.targetId}
+                  onChange={(event) =>
+                    setAssignmentForm({
+                      ...assignmentForm,
+                      targetId: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select department</option>
+                  {departments.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+            {assignmentForm.scope === "EMPLOYEE" && (
+              <Field label="Employee">
+                <select
+                  className={inputClass}
+                  value={assignmentForm.targetId}
+                  onChange={(event) =>
+                    setAssignmentForm({
+                      ...assignmentForm,
+                      targetId: event.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select employee</option>
+                  {employees.map((employee) => (
+                    <option key={employee.id} value={employee.id}>
+                      {employee.fullName}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+            <button
+              className="h-10 rounded-lg border border-[#3525cd] text-sm font-semibold text-[#3525cd]"
+              onClick={addAssignment}
+            >
+              Add assignment
+            </button>
+          </div>
+          <PrimaryButton className="mt-5 w-full" onClick={saveAssignments}>
+            Save assignments
+          </PrimaryButton>
+        </Dialog>
+      )}
+      {focusedEmployeeId && focusedEmployee && data && (
+        <Dialog
+          title={`Attendance policy · ${focusedEmployee.fullName}`}
+          onClose={() => router.push(returnTo)}
+        >
+          {focusedError && <ErrorState message={focusedError} />}
+          <div className="rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4 text-sm leading-6 text-[#464555]">
+            Choose one predefined policy for this employee. An employee policy
+            overrides department and tenant defaults. Choose inherited policy
+            to remove the employee-specific exception.
+          </div>
+          {focusedResolution && (
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-[#f5f2ff] p-4 text-sm">
+              <span className="text-[#646171]">Currently effective</span>
+              <strong>
+                {focusedResolution.policyName} · {sentenceCase(focusedResolution.source)}
+              </strong>
+            </div>
+          )}
+          <fieldset className="mt-5 grid gap-3">
+            <legend className="mb-1 text-sm font-bold">
+              Policy for {focusedEmployee.fullName}
+            </legend>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e4e1ee] p-4">
+              <input
+                checked={!focusedPolicyId}
+                className="mt-1 accent-[#3525cd]"
+                name="employee-policy"
+                onChange={() => setFocusedPolicyId("")}
+                type="radio"
+              />
+              <span>
+                <strong className="block text-sm">Use inherited policy</strong>
+                <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                  Use the employee&apos;s department policy, then tenant default.
+                </span>
+              </span>
+            </label>
+            {data.map((policy) => (
+              <label
+                className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e4e1ee] p-4"
+                key={policy.id}
+              >
+                <input
+                  checked={focusedPolicyId === policy.id}
+                  className="mt-1 accent-[#3525cd]"
+                  name="employee-policy"
+                  onChange={() => setFocusedPolicyId(policy.id)}
+                  type="radio"
+                />
+                <span>
+                  <strong className="block text-sm">{policy.name}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                    {policy.locationMode.replaceAll("_", " ")} · Selfie {policy.selfieMode.toLowerCase()} · Device {policy.requireRegisteredDevice ? "required" : "optional"}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          <PrimaryButton
+            className="mt-5 w-full"
+            disabled={focusedSaving}
+            onClick={saveFocusedEmployeePolicy}
+          >
+            {focusedSaving ? "Saving policy…" : "Save employee policy"}
+          </PrimaryButton>
+        </Dialog>
+      )}
+      {ruleEditing && (
+        <Dialog
+          error={error}
+          title="Edit policy rules"
+          onClose={() => setRuleEditing(null)}
+        >
+          <div className="grid gap-4">
+            <Field label="Policy name">
+              <input
+                className={inputClass}
+                value={ruleForm.name}
+                onChange={(event) =>
+                  setRuleForm({ ...ruleForm, name: event.target.value })
+                }
+              />
+            </Field>
+            <div className="rounded-xl border border-[#e4e1ee] p-4">
+              <h3 className="font-bold">Attendance calculation</h3>
+              <p className="mt-1 text-xs leading-5 text-[#777587]">
+                Set when a workday becomes late, half-day, complete, or overtime.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {(
+                  [
+                    ["lateAfterMinutes", "Late after (minutes)"],
+                    ["halfDayAfterMinutes", "Half-day after (minutes)"],
+                    ["minimumWorkMinutes", "Minimum work (minutes)"],
+                    ["overtimeAfterMinutes", "Overtime after (minutes)"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <Field key={key} label={label}>
+                    <input
+                      className={inputClass}
+                      min="0"
+                      type="number"
+                      value={ruleForm[key]}
+                      onChange={(event) =>
+                        setRuleForm({
+                          ...ruleForm,
+                          [key]: Number(event.target.value),
+                        })
+                      }
+                    />
+                  </Field>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#e4e1ee] p-4">
+              <h3 className="font-bold">Punch verification</h3>
+              <p className="mt-1 text-xs leading-5 text-[#777587]">
+                Choose what the employee must verify during check-in and check-out.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <Field
+                  helpKey="location-verification"
+                  label="Location verification"
+                >
+                  <select
+                    className={inputClass}
+                    value={ruleForm.locationMode}
+                    onChange={(event) =>
+                      setRuleForm({
+                        ...ruleForm,
+                        locationMode: event.target.value as LocationMode,
+                      })
+                    }
+                  >
+                    <option value="NONE">No location required</option>
+                    <option value="OFFICE_GEOFENCE">Office geofence</option>
+                    <option value="FIELD_GPS">Current GPS location</option>
+                  </select>
+                </Field>
+                {capabilities?.biometricEnforcementAvailable !== false && (
+                  <Field
+                    helpKey="selfie-verification"
+                    label="Selfie verification"
+                  >
+                    <select
+                      className={inputClass}
+                      value={ruleForm.selfieMode}
+                      onChange={(event) =>
+                        setRuleForm({
+                          ...ruleForm,
+                          selfieMode: event.target.value as SelfieMode,
+                        })
+                      }
+                    >
+                      <option value="DISABLED">Not required</option>
+                      <option value="REQUIRED">Required</option>
+                    </select>
+                  </Field>
+                )}
+                {capabilities?.biometricEnforcementAvailable !== false &&
+                  ruleForm.selfieMode === "REQUIRED" && (
+                    <Field
+                      helpKey="selfie-verification"
+                      label="Maximum face attempts"
+                    >
+                      <input
+                        className={inputClass}
+                        max="10"
+                        min="1"
+                        type="number"
+                        value={ruleForm.maxFaceAttempts}
+                        onChange={(event) =>
+                          setRuleForm({
+                            ...ruleForm,
+                            maxFaceAttempts: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </Field>
+                  )}
+              </div>
+              <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+                <label className="flex min-h-10 flex-1 items-center gap-3">
+                  <input
+                    checked={ruleForm.requireRegisteredDevice}
+                    type="checkbox"
+                    onChange={(event) =>
+                      setRuleForm({
+                        ...ruleForm,
+                        requireRegisteredDevice: event.target.checked,
+                      })
+                    }
+                  />
+                  Require an HR-approved registered device
+                </label>
+                <FeatureInfo className="ml-auto" helpKey="devices" />
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#e4e1ee] p-4">
+              <h3 className="font-bold">Offline attendance</h3>
+              <p className="mt-1 text-xs leading-5 text-[#777587]">
+                Allow a stored punch to sync when the employee regains connectivity.
+              </p>
+              <div className="mt-4 max-w-xs">
+                <Field label="Maximum offline sync delay (hours)">
+                  <input
+                    className={inputClass}
+                    max="168"
+                    min="0"
+                    type="number"
+                    value={ruleForm.maxOfflineSyncHours}
+                    onChange={(event) =>
+                      setRuleForm({
+                        ...ruleForm,
+                        maxOfflineSyncHours: Number(event.target.value),
+                      })
+                    }
+                  />
+                </Field>
+              </div>
+            </div>
+            {capabilities?.fieldTrackingEntitled !== false && (
+              <div className="rounded-xl border border-[#e4e1ee] p-4">
+                <h3 className="font-bold">Field workforce tracking</h3>
+                <p className="mt-1 text-xs leading-5 text-[#777587]">
+                  Optional continuous route tracking for eligible field employees.
+                </p>
+                <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+                  <label className="flex min-h-10 flex-1 items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.fieldTrackingEnabled}
+                      onChange={(event) =>
+                        setRuleForm({
+                          ...ruleForm,
+                          fieldTrackingEnabled: event.target.checked,
+                          allowHybridFieldTracking: event.target.checked
+                            ? ruleForm.allowHybridFieldTracking
+                            : false,
+                        })
+                      }
+                    />
+                    Enable field tracking for field employees
+                  </label>
+                  <FeatureInfo
+                    className="ml-auto"
+                    helpKey="background-tracking"
+                  />
+                </div>
+                {ruleForm.fieldTrackingEnabled && (
+                  <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+                    <input
+                      checked={ruleForm.allowHybridFieldTracking}
+                      type="checkbox"
+                      onChange={(event) =>
+                        setRuleForm({
+                          ...ruleForm,
+                          allowHybridFieldTracking: event.target.checked,
+                        })
+                      }
+                    />
+                    Also allow tracking for hybrid employees
+                  </label>
+                )}
+              </div>
+            )}
+            <div className="rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#686575]">
+                Employee app impact
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#464555]">
+                Employees using this policy will{" "}
+                {ruleForm.locationMode === "NONE"
+                  ? "not be asked for location"
+                  : ruleForm.locationMode === "OFFICE_GEOFENCE"
+                    ? "verify an office geofence"
+                    : "submit field GPS"}
+                ,{" "}
+                {ruleForm.selfieMode === "REQUIRED"
+                  ? "take a selfie"
+                  : "skip the selfie step"}
+                , and{" "}
+                {ruleForm.fieldTrackingEnabled
+                  ? "see field tracking when their work type allows it"
+                  : "not see field tracking"}
+                .
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#f1c57d] bg-[#fff8eb] p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#7a4d00]">
+                Dependencies to verify
+              </p>
+              <ul className="mt-2 space-y-1 text-sm leading-6 text-[#5d480e]">
+                {ruleForm.locationMode === "OFFICE_GEOFENCE" && (
+                  <li>- Every affected employee needs an assigned office.</li>
+                )}
+                {ruleForm.locationMode === "FIELD_GPS" && (
+                  <li>- Employee devices must grant precise location access.</li>
+                )}
+                {ruleForm.selfieMode === "REQUIRED" && (
+                  <li>- Employees need active consent and face enrollment.</li>
+                )}
+                {ruleForm.requireRegisteredDevice && (
+                  <li>- HR must approve a registered employee device.</li>
+                )}
+                {ruleForm.fieldTrackingEnabled && (
+                  <li>
+                    - Field tracking entitlement and background location
+                    permission must remain active.
+                  </li>
+                )}
+                {ruleForm.locationMode === "NONE" &&
+                  ruleForm.selfieMode === "DISABLED" &&
+                  !ruleForm.requireRegisteredDevice && (
+                    <li>
+                      - This policy accepts punches without location, selfie, or
+                      device trust. Confirm that this matches the security risk.
+                    </li>
+                  )}
+              </ul>
+            </div>
+            <div className="flex gap-3">
+              <button
+                className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                onClick={removePolicy}
+              >
+                Delete
+              </button>
+              <PrimaryButton className="flex-1" onClick={saveRules}>
+                Save rules
+              </PrimaryButton>
+            </div>
+          </div>
+        </Dialog>
+      )}
+    </AdminPage>
+  );
 }
 
 export function ShiftsView() {
-  const [data, setData] = useState<Shift[] | null>(null); const [error, setError] = useState(""); const [open, setOpen] = useState(false); const [editing, setEditing] = useState<Shift | null>(null); const [form, setForm] = useState({ name: "", startTime: "09:00", endTime: "18:00" });
-  const load = () => apiClient.get("/shifts").then(({ data }) => setData(data.data)).catch(() => setError("Shifts could not be loaded.")); useEffect(() => { void load(); }, []);
-  async function saveShift() { await (editing ? apiClient.patch(`/shifts/${editing.id}`, form) : apiClient.post("/shifts", form)).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Shift could not be saved.")); }
-  function openCreate() { setEditing(null); setForm({ name: "", startTime: "09:00", endTime: "18:00" }); setOpen(true); }
-  function openEdit(shift: Shift) { setEditing(shift); setForm({ name: shift.name, startTime: shift.startTime, endTime: shift.endTime }); setOpen(true); }
-  async function removeShift() { if (!editing || !window.confirm(`Delete ${editing.name}?`)) return; await apiClient.delete(`/shifts/${editing.id}`).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Shift is referenced by employees, rosters, or attendance records.")); }
-  return <AdminPage title="Shifts Management" description="Create day and overnight shifts with deterministic date attribution." action={<PrimaryButton onClick={openCreate}><Plus className="size-4" />Add new shift</PrimaryButton>}>
-    {error && <ErrorState message={error} />}{!data ? <LoadingState /> : <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{data.map((shift) => <Panel key={shift.id} className="p-6"><div className="flex items-center justify-between"><div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]"><Clock3 /></div>{shift.isOvernight && <span className="rounded-full bg-[#ffdcc3] px-3 py-1 text-xs font-semibold text-[#6e3900]">Overnight</span>}</div><h2 className="mt-5 text-lg font-semibold">{shift.name}</h2><div className="mt-5 flex items-center gap-4"><strong className="text-2xl">{shift.startTime}</strong><span className="h-1 flex-1 rounded-full bg-gradient-to-r from-[#3525cd] to-[#7cf994]" /><strong className="text-2xl">{shift.endTime}</strong></div><button className="mt-5 text-sm font-semibold text-[#3525cd]" onClick={() => openEdit(shift)}>Edit shift</button></Panel>)}</div>}
-    {open && <Dialog title={editing ? "Edit shift" : "Add new shift"} onClose={() => { setOpen(false); setEditing(null); }}><div className="grid gap-4"><Field label="Shift name"><input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><div className="grid grid-cols-2 gap-4"><Field label="Starts"><input type="time" className={inputClass} value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /></Field><Field label="Ends"><input type="time" className={inputClass} value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></Field></div><div className="flex gap-3">{editing && <button className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]" onClick={removeShift}>Delete</button>}<PrimaryButton className="flex-1" onClick={saveShift}>Save shift</PrimaryButton></div></div></Dialog>}
-  </AdminPage>;
+  const [data, setData] = useState<Shift[] | null>(null);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Shift | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    startTime: "09:00",
+    endTime: "18:00",
+  });
+  const load = () =>
+    apiClient
+      .get("/shifts")
+      .then(({ data }) => setData(data.data))
+      .catch(() => setError("Shifts could not be loaded."));
+  useEffect(() => {
+    void load();
+  }, []);
+  async function saveShift() {
+    await (
+      editing
+        ? apiClient.patch(`/shifts/${editing.id}`, form)
+        : apiClient.post("/shifts", form)
+    )
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() => setError("Shift could not be saved."));
+  }
+  function openCreate() {
+    setEditing(null);
+    setForm({ name: "", startTime: "09:00", endTime: "18:00" });
+    setOpen(true);
+  }
+  function openEdit(shift: Shift) {
+    setEditing(shift);
+    setForm({
+      name: shift.name,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+    });
+    setOpen(true);
+  }
+  async function removeShift() {
+    if (!editing || !window.confirm(`Delete ${editing.name}?`)) return;
+    await apiClient
+      .delete(`/shifts/${editing.id}`)
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() =>
+        setError(
+          "Shift is referenced by employees, rosters, or attendance records.",
+        ),
+      );
+  }
+  return (
+    <AdminPage
+      title="Shifts Management"
+      description="Create day and overnight shifts with deterministic date attribution."
+      action={
+        <PrimaryButton onClick={openCreate}>
+          <Plus className="size-4" />
+          Add new shift
+        </PrimaryButton>
+      }
+    >
+      {error && <ErrorState message={error} />}
+      {!data ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+          {data.map((shift) => (
+            <Panel key={shift.id} className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                  <Clock3 />
+                </div>
+                {shift.isOvernight && (
+                  <span className="rounded-full bg-[#ffdcc3] px-3 py-1 text-xs font-semibold text-[#6e3900]">
+                    Overnight
+                  </span>
+                )}
+              </div>
+              <h2 className="mt-5 text-lg font-semibold">{shift.name}</h2>
+              <div className="mt-5 flex items-center gap-4">
+                <strong className="text-2xl">{shift.startTime}</strong>
+                <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-[#3525cd] to-[#7cf994]" />
+                <strong className="text-2xl">{shift.endTime}</strong>
+              </div>
+              <button
+                className="mt-5 text-sm font-semibold text-[#3525cd]"
+                onClick={() => openEdit(shift)}
+              >
+                Edit shift
+              </button>
+            </Panel>
+          ))}
+        </div>
+      )}
+      {open && (
+        <Dialog
+          error={error}
+          title={editing ? "Edit shift" : "Add new shift"}
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+        >
+          <div className="grid gap-4">
+            <Field label="Shift name">
+              <input
+                className={inputClass}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Starts">
+                <input
+                  type="time"
+                  className={inputClass}
+                  value={form.startTime}
+                  onChange={(e) =>
+                    setForm({ ...form, startTime: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Ends">
+                <input
+                  type="time"
+                  className={inputClass}
+                  value={form.endTime}
+                  onChange={(e) =>
+                    setForm({ ...form, endTime: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+            <div className="flex gap-3">
+              {editing && (
+                <button
+                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  onClick={removeShift}
+                >
+                  Delete
+                </button>
+              )}
+              <PrimaryButton className="flex-1" onClick={saveShift}>
+                Save shift
+              </PrimaryButton>
+            </div>
+          </div>
+        </Dialog>
+      )}
+    </AdminPage>
+  );
 }
 
 export function RostersView() {
-  const today = new Date(); const end = new Date(today.getTime() + 6 * 86_400_000); const iso = (date: Date) => date.toISOString().slice(0, 10);
-  const [data, setData] = useState<Roster[] | null>(null); const [employees, setEmployees] = useState<Employee[]>([]); const [shifts, setShifts] = useState<Shift[]>([]); const [error, setError] = useState(""); const [open, setOpen] = useState(false); const [bulkOpen, setBulkOpen] = useState(false); const [form, setForm] = useState({ employeeId: "", shiftId: "", rosterDate: iso(today) }); const [bulkForm, setBulkForm] = useState({ employeeIds: [] as string[], shiftId: "", startDate: iso(today), endDate: iso(end) }); const [bulkResult, setBulkResult] = useState("");
-  const load = () => Promise.all([apiClient.get(`/rosters?startDate=${iso(today)}&endDate=${iso(end)}`), apiClient.get("/employees?limit=100"), apiClient.get("/shifts")]).then(([rosters, employeeResult, shiftResult]) => { setData(rosters.data.data); setEmployees(employeeResult.data.data); setShifts(shiftResult.data.data); }).catch(() => setError("Roster planner could not be loaded."));
-  // The initial planner range is intentionally fixed when this screen mounts.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void load(); }, []);
-  async function create() { await apiClient.post("/rosters", form).then(() => { setOpen(false); load(); }).catch(() => setError("Roster assignment conflicts with an existing employee/date.")); }
-  async function bulkAssign() { setError(""); try { const result = await apiClient.post("/rosters/bulk", bulkForm); const summary = result.data.data as { inserted: number; unchanged: number; errors: unknown[] }; setBulkResult(`${summary.inserted} assigned · ${summary.unchanged} unchanged · ${summary.errors.length} conflicts`); await load(); } catch { setError("Bulk roster assignment could not be completed."); } }
-  async function removeRoster(roster: Roster) { if (!window.confirm(`Remove ${roster.shift.name} for ${roster.employee.fullName}?`)) return; await apiClient.delete(`/rosters/${roster.id}`).then(() => load()).catch(() => setError("Roster assignment could not be removed.")); }
-  return <AdminPage title="Roster Planner" description="Plan the working week, bulk assign shifts and import validated CSV schedules." action={<div className="flex flex-wrap gap-3"><label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#c7c4d8] bg-white px-4 text-sm font-semibold"><Upload className="size-4" />Import CSV<input type="file" accept=".csv" className="hidden" onChange={(event) => event.target.files?.[0] && uploadRoster(event.target.files[0], setError, load)} /></label><button className="h-11 rounded-xl border border-[#3525cd] bg-white px-4 text-sm font-semibold text-[#3525cd]" onClick={() => { setBulkOpen(true); setBulkResult(""); }}>Bulk assign</button><PrimaryButton onClick={() => setOpen(true)}><Plus className="size-4" />Assign shift</PrimaryButton></div>}>
-    {error && <ErrorState message={error} />}{!data ? <LoadingState /> : <Panel className="overflow-auto"><div className="min-w-[850px]"><div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] bg-[#f5f2ff]"><div className="p-4 text-xs font-bold uppercase text-[#777587]">Employee</div>{dateRange(today, end).map((date) => <div key={date.toISOString()} className="border-l border-[#e4e1ee] p-4 text-center text-xs font-bold"><div>{date.toLocaleDateString("en", { weekday: "short" })}</div><div className="text-[#777587]">{date.getDate()}</div></div>)}</div>{employees.map((employee) => <div key={employee.id} className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] last:border-0"><div className="p-4"><div className="font-semibold">{employee.fullName}</div><div className="text-xs text-[#777587]">{employee.employeeCode}</div></div>{dateRange(today, end).map((date) => { const roster = data.find((row) => row.employee.employeeCode === employee.employeeCode && row.rosterDate.slice(0, 10) === iso(date)); return <div key={date.toISOString()} className="grid min-h-16 place-items-center border-l border-[#e4e1ee] p-2">{roster ? <button title="Remove roster" className="rounded-lg bg-[#e2dfff] px-2 py-1 text-center text-xs font-semibold text-[#3323cc]" onClick={() => removeRoster(roster)}>{roster.shift.name}</button> : <span className="text-[#c7c4d8]">—</span>}</div>; })}</div>)}{!employees.length && <EmptyState title="No employees" body="Create employees before assigning weekly rosters." />}</div></Panel>}
-    {open && <Dialog title="Assign shift" onClose={() => setOpen(false)}><div className="grid gap-4"><Field label="Employee"><select className={inputClass} value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })}><option value="">Select employee</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.fullName}</option>)}</select></Field><Field label="Shift"><select className={inputClass} value={form.shiftId} onChange={(e) => setForm({ ...form, shiftId: e.target.value })}><option value="">Select shift</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name}</option>)}</select></Field><Field label="Date"><input type="date" className={inputClass} value={form.rosterDate} onChange={(e) => setForm({ ...form, rosterDate: e.target.value })} /></Field><PrimaryButton onClick={create}>Assign shift</PrimaryButton></div></Dialog>}
-    {bulkOpen && <Dialog title="Bulk assign shifts" onClose={() => setBulkOpen(false)}><div className="grid gap-4"><Field label="Shift"><select className={inputClass} value={bulkForm.shiftId} onChange={(event) => setBulkForm({ ...bulkForm, shiftId: event.target.value })}><option value="">Select shift</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name}</option>)}</select></Field><div className="grid grid-cols-2 gap-3"><Field label="Start date"><input type="date" className={inputClass} value={bulkForm.startDate} onChange={(event) => setBulkForm({ ...bulkForm, startDate: event.target.value })} /></Field><Field label="End date"><input type="date" className={inputClass} value={bulkForm.endDate} onChange={(event) => setBulkForm({ ...bulkForm, endDate: event.target.value })} /></Field></div><fieldset className="grid max-h-64 gap-2 overflow-auto"><legend className="mb-2 text-sm font-medium">Employees</legend>{employees.map((employee) => <label key={employee.id} className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm"><input type="checkbox" checked={bulkForm.employeeIds.includes(employee.id)} onChange={(event) => setBulkForm((current) => ({ ...current, employeeIds: event.target.checked ? [...current.employeeIds, employee.id] : current.employeeIds.filter((id) => id !== employee.id) }))} />{employee.fullName}</label>)}</fieldset>{bulkResult && <div className="rounded-lg bg-[#d8f8df] p-3 text-sm text-[#005320]">{bulkResult}</div>}<PrimaryButton disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length} onClick={bulkAssign}>Apply bulk roster</PrimaryButton></div></Dialog>}
-  </AdminPage>;
+  const today = new Date();
+  const end = new Date(today.getTime() + 6 * 86_400_000);
+  const iso = (date: Date) => date.toISOString().slice(0, 10);
+  const [data, setData] = useState<Roster[] | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [form, setForm] = useState({
+    employeeId: "",
+    shiftId: "",
+    rosterDate: iso(today),
+  });
+  const [bulkForm, setBulkForm] = useState({
+    employeeIds: [] as string[],
+    shiftId: "",
+    startDate: iso(today),
+    endDate: iso(end),
+  });
+  const [bulkResult, setBulkResult] = useState("");
+  const load = () =>
+    Promise.all([
+      apiClient.get(`/rosters?startDate=${iso(today)}&endDate=${iso(end)}`),
+      apiClient.get("/employees?limit=100"),
+      apiClient.get("/shifts"),
+    ])
+      .then(([rosters, employeeResult, shiftResult]) => {
+        setData(rosters.data.data);
+        setEmployees(employeeResult.data.data);
+        setShifts(shiftResult.data.data);
+      })
+      .catch(() => setError("Roster planner could not be loaded."));
+  const loadRosters = useEffectEvent(load);
+
+  useEffect(() => {
+    void loadRosters();
+  }, []);
+  async function create() {
+    await apiClient
+      .post("/rosters", form)
+      .then(() => {
+        setOpen(false);
+        load();
+      })
+      .catch(() =>
+        setError("Roster assignment conflicts with an existing employee/date."),
+      );
+  }
+  async function bulkAssign() {
+    setError("");
+    try {
+      const result = await apiClient.post("/rosters/bulk", bulkForm);
+      const summary = result.data.data as {
+        inserted: number;
+        unchanged: number;
+        errors: unknown[];
+      };
+      setBulkResult(
+        `${summary.inserted} assigned · ${summary.unchanged} unchanged · ${summary.errors.length} conflicts`,
+      );
+      await load();
+    } catch {
+      setError("Bulk roster assignment could not be completed.");
+    }
+  }
+  async function removeRoster(roster: Roster) {
+    if (
+      !window.confirm(
+        `Remove ${roster.shift.name} for ${roster.employee.fullName}?`,
+      )
+    )
+      return;
+    await apiClient
+      .delete(`/rosters/${roster.id}`)
+      .then(() => load())
+      .catch(() => setError("Roster assignment could not be removed."));
+  }
+  return (
+    <AdminPage
+      title="Roster Planner"
+      description="Plan the working week, bulk assign shifts and import validated CSV schedules."
+      action={
+        <div className="flex flex-wrap gap-3">
+          <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#c7c4d8] bg-white px-4 text-sm font-semibold">
+            <Upload className="size-4" />
+            Import CSV
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(event) =>
+                event.target.files?.[0] &&
+                uploadRoster(event.target.files[0], setError, load)
+              }
+            />
+          </label>
+          <button
+            className="h-11 rounded-xl border border-[#3525cd] bg-white px-4 text-sm font-semibold text-[#3525cd]"
+            onClick={() => {
+              setBulkOpen(true);
+              setBulkResult("");
+            }}
+          >
+            Bulk assign
+          </button>
+          <PrimaryButton onClick={() => setOpen(true)}>
+            <Plus className="size-4" />
+            Assign shift
+          </PrimaryButton>
+        </div>
+      }
+    >
+      {error && <ErrorState message={error} />}
+      {!data ? (
+        <LoadingState />
+      ) : (
+        <Panel className="overflow-auto">
+          <div className="min-w-[850px]">
+            <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] bg-[#f5f2ff]">
+              <div className="p-4 text-xs font-bold uppercase text-[#777587]">
+                Employee
+              </div>
+              {dateRange(today, end).map((date) => (
+                <div
+                  key={date.toISOString()}
+                  className="border-l border-[#e4e1ee] p-4 text-center text-xs font-bold"
+                >
+                  <div>
+                    {date.toLocaleDateString("en", { weekday: "short" })}
+                  </div>
+                  <div className="text-[#777587]">{date.getDate()}</div>
+                </div>
+              ))}
+            </div>
+            {employees.map((employee) => (
+              <div
+                key={employee.id}
+                className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] last:border-0"
+              >
+                <div className="p-4">
+                  <div className="font-semibold">{employee.fullName}</div>
+                  <div className="text-xs text-[#777587]">
+                    {employee.employeeCode}
+                  </div>
+                </div>
+                {dateRange(today, end).map((date) => {
+                  const roster = data.find(
+                    (row) =>
+                      row.employee.employeeCode === employee.employeeCode &&
+                      row.rosterDate.slice(0, 10) === iso(date),
+                  );
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className="grid min-h-16 place-items-center border-l border-[#e4e1ee] p-2"
+                    >
+                      {roster ? (
+                        <button
+                          title="Remove roster"
+                          className="rounded-lg bg-[#e2dfff] px-2 py-1 text-center text-xs font-semibold text-[#3323cc]"
+                          onClick={() => removeRoster(roster)}
+                        >
+                          {roster.shift.name}
+                        </button>
+                      ) : (
+                        <span className="text-[#c7c4d8]">—</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            {!employees.length && (
+              <EmptyState
+                title="No employees"
+                body="Create employees before assigning weekly rosters."
+              />
+            )}
+          </div>
+        </Panel>
+      )}
+      {open && (
+        <Dialog error={error} title="Assign shift" onClose={() => setOpen(false)}>
+          <div className="grid gap-4">
+            <Field label="Employee">
+              <select
+                className={inputClass}
+                value={form.employeeId}
+                onChange={(e) =>
+                  setForm({ ...form, employeeId: e.target.value })
+                }
+              >
+                <option value="">Select employee</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.fullName}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Shift">
+              <select
+                className={inputClass}
+                value={form.shiftId}
+                onChange={(e) => setForm({ ...form, shiftId: e.target.value })}
+              >
+                <option value="">Select shift</option>
+                {shifts.map((shift) => (
+                  <option key={shift.id} value={shift.id}>
+                    {shift.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Date">
+              <input
+                type="date"
+                className={inputClass}
+                value={form.rosterDate}
+                onChange={(e) =>
+                  setForm({ ...form, rosterDate: e.target.value })
+                }
+              />
+            </Field>
+            <PrimaryButton onClick={create}>Assign shift</PrimaryButton>
+          </div>
+        </Dialog>
+      )}
+      {bulkOpen && (
+        <Dialog
+          error={error}
+          title="Bulk assign shifts"
+          onClose={() => setBulkOpen(false)}
+        >
+          <div className="grid gap-4">
+            <Field label="Shift">
+              <select
+                className={inputClass}
+                value={bulkForm.shiftId}
+                onChange={(event) =>
+                  setBulkForm({ ...bulkForm, shiftId: event.target.value })
+                }
+              >
+                <option value="">Select shift</option>
+                {shifts.map((shift) => (
+                  <option key={shift.id} value={shift.id}>
+                    {shift.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Start date">
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={bulkForm.startDate}
+                  onChange={(event) =>
+                    setBulkForm({ ...bulkForm, startDate: event.target.value })
+                  }
+                />
+              </Field>
+              <Field label="End date">
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={bulkForm.endDate}
+                  onChange={(event) =>
+                    setBulkForm({ ...bulkForm, endDate: event.target.value })
+                  }
+                />
+              </Field>
+            </div>
+            <fieldset className="grid max-h-64 gap-2 overflow-auto">
+              <legend className="mb-2 text-sm font-medium">Employees</legend>
+              {employees.map((employee) => (
+                <label
+                  key={employee.id}
+                  className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={bulkForm.employeeIds.includes(employee.id)}
+                    onChange={(event) =>
+                      setBulkForm((current) => ({
+                        ...current,
+                        employeeIds: event.target.checked
+                          ? [...current.employeeIds, employee.id]
+                          : current.employeeIds.filter(
+                              (id) => id !== employee.id,
+                            ),
+                      }))
+                    }
+                  />
+                  {employee.fullName}
+                </label>
+              ))}
+            </fieldset>
+            {bulkResult && (
+              <div className="rounded-lg bg-[#d8f8df] p-3 text-sm text-[#005320]">
+                {bulkResult}
+              </div>
+            )}
+            <PrimaryButton
+              disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length}
+              onClick={bulkAssign}
+            >
+              Apply bulk roster
+            </PrimaryButton>
+          </div>
+        </Dialog>
+      )}
+    </AdminPage>
+  );
 }
 
 export function HolidaysView() {
-  const [data, setData] = useState<Holiday[] | null>(null); const [offices, setOffices] = useState<Office[]>([]); const [error, setError] = useState(""); const [open, setOpen] = useState(false); const [editing, setEditing] = useState<Holiday | null>(null); const [form, setForm] = useState({ holidayName: "", holidayDate: "", officeLocationId: "" });
-  const load = () => Promise.all([apiClient.get("/holidays"), apiClient.get("/offices")]).then(([holidays, officeResult]) => { setData(holidays.data.data); setOffices(officeResult.data.data); }).catch(() => setError("Holiday calendar could not be loaded.")); useEffect(() => { void load(); }, []);
-  async function saveHoliday() { const payload = { holidayName: form.holidayName, holidayDate: form.holidayDate, ...(form.officeLocationId ? { officeLocationId: form.officeLocationId } : {}) }; await (editing ? apiClient.patch(`/holidays/${editing.id}`, payload) : apiClient.post("/holidays", payload)).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Holiday already exists for this date and scope.")); }
-  function openCreate() { setEditing(null); setForm({ holidayName: "", holidayDate: "", officeLocationId: "" }); setOpen(true); }
-  function openEdit(holiday: Holiday) { setEditing(holiday); setForm({ holidayName: holiday.holidayName, holidayDate: holiday.holidayDate.slice(0, 10), officeLocationId: holiday.officeLocationId ?? "" }); setOpen(true); }
-  async function removeHoliday() { if (!editing || !window.confirm(`Delete ${editing.holidayName}?`)) return; await apiClient.delete(`/holidays/${editing.id}`).then(() => { setOpen(false); setEditing(null); load(); }).catch(() => setError("Holiday could not be deleted.")); }
-  return <AdminPage title="Holiday Calendar" description="Publish tenant-wide and office-specific holidays." action={<PrimaryButton onClick={openCreate}><Plus className="size-4" />Add holiday</PrimaryButton>}>
-    {error && <ErrorState message={error} />}{!data ? <LoadingState /> : <div className="grid gap-6 xl:grid-cols-[1fr_360px]"><Panel className="p-6"><div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-[#777587]">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <div key={day} className="p-2">{day}</div>)}</div><div className="mt-2 grid grid-cols-7 gap-2">{Array.from({ length: 35 }, (_, index) => { const day = index + 1; const holiday = data.find((item) => new Date(item.holidayDate).getUTCDate() === day); return <div key={day} className={`min-h-24 rounded-lg border p-2 ${holiday ? "border-[#c3c0ff] bg-[#e2dfff]" : "border-[#e4e1ee] bg-white"}`}><span className="text-xs font-semibold">{day}</span>{holiday && <button className="mt-2 block text-left text-xs font-semibold text-[#3323cc]" onClick={() => openEdit(holiday)}>{holiday.holidayName}</button>}</div>; })}</div></Panel><Panel className="p-6"><h2 className="font-semibold">Upcoming holidays</h2><div className="mt-4 grid gap-3">{data.map((holiday) => <button key={holiday.id} className="flex gap-3 rounded-lg bg-[#f5f2ff] p-3 text-left" onClick={() => openEdit(holiday)}><CalendarDays className="size-5 text-[#3525cd]" /><span><span className="block text-sm font-semibold">{holiday.holidayName}</span><span className="text-xs text-[#777587]">{new Date(holiday.holidayDate).toLocaleDateString()} · {holiday.office?.officeName ?? "All offices"}</span></span></button>)}</div></Panel></div>}
-    {open && <Dialog title={editing ? "Edit holiday" : "Add holiday"} onClose={() => { setOpen(false); setEditing(null); }}><div className="grid gap-4"><Field label="Holiday name"><input className={inputClass} value={form.holidayName} onChange={(e) => setForm({ ...form, holidayName: e.target.value })} /></Field><Field label="Date"><input type="date" className={inputClass} value={form.holidayDate} onChange={(e) => setForm({ ...form, holidayDate: e.target.value })} /></Field><Field label="Scope"><select className={inputClass} value={form.officeLocationId} onChange={(e) => setForm({ ...form, officeLocationId: e.target.value })}><option value="">All offices</option>{offices.map((office) => <option key={office.id} value={office.id}>{office.officeName}</option>)}</select></Field><div className="flex gap-3">{editing && <button className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]" onClick={removeHoliday}>Delete</button>}<PrimaryButton className="flex-1" onClick={saveHoliday}>Publish holiday</PrimaryButton></div></div></Dialog>}
-  </AdminPage>;
+  const [data, setData] = useState<Holiday[] | null>(null);
+  const [offices, setOffices] = useState<Office[]>([]);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Holiday | null>(null);
+  const [form, setForm] = useState({
+    holidayName: "",
+    holidayDate: "",
+    officeLocationId: "",
+  });
+  const load = () =>
+    Promise.all([apiClient.get("/holidays"), apiClient.get("/offices")])
+      .then(([holidays, officeResult]) => {
+        setData(holidays.data.data);
+        setOffices(officeResult.data.data);
+      })
+      .catch(() => setError("Holiday calendar could not be loaded."));
+  useEffect(() => {
+    void load();
+  }, []);
+  async function saveHoliday() {
+    const payload = {
+      holidayName: form.holidayName,
+      holidayDate: form.holidayDate,
+      ...(form.officeLocationId
+        ? { officeLocationId: form.officeLocationId }
+        : {}),
+    };
+    await (
+      editing
+        ? apiClient.patch(`/holidays/${editing.id}`, payload)
+        : apiClient.post("/holidays", payload)
+    )
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() => setError("Holiday already exists for this date and scope."));
+  }
+  function openCreate() {
+    setEditing(null);
+    setForm({ holidayName: "", holidayDate: "", officeLocationId: "" });
+    setOpen(true);
+  }
+  function openEdit(holiday: Holiday) {
+    setEditing(holiday);
+    setForm({
+      holidayName: holiday.holidayName,
+      holidayDate: holiday.holidayDate.slice(0, 10),
+      officeLocationId: holiday.officeLocationId ?? "",
+    });
+    setOpen(true);
+  }
+  async function removeHoliday() {
+    if (!editing || !window.confirm(`Delete ${editing.holidayName}?`)) return;
+    await apiClient
+      .delete(`/holidays/${editing.id}`)
+      .then(() => {
+        setOpen(false);
+        setEditing(null);
+        load();
+      })
+      .catch(() => setError("Holiday could not be deleted."));
+  }
+  return (
+    <AdminPage
+      title="Holiday Calendar"
+      description="Publish tenant-wide and office-specific holidays."
+      action={
+        <PrimaryButton onClick={openCreate}>
+          <Plus className="size-4" />
+          Add holiday
+        </PrimaryButton>
+      }
+    >
+      {error && <ErrorState message={error} />}
+      {!data ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+          <Panel className="p-6">
+            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-[#777587]">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <div key={day} className="p-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-7 gap-2">
+              {Array.from({ length: 35 }, (_, index) => {
+                const day = index + 1;
+                const holiday = data.find(
+                  (item) => new Date(item.holidayDate).getUTCDate() === day,
+                );
+                return (
+                  <div
+                    key={day}
+                    className={`min-h-24 rounded-lg border p-2 ${holiday ? "border-[#c3c0ff] bg-[#e2dfff]" : "border-[#e4e1ee] bg-white"}`}
+                  >
+                    <span className="text-xs font-semibold">{day}</span>
+                    {holiday && (
+                      <button
+                        className="mt-2 block text-left text-xs font-semibold text-[#3323cc]"
+                        onClick={() => openEdit(holiday)}
+                      >
+                        {holiday.holidayName}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
+          <Panel className="p-6">
+            <h2 className="font-semibold">Upcoming holidays</h2>
+            <div className="mt-4 grid gap-3">
+              {data.map((holiday) => (
+                <button
+                  key={holiday.id}
+                  className="flex gap-3 rounded-lg bg-[#f5f2ff] p-3 text-left"
+                  onClick={() => openEdit(holiday)}
+                >
+                  <CalendarDays className="size-5 text-[#3525cd]" />
+                  <span>
+                    <span className="block text-sm font-semibold">
+                      {holiday.holidayName}
+                    </span>
+                    <span className="text-xs text-[#777587]">
+                      {new Date(holiday.holidayDate).toLocaleDateString()} ·{" "}
+                      {holiday.office?.officeName ?? "All offices"}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Panel>
+        </div>
+      )}
+      {open && (
+        <Dialog
+          error={error}
+          title={editing ? "Edit holiday" : "Add holiday"}
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+        >
+          <div className="grid gap-4">
+            <Field label="Holiday name">
+              <input
+                className={inputClass}
+                value={form.holidayName}
+                onChange={(e) =>
+                  setForm({ ...form, holidayName: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Date">
+              <input
+                type="date"
+                className={inputClass}
+                value={form.holidayDate}
+                onChange={(e) =>
+                  setForm({ ...form, holidayDate: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Scope">
+              <select
+                className={inputClass}
+                value={form.officeLocationId}
+                onChange={(e) =>
+                  setForm({ ...form, officeLocationId: e.target.value })
+                }
+              >
+                <option value="">All offices</option>
+                {offices.map((office) => (
+                  <option key={office.id} value={office.id}>
+                    {office.officeName}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div className="flex gap-3">
+              {editing && (
+                <button
+                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  onClick={removeHoliday}
+                >
+                  Delete
+                </button>
+              )}
+              <PrimaryButton className="flex-1" onClick={saveHoliday}>
+                Publish holiday
+              </PrimaryButton>
+            </div>
+          </div>
+        </Dialog>
+      )}
+    </AdminPage>
+  );
 }
 
-function OfficeMap({ offices }: { offices: Office[] }) { return <Panel className="relative min-h-[420px] overflow-hidden bg-[#eae6f4]"><div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(#777587 1px, transparent 1px), linear-gradient(90deg, #777587 1px, transparent 1px)", backgroundSize: "32px 32px" }} />{offices.map((office, index) => <div key={office.id} className="absolute" style={{ left: `${25 + (index * 29) % 55}%`, top: `${25 + (index * 23) % 48}%` }}><div className="absolute left-1/2 top-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#3525cd]/35 bg-[#3525cd]/10" /><MapPin className="relative size-8 fill-[#3525cd] text-[#3525cd]" /></div>)}<div className="absolute bottom-4 left-4 rounded-lg bg-white/90 p-3 text-xs shadow"><strong>Map provider abstraction</strong><div className="text-[#777587]">Circular geofences shown without provider lock-in</div></div></Panel>; }
-function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) { return <div className="fixed inset-0 z-[70] grid place-items-center bg-[#1b1b24]/45 p-4"><div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl"><div className="mb-6 flex items-center justify-between"><h2 className="text-xl font-semibold">{title}</h2><button onClick={onClose} className="text-[#777587]">Close</button></div>{children}</div></div>; }
-function Metric({ label, value }: { label: string; value: string }) { return <div className="rounded-lg bg-[#f5f2ff] p-3"><div className="text-xs text-[#777587]">{label}</div><div className="mt-1 font-semibold">{value}</div></div>; }
-function Tag({ children }: { children: React.ReactNode }) { return <span className="rounded-full bg-[#f0ecf9] px-3 py-1 text-[#464555]"><Check className="mr-1 inline size-3 text-[#006e2d]" />{children}</span>; }
-function trim(value: string) { return value.trim(); }
-function assignmentKey(assignment: PolicyAssignment) { return `${assignment.scope}:${assignment.deptId ?? assignment.employeeId ?? "default"}`; }
-function assignmentLabel(assignment: PolicyAssignment, departments: Department[], employees: Employee[]) { if (assignment.scope === "TENANT_DEFAULT") return "Tenant default"; if (assignment.scope === "DEPARTMENT") return `Department · ${departments.find(({ id }) => id === assignment.deptId)?.name ?? "Unknown"}`; return `Employee · ${employees.find(({ id }) => id === assignment.employeeId)?.fullName ?? "Unknown"}`; }
-function policyOptionLabel(key: "requireRegisteredDevice" | "fieldTrackingEnabled" | "allowHybridFieldTracking") { if (key === "requireRegisteredDevice") return "Require a registered device"; if (key === "fieldTrackingEnabled") return "Enable field tracking for FIELD employees"; return "Also allow field tracking for HYBRID employees"; }
-function dateRange(start: Date, end: Date) { const result: Date[] = []; for (let cursor = new Date(start); cursor <= end; cursor = new Date(cursor.getTime() + 86_400_000)) result.push(cursor); return result; }
-async function uploadRoster(file: File, setError: (message: string) => void, reload: () => void) { try { const presign = await apiClient.post("/rosters/imports/presign", { filename: file.name, contentType: file.type || "text/csv" }); await fetch(presign.data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "text/csv" }, body: file }); await apiClient.post("/rosters/imports", { objectKey: presign.data.objectKey, originalFilename: file.name, idempotencyKey: `${file.name}-${file.size}-${file.lastModified}` }); reload(); } catch { setError("Roster CSV could not be uploaded or processed."); } }
+function OfficeMap({ offices }: { offices: Office[] }) {
+  const locations = offices.flatMap((office) => {
+    const coordinate = validCoordinate(office.latitude, office.longitude);
+    return coordinate
+      ? [
+          {
+            id: office.id,
+            label: office.officeName,
+            ...coordinate,
+            radiusMeters: office.radiusMeters,
+          },
+        ]
+      : [];
+  });
+  return (
+    <FieldMap
+      className="min-h-[420px]"
+      geofences={locations}
+      markers={locations.map(
+        ({ id, label, latitude, longitude }) => ({
+          id,
+          label,
+          latitude,
+          longitude,
+        }),
+      )}
+    />
+  );
+}
+
+function OfficeLocationPicker({
+  latitude,
+  longitude,
+  radiusMeters,
+  onChange,
+}: {
+  latitude: string;
+  longitude: string;
+  radiusMeters: string;
+  onChange: (coordinate: MapCoordinate) => void;
+}) {
+  const [locating, setLocating] = useState(false);
+  const coordinate = validCoordinate(latitude, longitude);
+  function useCurrentLocation() {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        onChange({ latitude: coords.latitude, longitude: coords.longitude });
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 12_000 },
+    );
+  }
+  const marker = coordinate
+    ? [{ id: "office", label: "Office pin", ...coordinate }]
+    : [];
+  const geofence = coordinate
+    ? [
+        {
+          id: "office",
+          label: "Attendance boundary",
+          ...coordinate,
+          radiusMeters: Number(radiusMeters) || 150,
+        },
+      ]
+    : [];
+  return (
+    <div className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="font-semibold">Pin the office entrance</div>
+          <div className="text-xs text-[#777587]">
+            Click the map or use your current location. The circle is the valid
+            attendance area.
+          </div>
+        </div>
+        <button
+          className="flex h-10 items-center gap-2 rounded-xl border border-[#c8c5d0] bg-white px-3 text-sm font-semibold text-[#3525cd]"
+          disabled={locating}
+          onClick={useCurrentLocation}
+          type="button"
+        >
+          <Crosshair className="size-4" />
+          {locating ? "Locating…" : "Use current location"}
+        </button>
+      </div>
+      <FieldMap
+        className="min-h-[280px]"
+        geofences={geofence}
+        markers={marker}
+        onMapClick={onChange}
+      />
+      {!coordinate && (
+        <p className="text-xs font-semibold text-[#9a5c00]">
+          No office location selected yet.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function validCoordinate(
+  latitude: string | number,
+  longitude: string | number,
+) {
+  if (String(latitude).trim() === "" || String(longitude).trim() === "") {
+    return null;
+  }
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return null;
+  }
+  return { latitude: lat, longitude: lng };
+}
+
+function timezoneForCoordinate(
+  latitude: string | number,
+  longitude: string | number,
+) {
+  const coordinate = validCoordinate(latitude, longitude);
+  if (!coordinate) return null;
+  try {
+    return timezoneLookup(coordinate.latitude, coordinate.longitude);
+  } catch {
+    return null;
+  }
+}
+function Dialog({
+  title,
+  onClose,
+  children,
+  wide = false,
+  error,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  wide?: boolean;
+  error?: string;
+}) {
+  useEffect(() => {
+    clearStaleScrollLock();
+    return clearStaleScrollLock;
+  }, []);
+  return createPortal(
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-[#1b1b24]/45 p-4"
+      role="dialog"
+    >
+      <div
+        data-testid="dialog-panel"
+        className={`${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] w-full overflow-auto rounded-2xl bg-white p-7 shadow-2xl`}
+      >
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <button onClick={onClose} className="text-[#777587]">
+            Close
+          </button>
+        </div>
+        {error && <div className="mb-5"><ErrorState message={error} /></div>}
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function clearStaleScrollLock() {
+  for (const element of [document.documentElement, document.body]) {
+    if (element.style.overflow === "hidden") {
+      element.style.removeProperty("overflow");
+    }
+    if (element.style.overflowY === "hidden") {
+      element.style.removeProperty("overflow-y");
+    }
+  }
+}
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-[#f5f2ff] p-3">
+      <div className="text-xs text-[#777587]">{label}</div>
+      <div className="mt-1 font-semibold">{value}</div>
+    </div>
+  );
+}
+function Tag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-[#f0ecf9] px-3 py-1 text-[#464555]">
+      <Check className="mr-1 inline size-3 text-[#006e2d]" />
+      {children}
+    </span>
+  );
+}
+function trim(value: string) {
+  return value.trim();
+}
+function sentenceCase(value: string) {
+  const text = value.replaceAll("_", " ").toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+function requestErrorMessage(error: unknown, fallback: string) {
+  const data = (
+    error as {
+      response?: {
+        data?: {
+          message?: unknown;
+          details?: Array<{ field?: string; messages?: string[] }> | Record<string, unknown>;
+        };
+      };
+    }
+  ).response?.data;
+  if (typeof data?.message === "string") return data.message;
+  return fallback;
+}
+function assignmentKey(assignment: PolicyAssignment) {
+  return `${assignment.scope}:${assignment.deptId ?? assignment.employeeId ?? "default"}`;
+}
+function policyCoverage(
+  assignments: PolicyAssignment[],
+  employees: Employee[],
+) {
+  if (assignments.some(({ scope }) => scope === "TENANT_DEFAULT"))
+    return employees.length;
+  const employeeIds = new Set<string>();
+  for (const assignment of assignments) {
+    if (assignment.employeeId) employeeIds.add(assignment.employeeId);
+    if (assignment.deptId) {
+      for (const employee of employees) {
+        if (employee.deptId === assignment.deptId) employeeIds.add(employee.id);
+      }
+    }
+  }
+  return employeeIds.size;
+}
+function assignmentLabel(
+  assignment: PolicyAssignment,
+  departments: Department[],
+  employees: Employee[],
+) {
+  if (assignment.scope === "TENANT_DEFAULT") return "Tenant default";
+  if (assignment.scope === "DEPARTMENT")
+    return `Department · ${departments.find(({ id }) => id === assignment.deptId)?.name ?? "Unknown"}`;
+  return `Employee · ${employees.find(({ id }) => id === assignment.employeeId)?.fullName ?? "Unknown"}`;
+}
+function dateRange(start: Date, end: Date) {
+  const result: Date[] = [];
+  for (
+    let cursor = new Date(start);
+    cursor <= end;
+    cursor = new Date(cursor.getTime() + 86_400_000)
+  )
+    result.push(cursor);
+  return result;
+}
+async function uploadRoster(
+  file: File,
+  setError: (message: string) => void,
+  reload: () => void,
+) {
+  try {
+    const presign = await apiClient.post("/rosters/imports/presign", {
+      filename: file.name,
+      contentType: file.type || "text/csv",
+    });
+    await fetch(presign.data.uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "text/csv" },
+      body: file,
+    });
+    await apiClient.post("/rosters/imports", {
+      objectKey: presign.data.objectKey,
+      originalFilename: file.name,
+      idempotencyKey: `${file.name}-${file.size}-${file.lastModified}`,
+    });
+    reload();
+  } catch {
+    setError("Roster CSV could not be uploaded or processed.");
+  }
+}

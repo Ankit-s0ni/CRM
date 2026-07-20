@@ -1,82 +1,98 @@
 "use client";
 
 import {
+  Activity,
+  BellRing,
+  Blocks,
   Building2,
-  CalendarDays,
+  Check,
   ChevronRight,
+  CircleAlert,
   ClipboardCheck,
-  Clock3,
-  FileClock,
   FileSpreadsheet,
   Landmark,
-  MapPinned,
-  MonitorSmartphone,
-  ShieldCheck,
-  SlidersHorizontal,
-  Siren,
-  TableProperties,
   LockKeyhole,
+  MapPin,
+  Network,
+  ScrollText,
+  Settings2,
+  ShieldCheck,
   Umbrella,
+  UserPlus,
+  WalletCards,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { canAccessAttendanceWorkspace } from "@/lib/attendance-navigation";
 import { AdminPage, ErrorState, LoadingState, Panel } from "./page-primitives";
+import { AttendanceOverview } from "./attendance-workspaces";
 
-type WorkspaceModule = { key: string; name: string; activatedAt: string };
+type WorkspaceModule = {
+  key: string;
+  name: string;
+  description: string | null;
+  availability: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
+  dependencyKeys: string[];
+  conflictKeys: string[];
+  activatedAt: string;
+};
+
+type ModuleHealth = {
+  module: WorkspaceModule;
+  status: "READY" | "NEEDS_SETUP" | "BLOCKED";
+  dependencies: { required: string[]; missing: string[] };
+  configuration: Record<string, number>;
+  issues: Array<{
+    code: string;
+    severity: string;
+    message: string;
+    actionHref: string;
+  }>;
+};
 
 type HubLink = {
   title: string;
   description: string;
   href: string;
   icon: typeof ClipboardCheck;
-  permission: string;
+  permissions: string[];
+  moduleKey?: string;
+  healthKey?: string;
 };
 
-const attendanceGroups: Array<{ title: string; description: string; links: HubLink[] }> = [
-  {
-    title: "Daily operations",
-    description: "Monitor attendance, exceptions, and field activity.",
-    links: [
-      { title: "Attendance register", description: "Review daily attendance and employee records.", href: "/app/attendance/register", icon: TableProperties, permission: "attendance.records.read" },
-      { title: "OD & WFH requests", description: "Review attendance exceptions and requests.", href: "/app/attendance/exceptions", icon: CalendarDays, permission: "attendance.exceptions.read" },
-      { title: "Attendance corrections", description: "Approve employee regularization requests and recompute days.", href: "/app/attendance/regularizations", icon: FileClock, permission: "attendance.regularizations.manage" },
-      { title: "Field operations", description: "See live field teams and route history.", href: "/app/attendance/field", icon: MapPinned, permission: "attendance.field.live.read" },
-    ],
-  },
-  {
-    title: "Reports and payroll",
-    description: "Generate snapshot exports and close finalized attendance months.",
-    links: [
-      { title: "Reports center", description: "Run muster, payroll, late/OT, violations, and distance exports.", href: "/app/attendance/reports", icon: FileSpreadsheet, permission: "attendance.reports.read" },
-      { title: "Payroll close", description: "Lock, reopen, and audit payroll periods.", href: "/app/attendance/payroll", icon: LockKeyhole, permission: "attendance.payroll-lock.manage" },
-    ],
-  },
-  {
-    title: "Policies and schedules",
-    description: "Configure how attendance is calculated for this workspace.",
-    links: [
-      { title: "Employee app behavior", description: "Control tenant capabilities and the mobile app boundary.", href: "/app/modules/attendance/capabilities", icon: SlidersHorizontal, permission: "attendance.config.read" },
-      { title: "Attendance defaults", description: "Set tenant-wide attendance rules.", href: "/app/settings/attendance", icon: SlidersHorizontal, permission: "attendance.config.manage" },
-      { title: "Policies", description: "Manage policy rules and employee assignments.", href: "/app/attendance/policies", icon: ClipboardCheck, permission: "attendance.policies.read" },
-      { title: "Shifts and rosters", description: "Define work schedules and publish rosters.", href: "/app/attendance/shifts", icon: Clock3, permission: "attendance.shifts.read" },
-      { title: "Offices and holidays", description: "Manage work locations, geofences, and calendars.", href: "/app/attendance/offices", icon: Landmark, permission: "attendance.offices.read" },
-    ],
-  },
-  {
-    title: "Trust and compliance",
-    description: "Manage employee devices and investigate security signals.",
-    links: [
-      { title: "Employee devices", description: "Approve, replace, or block registered devices.", href: "/app/attendance/devices", icon: MonitorSmartphone, permission: "attendance.devices.read" },
-      { title: "Security feed", description: "Review verification alerts and follow up safely.", href: "/app/attendance/security", icon: Siren, permission: "attendance.security-alerts.read" },
-    ],
-  },
-];
+type SettingsSection = {
+  title: string;
+  description: string;
+  links: HubLink[];
+};
+
+type SettingsHealthCategory = {
+  key: string;
+  status: "READY" | "NEEDS_SETUP";
+  configuration: Record<string, number>;
+  issues: Array<{
+    code: string;
+    severity: string;
+    message: string;
+    actionHref: string;
+    count?: number;
+  }>;
+};
+
+type IntegrationProvider = {
+  key: string;
+  name: string;
+  status: "CONFIGURED" | "AVAILABLE" | "NOT_ENABLED" | "NEEDS_CONFIGURATION";
+  message: string;
+};
 
 export function ModulesHub() {
-  const permissions = new Set(useAuthStore((state) => state.user?.permissions ?? []));
+  const permissions = new Set(
+    useAuthStore((state) => state.user?.permissions ?? []),
+  );
   const [modules, setModules] = useState<WorkspaceModule[] | null>(null);
   const [error, setError] = useState("");
 
@@ -88,72 +104,376 @@ export function ModulesHub() {
   }, []);
 
   const attendance = modules?.find(({ key }) => key === "ATTENDANCE");
+  const attendanceAddOns = modules?.filter(({ key }) =>
+    ["FIELD_TRACKING", "REGULARIZATION"].includes(key),
+  );
+  const payroll = modules?.find(({ key }) => key === "PAYROLL");
   return (
     <AdminPage
       title="Modules"
       description="Choose a product area, then manage its operations, policies, and controls in one place."
     >
       {error && <ErrorState message={error} />}
-      {!modules ? <LoadingState /> : (
+      {!modules ? (
+        <LoadingState />
+      ) : (
         <div className="grid gap-5 lg:grid-cols-2">
-          {attendance && (
+          {attendance && canAccessAttendanceWorkspace(permissions) && (
             <Link
               className="group rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#4f46e5] hover:shadow-md"
               href="/app/modules/attendance"
             >
               <div className="flex items-start gap-4">
-                <span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]"><ClipboardCheck className="size-6" /></span>
+                <span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                  <ClipboardCheck className="size-6" />
+                </span>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold">{attendance.name}</h2><ChevronRight className="size-5 text-[#777587] transition group-hover:translate-x-1 group-hover:text-[#3525cd]" /></div>
-                  <p className="mt-2 text-sm leading-6 text-[#5e5b68]">Policies, schedules, attendance operations, device trust, and field monitoring.</p>
-                  <span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">Enabled</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-bold">{attendance.name}</h2>
+                    <ChevronRight className="size-5 text-[#777587] transition group-hover:translate-x-1 group-hover:text-[#3525cd]" />
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                    Policies, schedules, attendance, leave, device trust, and
+                    field monitoring.
+                  </p>
+                  <span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">
+                    Enabled
+                  </span>
+                  {attendanceAddOns?.map((module) => (
+                    <span
+                      className="ml-2 mt-4 inline-flex rounded-full bg-[#f0ecf9] px-3 py-1 text-xs font-bold text-[#3525cd]"
+                      key={module.key}
+                    >
+                      {module.name}
+                    </span>
+                  ))}
                 </div>
               </div>
             </Link>
           )}
-          {modules.filter(({ key }) => key === "LEAVE").map((module) => (
-            <Link
-              className="group rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#4f46e5] hover:shadow-md"
-              href="/app/modules/leave"
-              key={module.key}
-            >
-              <div className="flex items-start gap-4"><span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]"><Umbrella className="size-6" /></span><div className="min-w-0 flex-1"><div className="flex items-center justify-between"><h2 className="text-lg font-bold">{module.name}</h2><ChevronRight className="size-5 text-[#777587]" /></div><p className="mt-2 text-sm leading-6 text-[#5e5b68]">Balances, requests, approval coverage, and attendance integration.</p><span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">Enabled</span></div></div>
-            </Link>
-          ))}
-          {modules.filter(({ key }) => !["ATTENDANCE", "LEAVE"].includes(key)).map((module) => (
-            <Panel className="p-6" key={module.key}>
-              <div className="flex items-start gap-4"><span className="grid size-12 place-items-center rounded-xl bg-[#f0ecf9] text-[#5e5b68]"><Building2 className="size-6" /></span><div><h2 className="text-lg font-bold">{module.name}</h2><p className="mt-2 text-sm text-[#5e5b68]">This module is enabled. Its operational workspace will appear here as it is released.</p></div></div>
+          {payroll &&
+            [
+              "attendance.reports.read",
+              "attendance.reports.generate",
+              "attendance.payroll-lock.manage",
+            ].some((permission) => permissions.has(permission)) && (
+              <Link
+                className="group rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#4f46e5] hover:shadow-md"
+                href="/app/modules/payroll"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                    <WalletCards className="size-6" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-bold">{payroll.name}</h2>
+                      <ChevronRight className="size-5 text-[#777587]" />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                      Generate payroll evidence, review completed exports, and
+                      close finalized Attendance periods.
+                    </p>
+                    <span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">
+                      Enabled
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            )}
+          {modules
+            .filter(
+              ({ key }) =>
+                ![
+                  "ATTENDANCE",
+                  "LEAVE",
+                  "PAYROLL",
+                  "FIELD_TRACKING",
+                  "REGULARIZATION",
+                ].includes(key),
+            )
+            .map((module) => (
+              <Link
+                className="rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md"
+                href="/app/settings/modules"
+                key={module.key}
+              >
+                <div className="flex items-start gap-4">
+                  <span className="grid size-12 place-items-center rounded-xl bg-[#f0ecf9] text-[#5e5b68]">
+                    <Building2 className="size-6" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-bold">{module.name}</h2>
+                    <p className="mt-2 text-sm text-[#5e5b68]">
+                      Review this enabled service, its dependencies, and its
+                      current configuration health.
+                    </p>
+                  </div>
+                  <ChevronRight className="ml-auto size-5 text-[#777587]" />
+                </div>
+              </Link>
+            ))}
+          {!modules.length && (
+            <Panel className="p-8 text-sm text-[#5e5b68]">
+              No business modules are enabled for this workspace.
             </Panel>
-          ))}
-          {!modules.length && <Panel className="p-8 text-sm text-[#5e5b68]">No business modules are enabled for this workspace.</Panel>}
+          )}
         </div>
       )}
-      {permissions.size === 0 && <div className="mt-5"><ErrorState message="Your permissions are still loading. Refresh before making policy changes." /></div>}
+      {permissions.size === 0 && (
+        <div className="mt-5">
+          <ErrorState message="Your permissions are still loading. Refresh before making policy changes." />
+        </div>
+      )}
     </AdminPage>
   );
 }
 
 export function AttendanceModuleHub() {
-  const permissions = new Set(useAuthStore((state) => state.user?.permissions ?? []));
+  return <AttendanceOverview />;
+}
+
+export function SettingsHub() {
+  const permissions = new Set(
+    useAuthStore((state) => state.user?.permissions ?? []),
+  );
+  const [moduleKeys, setModuleKeys] = useState<Set<string>>(new Set());
+  const [health, setHealth] = useState<Record<string, SettingsHealthCategory>>(
+    {},
+  );
+  const [healthError, setHealthError] = useState("");
+  const [healthLoaded, setHealthLoaded] = useState(false);
+  const canReadModules = permissions.has("workspace.modules.read");
+  const canReadSettingsHealth = permissions.has("workspace.settings.read");
+
+  useEffect(() => {
+    if (!canReadModules) return;
+    apiClient
+      .get<{ modules: WorkspaceModule[] }>("/workspace/modules")
+      .then(({ data }) =>
+        setModuleKeys(new Set(data.modules.map(({ key }) => key))),
+      )
+      .catch(() => undefined);
+  }, [canReadModules]);
+
+  useEffect(() => {
+    if (!canReadSettingsHealth) return;
+    apiClient
+      .get<{
+        data: { categories: SettingsHealthCategory[] };
+      }>("/workspace/settings/health")
+      .then(({ data }) =>
+        setHealth(
+          Object.fromEntries(
+            data.data.categories.map((category) => [category.key, category]),
+          ),
+        ),
+      )
+      .catch(() => setHealthError("Setup readiness could not be loaded."))
+      .finally(() => setHealthLoaded(true));
+  }, [canReadSettingsHealth]);
+
+  const sections: SettingsSection[] = [
+    {
+      title: "Company foundation",
+      description:
+        "Start here. Set the company identity and organization structure used by every module.",
+      links: [
+        {
+          title: "Company settings",
+          description:
+            "Workspace identity, branding, timezone, locale, and onboarding details.",
+          href: "/app/settings/company",
+          icon: Building2,
+          permissions: ["workspace.settings.read"],
+          healthKey: "COMPANY",
+        },
+        {
+          title: "Organization structure",
+          description:
+            "Departments, designations, reporting hierarchy, and employee organization.",
+          href: "/app/settings/organization",
+          icon: Network,
+          permissions: ["organization.departments.read"],
+          healthKey: "ORGANIZATION",
+        },
+      ],
+    },
+    {
+      title: "People and access",
+      description:
+        "Invite administrators, assign permissions, and review which DeltCRM tools are enabled.",
+      links: [
+        {
+          title: "Admin access",
+          description:
+            "Invite administrators, HR and managers, and review elevated access.",
+          href: "/app/settings/access",
+          icon: ShieldCheck,
+          permissions: ["identity.roles.read"],
+          healthKey: "ACCESS",
+        },
+        {
+          title: "Modules and entitlements",
+          description:
+            "Review subscribed tools, operational readiness, and configuration entry points.",
+          href: "/app/settings/modules",
+          icon: Blocks,
+          permissions: ["workspace.modules.read"],
+          healthKey: "MODULES",
+        },
+      ],
+    },
+    {
+      title: "Configure enabled modules",
+      description:
+        "Set the policies and defaults employees will follow. Only enabled modules appear here.",
+      links: [
+        {
+          title: "Attendance settings",
+          description:
+            "Working week, offices, policies, verification, shifts, rosters, and holidays.",
+          href: "/app/attendance/policies",
+          icon: ClipboardCheck,
+          permissions: ["attendance.config.read", "attendance.config.manage"],
+          moduleKey: "ATTENDANCE",
+          healthKey: "ATTENDANCE",
+        },
+        {
+          title: "Payroll settings",
+          description:
+            "Review payroll dependencies, export readiness, and period-close controls.",
+          href: "/app/settings/payroll",
+          icon: WalletCards,
+          permissions: [
+            "attendance.reports.read",
+            "attendance.payroll-lock.manage",
+          ],
+          moduleKey: "PAYROLL",
+          healthKey: "PAYROLL",
+        },
+      ],
+    },
+    {
+      title: "Governance and subscription",
+      description:
+        "Review activity, your notification inbox, and the commercial workspace subscription.",
+      links: [
+        {
+          title: "Audit history",
+          description:
+            "Search attributed workspace changes, impersonation activity, and before/after evidence.",
+          href: "/app/settings/audit",
+          icon: ScrollText,
+          permissions: ["workspace.audit.read"],
+          healthKey: "AUDIT",
+        },
+        {
+          title: "My notification preferences",
+          description:
+            "Choose how optional notices reach your account and review mandatory events.",
+          href: "/app/settings/notifications",
+          icon: BellRing,
+          permissions: ["notifications.self"],
+          healthKey: "NOTIFICATIONS",
+        },
+        {
+          title: "Security controls",
+          description:
+            "Review trusted devices, biometric behavior, verification evidence, and alert rules.",
+          href: "/app/settings/security",
+          icon: ShieldCheck,
+          permissions: [
+            "attendance.devices.read",
+            "attendance.security-alerts.read",
+            "attendance.config.read",
+          ],
+          moduleKey: "ATTENDANCE",
+          healthKey: "SECURITY",
+        },
+        {
+          title: "Integrations",
+          description:
+            "Check which deployment services are available without exposing provider credentials.",
+          href: "/app/settings/integrations",
+          icon: Activity,
+          permissions: ["workspace.settings.read"],
+          healthKey: "INTEGRATIONS",
+        },
+        {
+          title: "Billing and subscription",
+          description:
+            "Manage plans, employee seats, payment methods and GST invoices.",
+          href: "/app/settings/billing",
+          icon: Landmark,
+          permissions: ["billing.subscription.read"],
+          healthKey: "BILLING",
+        },
+      ],
+    },
+  ];
   return (
     <AdminPage
-      title="Attendance"
-      description="Run daily attendance, then configure the policies and trust controls that support it."
+      title="Settings"
+      description="Set up the workspace in order. Each step opens the real configuration already used by DeltCRM."
     >
-      <div className="space-y-7">
-        {attendanceGroups.map((group) => {
-          const links = group.links.filter(({ permission }) => permissions.has(permission));
-          if (!links.length) return null;
+      {healthError && <ErrorState message={healthError} />}
+      {healthLoaded && <WorkspaceLaunchChecklist health={health} />}
+      <div className="grid gap-7">
+        {sections.map((section, index) => {
+          const visibleLinks = section.links.filter(
+            ({ permissions: required, moduleKey }) =>
+              required.some((permission) => permissions.has(permission)) &&
+              (!moduleKey || moduleKeys.has(moduleKey)),
+          );
+          if (!visibleLinks.length) return null;
           return (
-            <section key={group.title}>
-              <div className="mb-3"><h2 className="text-lg font-bold">{group.title}</h2><p className="text-sm text-[#5e5b68]">{group.description}</p></div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {links.map(({ title, description, href, icon: Icon }) => (
-                  <Link className="group rounded-xl border border-[#e4e1ee] bg-white p-5 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md" href={href} key={href}>
-                    <div className="flex items-start gap-3"><span className="grid size-10 place-items-center rounded-lg bg-[#f0ecf9] text-[#3525cd]"><Icon className="size-5" /></span><ChevronRight className="ml-auto size-4 text-[#a19ead] transition group-hover:translate-x-0.5 group-hover:text-[#3525cd]" /></div>
-                    <h3 className="mt-4 font-bold">{title}</h3><p className="mt-1 text-sm leading-5 text-[#5e5b68]">{description}</p>
-                  </Link>
-                ))}
+            <section key={section.title}>
+              <div className="mb-4 flex items-start gap-3">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#3525cd] text-sm font-bold text-white">
+                  {index + 1}
+                </span>
+                <div>
+                  <h2 className="text-lg font-bold">{section.title}</h2>
+                  <p className="mt-1 text-sm text-[#5e5b68]">
+                    {section.description}
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {visibleLinks.map(
+                  ({ title, description, href, icon: Icon, healthKey }) => {
+                    const readiness = healthKey ? health[healthKey] : undefined;
+                    return (
+                      <Link
+                        className={cn(
+                          "group rounded-xl border border-[#e4e1ee] bg-white p-5 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md",
+                        )}
+                        href={href}
+                        key={href}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="grid size-10 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+                            <Icon className="size-5" />
+                          </span>
+                          <ChevronRight className="ml-auto size-5 text-[#a19ead] group-hover:text-[#3525cd]" />
+                        </div>
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <h3 className="font-bold">{title}</h3>
+                          {readiness && <HealthPill value={readiness.status} />}
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                          {description}
+                        </p>
+                        {readiness?.issues[0] && (
+                          <p className="mt-3 text-xs font-medium text-[#8a4f00]">
+                            {readiness.issues[0].message}
+                          </p>
+                        )}
+                      </Link>
+                    );
+                  },
+                )}
               </div>
             </section>
           );
@@ -163,22 +483,512 @@ export function AttendanceModuleHub() {
   );
 }
 
-export function SettingsHub() {
-  const permissions = new Set(useAuthStore((state) => state.user?.permissions ?? []));
-  const links: HubLink[] = [
-    { title: "Company settings", description: "Workspace identity, company defaults, and onboarding details.", href: "/app/settings/company", icon: Building2, permission: "workspace.settings.read" },
-    { title: "Users and roles", description: "Invite HR users and control their access by role.", href: "/app/access", icon: ShieldCheck, permission: "identity.roles.read" },
-    { title: "Billing and subscription", description: "Manage plans, employee seats, payment methods and GST invoices.", href: "/app/settings/billing", icon: Landmark, permission: "billing.subscription.read" },
+function WorkspaceLaunchChecklist({
+  health,
+}: {
+  health: Record<string, SettingsHealthCategory>;
+}) {
+  const attendance = health.ATTENDANCE?.configuration ?? {};
+  const steps = [
+    {
+      title: "Company profile",
+      description: "Confirm company identity, logo, timezone and locale.",
+      href: "/app/settings/company",
+      icon: Building2,
+      complete: health.COMPANY?.status === "READY",
+    },
+    {
+      title: "Organization structure",
+      description: "Create departments and reusable designations.",
+      href: "/app/settings/organization",
+      icon: Network,
+      complete: health.ORGANIZATION?.status === "READY",
+    },
+    {
+      title: "Office and geofence",
+      description: "Define the physical workplace and allowed punch radius.",
+      href: "/app/attendance/offices",
+      icon: MapPin,
+      complete: (attendance.offices ?? 0) > 0,
+    },
+    {
+      title: "Attendance rules",
+      description: "Create a shift, policy and default policy assignment.",
+      href: "/app/attendance/policies",
+      icon: ClipboardCheck,
+      complete:
+        (attendance.shifts ?? 0) > 0 &&
+        (attendance.policies ?? 0) > 0 &&
+        (attendance.assignments ?? 0) > 0,
+    },
+    {
+      title: "Add employees",
+      description: "Add manually or import employees after the foundation is ready.",
+      href: "/app/employees",
+      icon: UserPlus,
+      complete: health.PEOPLE?.status === "READY",
+    },
   ];
+  const firstIncomplete = steps.findIndex(({ complete }) => !complete);
+
   return (
-    <AdminPage title="Settings" description="Manage the workspace itself. Module-specific policies stay inside their module.">
-      <div className="grid gap-4 md:grid-cols-2">
-        {links.filter(({ permission }) => permissions.has(permission)).map(({ title, description, href, icon: Icon }) => (
-          <Link className={cn("group rounded-xl border border-[#e4e1ee] bg-white p-6 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md")} href={href} key={href}>
-            <div className="flex items-start gap-3"><span className="grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]"><Icon className="size-5" /></span><ChevronRight className="ml-auto size-5 text-[#a19ead] group-hover:text-[#3525cd]" /></div><h2 className="mt-5 text-lg font-bold">{title}</h2><p className="mt-2 text-sm leading-6 text-[#5e5b68]">{description}</p>
-          </Link>
-        ))}
+    <Panel className="mb-8 overflow-hidden border-[#c9c3ff]">
+      <div className="border-b border-[#e4e1ee] bg-[#f5f2ff] p-5">
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#3525cd]">
+          Workspace launch checklist
+        </p>
+        <h2 className="mt-1 text-xl font-bold">Set up in this order</h2>
+        <p className="mt-1 text-sm text-[#5e5b68]">
+          Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.
+        </p>
+      </div>
+      <div className="grid divide-y divide-[#e4e1ee]">
+        {steps.map((step, index) => {
+          const available = index <= firstIncomplete || step.complete;
+          const Icon = step.icon;
+          const content = (
+            <>
+              <span
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold",
+                  step.complete
+                    ? "bg-[#d9f8df] text-[#146c2e]"
+                    : index === firstIncomplete
+                      ? "bg-[#3525cd] text-white"
+                      : "bg-[#efedf4] text-[#777587]",
+                )}
+              >
+                {step.complete ? <Check className="size-4" /> : index + 1}
+              </span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+                <Icon className="size-5" />
+              </span>
+              <span className="min-w-0">
+                <strong className="block text-sm">{step.title}</strong>
+                <span className="text-xs text-[#777587]">{step.description}</span>
+              </span>
+              <span className="ml-auto shrink-0 text-xs font-semibold text-[#3525cd]">
+                {step.complete ? "Complete" : index === firstIncomplete ? "Continue setup" : "Complete previous step"}
+              </span>
+              {available && <ChevronRight className="size-4 text-[#777587]" />}
+            </>
+          );
+          return available ? (
+            <Link
+              className="flex items-center gap-3 p-4 transition hover:bg-[#fbf9ff]"
+              href={step.href}
+              key={step.title}
+            >
+              {content}
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3 p-4 opacity-60" key={step.title}>
+              {content}
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
+  );
+}
+
+export function ModuleSettingsView() {
+  const [modules, setModules] = useState<WorkspaceModule[] | null>(null);
+  const [health, setHealth] = useState<Record<string, ModuleHealth>>({});
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .get<{ modules: WorkspaceModule[] }>("/workspace/modules")
+      .then(async ({ data }) => {
+        if (!active) return;
+        setModules(data.modules);
+        const results = await Promise.all(
+          data.modules.map(async (module) => {
+            try {
+              const response = await apiClient.get<{ data: ModuleHealth }>(
+                `/workspace/modules/${module.key}/health`,
+              );
+              return [module.key, response.data.data] as const;
+            } catch {
+              return null;
+            }
+          }),
+        );
+        if (active) {
+          setHealth(
+            Object.fromEntries(
+              results.filter(
+                (result): result is readonly [string, ModuleHealth] =>
+                  result !== null,
+              ),
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setError("Module entitlements could not be loaded.");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <AdminPage
+      title="Modules and entitlements"
+      description="Review commercially enabled tools, required dependencies, and configuration health."
+    >
+      {error && <ErrorState message={error} />}
+      {!modules ? (
+        <LoadingState />
+      ) : modules.length ? (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {modules.map((module) => (
+            <ModuleHealthCard
+              health={health[module.key]}
+              key={module.key}
+              module={module}
+            />
+          ))}
+        </div>
+      ) : (
+        <Panel className="p-8 text-sm text-[#5e5b68]">
+          No modules are enabled. Review the subscription with the Business
+          Admin or DeltCRM support.
+        </Panel>
+      )}
+    </AdminPage>
+  );
+}
+
+export function PayrollModuleHub() {
+  const permissions = new Set(
+    useAuthStore((state) => state.user?.permissions ?? []),
+  );
+  const { health, error } = useModuleHealth("PAYROLL");
+  return (
+    <AdminPage
+      title="Payroll"
+      description="Create immutable payroll exports and close finalized Attendance periods."
+    >
+      {error && <ErrorState message={error} />}
+      {!health ? (
+        <LoadingState />
+      ) : (
+        <>
+          <ModuleReadiness health={health} />
+          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            {["attendance.reports.read", "attendance.reports.generate"].some(
+              (permission) => permissions.has(permission),
+            ) && (
+              <WorkflowLink
+                description="Generate and download a snapshot-based payroll CSV for a selected period."
+                href="/app/reports/payroll"
+                icon={FileSpreadsheet}
+                key="reports"
+                title="Payroll exports"
+              />
+            )}
+            {permissions.has("attendance.payroll-lock.manage") && (
+              <WorkflowLink
+                description="Lock a completed month against its export or reopen it with an audited reason."
+                href="/app/attendance/payroll"
+                icon={LockKeyhole}
+                key="close"
+                title="Period close"
+              />
+            )}
+            <WorkflowLink
+              description="Review the Attendance and Leave inputs that determine payroll evidence."
+              href="/app/settings/payroll"
+              icon={Settings2}
+              key="settings"
+              title="Readiness and dependencies"
+            />
+          </div>
+        </>
+      )}
+    </AdminPage>
+  );
+}
+
+export function PayrollSettingsView() {
+  const { health, error } = useModuleHealth("PAYROLL");
+  return (
+    <AdminPage
+      title="Payroll settings"
+      description="Payroll currently derives immutable evidence from Attendance and approved Leave."
+    >
+      {error && <ErrorState message={error} />}
+      {!health ? (
+        <LoadingState />
+      ) : (
+        <>
+          <ModuleReadiness health={health} />
+          <div className="mt-5 grid gap-5 md:grid-cols-3">
+            <WorkflowLink
+              description="Working week, calculation thresholds, shifts, and policy assignments."
+              href="/app/attendance/policies"
+              icon={ClipboardCheck}
+              title="Attendance inputs"
+            />
+            <WorkflowLink
+              description="Approved leave and balances flow into period evidence."
+              href="/app/attendance/setup/leave"
+              icon={Umbrella}
+              title="Leave inputs"
+            />
+            <WorkflowLink
+              description="Generate the period export before attempting to close it."
+              href="/app/reports/payroll"
+              icon={FileSpreadsheet}
+              title="Payroll exports"
+            />
+          </div>
+        </>
+      )}
+    </AdminPage>
+  );
+}
+
+export function SecuritySettingsView() {
+  return (
+    <AdminPage
+      title="Security controls"
+      description="Manage Attendance trust from the existing device, verification, and alert workflows."
+    >
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <WorkflowLink
+          description="Approve, block, or replace employee devices with an auditable reason."
+          href="/app/attendance/devices"
+          icon={ShieldCheck}
+          title="Trusted devices"
+        />
+        <WorkflowLink
+          description="Configure location, selfie, face, and registered-device requirements."
+          href="/app/modules/attendance/capabilities"
+          icon={Settings2}
+          title="Verification behavior"
+        />
+        <WorkflowLink
+          description="Review verification evidence, alert rules, and unresolved security events."
+          href="/app/attendance/security"
+          icon={CircleAlert}
+          title="Security feed and rules"
+        />
       </div>
     </AdminPage>
   );
+}
+
+export function IntegrationSettingsView() {
+  const [providers, setProviders] = useState<IntegrationProvider[] | null>(
+    null,
+  );
+  const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiClient
+      .get<{ data: { providers: IntegrationProvider[]; note: string } }>(
+        "/workspace/integrations",
+      )
+      .then(({ data }) => {
+        setProviders(data.data.providers);
+        setNote(data.data.note);
+      })
+      .catch(() => setError("Integration diagnostics could not be loaded."));
+  }, []);
+
+  return (
+    <AdminPage
+      title="Integrations"
+      description="Check deployment-managed services used by this workspace."
+    >
+      {error && <ErrorState message={error} />}
+      {!providers ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {providers.map((provider) => (
+            <Panel className="p-6" key={provider.key}>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-bold">{provider.name}</h2>
+                <HealthPill value={provider.status} />
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#5e5b68]">
+                {provider.message}
+              </p>
+            </Panel>
+          ))}
+        </div>
+      )}
+      {note && <p className="mt-5 text-sm text-[#5e5b68]">{note}</p>}
+    </AdminPage>
+  );
+}
+
+function useModuleHealth(key: string) {
+  const [health, setHealth] = useState<ModuleHealth | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .get<{ data: ModuleHealth }>(`/workspace/modules/${key}/health`)
+      .then(({ data }) => {
+        if (active) setHealth(data.data);
+      })
+      .catch(() => {
+        if (active)
+          setError(`${key} is unavailable or you do not have access.`);
+      });
+    return () => {
+      active = false;
+    };
+  }, [key]);
+  return { health, error };
+}
+
+function ModuleHealthCard({
+  module,
+  health,
+}: {
+  module: WorkspaceModule;
+  health?: ModuleHealth;
+}) {
+  const href = moduleHref(module.key);
+  return (
+    <Panel className="p-6">
+      <div className="flex items-start gap-4">
+        <span className="grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+          <Blocks className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-bold">{module.name}</h2>
+            <HealthPill value={health?.status ?? "CHECKING"} />
+          </div>
+          <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+            {module.description ?? "DeltCRM workspace module"}
+          </p>
+        </div>
+      </div>
+      {health && <ModuleReadiness health={health} compact />}
+      {href && (
+        <Link
+          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#3525cd]"
+          href={href}
+        >
+          Open configuration <ChevronRight className="size-4" />
+        </Link>
+      )}
+    </Panel>
+  );
+}
+
+function ModuleReadiness({
+  health,
+  compact = false,
+}: {
+  health: ModuleHealth;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-xl border border-[#e4e1ee] bg-white",
+        compact ? "mt-5 p-4" : "p-6",
+      )}
+    >
+      {!compact && (
+        <div className="flex items-center gap-3">
+          <Activity className="size-5 text-[#3525cd]" />
+          <h2 className="font-bold">Configuration health</h2>
+          <HealthPill value={health.status} />
+        </div>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {Object.entries(health.configuration).map(([label, value]) => (
+          <span
+            className="rounded-full bg-[#f0ecf9] px-3 py-1 text-xs font-semibold text-[#464555]"
+            key={label}
+          >
+            {label.replaceAll(/([A-Z])/g, " $1")}: {value}
+          </span>
+        ))}
+      </div>
+      {health.issues.map((issue) => (
+        <Link
+          className="mt-3 flex items-start gap-2 rounded-lg bg-[#fff7e8] p-3 text-sm text-[#6d4600]"
+          href={issue.actionHref}
+          key={issue.code}
+        >
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
+          <span>{issue.message}</span>
+          <ChevronRight className="ml-auto size-4 shrink-0" />
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function WorkflowLink({
+  title,
+  description,
+  href,
+  icon: Icon,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  icon: typeof ClipboardCheck;
+}) {
+  return (
+    <Link
+      className="group rounded-xl border border-[#e4e1ee] bg-white p-6 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md"
+      href={href}
+    >
+      <div className="flex items-start gap-3">
+        <span className="grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+          <Icon className="size-5" />
+        </span>
+        <ChevronRight className="ml-auto size-5 text-[#a19ead] group-hover:text-[#3525cd]" />
+      </div>
+      <h2 className="mt-5 font-bold">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[#5e5b68]">{description}</p>
+    </Link>
+  );
+}
+
+function HealthPill({ value }: { value: string }) {
+  const ready = ["READY", "CONFIGURED", "AVAILABLE"].includes(value);
+  const blocked = ["BLOCKED", "NEEDS_CONFIGURATION"].includes(value);
+  const neutral = ["NOT_ENABLED", "NOT_CONFIGURED", "CHECKING"].includes(value);
+  return (
+    <span
+      className={cn(
+        "rounded-full px-3 py-1 text-xs font-bold",
+        ready
+          ? "bg-[#d8f8df] text-[#005320]"
+          : blocked
+            ? "bg-[#ffd9d5] text-[#93000a]"
+            : neutral
+              ? "bg-[#eeecf3] text-[#5e5b68]"
+              : "bg-[#fff0d4] text-[#7a4d00]",
+      )}
+    >
+      {value.replaceAll("_", " ")}
+    </span>
+  );
+}
+
+function moduleHref(key: string) {
+  if (key === "ATTENDANCE") return "/app/settings/attendance";
+  if (key === "LEAVE") return "/app/attendance/setup/leave";
+  if (key === "PAYROLL") return "/app/settings/payroll";
+  if (["FIELD_TRACKING", "REGULARIZATION"].includes(key))
+    return "/app/settings/attendance";
+  return null;
 }

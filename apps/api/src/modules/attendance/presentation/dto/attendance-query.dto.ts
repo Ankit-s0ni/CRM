@@ -2,6 +2,7 @@ import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { AttendanceStatus, ExceptionType } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -43,6 +44,22 @@ export class AttendanceRegisterQueryDto {
   @IsOptional()
   @IsEnum(ExceptionType)
   exceptionType?: ExceptionType;
+
+  @ApiPropertyOptional({
+    description: 'Return only records with late minutes greater than zero',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => value === 'true')
+  @IsBoolean()
+  lateOnly?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Return checked-in records that do not have a checkout',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => value === 'true')
+  @IsBoolean()
+  missingCheckout?: boolean;
 
   @IsOptional()
   @IsString()

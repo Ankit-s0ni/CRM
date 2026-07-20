@@ -10,7 +10,7 @@ class ShiftStatusCard extends StatelessWidget {
   });
   final String shiftLabel;
   final String locationLabel;
-  final bool isInsideZone;
+  final bool? isInsideZone;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -79,9 +79,11 @@ class ShiftStatusCard extends StatelessWidget {
         Row(
           children: [
             Icon(
-              isInsideZone
+              isInsideZone == true
                   ? Icons.near_me_rounded
-                  : Icons.location_off_outlined,
+                  : isInsideZone == false
+                  ? Icons.location_off_outlined
+                  : Icons.location_on_outlined,
               color: Colors.white70,
               size: 17,
             ),

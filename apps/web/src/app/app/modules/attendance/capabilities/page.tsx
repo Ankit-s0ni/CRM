@@ -1,5 +1,5 @@
-import { AttendanceCapabilitiesView } from "@/components/tenant/attendance-capabilities-view";
+import { redirect } from "next/navigation";
 
 export default function AttendanceCapabilitiesPage() {
-  return <AttendanceCapabilitiesView />;
+  redirect("/app/attendance/policies");
 }

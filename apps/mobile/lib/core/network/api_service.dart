@@ -3,15 +3,21 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 
 import '../config/app_config.dart';
+import '../device/device_identity.dart';
 import '../logging/app_logger.dart';
 import 'api_availability.dart';
 import 'api_routes.dart';
 import 'token_store.dart';
 
 class ApiService {
-  ApiService(this._tokens, {Dio? dio, Dio? refreshDio})
-    : _dio = dio ?? Dio(_options()),
-      _refreshDio = refreshDio ?? Dio(_options()) {
+  ApiService(
+    this._tokens, {
+    Dio? dio,
+    Dio? refreshDio,
+    DeviceIdentity? deviceIdentity,
+  }) : _deviceIdentity = deviceIdentity,
+       _dio = dio ?? Dio(_options()),
+       _refreshDio = refreshDio ?? Dio(_options()) {
     _dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: (options, handler) {
@@ -30,7 +36,9 @@ class ApiService {
           _publishAvailability(error);
           if (error.response?.statusCode != 401 ||
               error.requestOptions.extra['retried'] == true ||
-              error.requestOptions.path == ApiRoutes.refresh) {
+              error.requestOptions.path == ApiRoutes.refresh ||
+              error.requestOptions.path == ApiRoutes.login ||
+              error.requestOptions.path == ApiRoutes.mobileLogin) {
             handler.next(error);
             return;
           }
@@ -56,6 +64,7 @@ class ApiService {
   }
 
   final TokenStore _tokens;
+  final DeviceIdentity? _deviceIdentity;
   final Dio _dio;
   final Dio _refreshDio;
   final StreamController<ApiAvailabilityEvent> _availability =
@@ -63,20 +72,45 @@ class ApiService {
   final StreamController<void> _sessionRefreshed =
       StreamController<void>.broadcast(sync: true);
   String? _accessToken;
+  String _workspaceSubdomain = AppConfig.workspaceSubdomain;
   Future<String?>? _refreshing;
+  int _sessionGeneration = 0;
 
   Stream<ApiAvailabilityEvent> get availability => _availability.stream;
   Stream<void> get sessionRefreshed => _sessionRefreshed.stream;
+  String get workspaceSubdomain => _workspaceSubdomain;
 
   static BaseOptions _options() => BaseOptions(
     baseUrl: AppConfig.apiBaseUrl,
     connectTimeout: AppConfig.connectTimeout,
     receiveTimeout: AppConfig.receiveTimeout,
-    headers: const {
-      'Accept': 'application/json',
-      'x-workspace-subdomain': AppConfig.workspaceSubdomain,
-    },
+    headers: {'Accept': 'application/json'},
   );
+
+  Future<void> selectWorkspace(String value) async {
+    final workspace = value.trim().toLowerCase();
+    if (!RegExp(
+      r'^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$',
+    ).hasMatch(workspace)) {
+      throw const FormatException('Enter a valid workspace code.');
+    }
+    _workspaceSubdomain = workspace;
+    _dio.options.headers['x-workspace-subdomain'] = workspace;
+    _refreshDio.options.headers['x-workspace-subdomain'] = workspace;
+    await _tokens.writeWorkspaceSubdomain(workspace);
+  }
+
+  Future<void> restoreWorkspace() async {
+    final stored = await _tokens.readWorkspaceSubdomain();
+    await selectWorkspace(stored ?? AppConfig.workspaceSubdomain);
+  }
+
+  void beginWorkspaceDiscovery() {
+    _sessionGeneration++;
+    setAccessToken(null);
+    _dio.options.headers.remove('x-workspace-subdomain');
+    _refreshDio.options.headers.remove('x-workspace-subdomain');
+  }
 
   void setAccessToken(String? token) {
     _accessToken = token;
@@ -97,12 +131,21 @@ class ApiService {
     await _tokens.writeRefreshToken(refreshToken);
   }
 
-  Future<void> clearSession() async {
+  Future<void> clearSession({bool resetAvailability = true}) async {
+    _sessionGeneration++;
     setAccessToken(null);
+    _workspaceSubdomain = AppConfig.workspaceSubdomain;
+    _dio.options.headers.remove('x-workspace-subdomain');
+    _refreshDio.options.headers.remove('x-workspace-subdomain');
     await _tokens.clear();
+    if (resetAvailability) {
+      _availability.add(const ApiAvailabilityEvent(ApiAvailability.online));
+    }
   }
 
   Future<String?> refreshToken() => _tokens.readRefreshToken();
+
+  Future<bool> refreshSession() async => await _refreshAccessToken() != null;
 
   Future<void> putBytes(String url, List<int> bytes, String contentType) async {
     await Dio().put<void>(
@@ -121,26 +164,39 @@ class ApiService {
   }
 
   Future<String?> _performRefresh() async {
+    final generation = _sessionGeneration;
     final refreshToken = await _tokens.readRefreshToken();
     if (refreshToken == null) return null;
     try {
+      final deviceUuid = (await _deviceIdentity?.payload())?['deviceUuid'];
       final response = await _refreshDio.post<Map<String, dynamic>>(
         ApiRoutes.refresh,
-        data: {'refreshToken': refreshToken},
+        data: {'refreshToken': refreshToken, 'deviceUuid': ?deviceUuid},
       );
       final session = response.data;
-      if (session == null) return null;
+      if (session == null || generation != _sessionGeneration) return null;
       await establishSession(session);
+      if (generation != _sessionGeneration) {
+        await clearSession(resetAvailability: false);
+        return null;
+      }
       _sessionRefreshed.add(null);
       return _accessToken;
     } on DioException {
-      await clearSession();
+      await clearSession(resetAvailability: false);
       return null;
     }
   }
 
-  Future<Response<T>> get<T>(String path, {Map<String, dynamic>? query}) =>
-      _dio.get<T>(path, queryParameters: query);
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? query,
+    Map<String, dynamic>? headers,
+  }) => _dio.get<T>(
+    path,
+    queryParameters: query,
+    options: headers == null ? null : Options(headers: headers),
+  );
   Future<Response<T>> post<T>(String path, {Object? data}) =>
       _dio.post<T>(path, data: data);
   Future<Response<T>> patch<T>(String path, {Object? data}) =>

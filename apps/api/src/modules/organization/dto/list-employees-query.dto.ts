@@ -20,6 +20,11 @@ export enum EmployeeSort {
   JOINED_DESC = 'joined_desc',
 }
 
+export enum EmployeeQuickFilter {
+  JOINING_SOON = 'JOINING_SOON',
+  MISSING_MANAGER = 'MISSING_MANAGER',
+}
+
 export class ListEmployeesQueryDto {
   @ApiPropertyOptional({ example: 'aarav' })
   @IsOptional()
@@ -50,6 +55,11 @@ export class ListEmployeesQueryDto {
   @IsOptional()
   @IsUUID()
   managerId?: string;
+
+  @ApiPropertyOptional({ enum: EmployeeQuickFilter })
+  @IsOptional()
+  @IsEnum(EmployeeQuickFilter)
+  quickFilter?: EmployeeQuickFilter;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

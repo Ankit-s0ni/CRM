@@ -3,6 +3,7 @@ class ApiRoutes {
   ApiRoutes._();
 
   static const login = '/auth/login';
+  static const mobileLogin = '/auth/mobile-login';
   static const refresh = '/auth/refresh';
   static const logout = '/auth/logout';
   static const me = '/auth/me';

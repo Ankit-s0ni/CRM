@@ -2,16 +2,10 @@
 
 import {
   Bell,
-  Blocks,
   Building2,
   ChevronDown,
-  CircleHelp,
-  LayoutDashboard,
   LogOut,
   Menu,
-  Search,
-  Settings2,
-  UsersRound,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,48 +14,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import {
+  type AttendanceCapabilities,
+  canAccessAttendanceWorkspace,
+  isAttendanceWorkspacePath,
+} from "@/lib/attendance-navigation";
 import { cn } from "@/lib/utils";
-
-const businessNavigation = [
-  { label: "Dashboard", href: "/app", icon: LayoutDashboard },
-  {
-    label: "Employees",
-    href: "/app/employees",
-    icon: UsersRound,
-    permission: "organization.employees.read",
-  },
-  {
-    label: "Modules",
-    href: "/app/modules",
-    icon: Blocks,
-    permission: "workspace.modules.read",
-  },
-  {
-    label: "Settings",
-    href: "/app/settings",
-    icon: Settings2,
-    permission: "workspace.settings.read",
-  },
-];
-
-const contextNavigation = {
-  employees: [
-    { label: "Directory", href: "/app/employees", permission: "organization.employees.read" },
-    { label: "Organization", href: "/app/organization", permission: "organization.departments.read" },
-    { label: "Bulk import", href: "/app/imports/employees", permission: "organization.imports.read" },
-  ],
-  modules: [
-    { label: "All modules", href: "/app/modules", permission: "workspace.modules.read" },
-    { label: "Attendance", href: "/app/modules/attendance", permission: "workspace.modules.read" },
-    { label: "Leave", href: "/app/modules/leave", permission: "leave.self" },
-  ],
-  settings: [
-    { label: "Settings home", href: "/app/settings", permission: "workspace.settings.read" },
-    { label: "Company", href: "/app/settings/company", permission: "workspace.settings.read" },
-    { label: "Users & roles", href: "/app/access", permission: "identity.roles.read" },
-    { label: "Billing", href: "/app/settings/billing", permission: "billing.subscription.read" },
-  ],
-};
+import { HeaderContextHelp } from "@/components/help/feature-info";
+import {
+  canViewTenantNavItem,
+  tenantContextLinkActive,
+  tenantContextNavigation,
+  tenantNavigationContext,
+  tenantPrimaryNavigation,
+  tenantTopLevelActive,
+} from "@/lib/tenant-navigation";
+import {
+  AttendanceRouteGate,
+  AttendanceWorkspaceChrome,
+} from "./attendance-workspace-nav";
+import { PortalSearch } from "./portal-search";
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -69,7 +41,22 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   const { user, accessToken, clearAuth, hasHydrated, setUser } = useAuthStore();
   const userId = user?.id;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [attendanceEnabled, setAttendanceEnabled] = useState(false);
+  const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<string>>(
+    new Set(),
+  );
+  const [modulesLoaded, setModulesLoaded] = useState(false);
+  const [attendanceCapabilityState, setAttendanceCapabilityState] = useState<{
+    pathname: string;
+    value: AttendanceCapabilities | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+    document.documentElement.style.removeProperty("overflow");
+    document.documentElement.style.removeProperty("overflow-y");
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("overflow-y");
+  }, [pathname]);
 
   useEffect(() => {
     if (hasHydrated && !accessToken)
@@ -81,15 +68,42 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     apiClient
       .get<{ modules: Array<{ key: string }> }>("/workspace/modules")
       .then(({ data }) =>
-        setAttendanceEnabled(
-          data.modules.some(({ key }) => key === "ATTENDANCE"),
-        ),
+        setEnabledModuleKeys(new Set(data.modules.map(({ key }) => key))),
       )
       .catch((error) => {
         if (error.response?.data?.code === "TENANT_SUSPENDED")
           router.replace("/workspace-unavailable?code=TENANT_SUSPENDED");
-      });
+      })
+      .finally(() => setModulesLoaded(true));
   }, [accessToken, router]);
+
+  useEffect(() => {
+    if (
+      !accessToken ||
+      !enabledModuleKeys.has("ATTENDANCE") ||
+      !isAttendanceWorkspacePath(pathname)
+    ) {
+      return;
+    }
+    let active = true;
+    apiClient
+      .get<{ data: AttendanceCapabilities }>(
+        "/workspace/attendance-capabilities",
+      )
+      .then(({ data }) => {
+        if (active) {
+          setAttendanceCapabilityState({ pathname, value: data.data });
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setAttendanceCapabilityState({ pathname, value: null });
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [accessToken, enabledModuleKeys, pathname]);
 
   useEffect(() => {
     if (!accessToken || !userId) return;
@@ -101,7 +115,12 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           roles: string[];
           permissions: string[];
         };
-        workspace: { id: string; companyName: string; subdomain: string; logoUrl?: string | null };
+        workspace: {
+          id: string;
+          companyName: string;
+          subdomain: string;
+          logoUrl?: string | null;
+        };
       }>("/auth/me")
       .then(({ data }) => {
         setUser({
@@ -123,17 +142,26 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-[#fcf8ff]" />;
 
   const permissions = new Set(user.permissions ?? []);
-  const navigation = businessNavigation.filter(
-    (item) =>
-      (!item.permission || permissions.has(item.permission)) &&
-      (item.href !== "/app/modules" || attendanceEnabled),
+  const navigation = tenantPrimaryNavigation.filter((item) =>
+    canViewTenantNavItem(item, permissions, enabledModuleKeys),
   );
-  const currentContext = navigationContext(pathname);
+  const currentContext = tenantNavigationContext(pathname);
   const contextItems = currentContext
-    ? contextNavigation[currentContext].filter(
-        (item) => !item.permission || permissions.has(item.permission),
-      )
+    ? tenantContextNavigation[currentContext].filter((item) => {
+        if (!canViewTenantNavItem(item, permissions, enabledModuleKeys))
+          return false;
+        if (item.href === "/app/modules/attendance")
+          return canAccessAttendanceWorkspace(permissions);
+        return true;
+      })
     : [];
+  const attendanceWorkspace = isAttendanceWorkspacePath(pathname);
+  const attendanceCapabilities =
+    attendanceCapabilityState?.pathname === pathname
+      ? attendanceCapabilityState.value
+      : null;
+  const attendanceCapabilitiesLoaded =
+    attendanceCapabilityState?.pathname === pathname;
   return (
     <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b24]">
       {mobileOpen && (
@@ -151,10 +179,23 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       >
         <div className="flex h-20 items-center gap-3 px-6">
           <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-[#4f46e5] text-white">
-            {user.logoUrl ? <Image alt={`${user.companyName ?? "Workspace"} logo`} className="size-full bg-white object-contain p-1" height={40} src={user.logoUrl} unoptimized width={40} /> : <Building2 className="size-5" />}
+            {user.logoUrl ? (
+              <Image
+                alt={`${user.companyName ?? "Workspace"} logo`}
+                className="size-full bg-white object-contain p-1"
+                height={40}
+                src={user.logoUrl}
+                unoptimized
+                width={40}
+              />
+            ) : (
+              <Building2 className="size-5" />
+            )}
           </div>
           <div>
-            <div className="text-lg font-bold text-[#e2dfff]">{user.companyName || "DeltCRM"}</div>
+            <div className="text-lg font-bold text-[#e2dfff]">
+              {user.companyName || "DeltCRM"}
+            </div>
             <div className="max-w-40 truncate text-[10px] font-semibold uppercase tracking-[.16em] text-[#c7c4d8]">
               DeltCRM workspace
             </div>
@@ -168,8 +209,8 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           {navigation.map((item) => {
-            const active = topLevelActive(pathname, item.href);
-            const Icon = item.icon;
+            const active = tenantTopLevelActive(pathname, item.href);
+            const Icon = item.icon!;
             return (
               <Link
                 key={item.href}
@@ -209,16 +250,14 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           >
             <Menu />
           </button>
-          <div className="relative hidden w-full max-w-md sm:block">
-            <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#777587]" />
-            <input
-              className="h-10 w-full rounded-full border-0 bg-[#f0ecf9] pl-11 pr-4 text-sm outline-none ring-[#3525cd] focus:ring-2"
-              placeholder="Search employees or settings..."
-            />
+          <div className="hidden w-full sm:block">
+            <PortalSearch />
           </div>
           <div className="ml-auto flex items-center gap-5 text-[#464555]">
-            <Link aria-label="Notifications" href="/app/notifications"><Bell className="size-[18px]" /></Link>
-            <CircleHelp className="size-[18px]" />
+            <Link aria-label="Notifications" href="/app/notifications">
+              <Bell className="size-[18px]" />
+            </Link>
+            <HeaderContextHelp />
             <div className="h-6 w-px bg-[#e4e1ee]" />
             <div className="grid size-9 place-items-center rounded-full bg-[#4f46e5] text-xs font-bold text-white">
               {user.email.slice(0, 2).toUpperCase()}
@@ -234,65 +273,53 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             <ChevronDown className="size-4" />
           </div>
         </header>
-        {contextItems.length > 0 && (
-          <nav
-            aria-label={`${currentContext} navigation`}
-            className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-[#e4e1ee] bg-white px-4 lg:px-6"
-          >
-            {contextItems.map((item) => {
-              const active = contextLinkActive(pathname, item.href);
-              return (
-                <Link
-                  className={cn(
-                    "whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold transition",
-                    active
-                      ? "border-[#3525cd] text-[#3525cd]"
-                      : "border-transparent text-[#777587] hover:text-[#302f39]",
-                  )}
-                  href={item.href}
-                  key={item.href}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+        {attendanceWorkspace ? (
+          <AttendanceWorkspaceChrome
+            capabilities={attendanceCapabilities}
+            permissions={user.permissions ?? []}
+          />
+        ) : (
+          contextItems.length > 0 && (
+            <nav
+              aria-label={`${currentContext} navigation`}
+              className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-[#e4e1ee] bg-white px-4 lg:px-6"
+            >
+              {contextItems.map((item) => {
+                const active = tenantContextLinkActive(pathname, item.href);
+                return (
+                  <Link
+                    className={cn(
+                      "whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold transition",
+                      active
+                        ? "border-[#3525cd] text-[#3525cd]"
+                        : "border-transparent text-[#777587] hover:text-[#302f39]",
+                    )}
+                    href={item.href}
+                    key={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )
         )}
-        <main>{children}</main>
+        <main>
+          {attendanceWorkspace ? (
+            <AttendanceRouteGate
+              attendanceEnabled={enabledModuleKeys.has("ATTENDANCE")}
+              capabilities={attendanceCapabilities}
+              capabilitiesLoaded={attendanceCapabilitiesLoaded}
+              modulesLoaded={modulesLoaded}
+              permissions={user.permissions ?? []}
+            >
+              {children}
+            </AttendanceRouteGate>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );
-}
-
-function navigationContext(pathname: string): keyof typeof contextNavigation | null {
-  if (
-    pathname.startsWith("/app/employees") ||
-    pathname.startsWith("/app/imports/employees") ||
-    pathname.startsWith("/app/organization")
-  ) return "employees";
-  if (
-    pathname.startsWith("/app/modules") ||
-    pathname.startsWith("/app/attendance") ||
-    pathname.startsWith("/app/leave") ||
-    pathname.startsWith("/app/settings/attendance")
-  ) return "modules";
-  if (pathname.startsWith("/app/settings") || pathname.startsWith("/app/access")) {
-    return "settings";
-  }
-  return null;
-}
-
-function topLevelActive(pathname: string, href: string) {
-  if (href === "/app") return pathname === href;
-  if (href === "/app/employees") return navigationContext(pathname) === "employees";
-  if (href === "/app/modules") return navigationContext(pathname) === "modules";
-  if (href === "/app/settings") return navigationContext(pathname) === "settings";
-  return false;
-}
-
-function contextLinkActive(pathname: string, href: string) {
-  if (href === "/app/modules") return pathname === href;
-  if (href === "/app/settings") return pathname === href;
-  if (href === "/app/employees") return pathname.startsWith(href);
-  return pathname === href || pathname.startsWith(`${href}/`);
 }

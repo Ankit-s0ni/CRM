@@ -1,11 +1,29 @@
 import { HttpException } from '@nestjs/common';
 import {
   EMPLOYEE_IMPORT_HEADERS,
+  EMPLOYEE_IMPORT_FIELDS,
   normalizeEmployeeImportRow,
   parseEmployeeCsv,
 } from './employee-import-parser';
 
 describe('employee import parser', () => {
+  it('keeps the public import schema in the exact parser header order', () => {
+    expect(EMPLOYEE_IMPORT_FIELDS.map(({ key }) => key)).toEqual([
+      ...EMPLOYEE_IMPORT_HEADERS,
+    ]);
+    expect(
+      EMPLOYEE_IMPORT_FIELDS.filter(({ required }) => required).map(
+        ({ key }) => key,
+      ),
+    ).toEqual([
+      'employee_code',
+      'full_name',
+      'work_type',
+      'department',
+      'date_of_joining',
+    ]);
+  });
+
   it('requires the exact header and normalizes manual employee fields', () => {
     const csv = `${EMPLOYEE_IMPORT_HEADERS.join(',')}\n emp 1 ,  Test   Employee  ,+919876543210,office, Engineering , Engineer ,,2026-01-15\n`;
     const [row] = parseEmployeeCsv(csv);

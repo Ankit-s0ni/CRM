@@ -1,0 +1,266 @@
+@startuml
+' =====================================================================
+' DeltCRM Attendance MVP - HR and Employee User Flow v1
+' Covers tenant setup, policy resolution, mobile onboarding, daily work,
+' exception handling, reporting, and payroll close.
+' =====================================================================
+title DeltCRM Attendance MVP - Complete HR and Employee User Flow
+
+skinparam backgroundColor #FCFAFF
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #35333F
+  DiamondBackgroundColor #ECE8FF
+  DiamondBorderColor #3C2AD6
+  StartColor #3C2AD6
+  EndColor #3C2AD6
+  BarColor #3C2AD6
+  FontColor #25232D
+}
+skinparam note {
+  BackgroundColor #FFF7D6
+  BorderColor #B38A00
+}
+skinparam ArrowColor #555260
+skinparam shadowing false
+
+legend left
+  |= Term |= Meaning |
+  | Entitlement | Module purchased/enabled for the tenant |
+  | Policy | Attendance requirements configured by HR |
+  | Effective policy | Employee > Department > Tenant default winner |
+  | Location only | Office geofence + no selfie + no field tracking |
+endlegend
+
+start
+
+partition "Business Admin / HR Portal" {
+  :Sign in to tenant workspace;
+  :Open **Settings > Modules**;
+  if (Attendance entitled and active?) then (yes)
+    :Open **Modules > Attendance > Setup**;
+  else (no)
+    :Business Admin reviews subscription;
+    :Enable Attendance entitlement;
+    :Return to Attendance Setup;
+  endif
+
+  :Configure company timezone, locale,
+  working hours and Gulf weekly-off pattern;
+  :Create departments and designations;
+  :Create office;
+  :Set office latitude, longitude,
+  geofence radius and timezone;
+  :Create shifts and optional dated rosters;
+
+  :Create Attendance policy;
+  if (Required attendance behavior?) then (office location only)
+    :Set locationMode = OFFICE_GEOFENCE;
+    :Set selfieMode = DISABLED;
+    :Set fieldTrackingEnabled = false;
+    :Choose whether registered device is required;
+  elseif (Office face and location?) then (face + location)
+    :Set locationMode = OFFICE_GEOFENCE;
+    :Set selfieMode = REQUIRED;
+    :Configure consent, face and device rules;
+  else (field workforce)
+    :Confirm FIELD_TRACKING entitlement;
+    :Set locationMode = FIELD_GPS;
+    :Enable field tracking and interval;
+    :Configure device and optional selfie rules;
+  endif
+
+  :Assign policy scope;
+  note right
+    Resolution precedence:
+    1. Employee assignment
+    2. Department assignment
+    3. Tenant default
+  end note
+
+  :Create employee manually or import CSV;
+  :Assign department, office, shift/roster
+  and applicable policy;
+  :Invite/link employee user account;
+  :Review employee readiness;
+}
+
+partition "DeltCRM API" {
+  :Validate tenant, entitlement and HR permissions;
+  :Persist configuration and assignments;
+  :Increment runtime configuration version;
+  :Write audit/outbox evidence;
+}
+
+partition "Employee App" {
+  :Employee opens public DeltCRM login;
+  :Enter tenant credentials;
+}
+
+partition "DeltCRM API" {
+  :Authenticate active tenant user;
+  if (Workspace active?) then (yes)
+    :Issue access and refresh tokens;
+  else (no)
+    :Return coded unavailable/suspended response;
+    stop
+  endif
+}
+
+partition "Employee App" {
+  :Call GET /mobile/runtime-config;
+}
+
+partition "Runtime Policy Resolver" {
+  :Confirm Attendance entitlement;
+  :Resolve employee status and work type;
+  :Resolve effective Attendance policy;
+  :Project tenant branding, modules,
+  permissions and onboarding requirements;
+}
+
+partition "Employee App" {
+  :Render tenant name/logo and enabled tools;
+  if (Attendance enabled?) then (yes)
+  else (no)
+    :Hide Attendance punch controls;
+    stop
+  endif
+
+  if (Registered device required and incomplete?) then (yes)
+    :Register device;
+    :Show pending HR approval state;
+    partition "Business Admin / HR Portal" {
+      :Review identity and device request;
+      if (Approve device?) then (approve)
+        :Approve with auditable reason;
+      else (reject/block)
+        :Reject or block with reason;
+        stop
+      endif
+    }
+    partition "Employee App" {
+      :Refresh runtime configuration;
+    }
+  endif
+
+  if (Location required?) then (yes)
+    :Request foreground precise location;
+    if (Permission granted?) then (yes)
+    else (no)
+      :Explain why location is required;
+      :Disable punch until permission is granted;
+      stop
+    endif
+  endif
+
+  if (Selfie required?) then (yes)
+    :Request biometric consent;
+    :Complete face enrollment if missing;
+    :Request camera permission;
+  else (no - location only)
+    :Do not request camera, biometric consent
+    or face enrollment;
+  endif
+
+  if (Field tracking enabled?) then (yes)
+    :Request background location only when needed;
+    :Show field tracking controls;
+  else (no)
+    :Hide field tracking and do not request
+    background location;
+  endif
+
+  :Employee taps Check in;
+  :Capture required GPS evidence;
+  :Capture selfie only when required;
+  :Collect device identity and integrity evidence;
+  :Submit idempotent CHECKIN punch;
+}
+
+partition "Attendance Verification API" {
+  :Validate tenant, employee, entitlement,
+  policy, request ID and clock skew;
+  :Verify device integrity and mock-location status;
+  if (Location mode = OFFICE_GEOFENCE?) then (yes)
+    :Validate GPS accuracy;
+    :Find assigned active office;
+    :Calculate distance from office;
+    if (Inside geofence?) then (yes)
+    else (no)
+      :Return LOCATION_OUTSIDE_GEOFENCE;
+      partition "Employee App" {
+        :Show actionable location failure;
+      }
+      stop
+    endif
+  elseif (Location mode = FIELD_GPS?) then (yes)
+    :Validate current field GPS evidence;
+  else (NONE)
+    :Record location check as policy-skipped;
+  endif
+
+  if (Selfie mode = REQUIRED?) then (yes)
+    :Validate consent and enrollment;
+    :Validate selfie/liveness/face match;
+  else (no)
+    :Record face check as policy-skipped;
+  endif
+
+  :Create verification evidence;
+  :Create Attendance event and daily record;
+  :Commit audit/outbox in the transaction;
+  :Return server-confirmed Attendance state;
+}
+
+partition "Employee App" {
+  :Show successful check-in and approved checks;
+  if (Field tracking enabled?) then (yes)
+    :Start policy-interval field session;
+  endif
+  :Employee works / takes configured breaks;
+  :Employee taps Check out;
+  :Repeat effective-policy verification;
+}
+
+partition "Attendance Verification API" {
+  :Create CHECKOUT event;
+  :Finalize worked, break, late and overtime minutes;
+  :Stop active field session;
+  :Publish finalized Attendance state;
+}
+
+partition "Employee App" {
+  :Show completed day and history;
+  if (Missing/incorrect punch?) then (yes)
+    :Submit correction/regularization request
+    with reason and requested times;
+  endif
+}
+
+partition "Business Admin / HR Portal" {
+  :Open Dashboard or Attendance Requests;
+  :Review employee, policy, punches and evidence;
+  if (Correction valid?) then (approve)
+    :Approve with comment;
+  else (reject)
+    :Reject with comment;
+  endif
+  :Monitor register, exceptions, devices,
+  security alerts and field sessions;
+  :Resolve all period exceptions;
+  :Generate Attendance/payroll report;
+  :Review completed export and checksum;
+  :Lock payroll period with auditable reason;
+}
+
+partition "DeltCRM API" {
+  :Apply approved correction through Attendance aggregate;
+  :Recalculate affected daily record;
+  :Generate asynchronous report artifact;
+  :Prevent period mutations after payroll lock;
+  :Retain tenant-scoped audit evidence;
+}
+
+stop
+@enduml

@@ -5,7 +5,10 @@ import '../data/device_api_repository.dart';
 import '../domain/device_repository.dart';
 
 final deviceRepositoryProvider = Provider<DeviceRepository>(
-  (ref) => DeviceApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => DeviceApiRepository(
+    ref.watch(apiServiceProvider),
+    ref.watch(deviceIdentityProvider),
+  ),
 );
 final deviceControllerProvider =
     AsyncNotifierProvider<DeviceController, Map<String, dynamic>?>(
@@ -31,6 +34,13 @@ class DeviceController extends AsyncNotifier<Map<String, dynamic>?> {
       return _deviceFrom(await _repository.current());
     });
     return !state.hasError;
+  }
+
+  Future<void> refreshCurrent() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () async => _deviceFrom(await _repository.current()),
+    );
   }
 
   Future<bool> unregister() async {

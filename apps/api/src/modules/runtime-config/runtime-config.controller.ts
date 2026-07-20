@@ -9,9 +9,15 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
+import {
+  ATTENDANCE_WORKSPACE_PERMISSIONS,
+  PERMISSIONS,
+} from '../../shared/authorization/permissions.constants';
 import { PermissionsGuard } from '../../shared/authorization/permissions.guard';
-import { RequirePermissions } from '../../shared/authorization/require-permissions.decorator';
+import {
+  RequireAnyPermissions,
+  RequirePermissions,
+} from '../../shared/authorization/require-permissions.decorator';
 import { CurrentUser } from '../../shared/http/current-user.decorator';
 import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 import { JwtTenantGuard } from '../identity/jwt-tenant.guard';
@@ -54,7 +60,7 @@ export class AttendanceCapabilitiesController {
   constructor(private readonly service: RuntimeConfigService) {}
 
   @Get()
-  @RequirePermissions(PERMISSIONS.ATTENDANCE_CONFIG_READ)
+  @RequireAnyPermissions(...ATTENDANCE_WORKSPACE_PERMISSIONS)
   @ApiOperation({ summary: 'Read entitled tenant attendance capabilities' })
   get() {
     return this.service.getAttendanceCapabilities();

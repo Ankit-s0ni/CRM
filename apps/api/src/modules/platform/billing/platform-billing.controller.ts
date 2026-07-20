@@ -62,6 +62,18 @@ export class PlatformBillingController {
     return this.billing.updatePlan(id, dto, actor, metadata(request));
   }
 
+  @Post('plans/:id/impact')
+  @RequirePlatformPermissions('platform.plans.read')
+  @ApiOperation({
+    summary: 'Preview tenants and features affected by a plan edit',
+  })
+  planImpact(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdatePlatformPlanDto,
+  ) {
+    return this.billing.planImpact(id, dto);
+  }
+
   @Get('invoices')
   @RequirePlatformPermissions('platform.billing.read')
   @ApiOperation({ summary: 'Search invoices across tenants' })

@@ -32,6 +32,7 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
   let employee: Session;
   let adminA: Session;
   let adminB: Session;
+  let managerA: Session;
   const stamp = Date.now();
 
   beforeAll(async () => {
@@ -76,6 +77,7 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
 
     adminA = await createSession(tenantA, 'BUSINESS_ADMIN', 'admin-a');
     adminB = await createSession(tenantB, 'BUSINESS_ADMIN', 'admin-b');
+    managerA = await createSession(tenantA, 'MANAGER', 'manager-a');
     const department = await factory.createDepartment({
       tenantId: tenantA,
       name: `Operations ${stamp}`,
@@ -193,6 +195,15 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
   });
 
   it('enforces entitlement and safely terminates field tracking when disabled', async () => {
+    await api(managerA)
+      .get('/workspace/attendance-capabilities')
+      .expect(200)
+      .expect(({ body }) =>
+        expect(
+          (body as { data: { fieldTrackingRelevant: boolean } }).data
+            .fieldTrackingRelevant,
+        ).toBe(false),
+      );
     await api(adminB)
       .patch('/workspace/attendance-capabilities')
       .send({ fieldTrackingEnabled: true })
@@ -213,6 +224,15 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
       where: { id: employeeId },
       data: { workType: 'FIELD' },
     });
+    await api(managerA)
+      .get('/workspace/attendance-capabilities')
+      .expect(200)
+      .expect(({ body }) =>
+        expect(
+          (body as { data: { fieldTrackingRelevant: boolean } }).data
+            .fieldTrackingRelevant,
+        ).toBe(true),
+      );
     await api(employee)
       .get('/mobile/runtime-config')
       .expect(200)
@@ -305,6 +325,24 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
         activatedAt: new Date(),
       },
     });
+    if (key === 'FIELD_TRACKING') {
+      const capability = await prisma.moduleCapability.findUniqueOrThrow({
+        where: { key: 'ATTENDANCE_FIELD_TRACKING' },
+      });
+      await prisma.tenantCapabilityOverride.upsert({
+        where: {
+          tenantId_capabilityId: { tenantId, capabilityId: capability.id },
+        },
+        update: { mode: 'ENABLE', reason: 'Sprint 6.5 test entitlement' },
+        create: {
+          tenantId,
+          capabilityId: capability.id,
+          mode: 'ENABLE',
+          reason: 'Sprint 6.5 test entitlement',
+          changedBy: randomUUID(),
+        },
+      });
+    }
   }
 
   async function createUser(
@@ -376,6 +414,7 @@ describe('Sprint 6.5 dynamic tenant runtime (e2e)', () => {
     });
     await prisma.user.deleteMany({ where: { tenantId } });
     await prisma.role.deleteMany({ where: { tenantId } });
+    await prisma.tenantCapabilityOverride.deleteMany({ where: { tenantId } });
     await prisma.tenantModule.deleteMany({ where: { tenantId } });
     await prisma.tenantSubscription.deleteMany({ where: { tenantId } });
     await prisma.tenantSettings.deleteMany({ where: { tenantId } });

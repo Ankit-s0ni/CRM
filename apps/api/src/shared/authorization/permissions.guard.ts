@@ -91,6 +91,7 @@ export class PermissionsGuard implements CanActivate {
       !requiredAny?.length ||
       requiredAny.some((permission) => granted.has(permission));
     if (hasAll && hasAny) {
+      request.user.permissions = [...granted];
       return true;
     }
 

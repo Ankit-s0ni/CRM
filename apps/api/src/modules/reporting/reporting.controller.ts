@@ -35,6 +35,7 @@ export class ReportingController {
   }
 
   @Post('payroll-export')
+  @RequireModule('PAYROLL')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_REPORTS_GENERATE)
   @ApiOperation({ summary: 'Queue a payroll contract v1 export' })
   payroll(@Body() dto: CreateReportDto) {

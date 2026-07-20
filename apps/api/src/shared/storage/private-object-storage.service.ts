@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -80,6 +81,98 @@ export class PrivateObjectStorageService {
       ),
       expiresIn: 300,
     };
+  }
+
+  async presignEmployeeDocument(
+    tenantId: string,
+    employeeId: string,
+    filename: string,
+    contentType: string,
+    fileSize: number,
+  ) {
+    if (
+      !ATTACHMENT_TYPES.has(contentType) ||
+      fileSize < 1 ||
+      fileSize > 10_000_000
+    ) {
+      throw new BadRequestException({
+        code: 'EMPLOYEE_DOCUMENT_INVALID',
+        message: 'Document must be PNG, JPEG, WebP, or PDF under 10 MB',
+      });
+    }
+    const objectKey = this.key(
+      tenantId,
+      'employee-documents',
+      employeeId,
+      filename,
+    );
+    if (process.env.NODE_ENV === 'test') {
+      this.testObjects.set(objectKey, Buffer.alloc(0));
+      return { objectKey, uploadUrl: `memory://${objectKey}`, expiresIn: 300 };
+    }
+    return {
+      objectKey,
+      uploadUrl: await getSignedUrl(
+        this.client,
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: objectKey,
+          ContentType: contentType,
+          ContentLength: fileSize,
+          Metadata: {
+            tenantId,
+            ownerId: employeeId,
+            purpose: 'employee-documents',
+          },
+        }),
+        { expiresIn: 300 },
+      ),
+      expiresIn: 300,
+    };
+  }
+
+  async verifyEmployeeDocument(
+    tenantId: string,
+    employeeId: string,
+    objectKey: string,
+  ) {
+    this.assertPrefix(tenantId, 'employee-documents', employeeId, objectKey);
+    await this.assertExists(objectKey, tenantId);
+  }
+
+  async signedEmployeeDocumentDownload(
+    tenantId: string,
+    employeeId: string,
+    objectKey: string,
+  ) {
+    this.assertPrefix(tenantId, 'employee-documents', employeeId, objectKey);
+    await this.assertExists(objectKey, tenantId);
+    if (process.env.NODE_ENV === 'test') {
+      return { url: `memory://${objectKey}`, expiresIn: 300 };
+    }
+    return {
+      url: await getSignedUrl(
+        this.client,
+        new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+        { expiresIn: 300 },
+      ),
+      expiresIn: 300,
+    };
+  }
+
+  async deleteEmployeeDocument(
+    tenantId: string,
+    employeeId: string,
+    objectKey: string,
+  ) {
+    this.assertPrefix(tenantId, 'employee-documents', employeeId, objectKey);
+    if (process.env.NODE_ENV === 'test') {
+      this.testObjects.delete(objectKey);
+      return;
+    }
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+    );
   }
 
   async verifyRegularizationAttachment(

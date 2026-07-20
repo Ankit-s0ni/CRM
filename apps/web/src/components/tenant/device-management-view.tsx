@@ -11,9 +11,11 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { FeatureInfo } from "@/components/help/feature-info";
 import {
   AdminPage,
   EmptyState,
@@ -64,8 +66,11 @@ const filters: Array<{ label: string; value: DeviceStatus | "ALL" }> = [
 ];
 
 export function DeviceManagementView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [devices, setDevices] = useState<ManagedDevice[] | null>(null);
-  const [filter, setFilter] = useState<DeviceStatus | "ALL">("ALL");
+  const filter = deviceFilter(searchParams.get("status"));
   const [error, setError] = useState("");
   const [decision, setDecision] = useState<Decision | null>(null);
 
@@ -122,6 +127,7 @@ export function DeviceManagementView() {
       <div className="mb-5 flex flex-wrap gap-2" aria-label="Device status filters">
         {filters.map((item) => (
           <button
+            aria-pressed={filter === item.value}
             key={item.value}
             type="button"
             className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition ${
@@ -129,7 +135,12 @@ export function DeviceManagementView() {
                 ? "border-[#3525cd] bg-[#3525cd] text-white"
                 : "border-[#d8d4e4] bg-white text-[#464555] hover:border-[#3525cd]"
             }`}
-            onClick={() => setFilter(item.value)}
+          onClick={() =>
+            router.push(
+              `${pathname}${item.value === "ALL" ? "" : `?status=${item.value}`}`,
+              { scroll: false },
+            )
+          }
           >
             {item.label}
           </button>
@@ -385,10 +396,13 @@ function DeviceDecisionDialog({
     >
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
             <h2 id="device-decision-title" className="text-xl font-bold capitalize">
               {decision.action} device
             </h2>
+              <FeatureInfo helpKey="devices" />
+            </div>
             <p className="mt-1 text-sm text-[#777587]">
               {decision.device.deviceModel || decision.device.platform} ·{" "}
               {decision.device.employee?.fullName || "Employee device"}
@@ -440,6 +454,15 @@ function DeviceDecisionDialog({
       </div>
     </div>
   );
+}
+
+function deviceFilter(value: string | null): DeviceStatus | "ALL" {
+  return value === "PENDING_APPROVAL" ||
+    value === "ACTIVE" ||
+    value === "BLOCKED" ||
+    value === "REPLACED"
+    ? value
+    : "ALL";
 }
 
 function MetricCard({

@@ -73,15 +73,23 @@ test("keeps attendance configuration inside Modules and applies a location-only 
   await page.goto("/app/modules");
   await page.getByRole("link", { name: "Attendance", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/modules\/attendance$/);
-  await page.getByRole("link", { name: /Employee app behavior/ }).click();
+  await page
+    .getByRole("navigation", { name: "Attendance workspace" })
+    .getByRole("link", { name: "Setup", exact: true })
+    .click();
+  await page.getByRole("link", { name: "App behavior", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/modules\/attendance\/capabilities$/);
   await expect(page.getByText("Location-only supported")).toBeVisible();
   await expect(page.getByText("Dubai Office LLC")).toBeVisible();
 
   await page.goto("/app/attendance/policies");
   await page.getByRole("button", { name: "Edit rules" }).click();
-  await page.getByLabel("Location verification").selectOption("OFFICE_GEOFENCE");
-  await page.getByLabel("Selfie verification").selectOption("DISABLED");
+  await page
+    .getByRole("combobox", { name: "Location verification" })
+    .selectOption("OFFICE_GEOFENCE");
+  await page
+    .getByRole("combobox", { name: "Selfie verification" })
+    .selectOption("DISABLED");
   await page.getByRole("button", { name: "Save rules" }).click();
   await expect.poll(() => submittedPolicy).toMatchObject({
     locationMode: "OFFICE_GEOFENCE",
@@ -198,5 +206,7 @@ function permissions() {
     "organization.employees.read",
     "attendance.config.read",
     "attendance.config.manage",
+    "attendance.policies.read",
+    "attendance.policies.manage",
   ];
 }

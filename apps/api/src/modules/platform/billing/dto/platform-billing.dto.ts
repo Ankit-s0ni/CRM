@@ -45,9 +45,20 @@ export class CreatePlatformPlanDto {
   @ArrayMaxSize(50)
   @Matches(/^[A-Z][A-Z0-9_]{1,63}$/, { each: true })
   moduleKeys!: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @ArrayMaxSize(100)
+  @Matches(/^[A-Z][A-Z0-9_]{1,63}$/, { each: true })
+  capabilityKeys?: string[];
 }
 
 export class UpdatePlatformPlanDto {
+  @IsOptional()
+  @IsBoolean()
+  impactAcknowledged?: boolean;
+
   @IsOptional()
   @IsString()
   @Length(2, 80)
@@ -82,6 +93,13 @@ export class UpdatePlatformPlanDto {
   @ArrayMaxSize(50)
   @Matches(/^[A-Z][A-Z0-9_]{1,63}$/, { each: true })
   moduleKeys?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @ArrayMaxSize(100)
+  @Matches(/^[A-Z][A-Z0-9_]{1,63}$/, { each: true })
+  capabilityKeys?: string[];
 }
 
 export class PlatformBillingQueryDto {

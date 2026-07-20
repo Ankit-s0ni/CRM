@@ -24,7 +24,7 @@ for (const viewport of viewports) {
     for (const screen of [
       { key: 'S1-platform-dashboard', path: '/platform', heading: 'Regional Operations Center' },
       { key: 'S2-tenants-list', path: '/platform/tenants', heading: 'Tenants' },
-      { key: 'S9-module-management', path: '/platform/modules', heading: 'Module Management' },
+      { key: 'S9-module-management', path: '/platform/modules', heading: 'Products & entitlements' },
       { key: 'S10-global-audit-logs', path: '/platform/audit', heading: 'Global Audit Logs' },
       { key: 'S11-system-health-alerts', path: '/platform/health', heading: 'System Observability' },
     ]) {
@@ -118,7 +118,7 @@ test.describe('Platform screen states', () => {
 });
 
 async function expectPlatformShell(page: Page) {
-  await expect(page.getByText('IndigoHR').first()).toBeVisible();
+  await expect(page.getByText('DeltCRM').first()).toBeVisible();
   await expect(page.getByRole('link', { name: 'Tenants', exact: true })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);

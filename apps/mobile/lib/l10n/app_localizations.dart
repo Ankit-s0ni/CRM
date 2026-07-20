@@ -1369,6 +1369,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved offline · synced successfully'**
   String get savedOfflineSynced;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logout;
+
+  /// No description provided for @logoutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of DeltCRM?'**
+  String get logoutConfirmTitle;
+
+  /// No description provided for @logoutConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need to enter your email and password to sign in again.'**
+  String get logoutConfirmMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -22,11 +22,13 @@ export async function synchronizeSubscriptionSeats(
   if (replay) return { seatCount: replay.seatCount, replayed: true };
   await tx.$queryRaw`SELECT id FROM tenant_subscriptions WHERE "tenantId" = ${tenantId}::uuid AND status IN ('TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED') FOR UPDATE`;
   const subscription = await tx.tenantSubscription.findFirst({
-    where: { status: { in: CURRENT } },
+    where: { tenantId, status: { in: CURRENT } },
     include: { plan: true },
   });
   if (!subscription) return { seatCount: 0, replayed: false };
-  const seatCount = await tx.employee.count({ where: { status: 'ACTIVE' } });
+  const seatCount = await tx.employee.count({
+    where: { tenantId, status: 'ACTIVE' },
+  });
   const updated = await tx.tenantSubscription.update({
     where: { id: subscription.id },
     data: { seatCount },

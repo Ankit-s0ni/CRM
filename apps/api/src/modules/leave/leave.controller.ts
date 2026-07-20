@@ -22,6 +22,7 @@ import { JwtTenantGuard } from '../identity/jwt-tenant.guard';
 import {
   CreateLeavePolicyDto,
   CreateLeaveRequestDto,
+  AdjustLeaveBalanceDto,
   LeaveBalanceQueryDto,
   LeaveDecisionDto,
   LeaveRequestQueryDto,
@@ -31,7 +32,7 @@ import { LeaveService } from './leave.service';
 
 @ApiTags('Leave')
 @ApiBearerAuth()
-@RequireModule('LEAVE')
+@RequireModule('ATTENDANCE')
 @UseGuards(JwtTenantGuard, ModuleGuard, PermissionsGuard)
 @Controller()
 export class LeaveController {
@@ -77,6 +78,18 @@ export class LeaveController {
   @ApiOperation({ summary: 'List tenant leave balances in HR scope' })
   balances(@Query() query: LeaveBalanceQueryDto) {
     return this.leave.balances(query);
+  }
+
+  @Post('leave-balances/:id/adjust')
+  @RequirePermissions(PERMISSIONS.LEAVE_MANAGE)
+  @ApiOperation({
+    summary: 'Adjust an employee leave balance with an audit entry',
+  })
+  adjustBalance(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AdjustLeaveBalanceDto,
+  ) {
+    return this.leave.adjustBalance(id, dto);
   }
 
   @Get('leave-requests')

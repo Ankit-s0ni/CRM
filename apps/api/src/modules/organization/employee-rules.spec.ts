@@ -6,6 +6,7 @@ import {
   assertNoManagerCycle,
   normalizeEmployeeCode,
   parseDateOnly,
+  temporaryEmployeePassword,
 } from './employee-rules';
 
 describe('employee rules', () => {
@@ -41,4 +42,16 @@ describe('employee rules', () => {
     expect(() => assertCanReactivate('TERMINATED')).not.toThrow();
     expect(() => assertCanReactivate('ON_NOTICE')).toThrow(HttpException);
   });
+
+  it.each([
+    ['India', '+919876543210', 'AaravSharma987654'],
+    ['United States', '+14155552671', 'AaravSharma415555'],
+    ['Oman', '+96892123456', 'AaravSharma921234'],
+    ['United Arab Emirates', '+971501234567', 'AaravSharma501234'],
+  ])(
+    'uses national digits for %s temporary passwords',
+    (_country, phone, expected) => {
+      expect(temporaryEmployeePassword('Aarav Sharma', phone)).toBe(expected);
+    },
+  );
 });

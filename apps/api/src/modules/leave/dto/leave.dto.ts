@@ -13,6 +13,7 @@ import {
   Length,
   Max,
   Min,
+  NotEquals,
 } from 'class-validator';
 
 export class CreateLeavePolicyDto {
@@ -55,4 +56,9 @@ export class LeaveRequestQueryDto {
 export class LeaveBalanceQueryDto {
   @IsOptional() @IsUUID() employeeId?: string;
   @IsOptional() @IsUUID() policyId?: string;
+}
+
+export class AdjustLeaveBalanceDto {
+  @IsNumber() @Min(-366) @Max(366) @NotEquals(0) days!: number;
+  @IsString() @Length(3, 500) reason!: string;
 }

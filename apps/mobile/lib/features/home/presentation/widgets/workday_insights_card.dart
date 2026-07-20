@@ -3,20 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
+import '../../domain/home_summary.dart';
 
 class WorkdayInsightsCard extends StatelessWidget {
-  const WorkdayInsightsCard({
-    super.key,
-    required this.hours,
-    required this.targetHours,
-    required this.lateMinutes,
-    required this.overtimeMinutes,
-  });
+  const WorkdayInsightsCard({super.key, required this.overview});
 
-  final double hours;
-  final double targetHours;
-  final int lateMinutes;
-  final int overtimeMinutes;
+  final HomeWorkOverview? overview;
 
   @override
   Widget build(BuildContext context) => AppCard(
@@ -28,48 +20,62 @@ class WorkdayInsightsCard extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 14),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: (hours / targetHours).clamp(0, 1),
-            minHeight: 8,
+        if (overview == null)
+          const Text(
+            'Weekly attendance totals are not available yet.',
+            style: TextStyle(color: AppTheme.slate, fontSize: 12),
+          )
+        else ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: overview!.targetMinutes <= 0
+                  ? 0
+                  : (overview!.workMinutes / overview!.targetMinutes).clamp(
+                      0,
+                      1,
+                    ),
+              minHeight: 8,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${hours.toStringAsFixed(1)} / ${targetHours.toStringAsFixed(0)} h',
-          style: const TextStyle(color: AppTheme.slate, fontSize: 12),
-        ),
-        const SizedBox(height: 18),
-        Row(
-          children: [
-            Expanded(
-              child: _Metric(
-                label: context.l10n.hoursWorked,
-                value: '${hours.toStringAsFixed(1)}h',
-                icon: Icons.schedule_rounded,
+          const SizedBox(height: 8),
+          Text(
+            '${_hours(overview!.workMinutes)} / ${_hours(overview!.targetMinutes)} h',
+            style: const TextStyle(color: AppTheme.slate, fontSize: 12),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _Metric(
+                  label: context.l10n.hoursWorked,
+                  value: '${_hours(overview!.workMinutes)}h',
+                  icon: Icons.schedule_rounded,
+                ),
               ),
-            ),
-            Expanded(
-              child: _Metric(
-                label: context.l10n.lateMinutes,
-                value: '${lateMinutes}m',
-                icon: Icons.timer_outlined,
+              Expanded(
+                child: _Metric(
+                  label: context.l10n.lateMinutes,
+                  value: '${overview!.lateMinutes}m',
+                  icon: Icons.timer_outlined,
+                ),
               ),
-            ),
-            Expanded(
-              child: _Metric(
-                label: context.l10n.overtime,
-                value: '${overtimeMinutes}m',
-                icon: Icons.trending_up_rounded,
+              Expanded(
+                child: _Metric(
+                  label: context.l10n.overtime,
+                  value: '${overview!.overtimeMinutes}m',
+                  icon: Icons.trending_up_rounded,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     ),
   );
 }
+
+String _hours(int minutes) => (minutes / 60).toStringAsFixed(1);
 
 class _Metric extends StatelessWidget {
   const _Metric({required this.label, required this.value, required this.icon});

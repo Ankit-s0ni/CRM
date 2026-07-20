@@ -68,15 +68,23 @@ class TenantController extends Notifier<TenantConfig> {
     final required = state.onboarding;
     if (required.devicePending) return '/device-registration';
     if (required.locationPermissionPending) return '/permissions';
-    if (required.consentPending) return '/biometric-consent';
-    if (required.enrollmentPending) return '/face-enrollment';
+    if (state.attendancePolicy.requiresFace && required.consentPending) {
+      return '/biometric-consent';
+    }
+    if (state.attendancePolicy.requiresFace && required.enrollmentPending) {
+      return '/face-enrollment';
+    }
     return '/home';
   }
 
   String nextAfterPermissions() {
     final required = state.onboarding;
-    if (required.consentPending) return '/biometric-consent';
-    if (required.enrollmentPending) return '/face-enrollment';
+    if (state.attendancePolicy.requiresFace && required.consentPending) {
+      return '/biometric-consent';
+    }
+    if (state.attendancePolicy.requiresFace && required.enrollmentPending) {
+      return '/face-enrollment';
+    }
     return '/home';
   }
 

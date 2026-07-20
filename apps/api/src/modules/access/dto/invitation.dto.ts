@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
   IsEmail,
   IsString,
+  IsOptional,
   IsUUID,
   MaxLength,
   MinLength,
@@ -22,6 +23,15 @@ export class CreateInvitationDto {
   @ArrayUnique()
   @IsUUID(undefined, { each: true })
   roleIds!: string[];
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Employee to link atomically when the invited user accepts the invitation',
+  })
+  @IsOptional()
+  @IsUUID()
+  employeeId?: string;
 }
 
 export class ResendInvitationDto {

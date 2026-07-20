@@ -65,6 +65,10 @@ export class AttendanceQueryService {
         attendanceDate: { gte: range.start, lte: range.end },
         appliedShiftId: query.shiftId,
         attendanceStatus: query.status,
+        ...(query.lateOnly ? { lateMinutes: { gt: 0 } } : {}),
+        ...(query.missingCheckout
+          ? { firstCheckin: { not: null }, lastCheckout: null }
+          : {}),
         employee: employeeWhere,
         ...(exceptionConditions?.length
           ? { OR: exceptionConditions }

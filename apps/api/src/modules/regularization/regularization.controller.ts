@@ -28,7 +28,7 @@ import { RegularizationService } from './regularization.service';
 
 @ApiTags('Regularizations')
 @ApiBearerAuth()
-@RequireModule('REGULARIZATION')
+@RequireModule('ATTENDANCE')
 @UseGuards(JwtTenantGuard, ModuleGuard, PermissionsGuard)
 @Controller('regularizations')
 export class RegularizationController {
@@ -57,6 +57,19 @@ export class RegularizationController {
   @ApiOperation({ summary: 'Submit an attendance correction request' })
   create(@Body() dto: CreateRegularizationDto) {
     return this.regularizations.create(dto);
+  }
+
+  @Post('employees/:employeeId')
+  @RequireAnyPermissions(
+    PERMISSIONS.REGULARIZATIONS_MANAGE,
+    PERMISSIONS.ATTENDANCE_APPROVALS_MANAGE,
+  )
+  @ApiOperation({ summary: 'Submit a correction request for an employee' })
+  createForEmployee(
+    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+    @Body() dto: CreateRegularizationDto,
+  ) {
+    return this.regularizations.createForEmployee(employeeId, dto);
   }
 
   @Post('attachments/presign')

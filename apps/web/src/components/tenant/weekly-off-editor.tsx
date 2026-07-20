@@ -4,6 +4,7 @@ import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { FeatureInfo } from "@/components/help/feature-info";
 
 export type WeeklyOffValue = Array<
   string | { weekday: string; occurrences?: number[] }
@@ -35,7 +36,11 @@ const occurrenceLabels = ["1st", "2nd", "3rd", "4th", "5th"];
 
 type NormalizedPattern = { weekday: string; occurrences?: number[] };
 
-export function WeeklyOffEditor({ value, onChange, mode }: WeeklyOffEditorProps) {
+export function WeeklyOffEditor({
+  value,
+  onChange,
+  mode,
+}: WeeklyOffEditorProps) {
   const patterns = normalizePatterns(value);
   const summary = describeWeeklyOffs(patterns);
 
@@ -58,13 +63,20 @@ export function WeeklyOffEditor({ value, onChange, mode }: WeeklyOffEditorProps)
         item.weekday === weekday
           ? recurrence === "every"
             ? { weekday }
-            : { weekday, occurrences: item.occurrences?.length ? item.occurrences : [1] }
+            : {
+                weekday,
+                occurrences: item.occurrences?.length ? item.occurrences : [1],
+              }
           : item,
       ),
     );
   }
 
-  function toggleOccurrence(weekday: string, occurrence: number, checked: boolean) {
+  function toggleOccurrence(
+    weekday: string,
+    occurrence: number,
+    checked: boolean,
+  ) {
     commit(
       patterns.map((item) => {
         if (item.weekday !== weekday) return item;
@@ -72,29 +84,42 @@ export function WeeklyOffEditor({ value, onChange, mode }: WeeklyOffEditorProps)
         const occurrences = checked
           ? [...new Set([...current, occurrence])].sort()
           : current.filter((itemOccurrence) => itemOccurrence !== occurrence);
-        return { weekday, occurrences: occurrences.length ? occurrences : current };
+        return {
+          weekday,
+          occurrences: occurrences.length ? occurrences : current,
+        };
       }),
     );
   }
 
   return (
-    <section className="rounded-xl border border-[#e4e1ee] bg-[#f8f6ff] p-5" aria-labelledby={`weekly-off-${mode}-title`}>
+    <section
+      className="rounded-xl border border-[#e4e1ee] bg-[#f8f6ff] p-5"
+      aria-labelledby={`weekly-off-${mode}-title`}
+    >
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-[#3525cd] shadow-sm">
           <CalendarDays className="size-5" />
         </span>
-        <div>
-          <h3 id={`weekly-off-${mode}-title`} className="font-semibold">Weekly-off pattern</h3>
+        <div className="min-w-0 flex-1">
+          <h3 id={`weekly-off-${mode}-title`} className="font-semibold">
+            Weekly-off pattern
+          </h3>
           <p className="mt-1 text-xs leading-5 text-[#646273]">
             {mode === "compact"
               ? "Choose a common weekend or select any days your team takes off every week."
               : "Set every-week or occurrence-based weekly offs for each weekday."}
           </p>
         </div>
+        <FeatureInfo className="ml-auto" helpKey="weekly-off" />
       </div>
 
       {mode === "compact" ? (
-        <CompactEditor patterns={patterns} onPreset={applyPreset} onDayChange={setDay} />
+        <CompactEditor
+          patterns={patterns}
+          onPreset={applyPreset}
+          onDayChange={setDay}
+        />
       ) : (
         <AdvancedEditor
           patterns={patterns}
@@ -105,10 +130,15 @@ export function WeeklyOffEditor({ value, onChange, mode }: WeeklyOffEditorProps)
       )}
 
       <div className="mt-5 rounded-lg border border-[#ded9f0] bg-white px-4 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#777587]">Current schedule</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#777587]">
+          Current schedule
+        </p>
         <p className="mt-1 text-sm font-medium text-[#292734]">{summary}</p>
         {mode === "compact" && (
-          <p className="mt-1 text-xs text-[#777587]">Occurrence-based schedules can be configured later in Company Settings.</p>
+          <p className="mt-1 text-xs text-[#777587]">
+            Occurrence-based schedules can be configured later in Company
+            Settings.
+          </p>
         )}
       </div>
     </section>
@@ -136,7 +166,11 @@ function CompactEditor({
               size="sm"
               variant="outline"
               aria-pressed={active}
-              className={active ? "border-[#3525cd] bg-[#ece9ff] text-[#3525cd]" : "bg-white"}
+              className={
+                active
+                  ? "border-[#3525cd] bg-[#ece9ff] text-[#3525cd]"
+                  : "bg-white"
+              }
               onClick={() => onPreset(preset.days)}
             >
               {preset.label}
@@ -160,7 +194,9 @@ function CompactEditor({
               <Checkbox
                 id={`compact-weekly-off-${day.code}`}
                 checked={checked}
-                onCheckedChange={(nextChecked) => onDayChange(day.code, nextChecked)}
+                onCheckedChange={(nextChecked) =>
+                  onDayChange(day.code, nextChecked)
+                }
               />
               <span className="text-xs font-semibold">{day.short}</span>
             </Label>
@@ -179,8 +215,15 @@ function AdvancedEditor({
 }: {
   patterns: NormalizedPattern[];
   onDayChange: (weekday: string, checked: boolean) => void;
-  onRecurrenceChange: (weekday: string, recurrence: "every" | "selected") => void;
-  onOccurrenceChange: (weekday: string, occurrence: number, checked: boolean) => void;
+  onRecurrenceChange: (
+    weekday: string,
+    recurrence: "every" | "selected",
+  ) => void;
+  onOccurrenceChange: (
+    weekday: string,
+    occurrence: number,
+    checked: boolean,
+  ) => void;
 }) {
   return (
     <div className="mt-5 grid gap-3">
@@ -195,7 +238,10 @@ function AdvancedEditor({
             className={`rounded-lg border bg-white p-4 transition ${selected ? "border-[#aaa3cd]" : "border-[#e4e1ee]"}`}
           >
             <div className="flex flex-wrap items-center gap-4">
-              <Label htmlFor={`advanced-weekly-off-${day.code}`} className="min-w-32 cursor-pointer">
+              <Label
+                htmlFor={`advanced-weekly-off-${day.code}`}
+                className="min-w-32 cursor-pointer"
+              >
                 <Checkbox
                   id={`advanced-weekly-off-${day.code}`}
                   checked={selected}
@@ -208,7 +254,12 @@ function AdvancedEditor({
                   aria-label={`${day.label} recurrence`}
                   className="h-9 rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm outline-none focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15"
                   value={selectedWeeks ? "selected" : "every"}
-                  onChange={(event) => onRecurrenceChange(day.code, event.target.value as "every" | "selected")}
+                  onChange={(event) =>
+                    onRecurrenceChange(
+                      day.code,
+                      event.target.value as "every" | "selected",
+                    )
+                  }
                 >
                   <option value="every">Every week</option>
                   <option value="selected">Selected weeks</option>
@@ -219,13 +270,20 @@ function AdvancedEditor({
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3 border-t border-[#eeeaf7] pt-4">
                 {occurrenceLabels.map((label, index) => {
                   const occurrence = index + 1;
-                  const checked = pattern?.occurrences?.includes(occurrence) ?? false;
+                  const checked =
+                    pattern?.occurrences?.includes(occurrence) ?? false;
                   return (
-                    <Label key={label} htmlFor={`${day.code}-occurrence-${occurrence}`} className="cursor-pointer text-xs">
+                    <Label
+                      key={label}
+                      htmlFor={`${day.code}-occurrence-${occurrence}`}
+                      className="cursor-pointer text-xs"
+                    >
                       <Checkbox
                         id={`${day.code}-occurrence-${occurrence}`}
                         checked={checked}
-                        onCheckedChange={(nextChecked) => onOccurrenceChange(day.code, occurrence, nextChecked)}
+                        onCheckedChange={(nextChecked) =>
+                          onOccurrenceChange(day.code, occurrence, nextChecked)
+                        }
                       />
                       {label}
                     </Label>
@@ -265,11 +323,15 @@ function weekdayIndex(code: string) {
   return weekdays.findIndex((day) => day.code === code);
 }
 
-function matchesEveryWeekDays(patterns: NormalizedPattern[], days: readonly string[]) {
+function matchesEveryWeekDays(
+  patterns: NormalizedPattern[],
+  days: readonly string[],
+) {
   return (
     patterns.length === days.length &&
-    patterns.every((pattern) =>
-      !pattern.occurrences?.length && days.includes(pattern.weekday),
+    patterns.every(
+      (pattern) =>
+        !pattern.occurrences?.length && days.includes(pattern.weekday),
     )
   );
 }
@@ -278,9 +340,13 @@ function describeWeeklyOffs(patterns: NormalizedPattern[]) {
   if (!patterns.length) return "No recurring weekly off (seven-day operation)";
   return patterns
     .map((pattern) => {
-      const label = weekdays.find((day) => day.code === pattern.weekday)?.label ?? pattern.weekday;
+      const label =
+        weekdays.find((day) => day.code === pattern.weekday)?.label ??
+        pattern.weekday;
       if (!pattern.occurrences?.length) return `Every ${label}`;
-      const occurrences = pattern.occurrences.map((occurrence) => occurrenceLabels[occurrence - 1]).join(" and ");
+      const occurrences = pattern.occurrences
+        .map((occurrence) => occurrenceLabels[occurrence - 1])
+        .join(" and ");
       return `${occurrences} ${label}`;
     })
     .join(", ");

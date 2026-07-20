@@ -33,7 +33,7 @@ describe('Sprint 4 attendance runtime (e2e)', () => {
   let jobs: AttendanceJobProcessor;
   const tenantIds: string[] = [];
   const stamp = Date.now();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = dateInTimeZone(new Date(), 'Asia/Kolkata');
   const month = today.slice(0, 7);
   let adminA: Session;
   let adminB: Session;
@@ -184,7 +184,24 @@ describe('Sprint 4 attendance runtime (e2e)', () => {
     expect(audit).toBeGreaterThanOrEqual(4);
     expect(outbox).toBeGreaterThanOrEqual(4);
 
-    await api(employeeA).get('/attendance/me/today').expect(200);
+    await api(employeeA)
+      .get('/attendance/me/today')
+      .expect(200)
+      .expect(({ body }) => {
+        const today = body as {
+          data: {
+            policy: { name: string };
+            workOverview: Record<string, unknown>;
+          };
+        };
+        expect(typeof today.data.policy.name).toBe('string');
+        expect(typeof today.data.workOverview.weekStart).toBe('string');
+        expect(typeof today.data.workOverview.weekEnd).toBe('string');
+        expect(typeof today.data.workOverview.workMinutes).toBe('number');
+        expect(typeof today.data.workOverview.targetMinutes).toBe('number');
+        expect(typeof today.data.workOverview.lateMinutes).toBe('number');
+        expect(typeof today.data.workOverview.overtimeMinutes).toBe('number');
+      });
     const history = await api(employeeA)
       .get(`/attendance/me/history?month=${month}`)
       .expect(200);
@@ -266,6 +283,77 @@ describe('Sprint 4 attendance runtime (e2e)', () => {
     await api(manager)
       .get(`/attendance/employees/${outsiderEmployeeId}/month?month=${month}`)
       .expect(404);
+  });
+
+  it('filters operational register links for late and missing checkout records', async () => {
+    const attendanceDate = new Date(`${today}T00:00:00.000Z`);
+    await prisma.attendanceLog.upsert({
+      where: {
+        tenantId_employeeId_attendanceDate: {
+          tenantId: adminA.tenantId,
+          employeeId: reportEmployeeId,
+          attendanceDate,
+        },
+      },
+      update: {
+        firstCheckin: new Date(`${today}T09:20:00.000Z`),
+        lastCheckout: new Date(`${today}T17:00:00.000Z`),
+        lateMinutes: 20,
+      },
+      create: {
+        tenantId: adminA.tenantId,
+        employeeId: reportEmployeeId,
+        attendanceDate,
+        attendanceStatus: AttendanceStatus.PRESENT,
+        firstCheckin: new Date(`${today}T09:20:00.000Z`),
+        lastCheckout: new Date(`${today}T17:00:00.000Z`),
+        lateMinutes: 20,
+      },
+    });
+    await prisma.attendanceLog.upsert({
+      where: {
+        tenantId_employeeId_attendanceDate: {
+          tenantId: adminA.tenantId,
+          employeeId: outsiderEmployeeId,
+          attendanceDate,
+        },
+      },
+      update: {
+        firstCheckin: new Date(`${today}T09:00:00.000Z`),
+        lastCheckout: null,
+        lateMinutes: 0,
+      },
+      create: {
+        tenantId: adminA.tenantId,
+        employeeId: outsiderEmployeeId,
+        attendanceDate,
+        attendanceStatus: AttendanceStatus.PRESENT_OPEN,
+        firstCheckin: new Date(`${today}T09:00:00.000Z`),
+        lastCheckout: null,
+      },
+    });
+
+    const late = await api(adminA)
+      .get(
+        `/attendance/register?startDate=${today}&endDate=${today}&lateOnly=true&limit=100`,
+      )
+      .expect(200);
+    const lateIds = (late.body as RegisterBody).data.map(
+      ({ employee }) => employee.id,
+    );
+    expect(lateIds).toContain(reportEmployeeId);
+    expect(lateIds).not.toContain(outsiderEmployeeId);
+
+    const missingCheckout = await api(adminA)
+      .get(
+        `/attendance/register?startDate=${today}&endDate=${today}&missingCheckout=true&limit=100`,
+      )
+      .expect(200);
+    const missingCheckoutIds = (missingCheckout.body as RegisterBody).data.map(
+      ({ employee }) => employee.id,
+    );
+    expect(missingCheckoutIds).toContain(outsiderEmployeeId);
+    expect(missingCheckoutIds).not.toContain(reportEmployeeId);
   });
 
   it('grants tenant-wide reads to HR and permission-scoped custom roles', async () => {
@@ -573,6 +661,18 @@ describe('Sprint 4 attendance runtime (e2e)', () => {
     return { tenantId, accessToken: login.accessToken, userId: user.id };
   }
 });
+
+function dateInTimeZone(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
 
 async function cleanupTenant(prisma: PrismaClient, tenantId: string) {
   const users = await prisma.user.findMany({

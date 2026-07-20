@@ -586,6 +586,20 @@ export class PlatformTenantsService {
       where: { tenantId: id, purpose: TokenPurpose.USER_INVITE },
       orderBy: { createdAt: 'desc' },
     });
+    const primaryAdministrator = await tx.user.findFirst({
+      where: {
+        tenantId: id,
+        roles: { some: { role: { name: 'BUSINESS_ADMIN' } } },
+      },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        emailVerifiedAt: true,
+        lastLoginAt: true,
+      },
+    });
     return {
       tenant,
       subscription,
@@ -609,6 +623,7 @@ export class PlatformTenantsService {
             consumedAt: invitation.consumedAt,
           }
         : null,
+      primaryAdministrator,
     };
   }
 

@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../network/network_providers.dart';
 import '../widgets/app_feedback.dart';
 import '../tenant/tenant_controller.dart';
 import '../tenant/tenant_config.dart';
@@ -42,8 +44,21 @@ final appRouterProvider = Provider<GoRouter>(
       GoRoute(
         path: AppRoutes.splash,
         name: 'splash',
-        builder: (context, _) =>
-            SplashScreen(onReady: () => context.go(AppRoutes.login)),
+        builder: (context, _) => SplashScreen(
+          onReady: () async {
+            final restored = await ref
+                .read(authControllerProvider.notifier)
+                .restoreSession();
+            if (!context.mounted) return;
+            context.go(
+              restored
+                  ? ref
+                        .read(tenantControllerProvider.notifier)
+                        .nextRequiredRoute()
+                  : AppRoutes.login,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: AppRoutes.login,
@@ -97,9 +112,43 @@ final appRouterProvider = Provider<GoRouter>(
               }
             }
           },
-          onContinue: () => context.go(
-            ref.read(tenantControllerProvider.notifier).nextRequiredRoute(),
-          ),
+          onContinue: () async {
+            final rebound = await ref.read(apiServiceProvider).refreshSession();
+            if (!context.mounted) return;
+            if (!rebound) {
+              AppFeedback.error(
+                context,
+                'Your approved device could not be linked to this session. Sign in again and retry.',
+              );
+              return;
+            }
+            try {
+              await ref
+                  .read(tenantControllerProvider.notifier)
+                  .refreshRuntime();
+            } catch (_) {
+              if (context.mounted) {
+                AppFeedback.error(
+                  context,
+                  'Device approval could not be confirmed. Check your connection and retry.',
+                );
+              }
+              return;
+            }
+            if (context.mounted) {
+              final next = ref
+                  .read(tenantControllerProvider.notifier)
+                  .nextRequiredRoute();
+              if (next == AppRoutes.device) {
+                AppFeedback.error(
+                  context,
+                  'This installation is still awaiting approval. Check the status again.',
+                );
+                return;
+              }
+              context.go(next);
+            }
+          },
         ),
       ),
       GoRoute(
@@ -114,58 +163,83 @@ final appRouterProvider = Provider<GoRouter>(
       GoRoute(
         path: AppRoutes.consent,
         name: 'consent',
-        builder: (context, _) => ConsentScreen(
-          onAccept: () async {
-            final success = await ref
-                .read(consentControllerProvider.notifier)
-                .accept();
-            if (success) {
-              await ref
-                  .read(tenantControllerProvider.notifier)
-                  .refreshRuntime();
-            }
-            if (success && context.mounted) {
-              context.go(
-                ref
+        builder: (context, _) {
+          final runtime = ref.read(tenantControllerProvider);
+          if (!runtime.attendancePolicy.requiresFace) {
+            return FeatureUnavailableScreen(
+              title: 'Biometric consent is not required',
+              message:
+                  'Your attendance policy uses location-only verification and does not require face capture.',
+              onBack: () => context.go(AppRoutes.home),
+            );
+          }
+          return ConsentScreen(
+            onAccept: () async {
+              final success = await ref
+                  .read(consentControllerProvider.notifier)
+                  .accept();
+              if (success) {
+                await ref
                     .read(tenantControllerProvider.notifier)
-                    .nextAfterPermissions(),
-              );
-            }
-          },
-          onDecline: () => context.go(AppRoutes.home),
-          onContinue: () => context.go(
-            ref.read(tenantControllerProvider).onboarding.enrollmentPending
-                ? AppRoutes.enrollment
-                : AppRoutes.home,
-          ),
-          onWithdraw: () async {
-            final withdrawn = await ref
-                .read(consentControllerProvider.notifier)
-                .withdraw();
-            if (withdrawn && context.mounted) {
-              AppFeedback.success(context, 'Biometric consent was withdrawn.');
-            }
-          },
-        ),
+                    .refreshRuntime();
+              }
+              if (success && context.mounted) {
+                context.go(
+                  ref
+                      .read(tenantControllerProvider.notifier)
+                      .nextAfterPermissions(),
+                );
+              }
+            },
+            onDecline: () => context.go(AppRoutes.home),
+            onContinue: () => context.go(
+              ref
+                  .read(tenantControllerProvider.notifier)
+                  .nextAfterPermissions(),
+            ),
+            onWithdraw: () async {
+              final withdrawn = await ref
+                  .read(consentControllerProvider.notifier)
+                  .withdraw();
+              if (withdrawn && context.mounted) {
+                AppFeedback.success(
+                  context,
+                  'Biometric consent was withdrawn.',
+                );
+              }
+            },
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.enrollment,
         name: 'enrollment',
-        builder: (context, _) => EnrollmentScreen(
-          onCapture: (file) async {
-            final success = await ref
-                .read(enrollmentControllerProvider.notifier)
-                .enroll(file.path);
-            if (success) {
-              await ref
-                  .read(tenantControllerProvider.notifier)
-                  .refreshRuntime();
-            }
-            if (success && context.mounted) context.go(AppRoutes.home);
-          },
-          onContinue: () => context.go(AppRoutes.home),
-          onConsentRequired: () => context.go(AppRoutes.consent),
-        ),
+        builder: (context, _) {
+          final runtime = ref.read(tenantControllerProvider);
+          if (!runtime.attendancePolicy.requiresFace) {
+            return FeatureUnavailableScreen(
+              title: 'Face enrollment is not required',
+              message:
+                  'Your attendance policy uses location-only verification and does not require a face profile.',
+              onBack: () => context.go(AppRoutes.home),
+            );
+          }
+          return EnrollmentScreen(
+            onCapture: (file) async {
+              final success = await ref
+                  .read(enrollmentControllerProvider.notifier)
+                  .enroll(file.path);
+              if (success) {
+                await ref
+                    .read(tenantControllerProvider.notifier)
+                    .refreshRuntime();
+              }
+              if (success && context.mounted) context.go(AppRoutes.home);
+            },
+            onContinue: () => context.go(AppRoutes.home),
+            onConsentRequired: () => context.go(AppRoutes.consent),
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         pageBuilder: (context, state, navigationShell) => NoTransitionPage(
@@ -253,6 +327,10 @@ final appRouterProvider = Provider<GoRouter>(
                 name: 'profile',
                 builder: (context, _) => ProfileScreen(
                   onSettings: () => context.push(AppRoutes.settings),
+                  onLogout: () async {
+                    await ref.read(authControllerProvider.notifier).logout();
+                    if (context.mounted) context.go(AppRoutes.login);
+                  },
                 ),
               ),
             ],
@@ -311,7 +389,7 @@ final appRouterProvider = Provider<GoRouter>(
           final capture = state.extra as PunchCapture?;
           if (capture == null) {
             return PunchFailureScreen(
-              onRetry: () => context.pushReplacement(AppRoutes.punchCamera),
+              onRetry: () => _retryPunch(ref, context),
               onRegularization: () => context.push(AppRoutes.regularization),
             );
           }
@@ -336,7 +414,7 @@ final appRouterProvider = Provider<GoRouter>(
         path: AppRoutes.punchFailure,
         name: 'punchFailure',
         builder: (context, _) => PunchFailureScreen(
-          onRetry: () => context.pushReplacement(AppRoutes.punchCamera),
+          onRetry: () => _retryPunch(ref, context),
           onRegularization: () => context.push(AppRoutes.regularization),
         ),
       ),
@@ -455,3 +533,20 @@ final appRouterProvider = Provider<GoRouter>(
     ],
   ),
 );
+
+void _retryPunch(Ref ref, BuildContext context) {
+  final policy = ref.read(tenantControllerProvider).attendancePolicy;
+  if (policy.selfieMode == AttendanceSelfieMode.required) {
+    context.pushReplacement(AppRoutes.punchCamera);
+    return;
+  }
+  final phase = ref.read(attendanceControllerProvider).asData?.value.phase;
+  context.pushReplacement(
+    AppRoutes.verifying,
+    extra: PunchCapture(
+      isCheckOut:
+          phase == AttendancePhase.checkedIn ||
+          phase == AttendancePhase.onBreak,
+    ),
+  );
+}

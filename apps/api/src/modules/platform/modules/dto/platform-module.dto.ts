@@ -1,15 +1,28 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ModuleAvailability } from '@prisma/client';
 import {
+  ModuleAvailability,
+  ModuleKind,
+  TenantOverrideMode,
+} from '@prisma/client';
+import {
+  ArrayMaxSize,
   ArrayUnique,
+  IsBoolean,
+  IsDateString,
   IsArray,
   IsEnum,
+  IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 const MODULE_KEY = /^[A-Z][A-Z0-9_]{1,49}$/;
 
@@ -55,6 +68,28 @@ export class CreatePlatformModuleDto {
   @ArrayUnique()
   @Matches(MODULE_KEY, { each: true })
   conflictKeys?: string[];
+
+  @ApiPropertyOptional({ enum: ModuleKind })
+  @IsOptional()
+  @IsEnum(ModuleKind)
+  kind?: ModuleKind;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  parentModuleId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
+  catalogOrder?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  customerVisible?: boolean;
 }
 
 export class UpdatePlatformModuleDto {
@@ -95,6 +130,28 @@ export class UpdatePlatformModuleDto {
   @ArrayUnique()
   @Matches(MODULE_KEY, { each: true })
   conflictKeys?: string[];
+
+  @ApiPropertyOptional({ enum: ModuleKind })
+  @IsOptional()
+  @IsEnum(ModuleKind)
+  kind?: ModuleKind;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  parentModuleId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
+  catalogOrder?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  customerVisible?: boolean;
 }
 
 export class ReplaceTenantModulesDto {
@@ -103,4 +160,34 @@ export class ReplaceTenantModulesDto {
   @ArrayUnique()
   @Matches(MODULE_KEY, { each: true })
   moduleKeys!: string[];
+}
+
+export class TenantCapabilityOverrideDto {
+  @Matches(MODULE_KEY)
+  capabilityKey!: string;
+
+  @IsEnum(TenantOverrideMode)
+  mode!: TenantOverrideMode;
+
+  @IsString()
+  @MinLength(10)
+  @MaxLength(500)
+  reason!: string;
+
+  @IsOptional()
+  @IsDateString()
+  startsAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endsAt?: string;
+}
+
+export class ReplaceTenantCapabilityOverridesDto {
+  @IsArray()
+  @ArrayUnique((item: TenantCapabilityOverrideDto) => item.capabilityKey)
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => TenantCapabilityOverrideDto)
+  overrides!: TenantCapabilityOverrideDto[];
 }

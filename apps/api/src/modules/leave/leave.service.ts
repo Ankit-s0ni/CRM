@@ -6,6 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { LeaveBalanceEntryType, Prisma, RequestStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { AuditService } from '../../shared/audit/audit.service';
 import {
   PrismaService,
@@ -17,11 +18,13 @@ import { assertAttendanceRangeUnlocked } from '../../shared/attendance/attendanc
 import {
   CreateLeavePolicyDto,
   CreateLeaveRequestDto,
+  AdjustLeaveBalanceDto,
   LeaveBalanceQueryDto,
   LeaveDecisionDto,
   LeaveRequestQueryDto,
   UpdateLeavePolicyDto,
 } from './dto/leave.dto';
+import { provisionEmployeeLeaveBalances } from '../../shared/leave/provision-leave-balances';
 
 const MANAGE = 'leave.manage';
 const APPROVE = 'leave.approve';
@@ -128,6 +131,12 @@ export class LeaveService {
   balancesMine() {
     return this.prisma.forTenant(async (tx) => {
       const employee = await this.currentEmployee(tx);
+      await provisionEmployeeLeaveBalances(
+        tx,
+        this.tenantId(),
+        employee.id,
+        this.userId(),
+      );
       return {
         data: await tx.leaveBalance.findMany({
           where: { employeeId: employee.id },
@@ -135,6 +144,48 @@ export class LeaveService {
           orderBy: { policy: { name: 'asc' } },
         }),
       };
+    });
+  }
+
+  adjustBalance(id: string, dto: AdjustLeaveBalanceDto) {
+    return this.prisma.forTenant(async (tx) => {
+      await this.lockBalance(tx, id);
+      const current = await tx.leaveBalance.findUnique({ where: { id } });
+      if (!current) this.notFound('LEAVE_BALANCE_NOT_FOUND', 'Leave balance');
+
+      const balanceAfter = Number(current.remainingDays) + dto.days;
+      if (balanceAfter < 0) {
+        throw new ConflictException({
+          code: 'LEAVE_BALANCE_NEGATIVE',
+          message: 'This adjustment would make the leave balance negative',
+        });
+      }
+      const balance = await tx.leaveBalance.update({
+        where: { id },
+        data: { remainingDays: balanceAfter },
+      });
+      await tx.leaveBalanceLedger.create({
+        data: {
+          tenantId: this.tenantId(),
+          balanceId: id,
+          entryType:
+            dto.days >= 0
+              ? LeaveBalanceEntryType.CREDIT
+              : LeaveBalanceEntryType.DEBIT,
+          days: Math.abs(dto.days),
+          balanceAfter,
+          reason: dto.reason.trim(),
+          actorUserId: this.userId(),
+          idempotencyKey: `manual:${id}:${randomUUID()}`,
+        },
+      });
+      await this.record(tx, 'balance.adjusted', id, {
+        balanceId: id,
+        days: dto.days,
+        balanceAfter,
+        reason: dto.reason.trim(),
+      });
+      return { data: balance };
     });
   }
 
@@ -188,12 +239,7 @@ export class LeaveService {
           message: 'The selected range contains no working days',
         });
       }
-      const balance = await this.ensureBalance(
-        tx,
-        employee.id,
-        policy.id,
-        policy.accrualLogic,
-      );
+      const balance = await this.ensureBalance(tx, employee.id, policy.id);
       await this.lockBalance(tx, balance.id);
       const fresh = await tx.leaveBalance.findUniqueOrThrow({
         where: { id: balance.id },
@@ -474,7 +520,6 @@ export class LeaveService {
     tx: PrismaTransaction,
     employeeId: string,
     policyId: string,
-    accrualLogic: Prisma.JsonValue,
   ) {
     const existing = await tx.leaveBalance.findUnique({
       where: {
@@ -486,15 +531,28 @@ export class LeaveService {
       },
     });
     if (existing) return existing;
-    const entitlement = Number(jsonObject(accrualLogic).annualEntitlement ?? 0);
-    return tx.leaveBalance.create({
-      data: {
-        tenantId: this.tenantId(),
-        employeeId,
-        policyId,
-        remainingDays: entitlement,
+    await provisionEmployeeLeaveBalances(
+      tx,
+      this.tenantId(),
+      employeeId,
+      this.userId(),
+    );
+    const provisioned = await tx.leaveBalance.findUnique({
+      where: {
+        tenantId_employeeId_policyId: {
+          tenantId: this.tenantId(),
+          employeeId,
+          policyId,
+        },
       },
     });
+    if (!provisioned) {
+      throw new ConflictException({
+        code: 'LEAVE_POLICY_INACTIVE',
+        message: 'The selected leave policy is not available',
+      });
+    }
+    return provisioned;
   }
 
   private async scope(tx: PrismaTransaction) {
@@ -511,10 +569,10 @@ export class LeaveService {
         },
       },
     });
-    if (!actor?.employee)
+    if (!actor)
       throw new ForbiddenException({
-        code: 'EMPLOYEE_PROFILE_REQUIRED',
-        message: 'An employee profile is required',
+        code: 'LEAVE_NOT_AUTHORIZED',
+        message: 'The authenticated user could not be resolved',
       });
     const permissions = new Set(
       actor.roles.flatMap(({ role }) =>
@@ -527,8 +585,13 @@ export class LeaveService {
           ({ id }) => id,
         ),
         canManage: true,
-        actorId: actor.employee.id,
+        actorId: actor.employee?.id ?? null,
       };
+    if (!actor.employee)
+      throw new ForbiddenException({
+        code: 'EMPLOYEE_PROFILE_REQUIRED',
+        message: 'An employee profile is required',
+      });
     if (permissions.has(APPROVE)) {
       const nodes = await tx.employee.findMany({
         select: { id: true, managerId: true },

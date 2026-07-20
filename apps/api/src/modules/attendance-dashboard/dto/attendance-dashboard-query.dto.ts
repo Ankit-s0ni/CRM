@@ -34,6 +34,11 @@ export class AttendanceDashboardQueryDto {
   @IsUUID()
   departmentId?: string;
 
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  officeId?: string;
+
   @ApiPropertyOptional({ enum: DashboardEmployeeStatus, isArray: true })
   @IsOptional()
   @Transform(({ value }: { value: unknown }) => normalizeArray(value))

@@ -113,6 +113,17 @@ enum ModuleAvailability {
   DEPRECATED
 }
 
+enum ModuleKind {
+  PRODUCT
+  ADD_ON
+}
+
+enum TenantOverrideMode {
+  INHERIT
+  ENABLE
+  DISABLE
+}
+
 enum SystemAlertType {
   PAYMENT_GATEWAY_DOWN
   QUEUE_LAG
@@ -446,18 +457,19 @@ model TenantBillingProfile {
 }
 
 model SubscriptionPlan {
-  id            String                      @id @default(uuid(7)) @db.Uuid
-  name          String                      @unique
-  pricePerUser  Decimal                     @db.Decimal(10, 2)
-  currency      String                      @default("INR")
+  id            String                       @id @default(uuid(7)) @db.Uuid
+  name          String                       @unique
+  pricePerUser  Decimal                      @db.Decimal(10, 2)
+  currency      String                       @default("INR")
   maxEmployees  Int
-  billingPeriod BillingPeriod               @default(MONTHLY)
+  billingPeriod BillingPeriod                @default(MONTHLY)
   description   String?
-  isActive      Boolean                     @default(true)
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  isActive      Boolean                      @default(true)
+  createdAt     DateTime                     @default(now())
+  updatedAt     DateTime                     @updatedAt
   subscriptions TenantSubscription[]
   modules       SubscriptionPlanModule[]
+  capabilities  SubscriptionPlanCapability[]
   history       TenantSubscriptionHistory[]
 
   @@map("subscription_plans")
@@ -528,14 +540,78 @@ model Module {
   description       String?
   icon              String?
   availability      ModuleAvailability       @default(AVAILABLE)
+  kind              ModuleKind               @default(PRODUCT)
+  parentModuleId    String?                  @db.Uuid
+  catalogOrder      Int                      @default(0)
+  customerVisible   Boolean                  @default(true)
   dependencyKeys    String[]                 @default([])
   conflictKeys      String[]                 @default([])
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
   tenantModules     TenantModule[]
   subscriptionPlans SubscriptionPlanModule[]
+  parentModule      Module?                  @relation("ModuleAddOns", fields: [parentModuleId], references: [id])
+  addOns            Module[]                 @relation("ModuleAddOns")
+  capabilities      ModuleCapability[]
 
+  @@index([kind, availability, catalogOrder])
+  @@index([parentModuleId])
   @@map("modules")
+}
+
+model ModuleCapability {
+  id                 String                       @id @default(uuid(7)) @db.Uuid
+  moduleId           String                       @db.Uuid
+  key                String                       @unique
+  name               String
+  description        String?
+  availability       ModuleAvailability           @default(AVAILABLE)
+  isCore             Boolean                      @default(false)
+  configurable       Boolean                      @default(true)
+  requiredModuleKeys String[]                     @default([])
+  dependencyKeys     String[]                     @default([])
+  conflictKeys       String[]                     @default([])
+  displayOrder       Int                          @default(0)
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+  module             Module                       @relation(fields: [moduleId], references: [id])
+  subscriptionPlans  SubscriptionPlanCapability[]
+  tenantOverrides    TenantCapabilityOverride[]
+
+  @@index([moduleId, availability, displayOrder])
+  @@map("module_capabilities")
+}
+
+model SubscriptionPlanCapability {
+  planId       String           @db.Uuid
+  capabilityId String           @db.Uuid
+  included     Boolean          @default(true)
+  limitValue   Json?
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id])
+  capability   ModuleCapability @relation(fields: [capabilityId], references: [id])
+
+  @@id([planId, capabilityId])
+  @@map("subscription_plan_capabilities")
+}
+
+model TenantCapabilityOverride {
+  id           String             @id @default(uuid(7)) @db.Uuid
+  tenantId     String             @db.Uuid
+  capabilityId String             @db.Uuid
+  mode         TenantOverrideMode
+  limitValue   Json?
+  reason       String
+  startsAt     DateTime?
+  endsAt       DateTime?
+  changedBy    String             @db.Uuid
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  capability   ModuleCapability   @relation(fields: [capabilityId], references: [id])
+
+  @@unique([tenantId, capabilityId])
+  @@index([tenantId, mode])
+  @@index([endsAt])
+  @@map("tenant_capability_overrides")
 }
 
 model TenantModule {
@@ -1072,12 +1148,34 @@ model Employee {
   regularizations   RegularizationRequest[]
   leaveBalances     LeaveBalance[]
   leaveRequests     LeaveRequest[]
+  documents         EmployeeDocument[]
 
   @@unique([tenantId, employeeCode])
   @@index([tenantId, status])
   @@index([tenantId, deptId])
   @@index([tenantId, managerId])
   @@map("employees")
+}
+
+model EmployeeDocument {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  tenantId     String    @db.Uuid
+  employeeId   String    @db.Uuid
+  documentType String
+  title        String
+  filename     String
+  contentType  String
+  fileSize     Int
+  objectKey    String
+  uploadedBy   String    @db.Uuid
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId, createdAt])
+  @@index([tenantId, documentType])
+  @@map("employee_documents")
 }
 
 model EmploymentEvent {

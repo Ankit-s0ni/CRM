@@ -100,6 +100,71 @@ void main() {
     }
   });
 
+  test('projects Leave from the Attendance capability contract', () async {
+    final container = ProviderContainer(
+      overrides: [
+        apiServiceProvider.overrideWithValue(
+          createTestApiService(runtime: testRuntimeConfig(leave: true)),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(tenantControllerProvider.notifier).loadRuntime();
+
+    expect(
+      container.read(tenantControllerProvider).hasModule(TenantModule.leave),
+      isTrue,
+    );
+  });
+
+  test('keeps Leave visible while HR policy setup is pending', () async {
+    final container = ProviderContainer(
+      overrides: [
+        apiServiceProvider.overrideWithValue(
+          createTestApiService(runtime: testRuntimeConfig(leave: false)),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(tenantControllerProvider.notifier).loadRuntime();
+
+    expect(
+      container.read(tenantControllerProvider).hasModule(TenantModule.leave),
+      isTrue,
+    );
+  });
+
+  test(
+    'location-only policy ignores stale biometric onboarding flags',
+    () async {
+      final runtime = testRuntimeConfig(
+        locationMode: 'OFFICE_GEOFENCE',
+        selfieMode: 'DISABLED',
+      );
+      final onboarding = runtime['onboarding']! as Map<String, dynamic>;
+      onboarding
+        ..['biometricConsentRequired'] = true
+        ..['biometricConsentComplete'] = false
+        ..['faceEnrollmentRequired'] = true
+        ..['faceEnrollmentComplete'] = false;
+      final container = ProviderContainer(
+        overrides: [
+          apiServiceProvider.overrideWithValue(
+            createTestApiService(runtime: runtime),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(tenantControllerProvider.notifier).loadRuntime();
+      final controller = container.read(tenantControllerProvider.notifier);
+
+      expect(controller.nextRequiredRoute(), '/permissions');
+      expect(controller.nextAfterPermissions(), '/home');
+    },
+  );
 }
 
 class _TenantLocalDataService implements TenantLocalDataService {

@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AttendanceDashboardController } from './attendance-dashboard.controller';
+import {
+  AttendanceDashboardController,
+  HrDashboardController,
+} from './attendance-dashboard.controller';
 import { AttendanceDashboardService } from './attendance-dashboard.service';
 
 @Module({
-  controllers: [AttendanceDashboardController],
+  controllers: [AttendanceDashboardController, HrDashboardController],
   providers: [AttendanceDashboardService],
 })
 export class AttendanceDashboardModule {}

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { WorkType } from '@prisma/client';
 import {
+  IsEmail,
   IsEnum,
   IsOptional,
   IsString,
@@ -26,10 +27,13 @@ export class CreateEmployeeDto {
   @MaxLength(120)
   fullName!: string;
 
-  @ApiPropertyOptional({ example: '+919876543210' })
-  @IsOptional()
+  @ApiProperty({ example: 'aarav.sharma@acme.com' })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({ example: '+919876543210' })
   @Matches(E164_PATTERN, { message: 'phone must be in E.164 format' })
-  phone?: string;
+  phone!: string;
 
   @ApiProperty({ enum: WorkType, example: WorkType.OFFICE })
   @IsEnum(WorkType)

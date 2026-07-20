@@ -3,6 +3,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { EmployeeStatus } from '@prisma/client';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export type ManagerNode = {
   id: string;
@@ -92,4 +93,18 @@ function throwManagerCycle(): never {
     code: 'MANAGER_CYCLE',
     message: 'Manager assignment would create a reporting cycle',
   });
+}
+
+export function temporaryEmployeePassword(fullName: string, phone: string) {
+  const name = fullName.replace(/[^\p{L}\p{N}]/gu, '');
+  const parsedPhone = parsePhoneNumberFromString(phone);
+  const nationalDigits = parsedPhone?.nationalNumber;
+
+  if (!nationalDigits || nationalDigits.length < 6) {
+    throw new Error(
+      'A valid phone number with at least six local digits is required',
+    );
+  }
+
+  return `${name}${nationalDigits.slice(0, 6)}`;
 }

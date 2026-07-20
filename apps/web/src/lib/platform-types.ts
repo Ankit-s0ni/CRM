@@ -30,8 +30,29 @@ export type PlatformModule = {
   availability: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
   dependencyKeys: string[];
   conflictKeys: string[];
+  kind: "PRODUCT" | "ADD_ON";
+  parentModuleId: string | null;
+  catalogOrder: number;
+  customerVisible: boolean;
+  capabilities?: PlatformCapability[];
+  addOns?: PlatformModule[];
   tenantModules?: { tenantId: string }[];
   isActive?: boolean;
+};
+
+export type PlatformCapability = {
+  id: string;
+  moduleId: string;
+  key: string;
+  name: string;
+  description: string | null;
+  availability: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
+  isCore: boolean;
+  configurable: boolean;
+  requiredModuleKeys: string[];
+  dependencyKeys: string[];
+  conflictKeys: string[];
+  displayOrder: number;
 };
 
 export type TenantListItem = {
@@ -55,16 +76,61 @@ export type TenantDetail = {
     suspendedAt?: string | null;
     suspendedReason?: string | null;
   };
-  subscription: null | (TenantListItem["subscription"] extends infer S
-    ? Exclude<S, null> & { currentPeriodEnd: string }
-    : never);
+  subscription:
+    | null
+    | (TenantListItem["subscription"] extends infer S
+        ? Exclude<S, null> & { currentPeriodEnd: string }
+        : never);
   usage: { employees: number; seats: number; percentage: number };
-  modules: { key: string; name: string; isActive: boolean; activatedAt: string | null }[];
+  modules: {
+    key: string;
+    name: string;
+    isActive: boolean;
+    activatedAt: string | null;
+  }[];
   administratorInvitation: null | {
     email: string;
     expiresAt: string;
     consumedAt: string | null;
   };
+  primaryAdministrator: null | {
+    id: string;
+    email: string;
+    status: string;
+    emailVerifiedAt: string | null;
+    lastLoginAt: string | null;
+  };
+};
+
+export type TenantEntitlements = {
+  plan: { id: string; name: string } | null;
+  products: Array<{
+    key: string;
+    name: string;
+    kind: "PRODUCT" | "ADD_ON";
+    active: boolean;
+    source: "PLAN" | "OVERRIDE";
+  }>;
+  capabilities: Array<
+    PlatformCapability & {
+      included: boolean;
+      source: "PLAN" | "OVERRIDE" | "NONE";
+      override: null | {
+        mode: "ENABLE" | "DISABLE";
+        reason: string;
+        startsAt: string | null;
+        endsAt: string | null;
+      };
+    }
+  >;
+  overrides: Array<{
+    capability: PlatformCapability;
+    mode: "ENABLE" | "DISABLE";
+    reason: string;
+    startsAt: string | null;
+    endsAt: string | null;
+  }>;
+  limits: { employees: number };
 };
 
 export type PlatformDashboardData = {
@@ -124,6 +190,11 @@ export type PlatformHealth = {
   checkedAt: string;
   services: Record<
     string,
-    { status: "up" | "down" | "degraded"; latencyMs?: number; pending?: number; deadLettered?: number }
+    {
+      status: "up" | "down" | "degraded";
+      latencyMs?: number;
+      pending?: number;
+      deadLettered?: number;
+    }
   >;
 };

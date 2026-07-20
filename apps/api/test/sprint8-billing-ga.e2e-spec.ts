@@ -122,6 +122,9 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
       });
     }
     if (temporaryPlanId) {
+      await prisma.subscriptionPlanCapability.deleteMany({
+        where: { planId: temporaryPlanId },
+      });
       await prisma.subscriptionPlanModule.deleteMany({
         where: { planId: temporaryPlanId },
       });

@@ -17,7 +17,18 @@ export type BillingProfile = {
   address?: BillingAddress | null;
 };
 
-export type BillingModule = { module: { id: string; key: string; name: string } };
+export type BillingModule = { module: { id: string; key: string; name: string; kind?: "PRODUCT" | "ADD_ON" } };
+export type BillingCapability = {
+  capability: {
+    id: string;
+    key: string;
+    name: string;
+    description?: string | null;
+    isCore: boolean;
+    dependencyKeys: string[];
+    requiredModuleKeys: string[];
+  };
+};
 
 export type BillingPlan = {
   id: string;
@@ -29,6 +40,7 @@ export type BillingPlan = {
   billingPeriod: "MONTHLY" | "YEARLY";
   isActive: boolean;
   modules: BillingModule[];
+  capabilities: BillingCapability[];
   _count?: { subscriptions: number };
 };
 

@@ -88,10 +88,10 @@ WHERE "parentDeptId" IS NULL;
 
 ### 3.3 Subscription and quota source
 
-The effective employee quota will be:
+The effective employee quota is the active subscription plan capacity:
 
 ```text
-min(active subscription seatCount, subscription plan maxEmployees)
+subscription plan maxEmployees
 ```
 
 - [x] Ensure signup and seed paths create one current trial or active subscription per tenant

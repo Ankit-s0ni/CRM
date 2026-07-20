@@ -7,9 +7,15 @@ import {
   RequestStatus,
   SecurityAlertType,
   WorkType,
+  TokenPurpose,
+  DeviceStatus,
+  UserStatus,
 } from '@prisma/client';
+import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
+import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
 import { TenantContextService } from '../../shared/tenancy/tenant-context.service';
+import { collectReportingEmployeeIds } from '../organization/employee-access';
 import {
   AttendanceDashboardQueryDto,
   DashboardEmployeeStatus,
@@ -35,7 +41,11 @@ export class AttendanceDashboardService {
     private readonly context: TenantContextService,
   ) {}
 
-  get(query: AttendanceDashboardQueryDto) {
+  get(
+    query: AttendanceDashboardQueryDto,
+    userId: string,
+    permissions: Set<string>,
+  ) {
     const tenantId = this.context.tenantId;
     if (!tenantId) throw new Error('Tenant context is required');
 
@@ -47,7 +57,15 @@ export class AttendanceDashboardService {
       const timezone = settings?.timezone ?? 'UTC';
       const dateText = query.date ?? tenantLocalDate(new Date(), timezone);
       const attendanceDate = parseDateOnly(dateText);
-      const employeeWhere = this.employeeWhere(query, attendanceDate);
+      const accessibleIds = await this.accessibleEmployeeIds(tx, userId);
+      const employeeWhere = scopeEmployeeWhere(
+        this.employeeWhere(query, attendanceDate),
+        accessibleIds,
+      );
+      const summaryEmployeeWhere = scopeEmployeeWhere(
+        this.summaryEmployeeWhere(query, attendanceDate),
+        accessibleIds,
+      );
       const take = query.limit ?? 24;
 
       const [
@@ -58,7 +76,7 @@ export class AttendanceDashboardService {
         alerts,
       ] = await Promise.all([
         tx.attendanceLog.findMany({
-          where: { attendanceDate },
+          where: { attendanceDate, employee: summaryEmployeeWhere },
           select: {
             attendanceStatus: true,
             lateMinutes: true,
@@ -71,7 +89,7 @@ export class AttendanceDashboardService {
           },
         }),
         tx.employee.count({
-          where: activeEmployeeWhere(attendanceDate),
+          where: summaryEmployeeWhere,
         }),
         tx.employee.findMany({
           where: employeeWhere,
@@ -100,14 +118,24 @@ export class AttendanceDashboardService {
           ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
           take: Math.min(take * 3 + 1, 301),
         }),
-        tx.regularizationRequest.count({
-          where: { status: RequestStatus.PENDING },
-        }),
-        tx.securityAlert.groupBy({
-          by: ['alertType'],
-          where: { status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
-          _count: { _all: true },
-        }),
+        permissions.has(PERMISSIONS.REGULARIZATIONS_MANAGE)
+          ? tx.regularizationRequest.count({
+              where: {
+                status: RequestStatus.PENDING,
+                employeeId: accessibleIds ? { in: accessibleIds } : undefined,
+              },
+            })
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.ATTENDANCE_SECURITY_ALERTS_READ)
+          ? tx.securityAlert.groupBy({
+              by: ['alertType'],
+              where: {
+                status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+                employeeId: accessibleIds ? { in: accessibleIds } : undefined,
+              },
+              _count: { _all: true },
+            })
+          : Promise.resolve(null),
       ]);
 
       const mappedEmployees = employees
@@ -121,14 +149,18 @@ export class AttendanceDashboardService {
         mappedEmployees.length > take || employees.length > take
           ? (page.at(-1)?.id ?? null)
           : null;
-      const absenteeAlerts = alertCount(alerts, SecurityAlertType.ABSENTEE);
-      const securityViolations = alerts.reduce(
-        (total, item) =>
-          item.alertType === SecurityAlertType.ABSENTEE
-            ? total
-            : total + item._count._all,
-        0,
-      );
+      const absenteeAlerts = alerts
+        ? alertCount(alerts, SecurityAlertType.ABSENTEE)
+        : null;
+      const securityViolations = alerts
+        ? alerts.reduce(
+            (total, item) =>
+              item.alertType === SecurityAlertType.ABSENTEE
+                ? total
+                : total + item._count._all,
+            0,
+          )
+        : null;
 
       return {
         data: {
@@ -148,6 +180,221 @@ export class AttendanceDashboardService {
     });
   }
 
+  hrSummary(userId: string, permissions: Set<string>) {
+    const tenantId = this.context.tenantId;
+    if (!tenantId) throw new Error('Tenant context is required');
+    return this.prisma.forTenant(async (tx) => {
+      const accessibleIds = await this.accessibleEmployeeIds(tx, userId);
+      const employeeScope: Prisma.EmployeeWhereInput = accessibleIds
+        ? { id: { in: accessibleIds } }
+        : {};
+      const queueScope = accessibleIds
+        ? { employeeId: { in: accessibleIds } }
+        : {};
+      const canReadWorkforce = hasAny(permissions, [
+        PERMISSIONS.EMPLOYEES_READ,
+        PERMISSIONS.EMPLOYEES_REPORTS_READ,
+      ]);
+      const canReadSetup = hasAny(permissions, [
+        PERMISSIONS.SETTINGS_READ,
+        PERMISSIONS.ATTENDANCE_CONFIG_READ,
+        PERMISSIONS.ATTENDANCE_CONFIG_MANAGE,
+      ]);
+      const now = new Date();
+      const inThirtyDays = new Date(now.getTime() + 30 * 86_400_000);
+
+      const [
+        workforce,
+        pendingLeave,
+        pendingDevices,
+        openSecurityAlerts,
+        pendingRegularizations,
+        setup,
+        access,
+        subscription,
+        modules,
+      ] = await Promise.all([
+        canReadWorkforce
+          ? Promise.all([
+              tx.employee.count({
+                where: { ...employeeScope, status: EmployeeStatus.ACTIVE },
+              }),
+              tx.employee.count({
+                where: { ...employeeScope, status: EmployeeStatus.ON_NOTICE },
+              }),
+              tx.employee.count({
+                where: { ...employeeScope, status: EmployeeStatus.TERMINATED },
+              }),
+              tx.employee.count({
+                where: {
+                  ...employeeScope,
+                  status: { not: EmployeeStatus.TERMINATED },
+                  managerId: null,
+                },
+              }),
+              tx.employee.count({
+                where: {
+                  ...employeeScope,
+                  status: EmployeeStatus.ACTIVE,
+                  dateOfJoining: { gt: now, lte: inThirtyDays },
+                },
+              }),
+            ])
+          : Promise.resolve(null),
+        hasAny(permissions, [
+          PERMISSIONS.LEAVE_APPROVE,
+          PERMISSIONS.LEAVE_MANAGE,
+        ])
+          ? tx.leaveRequest.count({
+              where: { ...queueScope, status: RequestStatus.PENDING },
+            })
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.ATTENDANCE_DEVICES_READ)
+          ? tx.registeredDevice.count({
+              where: { ...queueScope, status: DeviceStatus.PENDING_APPROVAL },
+            })
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.ATTENDANCE_SECURITY_ALERTS_READ)
+          ? tx.securityAlert.count({
+              where: {
+                ...queueScope,
+                status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+              },
+            })
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.REGULARIZATIONS_MANAGE)
+          ? tx.regularizationRequest.count({
+              where: { ...queueScope, status: RequestStatus.PENDING },
+            })
+          : Promise.resolve(null),
+        canReadSetup
+          ? Promise.all([
+              tx.tenant.findUnique({
+                where: { id: tenantId },
+                select: { onboardingCompletedAt: true },
+              }),
+              tx.department.count({ where: { tenantId } }),
+              tx.officeLocation.count({ where: { tenantId } }),
+              tx.attendancePolicy.count({ where: { tenantId } }),
+              tx.policyAssignment.count({ where: { tenantId } }),
+              tx.shift.count({ where: { tenantId } }),
+            ])
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.USERS_READ)
+          ? Promise.all([
+              tx.user.count({ where: { tenantId, status: UserStatus.ACTIVE } }),
+              tx.user.count({
+                where: { tenantId, status: { in: ['LOCKED', 'DISABLED'] } },
+              }),
+              tx.verificationToken.count({
+                where: {
+                  tenantId,
+                  purpose: TokenPurpose.USER_INVITE,
+                  consumedAt: null,
+                  expiresAt: { gt: now },
+                },
+              }),
+            ])
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.BILLING_SUBSCRIPTION_READ)
+          ? tx.tenantSubscription.findFirst({
+              where: { tenantId, status: { in: ['TRIALING', 'ACTIVE'] } },
+              include: { plan: { select: { maxEmployees: true } } },
+              orderBy: { createdAt: 'desc' },
+            })
+          : Promise.resolve(null),
+        permissions.has(PERMISSIONS.MODULES_READ)
+          ? tx.tenantModule.findMany({
+              where: { tenantId, isActive: true },
+              select: { module: { select: { key: true, name: true } } },
+              orderBy: { module: { name: 'asc' } },
+            })
+          : Promise.resolve(null),
+      ]);
+
+      return {
+        data: {
+          workforce: workforce
+            ? {
+                active: workforce[0],
+                onNotice: workforce[1],
+                terminated: workforce[2],
+                missingManager: workforce[3],
+                joiningSoon: workforce[4],
+              }
+            : null,
+          queues: {
+            pendingLeave,
+            pendingDevices,
+            openSecurityAlerts,
+            pendingRegularizations,
+          },
+          setup: setup
+            ? {
+                onboardingComplete: Boolean(setup[0]?.onboardingCompletedAt),
+                departments: setup[1],
+                offices: setup[2],
+                attendancePolicies: setup[3],
+                policyAssignments: setup[4],
+                shifts: setup[5],
+              }
+            : null,
+          access: access
+            ? {
+                activeUsers: access[0],
+                unavailableUsers: access[1],
+                pendingInvitations: access[2],
+              }
+            : null,
+          quota: subscription
+            ? {
+                used: subscription.seatCount,
+                limit: subscription.plan.maxEmployees,
+              }
+            : null,
+          modules: modules?.map(({ module }) => module) ?? null,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  }
+
+  private async accessibleEmployeeIds(
+    tx: PrismaTransaction,
+    userId: string,
+  ): Promise<string[] | null> {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      include: {
+        employee: { select: { id: true } },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: { include: { permission: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!user) return [];
+    const permissions = new Set(
+      user.roles.flatMap(({ role }) =>
+        role.permissions.map(({ permission }) => permission.key),
+      ),
+    );
+    if (permissions.has(PERMISSIONS.EMPLOYEES_READ)) return null;
+    if (!user.employee) return [];
+    if (permissions.has(PERMISSIONS.EMPLOYEES_REPORTS_READ)) {
+      const employees = await tx.employee.findMany({
+        select: { id: true, managerId: true },
+      });
+      return collectReportingEmployeeIds(user.employee.id, employees);
+    }
+    return [user.employee.id];
+  }
+
   private employeeWhere(
     query: AttendanceDashboardQueryDto,
     attendanceDate: Date,
@@ -159,6 +406,13 @@ export class AttendanceDashboardService {
     return {
       ...activeEmployeeWhere(attendanceDate),
       deptId: query.departmentId,
+      ...(query.officeId
+        ? {
+            officeAssignments: {
+              some: { officeLocationId: query.officeId },
+            },
+          }
+        : {}),
       ...(search
         ? {
             OR: [
@@ -173,6 +427,23 @@ export class AttendanceDashboardService {
           }
         : {}),
       ...(statusFilters?.length ? { AND: [{ OR: statusFilters }] } : {}),
+    };
+  }
+
+  private summaryEmployeeWhere(
+    query: AttendanceDashboardQueryDto,
+    attendanceDate: Date,
+  ): Prisma.EmployeeWhereInput {
+    return {
+      ...activeEmployeeWhere(attendanceDate),
+      deptId: query.departmentId,
+      ...(query.officeId
+        ? {
+            officeAssignments: {
+              some: { officeLocationId: query.officeId },
+            },
+          }
+        : {}),
     };
   }
 
@@ -333,4 +604,17 @@ function alertCount(
   type: SecurityAlertType,
 ) {
   return alerts.find((item) => item.alertType === type)?._count._all ?? 0;
+}
+
+function scopeEmployeeWhere(
+  where: Prisma.EmployeeWhereInput,
+  accessibleIds: string[] | null,
+): Prisma.EmployeeWhereInput {
+  return accessibleIds
+    ? { AND: [where, { id: { in: accessibleIds } }] }
+    : where;
+}
+
+function hasAny(permissions: Set<string>, required: readonly string[]) {
+  return required.some((permission) => permissions.has(permission));
 }

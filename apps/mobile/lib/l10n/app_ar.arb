@@ -216,5 +216,8 @@
   "shiftCorrection": "تصحيح المناوبة",
   "minutesValue": "{count} دقيقة",
   "@minutesValue": {"placeholders": {"count": {"type": "int"}}},
-  "savedOfflineSynced": "حُفظ دون اتصال · تمت المزامنة بنجاح"
+  "savedOfflineSynced": "حُفظ دون اتصال · تمت المزامنة بنجاح",
+  "logout": "تسجيل الخروج",
+  "logoutConfirmTitle": "تسجيل الخروج من DeltCRM؟",
+  "logoutConfirmMessage": "ستحتاج إلى إدخال بريدك الإلكتروني وكلمة المرور لتسجيل الدخول مرة أخرى."
 }

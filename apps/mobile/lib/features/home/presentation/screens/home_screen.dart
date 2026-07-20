@@ -89,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
             ShiftStatusCard(
               shiftLabel: summary?.shiftLabel ?? 'Resolving shift…',
               locationLabel: summary?.locationLabel ?? 'Resolving location…',
-              isInsideZone: summary?.isInsideZone ?? false,
+              isInsideZone: summary?.isInsideZone,
             ),
             const SizedBox(height: 14),
             PunchActionButton(isCheckedIn: isCheckedIn, onPressed: onCheckIn),
@@ -107,19 +107,14 @@ class HomeScreen extends ConsumerWidget {
               onSelected: onMore,
             ),
             const SizedBox(height: 16),
-            TodayTimelineCard(isCheckedIn: isCheckedIn),
-            const SizedBox(height: 16),
-            WorkdayInsightsCard(
-              hours: summary?.weekHours ?? 0,
-              targetHours: summary?.weekTargetHours ?? 40,
-              lateMinutes: summary?.lateMinutes ?? 0,
-              overtimeMinutes: summary?.overtimeMinutes ?? 0,
+            TodayTimelineCard(
+              isCheckedIn: isCheckedIn,
+              events: summary?.timeline ?? const [],
             ),
             const SizedBox(height: 16),
-            PolicySnapshotCard(
-              policy: tenant.attendancePolicy,
-              nextHoliday: summary?.nextHolidayLabel ?? '—',
-            ),
+            WorkdayInsightsCard(overview: summary?.workOverview),
+            const SizedBox(height: 16),
+            PolicySnapshotCard(policy: summary?.policy),
             if (state.hasError) ...[
               const SizedBox(height: 12),
               const Text(

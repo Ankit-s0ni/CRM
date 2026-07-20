@@ -45,7 +45,18 @@ export class LeaveApprovedProcessor {
         );
         await tx.attendanceException.upsert({
           where: { leaveRequestId: request.id },
-          update: {},
+          // Replayed events also repair rows created by older integrations.
+          update: {
+            employeeId: request.employeeId,
+            exceptionType: ExceptionType.LEAVE,
+            source: ExceptionSource.LEAVE_MODULE,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            halfDayStart: request.halfDayStart,
+            halfDayEnd: request.halfDayEnd,
+            reason: request.reason,
+            approvedBy: request.approvedBy,
+          },
           create: {
             tenantId: task.tenantId,
             employeeId: request.employeeId,

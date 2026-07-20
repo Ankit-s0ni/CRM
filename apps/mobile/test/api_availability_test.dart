@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -14,6 +15,33 @@ import 'package:hrms_attendance/core/network/token_store.dart';
 import 'package:hrms_attendance/core/widgets/app_availability_gate.dart';
 
 void main() {
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
+  test('selected workspace is sent and persisted for authentication', () async {
+    RequestOptions? captured;
+    final service = _service(
+      _CallbackAdapter((options) async {
+        captured = options;
+        return ResponseBody.fromString('{}', 200);
+      }),
+    );
+
+    await service.selectWorkspace('DeltTech');
+    await service.post<void>('/auth/login');
+
+    expect(service.workspaceSubdomain, 'delttech');
+    expect(captured?.headers['x-workspace-subdomain'], 'delttech');
+    expect(
+      await const FlutterSecureStorage().read(key: 'workspace_subdomain'),
+      'delttech',
+    );
+
+    captured = null;
+    service.beginWorkspaceDiscovery();
+    await service.post<void>('/auth/mobile-login');
+    expect(captured?.headers['x-workspace-subdomain'], isNull);
+  });
+
   test('publishes offline when transport cannot connect', () async {
     final service = _service(
       _CallbackAdapter((options) {
@@ -80,6 +108,27 @@ void main() {
     );
     expect((await event).state, ApiAvailability.sessionExpired);
   });
+
+  test(
+    'does not publish session expired for invalid login credentials',
+    () async {
+      final service = _service(
+        _jsonError(401, 'UNAUTHORIZED', 'Invalid credentials'),
+      );
+      final expired = service.availability
+          .where((event) => event.state == ApiAvailability.sessionExpired)
+          .first;
+
+      await expectLater(
+        service.post<void>('/auth/mobile-login'),
+        throwsA(isA<DioException>()),
+      );
+      await expectLater(
+        expired.timeout(const Duration(milliseconds: 50)),
+        throwsA(isA<TimeoutException>()),
+      );
+    },
+  );
 
   const widgetStates = [
     (

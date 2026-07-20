@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/device/device_identity.dart';
 import '../../../core/network/network_providers.dart';
+import '../../../core/session/account_session_reset.dart';
 import '../../../core/tenant/tenant_controller.dart';
 import '../data/auth_api_repository.dart';
 import '../data/local_auth_repository.dart';
@@ -32,10 +33,43 @@ class AuthController extends AsyncNotifier<void> {
       await ref
           .read(tenantControllerProvider.notifier)
           .loadRuntime(allowCachedFallback: false);
+      resetAccountSession(ref);
     });
     if (state.hasError) {
       await ref.read(apiServiceProvider).clearSession();
       await ref.read(tenantControllerProvider.notifier).clearRuntime();
+      resetAccountSession(ref);
+    }
+    return !state.hasError;
+  }
+
+  Future<bool> restoreSession() async {
+    if (AppConfig.localMode) {
+      await ref.read(tenantControllerProvider.notifier).loadRuntime();
+      return true;
+    }
+    final api = ref.read(apiServiceProvider);
+    try {
+      await api.restoreWorkspace();
+      if (await api.refreshToken() == null) return false;
+    } catch (_) {
+      // Secure storage is unavailable in some unsupported and test runtimes.
+      return false;
+    }
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      if (!await api.refreshSession()) {
+        throw StateError('Stored session could not be refreshed');
+      }
+      await ref
+          .read(tenantControllerProvider.notifier)
+          .loadRuntime(allowCachedFallback: false);
+      resetAccountSession(ref);
+    });
+    if (state.hasError) {
+      await api.clearSession();
+      await ref.read(tenantControllerProvider.notifier).clearRuntime();
+      resetAccountSession(ref);
     }
     return !state.hasError;
   }
@@ -45,6 +79,7 @@ class AuthController extends AsyncNotifier<void> {
       await _repository.logout();
     } finally {
       await ref.read(tenantControllerProvider.notifier).clearRuntime();
+      resetAccountSession(ref);
     }
   }
 }

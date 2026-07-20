@@ -1,3 +1,5 @@
-import { LeaveRequestsView } from "@/components/tenant/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function LeaveApprovalsPage() { return <LeaveRequestsView approvals />; }
+export default function LeaveApprovalsPage() {
+  redirect("/app/attendance/leave/approvals");
+}

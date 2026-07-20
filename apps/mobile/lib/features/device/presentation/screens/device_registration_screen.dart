@@ -49,6 +49,13 @@ class DeviceRegistrationScreen extends ConsumerWidget {
               icon: Icons.arrow_forward_rounded,
               onPressed: onContinue,
             )
+          else if (status == 'PENDING_APPROVAL')
+            PrimaryButton(
+              label: 'Check approval status',
+              icon: Icons.refresh_rounded,
+              onPressed: () =>
+                  ref.read(deviceControllerProvider.notifier).refreshCurrent(),
+            )
           else if (status != 'PENDING_APPROVAL' &&
               status != 'BLOCKED' &&
               status != 'REPLACED')

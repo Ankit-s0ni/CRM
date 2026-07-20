@@ -42,7 +42,15 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
       ref.read(attendanceRepositoryProvider);
 
   @override
-  Future<AttendanceState> build() async => const AttendanceState();
+  Future<AttendanceState> build() async {
+    // Rebuild the punch state whenever the authenticated employee changes.
+    ref.watch(
+      tenantControllerProvider.select(
+        (tenant) => '${tenant.tenantId}:${tenant.employeeId}',
+      ),
+    );
+    return const AttendanceState();
+  }
 
   Future<bool> verifyPunch(PunchCapture capture) async {
     final current = state.asData?.value ?? const AttendanceState();

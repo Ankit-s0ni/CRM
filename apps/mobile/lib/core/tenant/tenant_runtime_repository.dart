@@ -11,11 +11,12 @@ import 'tenant_config.dart';
 class TenantRuntimeRepository {
   TenantRuntimeRepository(this._api, this._storage);
 
-  static const _cacheIndexKey =
-      'deltcrm.runtime.${AppConfig.workspaceSubdomain}.current';
   static const fieldRuntimeKey = 'deltcrm.runtime.field-enabled';
   final ApiService _api;
   final FlutterSecureStorage _storage;
+
+  String get _cacheIndexKey =>
+      'deltcrm.runtime.${_api.workspaceSubdomain}.current';
 
   Future<TenantConfig> fetch() async {
     final response = await _api.get<Map<String, dynamic>>(
@@ -62,11 +63,11 @@ class TenantRuntimeRepository {
 
   String _scopedCacheKey(TenantConfig config) {
     final scope = '${config.tenantId}.${config.employeeId}';
-    return 'deltcrm.runtime.${AppConfig.workspaceSubdomain}.$scope.${config.configVersion}';
+    return 'deltcrm.runtime.${_api.workspaceSubdomain}.$scope.${config.configVersion}';
   }
 
   bool _isScopedCacheKey(String key) =>
-      key.startsWith('deltcrm.runtime.${AppConfig.workspaceSubdomain}.') &&
+      key.startsWith('deltcrm.runtime.${_api.workspaceSubdomain}.') &&
       key != _cacheIndexKey;
 
   TenantConfig _parse(Map<String, dynamic> raw) {
@@ -102,7 +103,8 @@ class TenantRuntimeRepository {
         if (_enabled(modules['attendance'])) TenantModule.attendance,
         if (_enabled(modules['fieldTracking'])) TenantModule.fieldTracking,
         if (_enabled(modules['regularization'])) TenantModule.regularization,
-        if (_enabled(modules['leave'])) TenantModule.leave,
+        if (_enabled(attendance['leave']) || _enabled(modules['leave']))
+          TenantModule.leave,
       },
       attendancePolicy: AttendancePolicyConfig(
         name: 'Effective attendance policy',

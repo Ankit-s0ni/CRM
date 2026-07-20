@@ -22,6 +22,7 @@ import { OutboxService } from '../../shared/events/outbox.service';
 import { PrivateObjectStorageService } from '../../shared/storage/private-object-storage.service';
 import { TenantContextService } from '../../shared/tenancy/tenant-context.service';
 import { calculateAttendance } from '../attendance/domain/attendance-calculator';
+import { AttendanceJobProcessor } from '../attendance/jobs/attendance-job.processor';
 import type {
   AttendancePolicySnapshot,
   AttendanceShiftSnapshot,
@@ -45,6 +46,7 @@ export class RegularizationService {
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
     private readonly storage: PrivateObjectStorageService,
+    private readonly attendanceJobs: AttendanceJobProcessor,
   ) {}
 
   list(query: RegularizationQueryDto) {
@@ -100,60 +102,45 @@ export class RegularizationService {
   }
 
   create(dto: CreateRegularizationDto) {
-    const tenantId = this.tenantId();
     return this.prisma.forTenant(async (tx) => {
       const employee = await this.currentEmployee(tx);
-      const replay = await tx.regularizationRequest.findFirst({
-        where: { employeeId: employee.id, idempotencyKey: dto.idempotencyKey },
-        include: includeRequest,
+      return this.createRequest(tx, employee.id, dto);
+    });
+  }
+
+  createForEmployee(employeeId: string, dto: CreateRegularizationDto) {
+    return this.prisma.forTenant(async (tx) => {
+      await this.assertCanApprove(tx, employeeId);
+      const employee = await tx.employee.findFirst({
+        where: { id: employeeId, status: 'ACTIVE' },
+        select: { id: true },
       });
-      if (replay) return { data: serialize(replay), replayed: true };
-      const log = await tx.attendanceLog.findFirst({
-        where: { id: dto.attendanceLogId, employeeId: employee.id },
-        include: { payrollLock: true },
-      });
-      if (!log) this.notFound('Attendance day');
-      await this.lockRequestDay(tx, employee.id, log.id);
-      this.assertUnlocked(log);
-      await this.assertWindow(tx, log.attendanceDate);
-      const requestedCheckin = optionalDate(dto.requestedCheckin);
-      const requestedCheckout = optionalDate(dto.requestedCheckout);
-      this.assertRequestedTimes(log, requestedCheckin, requestedCheckout);
-      if (dto.attachmentKey) {
-        await this.storage.verifyRegularizationAttachment(
-          tenantId,
+      if (!employee) this.notFound('Employee');
+      let attendanceLogId = dto.attendanceLogId;
+      if (!attendanceLogId) {
+        if (!dto.attendanceDate) {
+          throw new UnprocessableEntityException({
+            code: 'ATTENDANCE_DAY_REQUIRED',
+            message: 'Select an attendance day to correct',
+          });
+        }
+        await this.attendanceJobs.recomputeEmployeeDay(
+          this.tenantId(),
           employee.id,
-          dto.attachmentKey,
+          dto.attendanceDate,
         );
+        attendanceLogId = (
+          await tx.attendanceLog.findFirst({
+            where: {
+              employeeId: employee.id,
+              attendanceDate: new Date(`${dto.attendanceDate}T00:00:00.000Z`),
+            },
+            select: { id: true },
+          })
+        )?.id;
       }
-      const existing = await tx.regularizationRequest.findFirst({
-        where: { employeeId: employee.id, attendanceLogId: log.id },
-        include: includeRequest,
-      });
-      if (existing) {
-        throw new ConflictException({
-          code: 'REGULARIZATION_ALREADY_EXISTS',
-          message:
-            'A correction request already exists for this attendance day',
-        });
-      }
-      const value = await tx.regularizationRequest.create({
-        data: {
-          tenantId,
-          attendanceLogId: log.id,
-          employeeId: employee.id,
-          requestedCheckin,
-          requestedCheckout,
-          reason: dto.reason.trim(),
-          attachmentKey: dto.attachmentKey,
-          idempotencyKey: dto.idempotencyKey,
-        },
-        include: includeRequest,
-      });
-      await this.record(tx, 'submitted', value, {
-        attendanceDate: isoDate(log.attendanceDate),
-      });
-      return { data: serialize(value), replayed: false };
+      if (!attendanceLogId) this.notFound('Attendance day');
+      return this.createRequest(tx, employee.id, { ...dto, attendanceLogId });
     });
   }
 
@@ -321,6 +308,66 @@ export class RegularizationService {
     });
   }
 
+  private async createRequest(
+    tx: PrismaTransaction,
+    employeeId: string,
+    dto: CreateRegularizationDto,
+  ) {
+    if (!dto.attendanceLogId) this.notFound('Attendance day');
+    const tenantId = this.tenantId();
+    const replay = await tx.regularizationRequest.findFirst({
+      where: { employeeId, idempotencyKey: dto.idempotencyKey },
+      include: includeRequest,
+    });
+    if (replay) return { data: serialize(replay), replayed: true };
+    const log = await tx.attendanceLog.findFirst({
+      where: { id: dto.attendanceLogId, employeeId },
+      include: { payrollLock: true },
+    });
+    if (!log) this.notFound('Attendance day');
+    await this.lockRequestDay(tx, employeeId, log.id);
+    this.assertUnlocked(log);
+    await this.assertWindow(tx, log.attendanceDate);
+    const requestedCheckin = optionalDate(dto.requestedCheckin);
+    const requestedCheckout = optionalDate(dto.requestedCheckout);
+    this.assertRequestedTimes(log, requestedCheckin, requestedCheckout);
+    if (dto.attachmentKey) {
+      await this.storage.verifyRegularizationAttachment(
+        tenantId,
+        employeeId,
+        dto.attachmentKey,
+      );
+    }
+    const existing = await tx.regularizationRequest.findFirst({
+      where: { employeeId, attendanceLogId: log.id },
+      include: includeRequest,
+    });
+    if (existing) {
+      throw new ConflictException({
+        code: 'REGULARIZATION_ALREADY_EXISTS',
+        message: 'A correction request already exists for this attendance day',
+      });
+    }
+    const value = await tx.regularizationRequest.create({
+      data: {
+        tenantId,
+        attendanceLogId: log.id,
+        employeeId,
+        requestedCheckin,
+        requestedCheckout,
+        reason: dto.reason.trim(),
+        attachmentKey: dto.attachmentKey,
+        idempotencyKey: dto.idempotencyKey,
+      },
+      include: includeRequest,
+    });
+    await this.record(tx, 'submitted', value, {
+      attendanceDate: isoDate(log.attendanceDate),
+      submittedBy: this.userId(),
+    });
+    return { data: serialize(value), replayed: false };
+  }
+
   private async assertWindow(tx: PrismaTransaction, attendanceDate: Date) {
     const settings = await tx.tenantSettings.findUniqueOrThrow({
       where: { tenantId: this.tenantId() },
@@ -371,10 +418,10 @@ export class RegularizationService {
         },
       },
     });
-    if (!actor?.employee) {
+    if (!actor) {
       throw new ForbiddenException({
-        code: 'EMPLOYEE_PROFILE_REQUIRED',
-        message: 'An employee profile is required',
+        code: 'AUTH_USER_NOT_FOUND',
+        message: 'The authenticated user could not be found',
       });
     }
     const permissions = new Set(
@@ -389,6 +436,12 @@ export class RegularizationService {
         ),
         canManage: true,
       };
+    }
+    if (!actor.employee) {
+      throw new ForbiddenException({
+        code: 'EMPLOYEE_PROFILE_REQUIRED',
+        message: 'An employee profile is required',
+      });
     }
     if (permissions.has(APPROVE_PERMISSION)) {
       const nodes = await tx.employee.findMany({

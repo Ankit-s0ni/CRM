@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type MapCoordinate = {
@@ -27,6 +27,7 @@ export interface FieldMapProviderProps {
   geofences?: Geofence[];
   selectedId?: string;
   onMarkerSelect?: (id: string) => void;
+  onMapClick?: (coordinate: MapCoordinate) => void;
   className?: string;
 }
 
@@ -45,24 +46,35 @@ function OpenStreetMapFieldMap({
   geofences = [],
   selectedId,
   onMarkerSelect,
+  onMapClick,
   className,
 }: FieldMapProviderProps) {
   const container = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
+  const emitMapClick = useEffectEvent((coordinate: MapCoordinate) => {
+    onMapClick?.(coordinate);
+  });
 
   useEffect(() => {
     let active = true;
-    let map: LeafletMap | undefined;
-    void loadLeaflet()
+    let map: import("leaflet").Map | undefined;
+    void import("leaflet")
       .then((leaflet) => {
         if (!active || !container.current) return;
         const points = [...markers, ...path, ...geofences];
         const center = points[0] ?? { latitude: 23.588, longitude: 58.3829 };
         const initializedMap = leaflet.map(container.current, {
           center: [center.latitude, center.longitude],
+          scrollWheelZoom: false,
           zoom: points.length ? 14 : 10,
         });
         map = initializedMap;
+        initializedMap.on("click", (event) => {
+          emitMapClick({
+            latitude: event.latlng.lat,
+            longitude: event.latlng.lng,
+          });
+        });
         leaflet
           .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:
@@ -74,7 +86,9 @@ function OpenStreetMapFieldMap({
         points.forEach((point) =>
           bounds.extend([point.latitude, point.longitude]),
         );
-        if (points.length > 1) initializedMap.fitBounds(bounds, 52);
+        if (points.length > 1) {
+          initializedMap.fitBounds(bounds, { padding: [52, 52] });
+        }
         geofences.forEach(
           (office) =>
             leaflet.circle([office.latitude, office.longitude], {
@@ -82,7 +96,7 @@ function OpenStreetMapFieldMap({
               fillOpacity: 0.08,
               radius: office.radiusMeters,
               color: "#4f46e5",
-              strokeOpacity: 0.8,
+              opacity: 0.8,
               weight: 2,
             }).addTo(initializedMap),
         );
@@ -126,6 +140,7 @@ function OpenStreetMapFieldMap({
         geofences={geofences}
         markers={markers}
         onMarkerSelect={onMarkerSelect}
+        onMapClick={onMapClick}
         path={path}
         selectedId={selectedId}
       />
@@ -135,7 +150,8 @@ function OpenStreetMapFieldMap({
     <div
       aria-label="Field location map"
       className={cn(
-        "min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        onMapClick && "cursor-crosshair",
         className,
       )}
       data-map-provider="openstreetmap"
@@ -161,6 +177,7 @@ export function DeterministicFieldMap({
   geofences = [],
   selectedId,
   onMarkerSelect,
+  onMapClick,
   className,
 }: FieldMapProviderProps) {
   const all = [
@@ -173,10 +190,21 @@ export function DeterministicFieldMap({
   return (
     <div
       className={cn(
-        "relative min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        onMapClick && "cursor-crosshair",
         className,
       )}
       data-map-provider="deterministic"
+      onClick={(event) => {
+        if (!onMapClick) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        onMapClick({
+          latitude: bounds.maxLat - y * (bounds.maxLat - bounds.minLat),
+          longitude: bounds.minLng + x * (bounds.maxLng - bounds.minLng),
+        });
+      }}
     >
       <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#c9c6c0_1px,transparent_1px),linear-gradient(90deg,#c9c6c0_1px,transparent_1px)] [background-size:52px_52px]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,.9),transparent_24%),radial-gradient(circle_at_80%_72%,rgba(215,225,213,.8),transparent_28%)]" />
@@ -219,7 +247,10 @@ export function DeterministicFieldMap({
             aria-label={marker.label ?? "Map marker"}
             className="absolute -translate-x-1/2 -translate-y-full"
             key={marker.id}
-            onClick={() => onMarkerSelect?.(marker.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onMarkerSelect?.(marker.id);
+            }}
             style={{ left: `${point.x / 10}%`, top: `${point.y / 6}%` }}
             type="button"
           >
@@ -277,69 +308,4 @@ function markerTone(tone: MapMarker["tone"]) {
   if (tone === "stop") return "bg-[#0d6e78]";
   if (tone === "punch") return "bg-[#a23063]";
   return "bg-[#3525cd]";
-}
-
-type LeafletLayer = { addTo(map: LeafletMap): unknown };
-
-type LeafletMap = {
-  fitBounds(bounds: unknown, padding: number): void;
-  remove(): void;
-};
-
-type LeafletApi = {
-  map(element: HTMLElement, options: Record<string, unknown>): LeafletMap;
-  tileLayer(url: string, options: Record<string, unknown>): LeafletLayer;
-  circle(
-    center: [number, number],
-    options: Record<string, unknown>,
-  ): LeafletLayer;
-  polyline(
-    points: [number, number][],
-    options: Record<string, unknown>,
-  ): LeafletLayer;
-  marker(
-    center: [number, number],
-    options: Record<string, unknown>,
-  ): LeafletLayer & { on(event: string, listener: () => void): void };
-  divIcon(options: Record<string, unknown>): unknown;
-  latLngBounds(points: [number, number][]): {
-    extend(point: [number, number]): void;
-  };
-};
-
-declare global {
-  interface Window {
-    L?: LeafletApi;
-    __fieldMapLeafletPromise?: Promise<LeafletApi>;
-  }
-}
-
-function loadLeaflet(): Promise<LeafletApi> {
-  if (window.L) return Promise.resolve(window.L);
-  window.__fieldMapLeafletPromise ??= new Promise<LeafletApi>(
-    (resolve, reject) => {
-      if (!document.getElementById("field-map-leaflet-css")) {
-        const stylesheet = document.createElement("link");
-        stylesheet.id = "field-map-leaflet-css";
-        stylesheet.rel = "stylesheet";
-        stylesheet.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        stylesheet.crossOrigin = "";
-        document.head.appendChild(stylesheet);
-      }
-      const script = document.createElement("script");
-      script.async = true;
-      script.defer = true;
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.integrity =
-        "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
-      script.crossOrigin = "";
-      script.onload = () =>
-        window.L
-          ? resolve(window.L)
-          : reject(new Error("MAP_PROVIDER_UNAVAILABLE"));
-      script.onerror = () => reject(new Error("MAP_PROVIDER_UNAVAILABLE"));
-      document.head.appendChild(script);
-    },
-  );
-  return window.__fieldMapLeafletPromise;
 }

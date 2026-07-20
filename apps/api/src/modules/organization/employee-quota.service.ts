@@ -54,12 +54,14 @@ export class EmployeeQuotaService {
     }
 
     const used = await tx.employee.count({
-      where: { status: { in: [...COUNTED_STATUSES] } },
+      where: {
+        tenantId,
+        status: { in: [...COUNTED_STATUSES] },
+      },
     });
-    const limit = Math.min(
-      subscription.seatCount,
-      subscription.plan.maxEmployees,
-    );
+    // seatCount is synchronized billable usage; the plan maximum is the hard
+    // capacity. Treating usage as capacity would block the second employee.
+    const limit = subscription.plan.maxEmployees;
 
     return {
       used,

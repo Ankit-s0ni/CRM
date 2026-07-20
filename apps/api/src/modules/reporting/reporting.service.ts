@@ -1,10 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { JobStatus, ReportFormat, ReportType } from '@prisma/client';
+import { JobStatus, Prisma, ReportFormat, ReportType } from '@prisma/client';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { PrivateObjectStorageService } from '../../shared/storage/private-object-storage.service';
 import { TenantContextService } from '../../shared/tenancy/tenant-context.service';
@@ -21,6 +22,7 @@ export class ReportingService {
   ) {}
 
   async create(reportType: ReportType, dto: CreateReportDto) {
+    await this.assertReportEntitlement(reportType);
     const tenantId = this.required(this.context.tenantId);
     const requestedBy = this.required(this.context.userId);
     const filters = normalizeFilters(reportType, dto);
@@ -54,8 +56,17 @@ export class ReportingService {
     if (status && !Object.values(JobStatus).includes(status)) {
       this.invalid('Unknown report status');
     }
+    const payrollEnabled = await this.moduleEnabled('PAYROLL');
+    if (query.reportType === ReportType.PAYROLL && !payrollEnabled) {
+      this.moduleDenied('PAYROLL');
+    }
     return this.prisma.forTenant(async (tx) => {
-      const where = { reportType: query.reportType, status };
+      const where: Prisma.ReportExportWhereInput = {
+        reportType:
+          query.reportType ??
+          (payrollEnabled ? undefined : { not: ReportType.PAYROLL }),
+        status,
+      };
       const [data, total] = await Promise.all([
         tx.reportExport.findMany({
           where,
@@ -129,7 +140,50 @@ export class ReportingService {
           message: 'Report export was not found',
         });
       }
+      if (report.reportType === ReportType.PAYROLL) {
+        const payrollEnabled = await tx.tenantModule.findFirst({
+          where: {
+            tenantId: this.required(this.context.tenantId),
+            isActive: true,
+            module: { key: 'PAYROLL', availability: 'AVAILABLE' },
+          },
+          select: { id: true },
+        });
+        if (!payrollEnabled) this.moduleDenied('PAYROLL');
+      }
       return report;
+    });
+  }
+
+  private async assertReportEntitlement(reportType: ReportType) {
+    if (
+      reportType === ReportType.PAYROLL &&
+      !(await this.moduleEnabled('PAYROLL'))
+    ) {
+      this.moduleDenied('PAYROLL');
+    }
+  }
+
+  private moduleEnabled(moduleKey: string) {
+    const tenantId = this.required(this.context.tenantId);
+    return this.prisma.forTenant((tx) =>
+      tx.tenantModule
+        .findFirst({
+          where: {
+            tenantId,
+            isActive: true,
+            module: { key: moduleKey, availability: 'AVAILABLE' },
+          },
+          select: { id: true },
+        })
+        .then(Boolean),
+    );
+  }
+
+  private moduleDenied(moduleKey: string): never {
+    throw new ForbiddenException({
+      code: 'MODULE_ACCESS_DENIED',
+      message: `${moduleKey} is not active for this workspace`,
     });
   }
 

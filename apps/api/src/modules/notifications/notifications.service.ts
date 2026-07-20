@@ -85,13 +85,7 @@ export class NotificationsService {
   }
 
   preferences() {
-    return this.prisma.forTenant(async (tx) => ({
-      data: await tx.notificationPreference.findMany({
-        where: { userId: this.userId() },
-        orderBy: [{ eventKey: 'asc' }, { channel: 'asc' }],
-      }),
-      mandatoryEventKeys: [...MANDATORY_EVENTS],
-    }));
+    return this.prisma.forTenant((tx) => this.preferencesInTransaction(tx));
   }
 
   updatePreferences(dto: NotificationPreferencesDto) {
@@ -124,10 +118,37 @@ export class NotificationsService {
   }
 
   private async preferencesInTransaction(tx: PrismaTransaction) {
-    return {
-      data: await tx.notificationPreference.findMany({
+    const [templates, preferences] = await Promise.all([
+      tx.notificationTemplate.findMany({
+        where: { isActive: true, locale: 'en' },
+        select: { eventKey: true, channel: true, subject: true },
+        orderBy: [{ eventKey: 'asc' }, { channel: 'asc' }],
+      }),
+      tx.notificationPreference.findMany({
         where: { userId: this.userId() },
         orderBy: [{ eventKey: 'asc' }, { channel: 'asc' }],
+      }),
+    ]);
+    const selected = new Map(
+      preferences.map((preference) => [
+        `${preference.eventKey}:${preference.channel}`,
+        preference,
+      ]),
+    );
+    return {
+      data: templates.map((template) => {
+        const preference = selected.get(
+          `${template.eventKey}:${template.channel}`,
+        );
+        return {
+          eventKey: template.eventKey,
+          channel: template.channel,
+          label: template.subject ?? humanizeEvent(template.eventKey),
+          enabled:
+            MANDATORY_EVENTS.has(template.eventKey) ||
+            preference?.enabled !== false,
+          mandatory: MANDATORY_EVENTS.has(template.eventKey),
+        };
       }),
       mandatoryEventKeys: [...MANDATORY_EVENTS],
     };
@@ -149,4 +170,12 @@ export class NotificationsService {
       message: 'Notification was not found',
     });
   }
+}
+
+function humanizeEvent(value: string) {
+  return value
+    .split('.')
+    .at(-1)!
+    .replaceAll('_', ' ')
+    .replace(/^./, (letter) => letter.toUpperCase());
 }

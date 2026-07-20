@@ -37,6 +37,28 @@ class HomeController extends AsyncNotifier<HomeSummary> {
           'Muscat Logistics Hub · ${policy.geofenceRadiusMeters}m zone',
       isInsideZone: true,
       isCheckedIn: false,
+      employeeCode: 'DEMO-001',
+      department: 'Operations',
+      managerName: 'Demo Manager',
+      officeName: 'Muscat Logistics Hub',
+      workOverview: const HomeWorkOverview(
+        workMinutes: 1890,
+        targetMinutes: 2400,
+        lateMinutes: 4,
+        overtimeMinutes: 42,
+      ),
+      policy: HomePolicySnapshot(
+        name: policy.name,
+        workMode: 'Hybrid',
+        shift: '${time(policy.shiftStart)}–${time(policy.shiftEnd)}',
+        locationRule: '${policy.geofenceRadiusMeters}m office geofence',
+        selfieRule: policy.requiresFace ? 'Required' : 'Not required',
+        deviceRule: policy.requiresRegisteredDevice
+            ? 'Registered device required'
+            : 'Any device',
+        nextHoliday: null,
+      ),
+      timeline: const [],
     );
   }
 

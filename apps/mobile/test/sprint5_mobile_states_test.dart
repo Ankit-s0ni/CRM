@@ -25,6 +25,7 @@ void main() {
 
     expect(find.text('PENDING APPROVAL'), findsOneWidget);
     expect(find.textContaining('must approve this device'), findsOneWidget);
+    expect(find.text('Check approval status'), findsOneWidget);
     expect(find.text('Continue securely'), findsNothing);
     expect(continued, isFalse);
 

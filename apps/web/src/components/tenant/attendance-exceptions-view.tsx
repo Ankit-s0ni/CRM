@@ -13,10 +13,12 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AxiosError } from "axios";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { RouteFeatureInfo } from "@/components/help/feature-info";
 import {
   EmptyState,
   ErrorState,
@@ -60,17 +62,29 @@ const emptyForm: FormState = {
 };
 
 export function AttendanceExceptionsView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canManage = permissions.includes("attendance.exceptions.manage");
   const [data, setData] = useState<ExceptionResponse | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [page, setPage] = useState(1);
-  const [type, setType] = useState<ExceptionType | "">("");
+  const page = positivePage(searchParams.get("page"));
+  const type = exceptionType(searchParams.get("type"));
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<AttendanceException | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  function updateQuery(nextType: ExceptionType | "", nextPage = 1) {
+    const params = new URLSearchParams();
+    if (nextType) params.set("type", nextType);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    router.push(`${pathname}${params.size ? `?${params}` : ""}`, {
+      scroll: false,
+    });
+  }
 
   async function load() {
     try {
@@ -192,9 +206,12 @@ export function AttendanceExceptionsView() {
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
             Attendance operations
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">
-            OD & WFH Exceptions
-          </h1>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              OD & WFH Exceptions
+            </h1>
+            <RouteFeatureInfo />
+          </div>
           <p className="mt-1 text-sm text-[#777587]">
             Record approved on-duty and work-from-home periods before attendance
             finalization.
@@ -241,10 +258,10 @@ export function AttendanceExceptionsView() {
           { value: "OTHER", label: "Other" },
         ].map((option) => (
           <button
+            aria-pressed={type === option.value}
             key={option.value}
             onClick={() => {
-              setPage(1);
-              setType(option.value as ExceptionType | "");
+              updateQuery(option.value as ExceptionType | "");
             }}
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold",
@@ -283,14 +300,14 @@ export function AttendanceExceptionsView() {
         <div className="mt-4 flex justify-end gap-2">
           <button
             disabled={page <= 1}
-            onClick={() => setPage((value) => value - 1)}
+            onClick={() => updateQuery(type, page - 1)}
             className="grid size-9 place-items-center rounded-lg border bg-white disabled:opacity-40"
           >
             <ChevronLeft className="size-4" />
           </button>
           <button
             disabled={page >= data.pagination.pages}
-            onClick={() => setPage((value) => value + 1)}
+            onClick={() => updateQuery(type, page + 1)}
             className="grid size-9 place-items-center rounded-lg border bg-white disabled:opacity-40"
           >
             <ChevronRight className="size-4" />
@@ -311,6 +328,17 @@ export function AttendanceExceptionsView() {
       )}
     </div>
   );
+}
+
+function exceptionType(value: string | null): ExceptionType | "" {
+  return value === "ON_DUTY" || value === "WFH" || value === "OTHER"
+    ? value
+    : "";
+}
+
+function positivePage(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
 function ExceptionTable({

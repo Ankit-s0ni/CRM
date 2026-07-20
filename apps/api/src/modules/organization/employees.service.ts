@@ -4,7 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EmployeeStatus, EmploymentEventType, Prisma } from '@prisma/client';
+import {
+  EmployeeStatus,
+  EmploymentEventType,
+  Prisma,
+  UserStatus,
+} from '@prisma/client';
+import * as argon2 from 'argon2';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { AuditService } from '../../shared/audit/audit.service';
@@ -12,6 +18,7 @@ import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
 import { TenantContextService } from '../../shared/tenancy/tenant-context.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import {
+  EmployeeQuickFilter,
   EmployeeSort,
   ListEmployeesQueryDto,
 } from './dto/list-employees-query.dto';
@@ -30,9 +37,11 @@ import {
   normalizeEmployeeCode,
   normalizeEmployeeName,
   parseDateOnly,
+  temporaryEmployeePassword,
 } from './employee-rules';
 import { bumpRuntimeConfigVersion } from '../runtime-config/runtime-config-version';
 import { synchronizeSubscriptionSeats } from '../billing/application/seat-sync';
+import { provisionEmployeeLeaveBalances } from '../../shared/leave/provision-leave-balances';
 
 const EMPLOYEE_RELATIONS = {
   department: { select: { id: true, name: true } },
@@ -54,12 +63,26 @@ export class EmployeesService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
     const search = query.search?.trim();
+    const now = new Date();
+    const inThirtyDays = new Date(now.getTime() + 30 * 86_400_000);
     const where: Prisma.EmployeeWhereInput = {
       status: query.status,
       workType: query.workType,
       deptId: query.departmentId,
       designationId: query.designationId,
       managerId: query.managerId,
+      ...(query.quickFilter === EmployeeQuickFilter.JOINING_SOON
+        ? {
+            status: EmployeeStatus.ACTIVE,
+            dateOfJoining: { gt: now, lte: inThirtyDays },
+          }
+        : {}),
+      ...(query.quickFilter === EmployeeQuickFilter.MISSING_MANAGER
+        ? {
+            status: { not: EmployeeStatus.TERMINATED },
+            managerId: null,
+          }
+        : {}),
       ...(search
         ? {
             OR: [
@@ -116,6 +139,255 @@ export class EmployeesService {
     return { data: employee };
   }
 
+  async workspace(id: string, userId: string, permissions: Set<string>) {
+    const tenantId = this.requireTenantId();
+    const canReadAttendance = [
+      PERMISSIONS.ATTENDANCE_RECORDS_READ,
+      PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ,
+    ].some((permission) => permissions.has(permission));
+    const canReadLeave = [
+      PERMISSIONS.LEAVE_SELF,
+      PERMISSIONS.LEAVE_APPROVE,
+      PERMISSIONS.LEAVE_MANAGE,
+    ].some((permission) => permissions.has(permission));
+    const canReadDevices = [
+      PERMISSIONS.ATTENDANCE_DEVICES_READ,
+      PERMISSIONS.ATTENDANCE_DEVICES_MANAGE,
+    ].some((permission) => permissions.has(permission));
+    const workspace = await this.prisma.forTenant(async (tx) => {
+      const accessibleIds = await this.accessibleEmployeeIds(tx, userId);
+      if (accessibleIds && !accessibleIds.includes(id)) return null;
+
+      const employee = await tx.employee.findUnique({
+        where: { id },
+        include: {
+          ...EMPLOYEE_RELATIONS,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              status: true,
+              emailVerifiedAt: true,
+              lastLoginAt: true,
+              roles: {
+                select: { role: { select: { id: true, name: true } } },
+              },
+            },
+          },
+          defaultShift: {
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              isOvernight: true,
+            },
+          },
+          officeAssignments: {
+            include: {
+              office: {
+                select: {
+                  id: true,
+                  officeName: true,
+                  timezone: true,
+                  radiusMeters: true,
+                },
+              },
+            },
+            orderBy: { isPrimary: 'desc' },
+          },
+        },
+      });
+      if (!employee) return null;
+
+      const [
+        policyAssignments,
+        rosters,
+        attendance,
+        leaveBalances,
+        leaveRequests,
+        devices,
+        employmentEvents,
+        audit,
+      ] = await Promise.all([
+        canReadAttendance
+          ? tx.policyAssignment.findMany({
+              where: {
+                OR: [
+                  { employeeId: id },
+                  { deptId: employee.deptId },
+                  { scope: 'TENANT_DEFAULT' },
+                ],
+              },
+              include: {
+                policy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    locationMode: true,
+                    selfieMode: true,
+                    requireFaceMatch: true,
+                    requireRegisteredDevice: true,
+                    requireGeofence: true,
+                    fieldTrackingEnabled: true,
+                  },
+                },
+              },
+            })
+          : Promise.resolve([]),
+        canReadAttendance
+          ? tx.employeeShiftRoster.findMany({
+              where: { employeeId: id },
+              include: {
+                shift: {
+                  select: {
+                    id: true,
+                    name: true,
+                    startTime: true,
+                    endTime: true,
+                    isOvernight: true,
+                  },
+                },
+              },
+              orderBy: { rosterDate: 'desc' },
+              take: 14,
+            })
+          : Promise.resolve([]),
+        canReadAttendance
+          ? tx.attendanceLog.findMany({
+              where: { employeeId: id },
+              select: {
+                id: true,
+                attendanceDate: true,
+                attendanceStatus: true,
+                firstCheckin: true,
+                lastCheckout: true,
+                totalWorkMinutes: true,
+                lateMinutes: true,
+                overtimeMinutes: true,
+                resolvedExceptionId: true,
+              },
+              orderBy: { attendanceDate: 'desc' },
+              take: 14,
+            })
+          : Promise.resolve([]),
+        canReadLeave
+          ? tx.leaveBalance.findMany({
+              where: { employeeId: id },
+              select: {
+                id: true,
+                remainingDays: true,
+                updatedAt: true,
+                policy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    leaveType: true,
+                    version: true,
+                  },
+                },
+              },
+              orderBy: { policy: { name: 'asc' } },
+            })
+          : Promise.resolve([]),
+        canReadLeave
+          ? tx.leaveRequest.findMany({
+              where: { employeeId: id },
+              select: {
+                id: true,
+                startDate: true,
+                endDate: true,
+                totalDays: true,
+                status: true,
+                reason: true,
+                createdAt: true,
+                policy: { select: { id: true, name: true, leaveType: true } },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 10,
+            })
+          : Promise.resolve([]),
+        canReadDevices
+          ? tx.registeredDevice.findMany({
+              where: { employeeId: id },
+              select: {
+                id: true,
+                platform: true,
+                deviceModel: true,
+                osVersion: true,
+                appVersion: true,
+                status: true,
+                isPrimary: true,
+                registeredAt: true,
+                lastSeenAt: true,
+              },
+              orderBy: { registeredAt: 'desc' },
+            })
+          : Promise.resolve([]),
+        tx.employmentEvent.findMany({
+          where: { employeeId: id },
+          orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
+          take: 20,
+        }),
+        tx.tenantAuditLog.findMany({
+          where: { tenantId, entityId: id },
+          select: {
+            id: true,
+            action: true,
+            module: true,
+            actorUserId: true,
+            requestId: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        }),
+      ]);
+
+      const effectivePolicy =
+        policyAssignments.find(
+          ({ scope, employeeId }) => scope === 'EMPLOYEE' && employeeId === id,
+        ) ??
+        policyAssignments.find(
+          ({ scope, deptId }) =>
+            scope === 'DEPARTMENT' && deptId === employee.deptId,
+        ) ??
+        policyAssignments.find(({ scope }) => scope === 'TENANT_DEFAULT') ??
+        null;
+
+      return {
+        employee,
+        assignments: {
+          offices: employee.officeAssignments,
+          defaultShift: employee.defaultShift,
+          upcomingRosters: rosters,
+          effectiveAttendancePolicy: effectivePolicy,
+          policyResolution: effectivePolicy?.scope ?? null,
+        },
+        attendance: {
+          recentDays: attendance,
+          resolvedExceptionCount: attendance.filter(
+            ({ resolvedExceptionId }) => resolvedExceptionId,
+          ).length,
+        },
+        leave: { balances: leaveBalances, recentRequests: leaveRequests },
+        devices,
+        history: { employmentEvents, audit },
+        readiness: {
+          accountLinked: Boolean(employee.user),
+          managerAssigned: Boolean(employee.managerId),
+          officeAssigned: employee.officeAssignments.length > 0,
+          shiftAssigned: Boolean(employee.defaultShift) || rosters.length > 0,
+          attendancePolicyAssigned: Boolean(effectivePolicy),
+          approvedDevice: devices.some(({ status }) => status === 'ACTIVE'),
+        },
+      };
+    });
+
+    if (!workspace) this.throwNotFound();
+    return { data: workspace };
+  }
+
   async me(userId: string) {
     const employee = await this.prisma.forTenant((tx) =>
       tx.employee.findUnique({
@@ -164,7 +436,10 @@ export class EmployeesService {
     const tenantId = this.requireTenantId();
     const employeeCode = normalizeEmployeeCode(dto.employeeCode);
     const fullName = normalizeEmployeeName(dto.fullName);
+    const email = dto.email.trim().toLowerCase();
     const dateOfJoining = parseDateOnly(dto.dateOfJoining);
+    const temporaryPassword = temporaryEmployeePassword(fullName, dto.phone);
+    const passwordHash = await argon2.hash(temporaryPassword);
 
     return this.prisma.forTenant(async (tx) => {
       const quota = await this.quotaService.lockAndAssertCapacity(tx, tenantId);
@@ -175,13 +450,45 @@ export class EmployeesService {
         dto.managerId,
       );
       await this.ensureUniqueIdentity(tx, employeeCode, dto.phone);
+      const existingUser = await tx.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      if (existingUser) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_EMAIL_EXISTS',
+          message: 'An account already exists for this email',
+        });
+      }
+      const employeeRole = await tx.role.findFirst({
+        where: { name: 'EMPLOYEE', tenantId },
+        select: { id: true },
+      });
+      if (!employeeRole) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_ROLE_MISSING',
+          message: 'The workspace Employee role is not configured',
+        });
+      }
+      const user = await tx.user.create({
+        data: {
+          tenantId,
+          email,
+          phone: dto.phone,
+          passwordHash,
+          status: UserStatus.ACTIVE,
+          emailVerifiedAt: new Date(),
+          roles: { create: { roleId: employeeRole.id } },
+        },
+      });
 
       const employee = await tx.employee.create({
         data: {
           tenantId,
           employeeCode,
           fullName,
-          phone: dto.phone ?? null,
+          phone: dto.phone,
+          userId: user.id,
           workType: dto.workType,
           status: EmployeeStatus.ACTIVE,
           dateOfJoining,
@@ -206,6 +513,12 @@ export class EmployeesService {
           },
         },
       });
+      await provisionEmployeeLeaveBalances(
+        tx,
+        tenantId,
+        employee.id,
+        createdBy,
+      );
       await this.quotaService.emitThresholdEvents(tx, tenantId, quota);
       await this.auditService.append(tx, {
         tenantId,
@@ -231,7 +544,10 @@ export class EmployeesService {
         createdBy,
       );
 
-      return { data: employee };
+      return {
+        data: employee,
+        temporaryCredentials: { email, password: temporaryPassword },
+      };
     });
   }
 
@@ -248,6 +564,36 @@ export class EmployeesService {
     return this.prisma.forTenant(async (tx) => {
       const employee = await tx.employee.findUnique({ where: { id } });
       if (!employee) this.throwNotFound();
+
+      const currentUser = employee.userId
+        ? await tx.user.findUnique({ where: { id: employee.userId } })
+        : null;
+      const email = dto.email?.trim().toLowerCase();
+      if (email && email !== currentUser?.email.toLowerCase()) {
+        const existingUser = await tx.user.findFirst({
+          where: {
+            email: { equals: email, mode: 'insensitive' },
+            id: currentUser ? { not: currentUser.id } : undefined,
+          },
+          select: { id: true },
+        });
+        if (existingUser) {
+          throw new ConflictException({
+            code: 'EMPLOYEE_EMAIL_EXISTS',
+            message: 'An account already exists for this email',
+          });
+        }
+        if (!currentUser) {
+          throw new ConflictException({
+            code: 'EMPLOYEE_ACCOUNT_MISSING',
+            message: 'Create this employee login before setting an email',
+          });
+        }
+        await tx.user.update({
+          where: { id: currentUser.id },
+          data: { email },
+        });
+      }
 
       const employeeCode = dto.employeeCode
         ? normalizeEmployeeCode(dto.employeeCode)
@@ -336,6 +682,7 @@ export class EmployeesService {
         oldValue: {
           employeeCode: employee.employeeCode,
           fullName: employee.fullName,
+          email: currentUser?.email ?? null,
           deptId: employee.deptId,
           designationId: employee.designationId,
           managerId: employee.managerId,
@@ -343,6 +690,7 @@ export class EmployeesService {
         newValue: {
           employeeCode: updated.employeeCode,
           fullName: updated.fullName,
+          email: email ?? currentUser?.email ?? null,
           deptId: updated.deptId,
           designationId: updated.designationId,
           managerId: updated.managerId,
@@ -353,6 +701,83 @@ export class EmployeesService {
       }
 
       return { data: updated };
+    });
+  }
+
+  async createAccount(id: string, inputEmail: string, createdBy: string) {
+    const tenantId = this.requireTenantId();
+    const email = inputEmail.trim().toLowerCase();
+
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await tx.employee.findUnique({ where: { id } });
+      if (!employee) this.throwNotFound();
+      if (employee.userId) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_ACCOUNT_EXISTS',
+          message: 'This employee already has a login account',
+        });
+      }
+      if (!employee.phone) {
+        throw new BadRequestException({
+          code: 'EMPLOYEE_PHONE_REQUIRED',
+          message: 'Add an employee phone number before creating the login',
+        });
+      }
+
+      const existingUser = await tx.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      if (existingUser) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_EMAIL_EXISTS',
+          message: 'An account already exists for this email',
+        });
+      }
+      const employeeRole = await tx.role.findFirst({
+        where: { name: 'EMPLOYEE', tenantId },
+        select: { id: true },
+      });
+      if (!employeeRole) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_ROLE_MISSING',
+          message: 'The workspace Employee role is not configured',
+        });
+      }
+
+      const temporaryPassword = temporaryEmployeePassword(
+        employee.fullName,
+        employee.phone,
+      );
+      const user = await tx.user.create({
+        data: {
+          tenantId,
+          email,
+          phone: employee.phone,
+          passwordHash: await argon2.hash(temporaryPassword),
+          status: UserStatus.ACTIVE,
+          emailVerifiedAt: new Date(),
+          roles: { create: { roleId: employeeRole.id } },
+        },
+      });
+      await tx.employee.update({
+        where: { id },
+        data: { userId: user.id },
+      });
+      await this.auditService.append(tx, {
+        tenantId,
+        actorUserId: createdBy,
+        action: 'organization.employee.account-created',
+        module: 'organization',
+        entityType: 'Employee',
+        entityId: employee.id,
+        newValue: { email },
+      });
+
+      return {
+        data: { userId: user.id, email },
+        temporaryCredentials: { email, password: temporaryPassword },
+      };
     });
   }
 
@@ -430,6 +855,7 @@ export class EmployeesService {
             employee.dateOfExit?.toISOString().slice(0, 10) ?? null,
         },
       });
+      await provisionEmployeeLeaveBalances(tx, tenantId, updated.id, createdBy);
       await this.quotaService.emitThresholdEvents(tx, tenantId, quota);
       await this.auditService.append(tx, {
         tenantId,

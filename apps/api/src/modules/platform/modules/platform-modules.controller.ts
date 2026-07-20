@@ -19,6 +19,7 @@ import { PlatformPermissionGuard } from '../platform-auth/platform-permission.gu
 import { RequirePlatformPermissions } from '../platform-auth/require-platform-permissions.decorator';
 import {
   CreatePlatformModuleDto,
+  ReplaceTenantCapabilityOverridesDto,
   ReplaceTenantModulesDto,
   UpdatePlatformModuleDto,
 } from './dto/platform-module.dto';
@@ -66,6 +67,21 @@ export class PlatformModulesController {
   }
 }
 
+@ApiTags('Platform Product Catalog')
+@ApiBearerAuth()
+@UseGuards(PlatformJwtGuard, PlatformPermissionGuard)
+@Controller('platform/catalog')
+export class PlatformCatalogController {
+  constructor(private readonly modules: PlatformModulesService) {}
+
+  @Get()
+  @RequirePlatformPermissions('platform.modules.read')
+  @ApiOperation({ summary: 'List customer-facing products, add-ons, and capabilities' })
+  list() {
+    return this.modules.catalog();
+  }
+}
+
 @ApiTags('Platform Tenant Modules')
 @ApiBearerAuth()
 @UseGuards(PlatformJwtGuard, PlatformPermissionGuard)
@@ -92,5 +108,41 @@ export class PlatformTenantModulesController {
       userAgent: request.get('user-agent'),
       requestId: String(request.headers['x-request-id'] ?? ''),
     });
+  }
+}
+
+@ApiTags('Platform Tenant Entitlements')
+@ApiBearerAuth()
+@UseGuards(PlatformJwtGuard, PlatformPermissionGuard)
+@Controller('platform/tenants/:tenantId/entitlements')
+export class PlatformTenantEntitlementsController {
+  constructor(private readonly modules: PlatformModulesService) {}
+
+  @Get()
+  @RequirePlatformPermissions('platform.modules.read')
+  @ApiOperation({ summary: 'Get plan, overrides, and effective tenant entitlements' })
+  list(@Param('tenantId', ParseUUIDPipe) tenantId: string) {
+    return this.modules.tenantEntitlements(tenantId);
+  }
+
+  @Put('overrides')
+  @RequirePlatformPermissions('platform.modules.manage')
+  @ApiOperation({ summary: 'Replace audited tenant capability overrides' })
+  replace(
+    @Param('tenantId', ParseUUIDPipe) tenantId: string,
+    @Body() dto: ReplaceTenantCapabilityOverridesDto,
+    @CurrentUser() actor: AuthenticatedPlatformUser,
+    @Req() request: Request,
+  ) {
+    return this.modules.replaceTenantCapabilityOverrides(
+      tenantId,
+      dto,
+      actor,
+      {
+        ipAddress: request.ip,
+        userAgent: request.get('user-agent'),
+        requestId: String(request.headers['x-request-id'] ?? ''),
+      },
+    );
   }
 }

@@ -19,6 +19,10 @@ import { PaymentProviderRegistry } from '../../billing/infrastructure/payment-pr
 import { OutboxService } from '../../../shared/events/outbox.service';
 import { bumpRuntimeConfigVersion } from '../../runtime-config/runtime-config-version';
 import { moduleAssignmentViolation } from '../platform-policy';
+import {
+  CatalogSelectionError,
+  resolveCatalogSelection,
+} from '../catalog-policy';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
   PlatformDatabaseService,
@@ -59,6 +63,7 @@ export class PlatformBillingService {
       data: await tx.subscriptionPlan.findMany({
         include: {
           modules: { include: { module: true } },
+          capabilities: { include: { capability: true } },
           _count: { select: { subscriptions: true } },
         },
         orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
@@ -74,7 +79,11 @@ export class PlatformBillingService {
     this.assertFreshMfa(actor);
     return this.database
       .transaction(async (tx) => {
-        const modules = await this.validatedModules(tx, dto.moduleKeys);
+        const bundle = await this.validatedEntitlements(
+          tx,
+          dto.moduleKeys,
+          dto.capabilityKeys ?? [],
+        );
         const price = minorToMajor(
           majorToMinor(dto.pricePerUser, dto.currency),
           dto.currency,
@@ -88,10 +97,18 @@ export class PlatformBillingService {
             maxEmployees: dto.maxEmployees,
             billingPeriod: dto.billingPeriod,
             modules: {
-              create: modules.map((module) => ({ moduleId: module.id })),
+              create: bundle.modules.map((module) => ({ moduleId: module.id })),
+            },
+            capabilities: {
+              create: bundle.capabilities.map((capability) => ({
+                capabilityId: capability.id,
+              })),
             },
           },
-          include: { modules: { include: { module: true } } },
+          include: {
+            modules: { include: { module: true } },
+            capabilities: { include: { capability: true } },
+          },
         });
         await this.audit(
           tx,
@@ -117,12 +134,45 @@ export class PlatformBillingService {
       .transaction(async (tx) => {
         const current = await tx.subscriptionPlan.findUnique({
           where: { id },
-          include: { modules: { include: { module: true } } },
+          include: {
+            modules: { include: { module: true } },
+            capabilities: { include: { capability: true } },
+          },
         });
         if (!current) this.notFound('PLAN_NOT_FOUND', 'Subscription plan');
-        const modules = dto.moduleKeys
-          ? await this.validatedModules(tx, dto.moduleKeys)
-          : current.modules.map(({ module }) => module);
+        const bundle =
+          dto.moduleKeys || dto.capabilityKeys
+            ? await this.validatedEntitlements(
+                tx,
+                dto.moduleKeys ??
+                  current.modules.map(({ module }) => module.key),
+                dto.capabilityKeys ??
+                  current.capabilities.map(({ capability }) => capability.key),
+              )
+            : {
+                modules: current.modules.map(({ module }) => module),
+                capabilities: current.capabilities.map(
+                  ({ capability }) => capability,
+                ),
+              };
+        const removedCapabilityKeys = current.capabilities
+          .map(({ capability }) => capability.key)
+          .filter(
+            (key) =>
+              !bundle.capabilities.some((capability) => capability.key === key),
+          );
+        if (removedCapabilityKeys.length && !dto.impactAcknowledged) {
+          const affectedSubscriptions = await tx.tenantSubscription.count({
+            where: { planId: id, status: { in: CURRENT } },
+          });
+          if (affectedSubscriptions > 0) {
+            throw new ConflictException({
+              code: 'PLAN_CHANGE_IMPACT_REQUIRED',
+              message:
+                'Review and acknowledge the affected tenants before removing plan features',
+            });
+          }
+        }
         if (
           dto.maxEmployees !== undefined &&
           dto.maxEmployees < current.maxEmployees
@@ -158,19 +208,37 @@ export class PlatformBillingService {
             isActive: dto.isActive,
           },
         });
-        if (dto.moduleKeys) {
+        if (dto.moduleKeys || dto.capabilityKeys) {
           await tx.subscriptionPlanModule.deleteMany({ where: { planId: id } });
           await tx.subscriptionPlanModule.createMany({
-            data: modules.map((module) => ({
+            data: bundle.modules.map((module) => ({
               planId: id,
               moduleId: module.id,
             })),
           });
-          await this.propagateBundle(tx, id, modules, actor.platformUserId);
+          await tx.subscriptionPlanCapability.deleteMany({
+            where: { planId: id },
+          });
+          await tx.subscriptionPlanCapability.createMany({
+            data: bundle.capabilities.map((capability) => ({
+              planId: id,
+              capabilityId: capability.id,
+            })),
+          });
+          await this.propagateBundle(
+            tx,
+            id,
+            bundle.modules,
+            bundle.capabilities,
+            actor.platformUserId,
+          );
         }
         const result = await tx.subscriptionPlan.findUniqueOrThrow({
           where: { id },
-          include: { modules: { include: { module: true } } },
+          include: {
+            modules: { include: { module: true } },
+            capabilities: { include: { capability: true } },
+          },
         });
         await this.audit(
           tx,
@@ -183,6 +251,68 @@ export class PlatformBillingService {
         return { data: { ...result, updatedAt: updated.updatedAt } };
       })
       .catch((error: unknown) => this.planConflict(error));
+  }
+
+  planImpact(id: string, dto: UpdatePlatformPlanDto) {
+    return this.database.transaction(async (tx) => {
+      const current = await tx.subscriptionPlan.findUnique({
+        where: { id },
+        include: {
+          modules: { include: { module: true } },
+          capabilities: { include: { capability: true } },
+        },
+      });
+      if (!current) this.notFound('PLAN_NOT_FOUND', 'Subscription plan');
+      const bundle = await this.validatedEntitlements(
+        tx,
+        dto.moduleKeys ?? current.modules.map(({ module }) => module.key),
+        dto.capabilityKeys ??
+          current.capabilities.map(({ capability }) => capability.key),
+      );
+      const subscriptions = await tx.tenantSubscription.findMany({
+        where: { planId: id, status: { in: CURRENT } },
+        select: {
+          seatCount: true,
+          tenant: { select: { id: true, companyName: true, subdomain: true } },
+        },
+        orderBy: { tenant: { companyName: 'asc' } },
+      });
+      const currentModules = new Set(
+        current.modules.map(({ module }) => module.key),
+      );
+      const currentCapabilities = new Set(
+        current.capabilities.map(({ capability }) => capability.key),
+      );
+      const nextModules = new Set(bundle.modules.map(({ key }) => key));
+      const nextCapabilities = new Set(
+        bundle.capabilities.map(({ key }) => key),
+      );
+      const employeeLimit = dto.maxEmployees ?? current.maxEmployees;
+      return {
+        data: {
+          affectedTenantCount: subscriptions.length,
+          affectedTenants: subscriptions
+            .slice(0, 10)
+            .map(({ tenant }) => tenant),
+          addedModuleKeys: [...nextModules].filter(
+            (key) => !currentModules.has(key),
+          ),
+          removedModuleKeys: [...currentModules].filter(
+            (key) => !nextModules.has(key),
+          ),
+          addedCapabilityKeys: [...nextCapabilities].filter(
+            (key) => !currentCapabilities.has(key),
+          ),
+          removedCapabilityKeys: [...currentCapabilities].filter(
+            (key) => !nextCapabilities.has(key),
+          ),
+          tenantsOverEmployeeLimit: subscriptions.filter(
+            ({ seatCount }) => seatCount > employeeLimit,
+          ).length,
+          autoIncludedCapabilityKeys: bundle.autoIncludedCapabilityKeys,
+        },
+      };
+    });
   }
 
   invoices(query: PlatformBillingQueryDto) {
@@ -544,10 +674,47 @@ export class PlatformBillingService {
     return modules;
   }
 
+  private async validatedEntitlements(
+    tx: PlatformTransaction,
+    moduleKeys: string[],
+    capabilityKeys: string[],
+  ) {
+    const [modules, capabilities] = await Promise.all([
+      tx.module.findMany(),
+      tx.moduleCapability.findMany(),
+    ]);
+    try {
+      const selection = resolveCatalogSelection({
+        modules,
+        capabilities,
+        requestedModuleKeys: moduleKeys,
+        requestedCapabilityKeys: capabilityKeys,
+      });
+      return {
+        modules: modules.filter((module) =>
+          selection.moduleKeys.includes(module.key),
+        ),
+        capabilities: capabilities.filter((capability) =>
+          selection.capabilityKeys.includes(capability.key),
+        ),
+        autoIncludedCapabilityKeys: selection.autoIncludedCapabilityKeys,
+      };
+    } catch (error) {
+      if (error instanceof CatalogSelectionError) {
+        throw new UnprocessableEntityException({
+          code: error.code,
+          message: error.message,
+        });
+      }
+      throw error;
+    }
+  }
+
   private async propagateBundle(
     tx: PlatformTransaction,
     planId: string,
     modules: Array<{ id: string; key: string }>,
+    capabilities: Array<{ id: string; key: string }>,
     actorId: string,
   ) {
     const subscriptions = await tx.tenantSubscription.findMany({
@@ -582,6 +749,7 @@ export class PlatformBillingService {
             tenantId,
             planId,
             moduleKeys: modules.map(({ key }) => key),
+            capabilityKeys: capabilities.map(({ key }) => key),
           },
         }),
       ]);

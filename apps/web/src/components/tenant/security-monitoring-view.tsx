@@ -19,11 +19,13 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { FeatureInfo, RouteFeatureInfo } from "@/components/help/feature-info";
 
 type AlertStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "DISMISSED";
 type AlertType =
@@ -91,18 +93,43 @@ const filters: Array<{ label: string; value: AlertType | "" }> = [
 ];
 
 export function SecurityMonitoringView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canManage = permissions.includes("attendance.security-alerts.manage");
   const canViewEvidence = permissions.includes("attendance.verification.read");
   const canManageDevices = permissions.includes("attendance.devices.manage");
   const [response, setResponse] = useState<AlertResponse | null>(null);
-  const [type, setType] = useState<AlertType | "">("");
-  const [status, setStatus] = useState<AlertStatus | "">("OPEN");
-  const [page, setPage] = useState(1);
+  const type = alertType(searchParams.get("alertType"));
+  const status = alertStatus(searchParams.get("status"));
+  const severity = alertSeverity(searchParams.get("severity"));
+  const page = positivePage(searchParams.get("page"));
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<SecurityAlert | null>(null);
   const [evidence, setEvidence] = useState<Evidence | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function updateQuery(patch: {
+    type?: AlertType | "";
+    status?: AlertStatus | "";
+    severity?: SecurityAlert["severity"] | "";
+    page?: number;
+  }) {
+    const params = new URLSearchParams();
+    const nextType = patch.type ?? type;
+    const nextStatus = patch.status ?? status;
+    const nextSeverity = patch.severity ?? severity;
+    const nextPage = patch.page ?? 1;
+    if (nextType) params.set("alertType", nextType);
+    if (nextStatus) params.set("status", nextStatus);
+    else if (patch.status === "") params.set("status", "ALL");
+    if (nextSeverity) params.set("severity", nextSeverity);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    router.push(`${pathname}${params.size ? `?${params}` : ""}`, {
+      scroll: false,
+    });
+  }
 
   async function load() {
     const params = new URLSearchParams({
@@ -111,6 +138,7 @@ export function SecurityMonitoringView() {
     });
     if (type) params.set("alertType", type);
     if (status) params.set("status", status);
+    if (severity) params.set("severity", severity);
     try {
       const { data } = await apiClient.get<AlertResponse>(
         `/security-alerts?${params}`,
@@ -127,6 +155,7 @@ export function SecurityMonitoringView() {
     const params = new URLSearchParams({ page: String(page), limit: "25" });
     if (type) params.set("alertType", type);
     if (status) params.set("status", status);
+    if (severity) params.set("severity", severity);
     apiClient
       .get<AlertResponse>(`/security-alerts?${params}`)
       .then(({ data }) => {
@@ -142,7 +171,7 @@ export function SecurityMonitoringView() {
     return () => {
       active = false;
     };
-  }, [page, status, type]);
+  }, [page, severity, status, type]);
 
   async function openAlert(alert: SecurityAlert) {
     setSelected(alert);
@@ -204,9 +233,12 @@ export function SecurityMonitoringView() {
           <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-[#4f46e5]">
             Attendance integrity
           </p>
-          <h1 className="text-3xl font-bold tracking-[-.02em] text-[#1b1b24]">
-            Security Monitoring Feed
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-[-.02em] text-[#1b1b24]">
+              Security Monitoring Feed
+            </h1>
+            <RouteFeatureInfo />
+          </div>
           <p className="mt-1 text-base text-[#464555]">
             Real-time integrity tracking for attendance and geofencing.
           </p>
@@ -238,12 +270,10 @@ export function SecurityMonitoringView() {
       <div className="mb-7 flex items-center gap-3 overflow-x-auto pb-2">
         {filters.map((filter) => (
           <Button
+            aria-pressed={type === filter.value}
             key={filter.label}
             variant="outline"
-            onClick={() => {
-              setType(filter.value);
-              setPage(1);
-            }}
+            onClick={() => updateQuery({ type: filter.value })}
             className={cn(
               "shrink-0 rounded-full border-0 px-5 text-sm font-semibold",
               type === filter.value
@@ -262,10 +292,9 @@ export function SecurityMonitoringView() {
         <select
           aria-label="Alert status"
           value={status}
-          onChange={(event) => {
-            setStatus(event.target.value as AlertStatus | "");
-            setPage(1);
-          }}
+          onChange={(event) =>
+            updateQuery({ status: event.target.value as AlertStatus | "" })
+          }
           className="ml-auto h-9 shrink-0 rounded-full border border-[#c7c4d8] bg-white px-4 text-sm font-semibold text-[#464555]"
         >
           <option value="">All statuses</option>
@@ -274,6 +303,15 @@ export function SecurityMonitoringView() {
           <option value="RESOLVED">Resolved</option>
           <option value="DISMISSED">Dismissed</option>
         </select>
+        {severity && (
+          <button
+            className="shrink-0 rounded-full bg-[#ffdad6] px-4 py-2 text-xs font-bold text-[#93000a]"
+            onClick={() => updateQuery({ severity: "" })}
+            type="button"
+          >
+            {severity} severity · clear
+          </button>
+        )}
       </div>
 
       {error && (
@@ -318,14 +356,14 @@ export function SecurityMonitoringView() {
           <Button
             variant="outline"
             disabled={page <= 1}
-            onClick={() => setPage((value) => value - 1)}
+            onClick={() => updateQuery({ page: page - 1 })}
           >
             <ChevronLeft className="size-4" /> Previous
           </Button>
           <Button
             variant="outline"
             disabled={page >= response.meta.pages}
-            onClick={() => setPage((value) => value + 1)}
+            onClick={() => updateQuery({ page: page + 1 })}
           >
             Next <ChevronRight className="size-4" />
           </Button>
@@ -370,7 +408,9 @@ function AlertCard({
           : "col-span-12 md:col-span-6 lg:col-span-4",
       )}
     >
-      <div className={cn("flex h-full gap-5", featured && "flex-col md:flex-row")}>
+      <div
+        className={cn("flex h-full gap-5", featured && "flex-col md:flex-row")}
+      >
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="mb-4 flex items-center gap-2">
             <span
@@ -397,7 +437,9 @@ function AlertCard({
                 {alert.title}
               </h2>
               <p className="mt-1 text-sm text-[#464555]">
-                <strong>{alert.employee?.fullName ?? "Unknown employee"}</strong>
+                <strong>
+                  {alert.employee?.fullName ?? "Unknown employee"}
+                </strong>
                 {alert.employee?.employeeCode
                   ? ` • ${alert.employee.employeeCode}`
                   : ""}
@@ -405,7 +447,11 @@ function AlertCard({
             </div>
           </div>
           <div className="mb-5 grid grid-cols-2 gap-4 border-y border-[#e4e1ee] py-4 text-sm">
-            <Metric label="Violation" value={typeLabel(alert.alertType)} danger />
+            <Metric
+              label="Violation"
+              value={typeLabel(alert.alertType)}
+              danger
+            />
             <Metric label="Status" value={statusLabel(alert.status)} />
             {alert.details.distanceMeters !== undefined && (
               <Metric
@@ -414,7 +460,10 @@ function AlertCard({
               />
             )}
             {alert.details.scoreCategory && (
-              <Metric label="Face confidence" value={alert.details.scoreCategory} />
+              <Metric
+                label="Face confidence"
+                value={alert.details.scoreCategory}
+              />
             )}
           </div>
           <div className="mt-auto flex flex-wrap gap-3">
@@ -473,21 +522,36 @@ function AlertDrawer({
               Verification evidence
             </p>
             <h2 className="mt-1 text-2xl font-bold">{alert.title}</h2>
+            <FeatureInfo helpKey={securityHelpKey(alert.alertType)} />
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X className="size-5" />
           </Button>
         </div>
         <Card className="mb-5 border-[#d9d5e3] bg-white p-5">
           <div className="grid grid-cols-2 gap-5">
-            <Metric label="Employee" value={alert.employee?.fullName ?? "Unknown"} />
+            <Metric
+              label="Employee"
+              value={alert.employee?.fullName ?? "Unknown"}
+            />
             <Metric label="Status" value={statusLabel(alert.status)} />
             <Metric label="Type" value={typeLabel(alert.alertType)} danger />
-            <Metric label="Recorded" value={new Date(alert.createdAt).toLocaleString()} />
+            <Metric
+              label="Recorded"
+              value={new Date(alert.createdAt).toLocaleString()}
+            />
           </div>
         </Card>
         {evidence?.mapPoint && (
-          <MapPreview point={evidence.mapPoint} distance={evidence.distanceMeters ?? undefined} />
+          <MapPreview
+            point={evidence.mapPoint}
+            distance={evidence.distanceMeters ?? undefined}
+          />
         )}
         {evidence?.selfie && (
           <Card className="mt-5 overflow-hidden border-[#d9d5e3] bg-white p-4">
@@ -499,13 +563,16 @@ function AlertDrawer({
               className="max-h-80 w-full rounded-lg object-contain"
             />
             <p className="mt-2 text-xs text-[#777587]">
-              Private evidence link expires in {evidence.selfie.expiresIn} seconds.
+              Private evidence link expires in {evidence.selfie.expiresIn}{" "}
+              seconds.
             </p>
           </Card>
         )}
         {!evidence && alert.verificationLogId && (
           <Card className="mt-5 grid min-h-36 place-items-center border-[#d9d5e3] bg-white">
-            <p className="text-sm text-[#777587]">Authorizing private evidence…</p>
+            <p className="text-sm text-[#777587]">
+              Authorizing private evidence…
+            </p>
           </Card>
         )}
         <div className="mt-6 flex flex-wrap gap-3">
@@ -544,11 +611,51 @@ function AlertDrawer({
   );
 }
 
+function alertType(value: string | null): AlertType | "" {
+  return filters.some((filter) => filter.value === value)
+    ? (value as AlertType | "")
+    : "";
+}
+
+function alertStatus(value: string | null): AlertStatus | "" {
+  if (value === null) return "OPEN";
+  if (value === "ALL") return "";
+  return value === "OPEN" ||
+    value === "ACKNOWLEDGED" ||
+    value === "RESOLVED" ||
+    value === "DISMISSED"
+    ? value
+    : "";
+}
+
+function alertSeverity(value: string | null): SecurityAlert["severity"] | "" {
+  return value === "INFO" || value === "WARNING" || value === "CRITICAL"
+    ? value
+    : "";
+}
+
+function positivePage(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function securityHelpKey(type: AlertType) {
+  if (type === "FACE_MISMATCH") return "selfie-verification" as const;
+  if (type === "GEOFENCE_VIOLATION" || type === "MOCK_LOCATION") {
+    return "location-verification" as const;
+  }
+  return "devices" as const;
+}
+
 function MapPreview({
   point,
   distance,
 }: {
-  point?: { latitude: number; longitude: number; accuracyMeters?: number | null };
+  point?: {
+    latitude: number;
+    longitude: number;
+    accuracyMeters?: number | null;
+  };
   distance?: number;
 }) {
   return (
@@ -569,7 +676,10 @@ function MapPreview({
 
 function LoadingFeed() {
   return (
-    <div className="grid grid-cols-12 gap-6" aria-label="Loading security events">
+    <div
+      className="grid grid-cols-12 gap-6"
+      aria-label="Loading security events"
+    >
       {[8, 4, 5, 3, 4].map((span, index) => (
         <div
           key={`${span}-${index}`}
@@ -597,7 +707,12 @@ function Metric({
       <p className="text-[10px] font-semibold uppercase tracking-wider text-[#777587]">
         {label}
       </p>
-      <p className={cn("truncate text-sm font-semibold", danger && "text-[#ba1a1a]")}>
+      <p
+        className={cn(
+          "truncate text-sm font-semibold",
+          danger && "text-[#ba1a1a]",
+        )}
+      >
         {value}
       </p>
     </div>
@@ -639,7 +754,10 @@ function formatDistance(meters: number) {
 }
 
 function relativeTime(value: string) {
-  const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+  const seconds = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(value).getTime()) / 1000),
+  );
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;

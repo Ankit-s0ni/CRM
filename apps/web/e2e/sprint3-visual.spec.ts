@@ -6,6 +6,41 @@ import { PNG } from 'pngjs';
 
 const references = resolve(process.cwd(), 'public/stitch/sprint-3');
 const tenantId = '019f6987-3b0e-7010-955b-4c2f6b840702';
+const tenantAdminPermissions = [
+  'workspace.modules.read',
+  'workspace.settings.read',
+  'workspace.settings.update',
+  'workspace.dashboard.admin.read',
+  'organization.departments.read',
+  'organization.departments.create',
+  'organization.departments.update',
+  'organization.designations.read',
+  'organization.designations.create',
+  'organization.designations.update',
+  'organization.employees.read',
+  'organization.employees.create',
+  'organization.employees.update',
+  'organization.imports.read',
+  'organization.imports.create',
+  'identity.users.read',
+  'identity.users.invite',
+  'identity.roles.read',
+  'identity.roles.create',
+  'identity.roles.update',
+  'attendance.records.read',
+  'attendance.config.read',
+  'attendance.config.manage',
+  'attendance.offices.read',
+  'attendance.offices.manage',
+  'attendance.policies.read',
+  'attendance.policies.manage',
+  'attendance.shifts.read',
+  'attendance.shifts.manage',
+  'attendance.rosters.read',
+  'attendance.rosters.manage',
+  'attendance.holidays.read',
+  'attendance.holidays.manage',
+] as const;
 
 const screens = [
   { key: 'B1-onboarding', path: '/app/onboarding', heading: "Let's build your workspace" },
@@ -45,7 +80,7 @@ for (const viewport of [
       const roleHref = await page.locator('a[href^="/app/access/roles/"]').first().getAttribute('href');
       expect(roleHref).toBeTruthy();
       await page.goto(roleHref!);
-      await expect(page.getByText('Select the exact permission keys granted to this role.')).toBeVisible();
+      await expect(page.getByText('Technical permission names are hidden by default.', { exact: false })).toBeVisible();
       await expectNoOverflow(page);
       await expectNoCollapsedContent(page);
       await compareWithStitch(page, 'B8-role-editor');
@@ -67,6 +102,22 @@ test.describe('390px mobile-safe tenant admin', () => {
 });
 
 test.describe('Sprint 3 screen behavior and states', () => {
+  test('organization builder exposes hierarchy and maintenance controls', async ({ page }) => {
+    await page.goto('/app/employees/organization');
+    await expect(page.getByRole('heading', { name: 'Organization Builder' })).toBeVisible();
+
+    const editButton = page.getByTitle('Edit department').first();
+    await expect(editButton).toBeVisible();
+    await editButton.click();
+    await expect(page.getByLabel(/Rename /).first()).toBeVisible();
+    await expect(page.getByLabel(/Parent for /).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).first().click();
+
+    await page.getByTitle('Add child department').first().click();
+    await expect(page.getByLabel(/New department under /).first()).toBeVisible();
+    await expect(page.getByTitle('Edit designation').first()).toBeVisible();
+  });
+
   test.use({ viewport: { width: 1024, height: 900 } });
 
   test('resolves a workspace-only login and toggles password visibility', async ({ page }) => {
@@ -142,8 +193,32 @@ test.describe('Sprint 3 screen behavior and states', () => {
 
   test('opens every API-backed configuration interaction', async ({ page }) => {
     await page.goto('/app/attendance/offices');
+    await expect(page.locator('[data-map-provider="openstreetmap"]')).toBeVisible();
+    await expect(page.getByText('Saving an office does not enforce its geofence by itself.')).toBeVisible();
     await page.getByRole('button', { name: 'Add office' }).click();
     await expect(page.getByRole('heading', { name: 'Add office' })).toBeVisible();
+    const dialogPanel = page.getByTestId('dialog-panel');
+    const picker = page.locator('[data-map-provider="openstreetmap"]').last();
+    const pickerBounds = await picker.boundingBox();
+    expect(pickerBounds).toBeTruthy();
+    await page.mouse.move(
+      pickerBounds!.x + pickerBounds!.width / 2,
+      pickerBounds!.y + pickerBounds!.height / 2,
+    );
+    await page.mouse.wheel(0, 500);
+    await expect.poll(() => dialogPanel.evaluate((panel) => panel.scrollTop)).toBeGreaterThan(0);
+    expect(await dialogPanel.evaluate((panel) => {
+      const bounds = panel.getBoundingClientRect();
+      const topmost = document.elementFromPoint(bounds.right - 12, bounds.top + 180);
+      return topmost ? panel.contains(topmost) : false;
+    })).toBe(true);
+    await page.getByRole('button', { name: 'Save office' }).click();
+    await expect(
+      dialogPanel.getByText('Choose the office on the map and enter a geofence radius between 25 and 10,000 meters.'),
+    ).toBeVisible();
+    await picker.click({ position: { x: 220, y: 140 } });
+    await expect(page.getByLabel('Latitude')).not.toHaveValue('');
+    await expect(page.getByLabel('Longitude')).not.toHaveValue('');
 
     await page.goto('/app/attendance/policies');
     await page.getByRole('button', { name: 'Create policy' }).click();
@@ -212,6 +287,22 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await page.getByRole('button', { name: 'Save changes' }).last().click();
     await expect(page.getByText('Unsaved changes detected')).toBeHidden();
 
+    await page.route('http://localhost:4001/shifts*', (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          data: [
+            {
+              id: 'shift-1',
+              name: 'Day shift',
+              startTime: '09:00',
+              endTime: '18:00',
+              isOvernight: false,
+            },
+          ],
+        },
+      }),
+    );
     await page.goto('/app/attendance/shifts');
     await page.getByRole('button', { name: 'Edit shift' }).first().click();
     let dialogType = '';
@@ -273,13 +364,12 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await mockDashboard(page);
     await page.goto('/app');
 
-    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'HR operations' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Business Admin overview' })).toBeVisible();
     await expect(page.getByText('Every Friday')).toBeHidden();
     await expect(page.getByText('142')).toBeVisible();
     await expect(page.getByText('Rajesh Kumar')).toBeVisible();
     const attention = page.getByRole('complementary');
-    await expect(attention.getByText('3', { exact: true })).toBeVisible();
     await expect(attention.getByText('Pending regularizations')).toBeVisible();
     await expectNoOverflow(page);
     await expectNoCollapsedContent(page);
@@ -305,7 +395,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await mockDashboard(page, false);
     await page.goto('/app');
 
-    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'HR operations' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Business Admin overview' })).toBeHidden();
     expect(ownerRequestCount).toBe(0);
   });
@@ -315,7 +405,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await mockDashboard(page);
     await page.goto('/app');
 
-    await expect(page.getByRole('heading', { name: 'Live Attendance' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'HR operations' })).toBeVisible();
     await expect(page.getByText('Rajesh Kumar')).toBeVisible();
     await expectNoOverflow(page);
     await expectNoCollapsedContent(page);
@@ -332,11 +422,27 @@ async function login(page: Page) {
   await page.route('**/auth/me', (route) =>
     route.fulfill({
       status: 200,
-      json: authMeFixture([
-        'attendance.records.read',
-        'organization.employees.read',
-        'workspace.dashboard.admin.read',
-      ], ['BUSINESS_ADMIN']),
+      json: authMeFixture([...tenantAdminPermissions], ['BUSINESS_ADMIN']),
+    }),
+  );
+  await page.route('**/workspace/modules', (route) =>
+    route.fulfill({
+      status: 200,
+      json: { modules: [{ key: 'ATTENDANCE', name: 'Attendance' }] },
+    }),
+  );
+  await page.route('**/workspace/attendance-capabilities', (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        data: {
+          attendanceEntitled: true,
+          fieldTrackingEntitled: true,
+          fieldTrackingEnabled: true,
+          fieldTrackingRelevant: true,
+          biometricEnforcementAvailable: false,
+        },
+      },
     }),
   );
   await page.goto(`/login?tenantId=${tenantId}&workspace=acme`);

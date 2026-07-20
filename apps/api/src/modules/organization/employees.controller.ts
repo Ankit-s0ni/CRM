@@ -20,6 +20,7 @@ import {
 import { CurrentUser } from '../../shared/http/current-user.decorator';
 import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { CreateEmployeeAccountDto } from './dto/create-employee-account.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
 import {
   ReactivateEmployeeDto,
@@ -84,6 +85,26 @@ export class EmployeesController {
     return this.employeesService.history(id, user.userId);
   }
 
+  @Get(':id/workspace')
+  @RequireAnyPermissions(
+    PERMISSIONS.EMPLOYEES_READ,
+    PERMISSIONS.EMPLOYEES_REPORTS_READ,
+    PERMISSIONS.EMPLOYEES_SELF_READ,
+  )
+  @ApiOperation({
+    summary: 'Get a role-scoped employee workspace summary',
+  })
+  workspace(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.employeesService.workspace(
+      id,
+      user.userId,
+      new Set(user.permissions ?? []),
+    );
+  }
+
   @Get(':id')
   @RequireAnyPermissions(
     PERMISSIONS.EMPLOYEES_READ,
@@ -106,6 +127,19 @@ export class EmployeesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.employeesService.create(dto, user.userId);
+  }
+
+  @Post(':id/account')
+  @RequirePermissions(PERMISSIONS.EMPLOYEES_UPDATE)
+  @ApiOperation({
+    summary: 'Create the employee login and return a temporary password',
+  })
+  createEmployeeAccount(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateEmployeeAccountDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.employeesService.createAccount(id, dto.email, user.userId);
   }
 
   @Patch(':id')

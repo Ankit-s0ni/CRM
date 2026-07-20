@@ -424,6 +424,19 @@ describe('Sprint 7 HR operations loop (e2e)', () => {
     expect(
       await prisma.attendanceException.count({ where: { leaveRequestId } }),
     ).toBe(1);
+    const leaveException = await prisma.attendanceException.findUniqueOrThrow({
+      where: { leaveRequestId },
+    });
+    expect(leaveException.exceptionType).toBe('LEAVE');
+    expect(leaveException.source).toBe('LEAVE_MODULE');
+    const manualExceptions = await api(admin)
+      .get(`/attendance-exceptions?employeeId=${employeeId}`)
+      .expect(200);
+    expect(
+      (
+        manualExceptions.body as Data<Array<{ leaveRequestId?: string }>>
+      ).data.some((exception) => exception.leaveRequestId === leaveRequestId),
+    ).toBe(false);
     const log = await prisma.attendanceLog.findUniqueOrThrow({
       where: {
         tenantId_employeeId_attendanceDate: {
@@ -640,6 +653,58 @@ describe('Sprint 7 HR operations loop (e2e)', () => {
       'REOPENED',
       'LOCKED',
     ]);
+  });
+
+  it('hides payroll metadata and rejects direct report access without entitlement', async () => {
+    const payrollModule = await prisma.module.findUniqueOrThrow({
+      where: { key: 'PAYROLL' },
+    });
+    const entitlement = await prisma.tenantModule.findUniqueOrThrow({
+      where: {
+        tenantId_moduleId: { tenantId, moduleId: payrollModule.id },
+      },
+    });
+    const payrollReport = await prisma.reportExport.findFirstOrThrow({
+      where: { tenantId, id: { in: reportIds }, reportType: 'PAYROLL' },
+    });
+
+    await prisma.tenantModule.update({
+      where: { id: entitlement.id },
+      data: { isActive: false },
+    });
+    try {
+      await api(admin)
+        .get('/reports?reportType=PAYROLL&page=1&limit=20')
+        .expect(403)
+        .expect(({ body }) =>
+          expect((body as { code: string }).code).toBe('MODULE_ACCESS_DENIED'),
+        );
+      const visible = await api(admin)
+        .get('/reports?page=1&limit=100')
+        .expect(200);
+      expect(
+        (visible.body as Data<Array<{ reportType: string }>>).data.some(
+          ({ reportType }) => reportType === 'PAYROLL',
+        ),
+      ).toBe(false);
+      await api(admin)
+        .get(`/reports/${payrollReport.id}`)
+        .expect(403)
+        .expect(({ body }) =>
+          expect((body as { code: string }).code).toBe('MODULE_ACCESS_DENIED'),
+        );
+      await api(admin).get(`/reports/${payrollReport.id}/download`).expect(403);
+      await api(admin).get('/workspace/modules/PAYROLL/health').expect(404);
+      await api(admin)
+        .post('/reports/payroll-export')
+        .send({ period: '2026-07', format: 'CSV' })
+        .expect(403);
+    } finally {
+      await prisma.tenantModule.update({
+        where: { id: entitlement.id },
+        data: { isActive: entitlement.isActive },
+      });
+    }
   });
 
   function api(session: Session) {

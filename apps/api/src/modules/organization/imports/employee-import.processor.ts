@@ -18,6 +18,7 @@ import {
 } from './employee-import-parser';
 import { EmployeeImportStorageService } from './employee-import-storage.service';
 import { synchronizeSubscriptionSeats } from '../../billing/application/seat-sync';
+import { provisionEmployeeLeaveBalances } from '../../../shared/leave/provision-leave-balances';
 
 type ImportTask = { tenantId: string; importJobId: string };
 type PreparedRow = {
@@ -282,6 +283,12 @@ export class EmployeeImportProcessor {
                 payload: { source: 'CSV_IMPORT', importJobId },
               },
             });
+            await provisionEmployeeLeaveBalances(
+              tx,
+              tenantId,
+              employee.id,
+              requestedBy,
+            );
             await tx.employeeImportRow.update({
               where: { id: row.id },
               data: {

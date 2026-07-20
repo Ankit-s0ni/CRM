@@ -10,6 +10,13 @@ const employeeId = "019f6987-3b0e-7010-955b-4c2f6b840703";
 const date = "2026-07-17";
 
 test.beforeEach(async ({ page }) => {
+  await mockAttendanceCapabilities(page);
+  await page.route("**/workspace/modules", (route) =>
+    route.fulfill({
+      status: 200,
+      json: { modules: [{ key: "ATTENDANCE", name: "Attendance" }] },
+    }),
+  );
   await page.route("**/onboarding/status", (route) =>
     route.fulfill({
       status: 200,
@@ -43,6 +50,21 @@ test.beforeEach(async ({ page }) => {
   await login(page);
   await mockAttendance(page);
 });
+
+async function mockAttendanceCapabilities(page: Page) {
+  await page.route("**/workspace/attendance-capabilities", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          attendanceEntitled: true,
+          fieldTrackingEntitled: false,
+          fieldTrackingEnabled: false,
+          biometricEnforcementAvailable: true,
+        },
+      },
+    }),
+  );
+}
 
 for (const viewport of [
   { width: 2560, height: 1440 },
@@ -86,7 +108,7 @@ test("register opens the selected employee evidence timeline", async ({
   await page.goto("/app/attendance/register");
   await expect(page.getByText("Rajesh Kumar")).toBeVisible();
   await expect(page.getByText("WEB")).toBeVisible();
-  await page.getByRole("link", { name: "View" }).click();
+  await page.getByRole("link", { name: "View", exact: true }).click();
   await expect(page).toHaveURL(
     new RegExp(`/app/attendance/register/${employeeId}`),
   );
@@ -100,7 +122,9 @@ test("exception editor warns about an overlap before submission", async ({
 }) => {
   await page.goto("/app/attendance/exceptions");
   await page.getByRole("button", { name: "Add exception" }).click();
-  await page.getByLabel("Employee").selectOption(employeeId);
+  await page
+    .getByRole("combobox", { name: /Employee/ })
+    .selectOption(employeeId);
   await page.getByLabel("Start date").fill(date);
   await page.getByLabel("End date").fill(date);
   await page.getByLabel("Approval reason").fill("Customer visit");

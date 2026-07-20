@@ -1,6 +1,6 @@
 # Implementation Sprint Index
 
-This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1-5 are complete. Sprint 6.5 is a required runtime-configuration and brand-system prerequisite placed between field foundations and the remaining operational/GA work.
+This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementation-ready delivery sprints. Sprints 1-5 are complete. Sprint 6.5 is a required runtime-configuration and brand-system prerequisite. Sprint 7.5 reconstructs the complete tenant HR portal before the Sprint 8 General Availability gate. Sprint 9 hardens module boundaries after the GA contract freeze so separate Attendance, POS and integration teams can work safely in the modular monolith.
 
 ## Source of Truth
 
@@ -14,17 +14,19 @@ This index translates `FEATURE-LIST.md` and `PROJECT-ROADMAP.md` into implementa
 
 ## Delivery Sequence
 
-| Sprint | Outcome                                                                                                   | Primary screens                        | Indicative size | Status      |
-| ------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------- | --------------- | ----------- |
-| 1      | Organization, employees, tenant access, imports, API hardening                                            | API foundation for B3-B8               | Complete scope  | Complete    |
-| 2      | Platform owner core and operational foundation                                                            | S1-S4, S9-S11                          | Complete scope  | Complete    |
-| 3      | Business-admin web and attendance configuration                                                           | B1-B9, H4-H8                           | Complete scope  | Complete    |
-| 4      | Deterministic attendance calculator, shared Business/HR dashboard, web punches, register and finalization | H1 shared role variants, H9, H10, H13  | Complete scope  | Complete    |
+| Sprint | Outcome                                                                                                   | Primary screens                        | Indicative size                                          | Status         |
+| ------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------- | -------------- |
+| 1      | Organization, employees, tenant access, imports, API hardening                                            | API foundation for B3-B8               | Complete scope                                           | Complete       |
+| 2      | Platform owner core and operational foundation                                                            | S1-S4, S9-S11                          | Complete scope                                           | Complete       |
+| 3      | Business-admin web and attendance configuration                                                           | B1-B9, H4-H8                           | Complete scope                                           | Complete       |
+| 4      | Deterministic attendance calculator, shared Business/HR dashboard, web punches, register and finalization | H1 shared role variants, H9, H10, H13  | Complete scope                                           | Complete       |
 | 5      | Trusted mobile attendance with device, integrity, location and face verification                          | M1-M13, M19-M20, H14                   | MVP complete; production providers carried to Sprint 6.0 | Complete (MVP) |
-| 6      | Field tracking, offline replay, live map and route playback                                               | H2-H3, M16-M17                         | 3-4 weeks       | In progress |
-| 6.5    | Dynamic tenant runtime, attendance capability configuration and DeltCRM/tenant branding                   | M2-M6, M16-M17, Modules/Attendance     | 2-3 weeks       | Complete    |
-| 7      | Regularization, notifications, reports, payroll lock and minimal leave                                    | H11-H16, M14-M15, M18, L1-L3           | Complete scope  | Complete    |
-| 8      | Billing, revenue operations, retention, security hardening and GA                                         | S5-S8, S1/S11 enhancements, B10, A2-A3 | 4-5 weeks       | In progress |
+| 6      | Field tracking, offline replay, live map and route playback                                               | H2-H3, M16-M17                         | 3-4 weeks                                                | In progress    |
+| 6.5    | Dynamic tenant runtime, attendance capability configuration and DeltCRM/tenant branding                   | M2-M6, M16-M17, Modules/Attendance     | 2-3 weeks                                                | Complete       |
+| 7      | Regularization, notifications, reports, payroll lock and minimal leave                                    | H11-H16, M14-M15, M18, L1-L3           | Complete scope                                           | Complete       |
+| 7.5    | Complete tenant HR portal reconstruction around Dashboard, Employees, Modules, Reports, and Settings      | Tenant HR portal and all B/H workflows | 3-4 weeks                                                | In progress    |
+| 8      | Billing, revenue operations, retention, security hardening and GA                                         | S5-S8, S1/S11 enhancements, B10, A2-A3 | 4-5 weeks                                                | In progress    |
+| 9      | Modular architecture, team ownership, public contracts and developer experience                           | Backend architecture and team tooling  | 3-4 weeks                                                | Not started    |
 
 Indicative sizes assume one cross-functional delivery team and include API, UI, automated tests and hardening. Re-estimate each sprint after its contract/design handoff; do not trade away its exit gate to preserve a calendar date.
 
@@ -36,7 +38,13 @@ Indicative sizes assume one cross-functional delivery team and include API, UI, 
 - Sprint 5 produces trusted online punches; Sprint 6 adds offline and field transport without changing attendance invariants.
 - Sprint 6.5 consumes the policy/module foundations from Sprints 3, 5 and 6. It must complete before Sprint 7 expands employee mobile workflows, so navigation and verification are tenant-runtime driven rather than hard-coded.
 - Sprint 7 consumes domain events, finalized attendance data and the Sprint 6.5 runtime configuration; it must not bypass the attendance aggregate.
-- Sprint 8 billing adapters may develop earlier, but GA cannot occur before Sprints 2-7 and Sprint 6.5 pass their gates.
+- Sprint 7.5 consumes the completed organization, Attendance, trust, Leave, reporting and payroll workflows. It preserves their APIs and deep links while reconstructing the tenant HR portal around user tasks.
+- Sprint 7.5 includes the Attendance Leave simplification remediation: Leave is an included Attendance workflow, not a standalone commercial module.
+- Sprint 7.5 must pass before Sprint 8 can claim General Availability. GA cannot ship with scattered navigation, placeholder actions, incomplete settings, or unverified role/tenant/module boundaries.
+- Sprint 8 billing adapters may develop earlier, but GA cannot occur before Sprints 2-7.5 and Sprint 6.5 pass their gates.
+- Sprint 9 begins after the Sprint 8 API contract freeze. It is a behavior-preserving modular-monolith refactor, not a microservice migration.
+- Sprint 9 must establish public module contracts and automated dependency rules before POS or another product team merges production module code.
+- Attendance remains one commercial product; Leave, regularization, field tracking, device trust and biometrics are internal Attendance capabilities rather than independent CRM products.
 - Every new tenant table must receive RLS, fail-closed coverage, and tenant A/B isolation tests in the same work package.
 
 ## Cross-Sprint Definition of Done
@@ -108,4 +116,8 @@ Every sprint plan must contain all of the following before implementation begins
 - `docs/Sprint list /SPRINT-6-IMPLEMENTATION.md`
 - `docs/Sprint list /SPRINT-6.5-IMPLEMENTATION.md`
 - `docs/Sprint list /SPRINT-7-IMPLEMENTATION.md`
+- `docs/Sprint list /SPRINT-7.5-IMPLEMENTATION.md`
 - `docs/Sprint list /SPRINT-8-IMPLEMENTATION.md`
+- `docs/Sprint list /SPRINT-9-IMPLEMENTATION.md`
+- `docs/PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md` (Sprint 8 work package 8.1R)
+- `docs/ATTENDANCE-LEAVE-SIMPLIFICATION-IMPLEMENTATION-PLAN.md` (Sprint 7.5 remediation)

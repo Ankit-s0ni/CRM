@@ -208,7 +208,111 @@ export class AttendanceRuntimeService {
           events: { orderBy: [{ eventTime: 'asc' }, { syncTime: 'asc' }] },
         },
       });
-      return this.todayResponse(runtime, log, false, now);
+      const response = this.todayResponse(runtime, log, false, now);
+      const localDate = DateTime.fromISO(runtime.attendanceDate.value, {
+        zone: runtime.timezone,
+      });
+      const weekStart = localDate.startOf('week');
+      const weekEnd = weekStart.plus({ days: 6 });
+      const weekStartDate = weekStart.toISODate()!;
+      const weekEndDate = weekEnd.toISODate()!;
+      const office = runtime.employee.officeAssignments[0]?.office;
+      const [weekLogs, holidays, nextHoliday] = await Promise.all([
+        tx.attendanceLog.findMany({
+          where: {
+            employeeId: employee.id,
+            attendanceDate: {
+              gte: DateOnly.parse(weekStartDate).toDatabaseDate(),
+              lte: DateOnly.parse(weekEndDate).toDatabaseDate(),
+            },
+          },
+          select: {
+            attendanceDate: true,
+            totalWorkMinutes: true,
+            lateMinutes: true,
+            overtimeMinutes: true,
+          },
+        }),
+        tx.tenantHoliday.findMany({
+          where: {
+            holidayDate: {
+              gte: DateOnly.parse(weekStartDate).toDatabaseDate(),
+              lte: DateOnly.parse(weekEndDate).toDatabaseDate(),
+            },
+            OR: [
+              { officeLocationId: null },
+              ...(office ? [{ officeLocationId: office.id }] : []),
+            ],
+          },
+          select: { holidayDate: true },
+        }),
+        tx.tenantHoliday.findFirst({
+          where: {
+            holidayDate: { gt: runtime.attendanceDate.toDatabaseDate() },
+            OR: [
+              { officeLocationId: null },
+              ...(office ? [{ officeLocationId: office.id }] : []),
+            ],
+          },
+          orderBy: { holidayDate: 'asc' },
+          select: { holidayName: true, holidayDate: true },
+        }),
+      ]);
+      const holidayDates = new Set(
+        holidays.map(({ holidayDate }) =>
+          holidayDate.toISOString().slice(0, 10),
+        ),
+      );
+      const scheduledDays = Array.from({ length: 7 }, (_, index) =>
+        weekStart.plus({ days: index }).toISODate()!,
+      ).filter(
+        (date) =>
+          !holidayDates.has(date) &&
+          !isConfiguredWeeklyOff(runtime.weeklyOffs, date, runtime.timezone),
+      ).length;
+      const todayKey = runtime.attendanceDate.value;
+      const previousLogs = weekLogs.filter(
+        ({ attendanceDate }) =>
+          attendanceDate.toISOString().slice(0, 10) !== todayKey,
+      );
+      return {
+        ...response,
+        data: {
+          ...response.data,
+          workplace: office
+            ? {
+                id: office.id,
+                name: office.officeName,
+                radiusMeters: office.radiusMeters,
+                timezone: office.timezone ?? runtime.timezone,
+              }
+            : null,
+          workOverview: {
+            weekStart: weekStartDate,
+            weekEnd: weekEndDate,
+            workMinutes:
+              previousLogs.reduce(
+                (sum, item) => sum + item.totalWorkMinutes,
+                0,
+              ) + response.data.totals.workMinutes,
+            targetMinutes: scheduledDays * runtime.policy.minimumWorkMinutes,
+            lateMinutes:
+              previousLogs.reduce((sum, item) => sum + item.lateMinutes, 0) +
+              response.data.totals.lateMinutes,
+            overtimeMinutes:
+              previousLogs.reduce(
+                (sum, item) => sum + item.overtimeMinutes,
+                0,
+              ) + response.data.totals.overtimeMinutes,
+          },
+          nextHoliday: nextHoliday
+            ? {
+                name: nextHoliday.holidayName,
+                date: nextHoliday.holidayDate.toISOString().slice(0, 10),
+              }
+            : null,
+        },
+      };
     });
   }
 
@@ -528,4 +632,29 @@ function summarizeLogs(
     workMinutes: logs.reduce((sum, log) => sum + log.totalWorkMinutes, 0),
     overtimeMinutes: logs.reduce((sum, log) => sum + log.overtimeMinutes, 0),
   };
+}
+
+function isConfiguredWeeklyOff(
+  value: Prisma.JsonValue,
+  date: string,
+  timezone: string,
+) {
+  if (!Array.isArray(value)) return false;
+  const local = DateTime.fromISO(date, { zone: timezone });
+  const weekday = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'][
+    local.weekday - 1
+  ];
+  const occurrence = Math.ceil(local.day / 7);
+  return value.some((entry) => {
+    if (entry === weekday) return true;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return false;
+    }
+    return (
+      entry.weekday === weekday &&
+      (entry.occurrences === undefined ||
+        (Array.isArray(entry.occurrences) &&
+          entry.occurrences.includes(occurrence)))
+    );
+  });
 }

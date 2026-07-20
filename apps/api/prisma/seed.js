@@ -20,10 +20,13 @@ const permissions = [
   'organization.designations.update',
   'organization.designations.delete',
   'organization.employees.read',
+  'organization.employees.reports.read',
   'organization.employees.self.read',
   'organization.employees.create',
   'organization.employees.update',
   'organization.employees.lifecycle',
+  'organization.employee-documents.read',
+  'organization.employee-documents.manage',
   'organization.imports.read',
   'organization.imports.create',
   'identity.users.read',
@@ -38,6 +41,7 @@ const permissions = [
   'workspace.settings.update',
   'workspace.dashboard.admin.read',
   'workspace.modules.read',
+  'workspace.audit.read',
   'mobile.runtime.read',
   'billing.subscription.read',
   'billing.subscription.manage',
@@ -147,19 +151,67 @@ const supportPlatformPermissions = [
 ];
 
 const notificationEvents = [
-  ['attendance.checked_in', 'Check-in recorded', '{{employeeName}} checked in successfully.'],
-  ['attendance.marked_late', 'Late arrival recorded', '{{employeeName}} was marked late.'],
-  ['attendance.missed_checkout', 'Checkout missing', '{{employeeName}} has a missing checkout.'],
-  ['regularization.submitted', 'Correction request submitted', '{{employeeName}} submitted an attendance correction.'],
-  ['regularization.approved', 'Correction approved', 'The attendance correction for {{employeeName}} was approved.'],
-  ['regularization.rejected', 'Correction rejected', 'The attendance correction for {{employeeName}} was rejected.'],
-  ['security.violation', 'Attendance security alert', 'A security verification issue was recorded for {{employeeName}}.'],
-  ['offline.sync_completed', 'Offline attendance synced', 'Offline attendance for {{employeeName}} has been synchronized.'],
-  ['quota.warning', 'Employee quota warning', 'The workspace employee quota is nearly reached.'],
+  [
+    'attendance.checked_in',
+    'Check-in recorded',
+    '{{employeeName}} checked in successfully.',
+  ],
+  [
+    'attendance.marked_late',
+    'Late arrival recorded',
+    '{{employeeName}} was marked late.',
+  ],
+  [
+    'attendance.missed_checkout',
+    'Checkout missing',
+    '{{employeeName}} has a missing checkout.',
+  ],
+  [
+    'regularization.submitted',
+    'Correction request submitted',
+    '{{employeeName}} submitted an attendance correction.',
+  ],
+  [
+    'regularization.approved',
+    'Correction approved',
+    'The attendance correction for {{employeeName}} was approved.',
+  ],
+  [
+    'regularization.rejected',
+    'Correction rejected',
+    'The attendance correction for {{employeeName}} was rejected.',
+  ],
+  [
+    'security.violation',
+    'Attendance security alert',
+    'A security verification issue was recorded for {{employeeName}}.',
+  ],
+  [
+    'offline.sync_completed',
+    'Offline attendance synced',
+    'Offline attendance for {{employeeName}} has been synchronized.',
+  ],
+  [
+    'quota.warning',
+    'Employee quota warning',
+    'The workspace employee quota is nearly reached.',
+  ],
   ['billing.invoice_due', 'Invoice due', 'A DeltCRM workspace invoice is due.'],
-  ['leave.submitted', 'Leave request submitted', '{{employeeName}} submitted a leave request.'],
-  ['leave.approved', 'Leave approved', 'The leave request for {{employeeName}} was approved.'],
-  ['leave.rejected', 'Leave rejected', 'The leave request for {{employeeName}} was rejected.'],
+  [
+    'leave.submitted',
+    'Leave request submitted',
+    '{{employeeName}} submitted a leave request.',
+  ],
+  [
+    'leave.approved',
+    'Leave approved',
+    'The leave request for {{employeeName}} was approved.',
+  ],
+  [
+    'leave.rejected',
+    'Leave rejected',
+    'The leave request for {{employeeName}} was rejected.',
+  ],
 ];
 
 async function seedNotificationTemplates() {
@@ -278,11 +330,13 @@ const tenantSeeds = [
     companyName: 'Acme Logistics',
     subdomain: 'acme',
     email: 'admin@acme.com',
+    hrEmail: 'hr@acme.com',
   },
   {
     companyName: 'Globex Corp',
     subdomain: 'globex',
     email: 'admin@globex.com',
+    hrEmail: 'hr@globex.com',
   },
 ];
 
@@ -460,6 +514,45 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     },
   });
 
+  const tenantHrPassword =
+    process.env.TENANT_HR_PASSWORD ??
+    (process.env.NODE_ENV !== 'production' ? 'TenantHr123!' : '');
+  if (!tenantHrPassword) {
+    throw new Error('TENANT_HR_PASSWORD is required in production');
+  }
+  const tenantHrPasswordHash = await argon2.hash(tenantHrPassword);
+  const hrUser = await prisma.user.upsert({
+    where: {
+      tenantId_email: { tenantId: tenant.id, email: seed.hrEmail },
+    },
+    update: {
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      passwordHash: tenantHrPasswordHash,
+    },
+    create: {
+      tenantId: tenant.id,
+      email: seed.hrEmail,
+      passwordHash: tenantHrPasswordHash,
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: hrUser.id,
+        roleId: roleIdByName.get('HR_ADMIN'),
+      },
+    },
+    update: {},
+    create: {
+      userId: hrUser.id,
+      roleId: roleIdByName.get('HR_ADMIN'),
+    },
+  });
+
   await prisma.tenantModule.upsert({
     where: { tenantId_moduleId: { tenantId: tenant.id, moduleId } },
     update: { isActive: true },
@@ -472,7 +565,7 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     },
   });
   const operationalModules = await prisma.module.findMany({
-    where: { key: { in: ['REGULARIZATION', 'LEAVE', 'PAYROLL'] } },
+    where: { key: { in: ['REGULARIZATION', 'PAYROLL'] } },
   });
   for (const operationalModule of operationalModules) {
     await prisma.tenantModule.upsert({
@@ -834,43 +927,76 @@ async function main() {
       description: 'Time, presence, shifts and attendance operations',
       icon: 'clock-3',
       availability: 'AVAILABLE',
+      kind: 'PRODUCT',
+      catalogOrder: 10,
+      customerVisible: true,
     },
     create: {
       key: 'ATTENDANCE',
       name: 'Attendance',
       description: 'Time, presence, shifts and attendance operations',
       icon: 'clock-3',
+      kind: 'PRODUCT',
+      catalogOrder: 10,
     },
   });
   await prisma.module.upsert({
     where: { key: 'FIELD_TRACKING' },
     update: {
-      name: 'Field Tracking',
+      name: 'Field Workforce Tracking',
       description: 'Location-aware field workforce operations',
       icon: 'map-pin',
       availability: 'AVAILABLE',
       dependencyKeys: ['ATTENDANCE'],
+      kind: 'ADD_ON',
+      parentModuleId: attendanceModule.id,
+      catalogOrder: 20,
+      customerVisible: true,
     },
     create: {
       key: 'FIELD_TRACKING',
-      name: 'Field Tracking',
+      name: 'Field Workforce Tracking',
       description: 'Location-aware field workforce operations',
       icon: 'map-pin',
       dependencyKeys: ['ATTENDANCE'],
+      kind: 'ADD_ON',
+      parentModuleId: attendanceModule.id,
+      catalogOrder: 20,
     },
   });
   for (const module of [
-    { key: 'REGULARIZATION', name: 'Attendance Regularization', icon: 'file-pen-line' },
-    { key: 'LEAVE', name: 'Leave Management', icon: 'calendar-days' },
-    { key: 'PAYROLL', name: 'Payroll', icon: 'wallet-cards' },
+    {
+      key: 'REGULARIZATION',
+      name: 'Attendance Regularization',
+      icon: 'file-pen-line',
+      availability: 'DEPRECATED',
+      customerVisible: false,
+      catalogOrder: 90,
+    },
+    {
+      key: 'LEAVE',
+      name: 'Leave Management',
+      icon: 'calendar-days',
+      availability: 'DEPRECATED',
+      customerVisible: false,
+      catalogOrder: 100,
+    },
+    {
+      key: 'PAYROLL',
+      name: 'Payroll',
+      icon: 'wallet-cards',
+      dependencyKeys: ['ATTENDANCE'],
+      availability: 'COMING_SOON',
+      catalogOrder: 110,
+    },
   ]) {
     await prisma.module.upsert({
       where: { key: module.key },
-      update: { ...module, availability: 'AVAILABLE' },
+      update: module,
       create: {
         ...module,
         description: `${module.name} operations for DeltCRM workspaces`,
-        availability: 'AVAILABLE',
+        availability: module.availability ?? 'AVAILABLE',
       },
     });
   }
@@ -878,19 +1004,173 @@ async function main() {
   const modules = await prisma.module.findMany({
     where: {
       key: {
-        in: ['ATTENDANCE', 'FIELD_TRACKING', 'REGULARIZATION', 'LEAVE', 'PAYROLL'],
+        in: [
+          'ATTENDANCE',
+          'FIELD_TRACKING',
+          'REGULARIZATION',
+          'LEAVE',
+          'PAYROLL',
+        ],
       },
     },
   });
-  const moduleIdByKey = new Map(modules.map((module) => [module.key, module.id]));
+  const moduleIdByKey = new Map(
+    modules.map((module) => [module.key, module.id]),
+  );
+  const capabilityDefinitions = [
+    [
+      'ATTENDANCE_CORE',
+      'Attendance check-in and check-out',
+      true,
+      true,
+      [],
+      10,
+    ],
+    [
+      'ATTENDANCE_REPORTS_BASIC',
+      'Attendance registers and basic reports',
+      true,
+      false,
+      ['ATTENDANCE_CORE'],
+      20,
+    ],
+    [
+      'ATTENDANCE_OFFICE_GEOFENCE',
+      'Office location verification',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      30,
+    ],
+    [
+      'ATTENDANCE_DEVICE_TRUST',
+      'Registered device verification',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      40,
+    ],
+    [
+      'ATTENDANCE_SELFIE',
+      'Selfie verification',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      50,
+    ],
+    [
+      'ATTENDANCE_SHIFTS_ROSTERS',
+      'Shifts and rosters',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      60,
+    ],
+    [
+      'ATTENDANCE_REGULARIZATION',
+      'Attendance correction requests',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      70,
+    ],
+    [
+      'ATTENDANCE_LEAVE',
+      'Leave requests and approvals',
+      true,
+      true,
+      ['ATTENDANCE_CORE'],
+      75,
+    ],
+    [
+      'ATTENDANCE_REPORTS_ADVANCED',
+      'Advanced attendance reports',
+      false,
+      false,
+      ['ATTENDANCE_REPORTS_BASIC'],
+      80,
+    ],
+    [
+      'ATTENDANCE_PAYROLL_EXPORT',
+      'Payroll-ready export and period lock',
+      false,
+      true,
+      ['ATTENDANCE_REPORTS_BASIC'],
+      90,
+    ],
+    [
+      'ATTENDANCE_FIELD_TRACKING',
+      'Field Workforce Tracking',
+      false,
+      true,
+      ['ATTENDANCE_CORE'],
+      100,
+    ],
+  ];
+  for (const [
+    key,
+    name,
+    isCore,
+    configurable,
+    dependencyKeys,
+    displayOrder,
+  ] of capabilityDefinitions) {
+    const requiredModuleKeys =
+      key === 'ATTENDANCE_FIELD_TRACKING'
+        ? ['ATTENDANCE', 'FIELD_TRACKING']
+        : ['ATTENDANCE'];
+    await prisma.moduleCapability.upsert({
+      where: { key },
+      update: {
+        name,
+        isCore,
+        configurable,
+        requiredModuleKeys,
+        dependencyKeys,
+        displayOrder,
+        availability: 'AVAILABLE',
+      },
+      create: {
+        moduleId: attendanceModule.id,
+        key,
+        name,
+        isCore,
+        configurable,
+        requiredModuleKeys,
+        dependencyKeys,
+        displayOrder,
+      },
+    });
+  }
+  const capabilities = await prisma.moduleCapability.findMany({
+    where: { moduleId: attendanceModule.id },
+  });
+  const capabilityIdByKey = new Map(
+    capabilities.map((capability) => [capability.key, capability.id]),
+  );
+  const coreCapabilityKeys = [
+    'ATTENDANCE_CORE',
+    'ATTENDANCE_REPORTS_BASIC',
+    'ATTENDANCE_OFFICE_GEOFENCE',
+    'ATTENDANCE_DEVICE_TRUST',
+    'ATTENDANCE_SHIFTS_ROSTERS',
+    'ATTENDANCE_REGULARIZATION',
+    'ATTENDANCE_LEAVE',
+  ];
   const seededPlans = [
     {
       name: 'Growth Monthly',
-      description: 'Attendance, regularization, and leave for growing teams',
+      description: 'Attendance controls and reports for growing teams',
       pricePerUser: '299.00',
       maxEmployees: 500,
       billingPeriod: 'MONTHLY',
-      moduleKeys: ['ATTENDANCE', 'REGULARIZATION', 'LEAVE'],
+      moduleKeys: ['ATTENDANCE'],
+      capabilityKeys: [
+        ...coreCapabilityKeys,
+        'ATTENDANCE_SELFIE',
+        'ATTENDANCE_REPORTS_ADVANCED',
+        'ATTENDANCE_PAYROLL_EXPORT',
+      ],
     },
     {
       name: 'Enterprise Monthly',
@@ -898,7 +1178,8 @@ async function main() {
       pricePerUser: '499.00',
       maxEmployees: 5000,
       billingPeriod: 'MONTHLY',
-      moduleKeys: ['ATTENDANCE', 'FIELD_TRACKING', 'REGULARIZATION', 'LEAVE', 'PAYROLL'],
+      moduleKeys: ['ATTENDANCE', 'FIELD_TRACKING'],
+      capabilityKeys: capabilities.map(({ key }) => key),
     },
   ];
   await prisma.subscriptionPlan.update({
@@ -912,8 +1193,17 @@ async function main() {
     data: [{ planId: plan.id, moduleId: attendanceModule.id }],
     skipDuplicates: true,
   });
+  await prisma.subscriptionPlanCapability.deleteMany({
+    where: { planId: plan.id },
+  });
+  await prisma.subscriptionPlanCapability.createMany({
+    data: coreCapabilityKeys.map((key) => ({
+      planId: plan.id,
+      capabilityId: capabilityIdByKey.get(key),
+    })),
+  });
   for (const planSeed of seededPlans) {
-    const { moduleKeys, ...data } = planSeed;
+    const { moduleKeys, capabilityKeys, ...data } = planSeed;
     const seededPlan = await prisma.subscriptionPlan.upsert({
       where: { name: data.name },
       update: { ...data, currency: 'INR', isActive: true },
@@ -926,6 +1216,15 @@ async function main() {
       data: moduleKeys.map((key) => ({
         planId: seededPlan.id,
         moduleId: moduleIdByKey.get(key),
+      })),
+    });
+    await prisma.subscriptionPlanCapability.deleteMany({
+      where: { planId: seededPlan.id },
+    });
+    await prisma.subscriptionPlanCapability.createMany({
+      data: capabilityKeys.map((key) => ({
+        planId: seededPlan.id,
+        capabilityId: capabilityIdByKey.get(key),
       })),
     });
   }
@@ -959,7 +1258,10 @@ async function main() {
       where: { tenantId: tenant.id, status: 'ACTIVE' },
     });
     await prisma.tenantSubscription.updateMany({
-      where: { tenantId: tenant.id, status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] } },
+      where: {
+        tenantId: tenant.id,
+        status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] },
+      },
       data: { seatCount: activeEmployees },
     });
     await prisma.billingPaymentMethod.upsert({

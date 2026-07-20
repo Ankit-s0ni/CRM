@@ -159,14 +159,19 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         where: { tenantId: adminA.tenantId, action: 'workspace.logo.updated' },
       }),
     ).toBe(1);
+    const runtimeConfigEvents = await prisma.outboxEvent.findMany({
+      where: {
+        tenantId: adminA.tenantId,
+        eventKey: 'tenant.runtime-config.changed.v1',
+      },
+      select: { payload: true },
+    });
     expect(
-      await prisma.outboxEvent.count({
-        where: {
-          tenantId: adminA.tenantId,
-          eventKey: 'workspace.logo.updated',
-        },
+      runtimeConfigEvents.filter(({ payload }) => {
+        const changed = (payload as { changed?: unknown })?.changed;
+        return Array.isArray(changed) && changed.includes('companyLogoKey');
       }),
-    ).toBe(1);
+    ).toHaveLength(1);
   });
 
   it('enforces office validation, atomic assignments, permissions, and tenant isolation', async () => {
@@ -233,6 +238,19 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
       .put(`/attendance-policies/${employeePolicy}/assignments`)
       .send({ assignments: [{ scope: 'EMPLOYEE', employeeId: employeeA }] })
       .expect(200);
+    await api(adminA)
+      .put(`/attendance-policies/employees/${employeeA}`)
+      .send({ policyId: employeePolicy })
+      .expect(200);
+    expect(
+      await prisma.policyAssignment.count({
+        where: {
+          tenantId: adminA.tenantId,
+          scope: 'EMPLOYEE',
+          employeeId: employeeA,
+        },
+      }),
+    ).toBe(1);
     const employeeResolved = await api(adminA)
       .get(
         `/attendance-policies/resolve?employeeId=${employeeA}&date=2026-07-20`,

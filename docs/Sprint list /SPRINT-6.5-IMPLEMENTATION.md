@@ -465,3 +465,9 @@ Validated on July 18, 2026:
 - `e2e/sprint65-dynamic-runtime.spec.ts` passes `3/3`, covering consolidated navigation, location-only policy, entitlement lock, tenant branding and mobile-width overflow.
 - Flutter formatting is clean, analysis reports no issues, and all `68/68` tests pass. The run includes tenant runtime/cache cleanup, dynamic navigation and permissions, offline sync, responsive route rendering, 200 percent text scaling, automated accessibility checks and all 20 golden baselines.
 - Known production provider setup remains documented in `SPRINT-6-PRODUCTION-PROVIDERS.md`; production biometric and integrity paths fail closed when adapters are unavailable.
+
+Regression correction validated on July 19, 2026:
+
+- The checked-in physical-device development profile now targets the seeded `acme` workspace on API port `4001` with `LOCAL_MODE=false`; tenant branding and effective Attendance policy are therefore loaded from `/mobile/runtime-config` instead of a hard-coded demo policy.
+- Flutter routing now checks effective `selfieMode` before biometric consent, enrollment, camera capture, and retry. A location-only policy remains camera-free even if stale onboarding flags request biometrics.
+- Flutter analysis passed and the focused runtime plus all-route suite passed `8/8`, including three viewport sizes, 200 percent text scaling, and automated accessibility checks.

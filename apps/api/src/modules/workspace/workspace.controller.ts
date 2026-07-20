@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Param,
   Query,
   Req,
   UseGuards,
@@ -14,6 +15,8 @@ import { WorkspaceService } from './workspace.service';
 import { PermissionsGuard } from '../../shared/authorization/permissions.guard';
 import { RequirePermissions } from '../../shared/authorization/require-permissions.decorator';
 import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
+import { CurrentUser } from '../../shared/http/current-user.decorator';
+import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 
 type AuthenticatedRequest = Request & {
   user: { userId: string; tenantId: string; email: string; roles: string[] };
@@ -56,5 +59,44 @@ export class WorkspaceController {
   })
   getModules(@Req() request: AuthenticatedRequest) {
     return this.workspaceService.getModules(request.user.tenantId);
+  }
+
+  @Get('modules/:key/health')
+  @UseGuards(JwtTenantGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSIONS.MODULES_READ)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get entitlement, dependencies, and setup health for one module',
+  })
+  getModuleHealth(
+    @Req() request: AuthenticatedRequest,
+    @Param('key') key: string,
+  ) {
+    return this.workspaceService.getModuleHealth(request.user.tenantId, key);
+  }
+
+  @Get('settings/health')
+  @UseGuards(JwtTenantGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSIONS.SETTINGS_READ)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get permission-filtered workspace setup readiness',
+  })
+  getSettingsHealth(@CurrentUser() user: AuthenticatedUser) {
+    return this.workspaceService.getSettingsHealth(
+      user.tenantId,
+      new Set(user.permissions ?? []),
+    );
+  }
+
+  @Get('integrations')
+  @UseGuards(JwtTenantGuard, PermissionsGuard)
+  @RequirePermissions(PERMISSIONS.SETTINGS_READ)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get safe server integration configuration diagnostics',
+  })
+  getIntegrations() {
+    return this.workspaceService.getIntegrationDiagnostics();
   }
 }

@@ -30,7 +30,18 @@ export class WorkspaceSettingsService {
       const settings = await tx.tenantSettings.findUnique({
         where: { tenantId: this.tenantId() },
       });
-      return { data: settings };
+      let logoUrl: string | null = null;
+      if (settings?.companyLogoKey) {
+        try {
+          logoUrl = await this.storage.signedLogoUrl(
+            this.tenantId(),
+            settings.companyLogoKey,
+          );
+        } catch {
+          logoUrl = null;
+        }
+      }
+      return { data: settings ? { ...settings, logoUrl } : null };
     });
   }
 

@@ -40,8 +40,12 @@ export default async function WorkspaceUnavailablePage({
       <main className="relative z-10 flex w-full max-w-[600px] flex-col items-center text-center">
         <div className="mb-12">
           <div className="flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-[32px] text-[#3525cd]">hub</span>
-            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-[#1b1b24]">DeltCRM</h1>
+            <span className="material-symbols-outlined text-[32px] text-[#3525cd]">
+              hub
+            </span>
+            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-[#1b1b24]">
+              DeltCRM
+            </h1>
           </div>
         </div>
 
@@ -65,26 +69,38 @@ export default async function WorkspaceUnavailablePage({
             </div>
 
             <div className="absolute left-12 top-12 flex rotate-[-6deg] items-center gap-1 rounded-[8px] border border-[#c7c4d8]/20 bg-white/80 px-2 py-2 shadow-sm backdrop-blur">
-              <span className="material-symbols-outlined text-[18px] text-[#ba1a1a]">warning</span>
-              <span className="text-[12px] font-semibold leading-4 text-[#464555]">404</span>
+              <span className="material-symbols-outlined text-[18px] text-[#ba1a1a]">
+                warning
+              </span>
+              <span className="text-[12px] font-semibold leading-4 text-[#464555]">
+                404
+              </span>
             </div>
 
             <div className="absolute bottom-16 right-8 flex rotate-[12deg] items-center gap-1 rounded-[8px] border border-[#c7c4d8]/20 bg-white/80 px-2 py-2 shadow-sm backdrop-blur">
-              <span className="material-symbols-outlined text-[18px] text-[#3525cd]">credit_card_off</span>
-              <span className="text-[12px] font-semibold leading-4 text-[#464555]">Billing</span>
+              <span className="material-symbols-outlined text-[18px] text-[#3525cd]">
+                credit_card_off
+              </span>
+              <span className="text-[12px] font-semibold leading-4 text-[#464555]">
+                Billing
+              </span>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-[#1b1b24]">{content.title}</h2>
-          <p className="px-4 text-[18px] leading-7 text-[#464555]">{content.body}</p>
+          <h2 className="text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-[#1b1b24]">
+            {content.title}
+          </h2>
+          <p className="px-4 text-[18px] leading-7 text-[#464555]">
+            {content.body}
+          </p>
         </div>
 
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
           <Link
             className="group relative flex items-center gap-2 rounded-[12px] bg-[#3525cd] px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-[#3525cd]/20 transition-all duration-300 hover:bg-[#4f46e5] active:scale-95"
-            href="mailto:support@indigohr.com"
+            href="mailto:support@deltcrm.com"
           >
             <span className="material-symbols-outlined">support_agent</span>
             Contact support
@@ -99,7 +115,9 @@ export default async function WorkspaceUnavailablePage({
 
         <div className="mt-16">
           <div className="inline-flex items-center gap-1 rounded-full bg-[#eae6f4] px-4 py-2">
-            <span className="material-symbols-outlined text-[16px] text-[#464555]">info</span>
+            <span className="material-symbols-outlined text-[16px] text-[#464555]">
+              info
+            </span>
             <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#464555]">
               Error code: {content.errorCode}
             </span>
@@ -108,7 +126,9 @@ export default async function WorkspaceUnavailablePage({
       </main>
 
       <footer className="relative z-10 mt-auto py-6 text-center">
-        <p className="text-[14px] leading-5 text-[#777587]">DeltCRM workspace services</p>
+        <p className="text-[14px] leading-5 text-[#777587]">
+          DeltCRM workspace services
+        </p>
       </footer>
     </div>
   );

@@ -79,6 +79,23 @@ export class AuthController {
     );
   }
 
+  @Post('mobile-login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Login an employee and automatically resolve their workspace',
+  })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Successful employee login' })
+  async mobileLogin(@Body() body: LoginDto, @Req() req: Request) {
+    return this.authService.mobileLogin(
+      body.email,
+      body.password,
+      req.ip,
+      req.headers['user-agent'],
+      body.deviceUuid,
+    );
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })

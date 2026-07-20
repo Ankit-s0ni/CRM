@@ -29,7 +29,8 @@ class RegularizationScreen extends ConsumerStatefulWidget {
 class _RegularizationScreenState extends ConsumerState<RegularizationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _reason = TextEditingController();
-  TimeOfDay? _requestedTime;
+  TimeOfDay? _requestedCheckin;
+  TimeOfDay? _requestedCheckout;
   bool _submitting = false;
 
   @override
@@ -38,18 +39,32 @@ class _RegularizationScreenState extends ConsumerState<RegularizationScreen> {
     super.dispose();
   }
 
-  Future<void> _pickTime() async {
+  Future<void> _pickTime({required bool checkin}) async {
     final value = await showTimePicker(
       context: context,
-      initialTime: const TimeOfDay(hour: 18, minute: 0),
-      helpText: context.l10n.requestedCheckout.toUpperCase(),
+      initialTime: checkin
+          ? const TimeOfDay(hour: 9, minute: 0)
+          : const TimeOfDay(hour: 18, minute: 0),
+      helpText: (checkin ? 'Corrected check-in' : 'Corrected checkout')
+          .toUpperCase(),
     );
-    if (value != null && mounted) setState(() => _requestedTime = value);
+    if (value != null && mounted) {
+      setState(() {
+        if (checkin) {
+          _requestedCheckin = value;
+        } else {
+          _requestedCheckout = value;
+        }
+      });
+    }
   }
 
   Future<void> _submit() async {
-    if (_requestedTime == null) {
-      AppFeedback.error(context, context.l10n.selectCheckoutTime);
+    if (_requestedCheckin == null && _requestedCheckout == null) {
+      AppFeedback.error(
+        context,
+        'Select a corrected check-in or checkout time.',
+      );
       return;
     }
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -71,16 +86,18 @@ class _RegularizationScreenState extends ConsumerState<RegularizationScreen> {
         );
         return;
       }
-      final requested = DateTime(
-        attendanceDate.year,
-        attendanceDate.month,
-        attendanceDate.day,
-        _requestedTime!.hour,
-        _requestedTime!.minute,
-      );
       await ref.read(requestsRepositoryProvider).createRegularization({
         'attendanceLogId': attendanceLogId,
-        'requestedCheckout': requested.toUtc().toIso8601String(),
+        if (_requestedCheckin != null)
+          'requestedCheckin': _timestamp(
+            attendanceDate,
+            _requestedCheckin!,
+          ).toUtc().toIso8601String(),
+        if (_requestedCheckout != null)
+          'requestedCheckout': _timestamp(
+            attendanceDate,
+            _requestedCheckout!,
+          ).toUtc().toIso8601String(),
         'reason': _reason.text.trim(),
         'idempotencyKey': _uuid(),
       });
@@ -114,46 +131,16 @@ class _RegularizationScreenState extends ConsumerState<RegularizationScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 10),
-          Text(
-            context.l10n.requestedCheckout,
-            style: Theme.of(context).textTheme.labelLarge,
+          _timeField(
+            label: 'Corrected check-in (optional)',
+            value: _requestedCheckin,
+            onTap: () => _pickTime(checkin: true),
           ),
-          const SizedBox(height: 6),
-          Semantics(
-            button: true,
-            label: context.l10n.requestedCheckout,
-            value: _requestedTime?.format(context) ?? context.l10n.selectTime,
-            child: InkWell(
-              onTap: _submitting ? null : _pickTime,
-              borderRadius: BorderRadius.circular(12),
-              child: Ink(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFCBC8D8)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.schedule_rounded),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _requestedTime?.format(context) ??
-                            context.l10n.selectTime,
-                        style: TextStyle(
-                          color: _requestedTime == null
-                              ? AppTheme.slate
-                              : AppTheme.charcoal,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          const SizedBox(height: 12),
+          _timeField(
+            label: 'Corrected checkout (optional)',
+            value: _requestedCheckout,
+            onTap: () => _pickTime(checkin: false),
           ),
           const SizedBox(height: 14),
           TextFormField(
@@ -190,7 +177,52 @@ class _RegularizationScreenState extends ConsumerState<RegularizationScreen> {
       ),
     ),
   );
+
+  Widget _timeField({
+    required String label,
+    required TimeOfDay? value,
+    required VoidCallback onTap,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.labelLarge),
+      const SizedBox(height: 6),
+      Semantics(
+        button: true,
+        label: label,
+        value: value?.format(context) ?? context.l10n.selectTime,
+        child: InkWell(
+          onTap: _submitting ? null : onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFCBC8D8)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.schedule_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    value?.format(context) ?? context.l10n.selectTime,
+                    style: TextStyle(
+                      color: value == null ? AppTheme.slate : AppTheme.charcoal,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }
+
+DateTime _timestamp(DateTime date, TimeOfDay time) =>
+    DateTime(date.year, date.month, date.day, time.hour, time.minute);
 
 String _uuid() {
   final random = Random.secure();

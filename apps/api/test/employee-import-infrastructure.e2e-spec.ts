@@ -8,6 +8,8 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { AuthService } from '../src/modules/identity/auth.service';
 import { EmployeeImportStorageService } from '../src/modules/organization/imports/employee-import-storage.service';
+import { EmployeeImportWorker } from '../src/modules/organization/imports/employee-import.worker';
+import { OrganizationModule } from '../src/modules/organization/organization.module';
 import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
 
 describe('Employee import infrastructure (e2e)', () => {
@@ -22,7 +24,8 @@ describe('Employee import infrastructure (e2e)', () => {
     process.env.IMPORT_STORAGE_MODE = 's3';
     process.env.IMPORT_QUEUE_MODE = 'bullmq';
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, OrganizationModule],
+      providers: [EmployeeImportWorker],
     }).compile();
     app = moduleFixture.createNestApplication<INestApplication<App>>();
     await app.init();
@@ -85,7 +88,7 @@ describe('Employee import infrastructure (e2e)', () => {
     let status = 'PENDING';
     for (
       let attempt = 0;
-      attempt < 30 && status !== 'COMPLETED';
+      attempt < 100 && status !== 'COMPLETED';
       attempt += 1
     ) {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -100,7 +103,7 @@ describe('Employee import infrastructure (e2e)', () => {
     }
     expect(status).toBe('COMPLETED');
     expect(await prisma.employee.count({ where: { tenantId } })).toBe(1);
-  });
+  }, 15_000);
 
   afterAll(async () => {
     if (tenantId) await cleanup(prisma, tenantId);

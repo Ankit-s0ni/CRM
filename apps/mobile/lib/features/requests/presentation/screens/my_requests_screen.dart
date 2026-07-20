@@ -52,9 +52,20 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen> {
             .then((items) => items.map(_leave).toList(growable: false)),
       );
     }
-    final groups = await Future.wait(futures);
-    return groups.expand((items) => items).toList(growable: false)
+    final groups = await Future.wait(futures.map(_loadSource));
+    if (groups.isNotEmpty && groups.every((group) => group.failed)) {
+      throw StateError('Every enabled request source failed');
+    }
+    return groups.expand((group) => group.items).toList(growable: false)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<_RequestGroup> _loadSource(Future<List<_RequestView>> source) async {
+    try {
+      return _RequestGroup(await source, false);
+    } catch (_) {
+      return const _RequestGroup(<_RequestView>[], true);
+    }
   }
 
   void _reload() => setState(() => _requests = _load());
@@ -249,4 +260,11 @@ class _RequestView {
   final String status;
   final String detail;
   final DateTime createdAt;
+}
+
+class _RequestGroup {
+  const _RequestGroup(this.items, this.failed);
+
+  final List<_RequestView> items;
+  final bool failed;
 }

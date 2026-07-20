@@ -4,7 +4,7 @@ import { OutboxService } from '../../shared/events/outbox.service';
 import { EmployeeQuotaService } from './employee-quota.service';
 
 describe('EmployeeQuotaService', () => {
-  it('uses the lower of purchased seats and the plan maximum', async () => {
+  it('uses the plan maximum while seat count tracks billable usage', async () => {
     const periodStart = new Date('2026-07-01T00:00:00.000Z');
     const periodEnd = new Date('2026-07-31T00:00:00.000Z');
     const findFirst = jest.fn().mockResolvedValue({
@@ -34,6 +34,7 @@ describe('EmployeeQuotaService', () => {
     });
     expect(count).toHaveBeenCalledWith({
       where: {
+        tenantId: 'tenant-id',
         status: {
           in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_NOTICE],
         },

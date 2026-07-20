@@ -12,6 +12,8 @@ import {
   MapPin,
   Search,
   ShieldAlert,
+  Smartphone,
+  Umbrella,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -56,19 +58,44 @@ type DashboardData = {
     shift: { id: string; name: string } | null;
   }>;
   attention: {
-    pendingRegularizations: number;
-    openSecurityViolations: number;
-    absenteeAlerts: number;
+    pendingRegularizations: number | null;
+    openSecurityViolations: number | null;
+    absenteeAlerts: number | null;
   };
   updatedAt: string;
   nextCursor: string | null;
 };
 
-type OwnerOverview = {
-  quota?: { used: number; limit: number; percentage: number };
-  setup?: { completed: boolean; currentStep: number };
-  modules?: Array<{ key: string; name: string }>;
-  users?: number;
+type HrSummary = {
+  workforce: {
+    active: number;
+    onNotice: number;
+    terminated: number;
+    missingManager: number;
+    joiningSoon: number;
+  } | null;
+  queues: {
+    pendingLeave: number | null;
+    pendingDevices: number | null;
+    openSecurityAlerts: number | null;
+    pendingRegularizations: number | null;
+  };
+  setup: {
+    onboardingComplete: boolean;
+    departments: number;
+    offices: number;
+    attendancePolicies: number;
+    policyAssignments: number;
+    shifts: number;
+  } | null;
+  access: {
+    activeUsers: number;
+    unavailableUsers: number;
+    pendingInvitations: number;
+  } | null;
+  quota: { used: number; limit: number } | null;
+  modules: Array<{ key: string; name: string }> | null;
+  generatedAt: string;
 };
 
 const ownerPermission = "workspace.dashboard.admin.read";
@@ -90,9 +117,7 @@ export function TenantDashboard() {
   const user = useAuthStore((state) => state.user);
   const permissions = user?.permissions;
   const [data, setData] = useState<DashboardData | null>(null);
-  const [ownerOverview, setOwnerOverview] = useState<OwnerOverview | null>(
-    null,
-  );
+  const [hrSummary, setHrSummary] = useState<HrSummary | null>(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [status, setStatus] = useState<DashboardStatus | "ALL">("ALL");
@@ -101,8 +126,13 @@ export function TenantDashboard() {
 
   const canReadDashboard =
     permissions?.includes(dashboardPermission) &&
-    permissions.includes(employeesPermission);
+    (permissions.includes(employeesPermission) ||
+      permissions.includes("organization.employees.reports.read"));
   const canReadOwnerOverview = permissions?.includes(ownerPermission);
+  const canReadHrSummary =
+    canReadOwnerOverview ||
+    permissions?.includes(employeesPermission) ||
+    permissions?.includes("organization.employees.reports.read");
 
   useEffect(() => {
     if (!permissions || !canReadDashboard) return;
@@ -131,32 +161,21 @@ export function TenantDashboard() {
   }, [canReadDashboard, deferredSearch, permissions, status]);
 
   useEffect(() => {
-    if (!permissions || !canReadOwnerOverview) return;
+    if (!permissions || !canReadHrSummary) return;
     let active = true;
-    Promise.all([
-      optionalGet<{
-        data: { used: number; limit: number; percentage: number };
-      }>("/employees/quota"),
-      optionalGet<{ data: { completed: boolean; currentStep: number } }>(
-        "/onboarding/status",
-      ),
-      optionalGet<{ modules: Array<{ key: string; name: string }> }>(
-        "/workspace/modules",
-      ),
-      optionalGet<{ data: unknown[] }>("/users"),
-    ]).then(([quota, setup, modules, users]) => {
-      if (!active) return;
-      setOwnerOverview({
-        quota: quota?.data,
-        setup: setup?.data,
-        modules: modules?.modules,
-        users: users?.data.length,
+    apiClient
+      .get<{ data: HrSummary }>("/dashboard/hr-summary")
+      .then(({ data }) => {
+        if (active) setHrSummary(data.data);
+      })
+      .catch(() => {
+        if (active)
+          setError("The HR action summary could not be loaded completely.");
       });
-    });
     return () => {
       active = false;
     };
-  }, [canReadOwnerOverview, permissions]);
+  }, [canReadHrSummary, permissions]);
 
   if (!permissions) {
     return (
@@ -206,7 +225,10 @@ export function TenantDashboard() {
           <SelfAttendanceCard compact />
         </div>
       )}
-      {canReadOwnerOverview && <OwnerOverviewPanel data={ownerOverview} />}
+      {canReadOwnerOverview && <OwnerOverviewPanel data={hrSummary} />}
+      {hrSummary?.workforce && (
+        <WorkforceOverview workforce={hrSummary.workforce} />
+      )}
       {!data ? (
         <LoadingState />
       ) : (
@@ -224,7 +246,10 @@ export function TenantDashboard() {
               />
               <EmployeeBoard employees={data.employees} view={view} />
             </section>
-            <NeedsAttention attention={data.attention} />
+            <NeedsAttention
+              attention={data.attention}
+              queues={hrSummary?.queues ?? null}
+            />
           </div>
         </>
       )}
@@ -247,10 +272,11 @@ function DashboardHeader({
           Workspace operations
         </p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">
-          Live Attendance
+          HR operations
         </h1>
         <p className="mt-1 text-sm text-[#777587]">
-          Welcome, {userName}. Monitor today&apos;s workforce in one place.
+          Welcome, {userName}. Review today&apos;s workforce and every queue
+          that needs action.
         </p>
       </div>
       <div
@@ -275,26 +301,35 @@ function DashboardHeader({
   );
 }
 
-function OwnerOverviewPanel({ data }: { data: OwnerOverview | null }) {
+function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
+  const setupReady = data?.setup
+    ? data.setup.onboardingComplete &&
+      data.setup.departments > 0 &&
+      data.setup.offices > 0 &&
+      data.setup.attendancePolicies > 0 &&
+      data.setup.policyAssignments > 0 &&
+      data.setup.shifts > 0
+    : false;
+  const quotaPercentage = data?.quota?.limit
+    ? Math.round((data.quota.used / data.quota.limit) * 100)
+    : null;
   const cards = [
     {
       label: "Employee usage",
       value: data?.quota ? `${data.quota.used} / ${data.quota.limit}` : "—",
       detail: data?.quota
-        ? `${data.quota.percentage}% of available seats`
+        ? `${quotaPercentage}% of available seats`
         : "Quota unavailable",
       href: "/app/employees",
       icon: UsersRound,
     },
     {
       label: "Workspace setup",
-      value: data?.setup?.completed
-        ? "Complete"
-        : `Step ${data?.setup?.currentStep ?? "—"} of 4`,
-      detail: data?.setup?.completed
-        ? "Core setup is ready"
-        : "Setup needs attention",
-      href: "/app/settings/company",
+      value: setupReady ? "Ready" : "Needs setup",
+      detail: setupReady
+        ? "Required organization and Attendance inputs exist"
+        : "Open configuration health to resolve gaps",
+      href: "/app/settings/modules",
       icon: CheckCircle2,
     },
     {
@@ -303,14 +338,16 @@ function OwnerOverviewPanel({ data }: { data: OwnerOverview | null }) {
       detail:
         data?.modules?.map((module) => module.name).join(", ") ||
         "No modules reported",
-      href: "/app/settings/attendance",
+      href: "/app/modules",
       icon: Building2,
     },
     {
       label: "Workspace users",
-      value: data?.users ?? "—",
-      detail: "Administrators and role assignments",
-      href: "/app/access",
+      value: data?.access?.activeUsers ?? "—",
+      detail: data?.access
+        ? `${data.access.pendingInvitations} pending invitations · ${data.access.unavailableUsers} unavailable`
+        : "User access unavailable",
+      href: "/app/settings/access",
       icon: ShieldAlert,
     },
   ];
@@ -351,41 +388,116 @@ function OwnerOverviewPanel({ data }: { data: OwnerOverview | null }) {
   );
 }
 
+function WorkforceOverview({
+  workforce,
+}: {
+  workforce: NonNullable<HrSummary["workforce"]>;
+}) {
+  const cards = [
+    {
+      label: "Active workforce",
+      value: workforce.active,
+      href: "/app/employees?status=ACTIVE",
+    },
+    {
+      label: "On notice",
+      value: workforce.onNotice,
+      href: "/app/employees?status=ON_NOTICE",
+    },
+    {
+      label: "Joining in 30 days",
+      value: workforce.joiningSoon,
+      href: "/app/employees?quickFilter=JOINING_SOON",
+    },
+    {
+      label: "Missing manager",
+      value: workforce.missingManager,
+      href: "/app/employees?quickFilter=MISSING_MANAGER",
+    },
+    {
+      label: "Former employees",
+      value: workforce.terminated,
+      href: "/app/employees?status=TERMINATED",
+    },
+  ];
+  return (
+    <section aria-label="Workforce summary" className="mb-5">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Workforce</h2>
+          <p className="text-xs text-[#777587]">
+            Counts follow your employee reporting scope
+          </p>
+        </div>
+        <Link
+          className="text-xs font-bold text-[#3525cd]"
+          href="/app/employees"
+        >
+          Open directory
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        {cards.map((card) => (
+          <Link
+            className="group rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm transition hover:border-[#4f46e5]"
+            href={card.href}
+            key={card.label}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <strong className="text-2xl">{card.value}</strong>
+              <ArrowRight className="size-4 text-[#aaa3cd] group-hover:text-[#3525cd]" />
+            </div>
+            <span className="mt-1 block text-xs font-semibold text-[#646273]">
+              {card.label}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
   const cards = [
     {
       label: "Present",
       value: summary.present,
+      href: "/app/attendance/register?status=CLOCKED_IN",
       tone: "text-[#006e2d]",
       accent: "bg-[#d8f8df]",
     },
     {
       label: "Late",
       value: summary.late,
+      href: "/app/attendance/register?status=LATE",
       tone: "text-[#895100]",
       accent: "bg-[#ffddb0]",
     },
     {
       label: "Absent",
       value: summary.absent,
+      href: "/app/attendance/register?status=ABSENT",
       tone: "text-[#ba1a1a]",
       accent: "bg-[#ffdad6]",
     },
     {
       label: "On field",
       value: summary.onField,
+      href: "/app/attendance/register?status=ON_FIELD",
       tone: "text-[#006492]",
       accent: "bg-[#cbe6ff]",
     },
     {
       label: "On break",
       value: summary.onBreak,
+      href: "/app/attendance/register?status=ON_BREAK",
       tone: "text-[#5d3f00]",
       accent: "bg-[#f4e4bd]",
     },
     {
       label: "Not yet in",
       value: summary.notYetIn,
+      href: "/app/attendance/register?status=NOT_YET_IN",
       tone: "text-[#464555]",
       accent: "bg-[#ece9f2]",
     },
@@ -396,16 +508,17 @@ function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
     >
       {cards.map((card) => (
-        <article
+        <Link
+          href={card.href}
           key={card.label}
-          className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm"
+          className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm transition hover:border-[#4f46e5]"
         >
           <div className={cn("mb-3 size-2 rounded-full", card.accent)} />
           <p className="text-xs font-medium text-[#777587]">{card.label}</p>
           <p className={cn("mt-1 text-2xl font-bold", card.tone)}>
             {card.value}
           </p>
-        </article>
+        </Link>
       ))}
     </section>
   );
@@ -593,35 +706,73 @@ function EmployeeCard({
 
 function NeedsAttention({
   attention,
+  queues,
 }: {
   attention: DashboardData["attention"];
+  queues: HrSummary["queues"] | null;
 }) {
-  const items = [
-    {
+  const items: Array<{
+    label: string;
+    count: number;
+    body: string;
+    href: string;
+    icon: typeof CalendarClock;
+    tone: string;
+  }> = [];
+  const pendingRegularizations =
+    queues?.pendingRegularizations ?? attention.pendingRegularizations;
+  const openSecurityAlerts =
+    queues?.openSecurityAlerts ?? attention.openSecurityViolations;
+  if (pendingRegularizations !== null) {
+    items.push({
       label: "Pending regularizations",
-      count: attention.pendingRegularizations,
+      count: pendingRegularizations,
       body: "Requests awaiting review",
-      href: "/app/attendance/regularizations",
+      href: "/app/attendance/regularizations?status=PENDING",
       icon: CalendarClock,
       tone: "bg-[#ece9ff] text-[#3525cd]",
-    },
-    {
+    });
+  }
+  if (openSecurityAlerts !== null) {
+    items.push({
       label: "Security violations",
-      count: attention.openSecurityViolations,
+      count: openSecurityAlerts,
       body: "Open or acknowledged alerts",
-      href: "/app/attendance/security",
+      href: "/app/attendance/security?status=OPEN",
       icon: ShieldAlert,
       tone: "bg-[#ffdad6] text-[#ba1a1a]",
-    },
-    {
+    });
+  }
+  if (attention.absenteeAlerts !== null) {
+    items.push({
       label: "Absentee alerts",
       count: attention.absenteeAlerts,
       body: "Employees past alert grace",
-      href: "/app/attendance/register",
+      href: "/app/attendance/register?status=ABSENT",
       icon: AlertTriangle,
       tone: "bg-[#ffddb0] text-[#895100]",
-    },
-  ];
+    });
+  }
+  if (queues?.pendingLeave !== null && queues?.pendingLeave !== undefined) {
+    items.push({
+      label: "Leave approvals",
+      count: queues.pendingLeave,
+      body: "Requests awaiting a decision",
+      href: "/app/attendance/leave/approvals?status=PENDING",
+      icon: Umbrella,
+      tone: "bg-[#e4f2ff] text-[#005f8d]",
+    });
+  }
+  if (queues?.pendingDevices !== null && queues?.pendingDevices !== undefined) {
+    items.push({
+      label: "Device requests",
+      count: queues.pendingDevices,
+      body: "Registrations awaiting approval",
+      href: "/app/attendance/devices?status=PENDING_APPROVAL",
+      icon: Smartphone,
+      tone: "bg-[#eee9ff] text-[#3525cd]",
+    });
+  }
   return (
     <aside className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm xl:sticky xl:top-20">
       <div className="flex items-center justify-between">
@@ -658,6 +809,11 @@ function NeedsAttention({
             </div>
           </Link>
         ))}
+        {!items.length && (
+          <p className="rounded-xl bg-[#f8f5fc] p-4 text-sm text-[#777587]">
+            No authorized action queues are waiting for you.
+          </p>
+        )}
       </div>
       <Link
         href="/app/attendance/register"
@@ -711,15 +867,6 @@ function statusPresentation(status: DashboardStatus) {
     },
   };
   return values[status];
-}
-
-async function optionalGet<T>(url: string) {
-  try {
-    const response = await apiClient.get<T>(url);
-    return response.data;
-  } catch {
-    return null;
-  }
 }
 
 function initials(name: string) {

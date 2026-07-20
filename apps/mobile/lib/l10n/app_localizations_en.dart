@@ -672,4 +672,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedOfflineSynced => 'Saved offline · synced successfully';
+
+  @override
+  String get logout => 'Log out';
+
+  @override
+  String get logoutConfirmTitle => 'Log out of DeltCRM?';
+
+  @override
+  String get logoutConfirmMessage =>
+      'You will need to enter your email and password to sign in again.';
 }

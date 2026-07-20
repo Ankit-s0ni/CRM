@@ -22,7 +22,7 @@ import { PayrollLockService } from './payroll-lock.service';
 
 @ApiTags('Payroll locks')
 @ApiBearerAuth()
-@RequireModule('ATTENDANCE')
+@RequireModule('PAYROLL')
 @UseGuards(JwtTenantGuard, ModuleGuard, PermissionsGuard)
 @RequirePermissions(PERMISSIONS.ATTENDANCE_PAYROLL_LOCK_MANAGE)
 @Controller('payroll-locks')

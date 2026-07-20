@@ -13,9 +13,11 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDeferredValue, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { RouteFeatureInfo } from "@/components/help/feature-info";
 import {
   EmptyState,
   ErrorState,
@@ -57,19 +59,51 @@ const statusOptions: Array<{ label: string; value: AttendanceStatus | "" }> = [
   { label: "Weekly off", value: "WEEKLY_OFF" },
 ];
 
+type AttentionFilter = "" | "late" | "missing-checkout";
+type RegisterFilters = {
+  startDate: string;
+  endDate: string;
+  departmentId: string;
+  officeId: string;
+  status: AttendanceStatus | "";
+  attention: AttentionFilter;
+  search: string;
+};
+
+const validStatuses = new Set<string>(
+  statusOptions.map(({ value }) => value).filter(Boolean),
+);
+
 export function AttendanceRegisterView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const today = localIsoDate();
   const monthStart = `${today.slice(0, 8)}01`;
-  const [filters, setFilters] = useState({
-    startDate: monthStart,
-    endDate: today,
-    status: "",
-    search: "",
-  });
+  const filters = registerFilters(searchParams, monthStart, today);
+  const page = positivePage(searchParams.get("page"));
   const deferredSearch = useDeferredValue(filters.search);
-  const [page, setPage] = useState(1);
   const [result, setResult] = useState<RegisterResponse | null>(null);
   const [error, setError] = useState("");
+
+  function updateFilters(
+    patch: Partial<RegisterFilters>,
+    history: "push" | "replace" = "push",
+  ) {
+    const next = { ...filters, ...patch };
+    if (patch.status) next.attention = "";
+    if (patch.attention) next.status = "";
+    navigateRegister(next, 1, history);
+  }
+
+  function navigateRegister(
+    nextFilters: RegisterFilters,
+    nextPage: number,
+    history: "push" | "replace" = "push",
+  ) {
+    const href = `${pathname}?${registerSearchParams(nextFilters, nextPage)}`;
+    router[history](href, { scroll: false });
+  }
 
   useEffect(() => {
     let active = true;
@@ -80,6 +114,14 @@ export function AttendanceRegisterView() {
       limit: "25",
     });
     if (filters.status) params.set("status", filters.status);
+    if (filters.departmentId) {
+      params.set("departmentId", filters.departmentId);
+    }
+    if (filters.officeId) params.set("officeId", filters.officeId);
+    if (filters.attention === "late") params.set("lateOnly", "true");
+    if (filters.attention === "missing-checkout") {
+      params.set("missingCheckout", "true");
+    }
     if (deferredSearch.trim()) params.set("search", deferredSearch.trim());
     apiClient
       .get<RegisterResponse>(`/attendance/register?${params}`)
@@ -101,8 +143,11 @@ export function AttendanceRegisterView() {
   }, [
     deferredSearch,
     filters.endDate,
+    filters.departmentId,
+    filters.officeId,
     filters.startDate,
     filters.status,
+    filters.attention,
     page,
   ]);
 
@@ -114,9 +159,12 @@ export function AttendanceRegisterView() {
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
             Attendance operations
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">
-            Attendance Register
-          </h1>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Attendance Register
+            </h1>
+            <RouteFeatureInfo />
+          </div>
           <p className="mt-1 text-sm text-[#777587]">
             Review daily evidence, hours, exceptions, and payroll locks.
           </p>
@@ -169,36 +217,39 @@ export function AttendanceRegisterView() {
               className={`${inputClass} pl-9`}
               placeholder="Name or employee ID"
               value={filters.search}
-              onChange={(event) => {
-                setPage(1);
-                setFilters({ ...filters, search: event.target.value });
-              }}
+              onChange={(event) =>
+                updateFilters({ search: event.target.value }, "replace")
+              }
             />
           </label>
           <DateField
             label="From"
             value={filters.startDate}
-            onChange={(startDate) => {
-              setPage(1);
-              setFilters({ ...filters, startDate });
-            }}
+            onChange={(startDate) => updateFilters({ startDate })}
           />
           <DateField
             label="To"
             value={filters.endDate}
-            onChange={(endDate) => {
-              setPage(1);
-              setFilters({ ...filters, endDate });
-            }}
+            onChange={(endDate) => updateFilters({ endDate })}
           />
           <label className="min-w-44">
             <span className="mb-1 block text-xs font-semibold">Status</span>
             <select
               className={inputClass}
-              value={filters.status}
+              value={
+                filters.attention
+                  ? `attention:${filters.attention}`
+                  : filters.status
+              }
               onChange={(event) => {
-                setPage(1);
-                setFilters({ ...filters, status: event.target.value });
+                const value = event.target.value;
+                if (value.startsWith("attention:")) {
+                  updateFilters({
+                    attention: value.slice("attention:".length) as AttentionFilter,
+                  });
+                } else {
+                  updateFilters({ status: value as AttendanceStatus | "" });
+                }
               }}
             >
               {statusOptions.map((option) => (
@@ -206,6 +257,10 @@ export function AttendanceRegisterView() {
                   {option.label}
                 </option>
               ))}
+              <option value="attention:late">Late arrival</option>
+              <option value="attention:missing-checkout">
+                Missing checkout
+              </option>
             </select>
           </label>
           <span className="grid size-11 place-items-center rounded-xl bg-[#ece9ff] text-[#3525cd]">
@@ -221,7 +276,10 @@ export function AttendanceRegisterView() {
       {!result ? (
         <LoadingState />
       ) : result.data.length ? (
-        <RegisterTable rows={result.data} />
+        <RegisterTable
+          returnTo={`${pathname}?${registerSearchParams(filters, page)}`}
+          rows={result.data}
+        />
       ) : (
         <Panel>
           <EmptyState
@@ -240,7 +298,7 @@ export function AttendanceRegisterView() {
             <button
               aria-label="Previous page"
               disabled={page <= 1}
-              onClick={() => setPage((value) => value - 1)}
+              onClick={() => navigateRegister(filters, page - 1)}
               className="grid size-9 place-items-center rounded-lg border border-[#c7c4d8] bg-white disabled:opacity-40"
             >
               <ChevronLeft className="size-4" />
@@ -248,7 +306,7 @@ export function AttendanceRegisterView() {
             <button
               aria-label="Next page"
               disabled={page >= result.pagination.pages}
-              onClick={() => setPage((value) => value + 1)}
+              onClick={() => navigateRegister(filters, page + 1)}
               className="grid size-9 place-items-center rounded-lg border border-[#c7c4d8] bg-white disabled:opacity-40"
             >
               <ChevronRight className="size-4" />
@@ -260,7 +318,13 @@ export function AttendanceRegisterView() {
   );
 }
 
-function RegisterTable({ rows }: { rows: RegisterRow[] }) {
+function RegisterTable({
+  rows,
+  returnTo,
+}: {
+  rows: RegisterRow[];
+  returnTo: string;
+}) {
   return (
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[1120px] border-collapse text-left">
@@ -367,7 +431,7 @@ function RegisterTable({ rows }: { rows: RegisterRow[] }) {
                 </Td>
                 <Td>
                   <Link
-                    href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}`}
+                    href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#3525cd]"
                   >
                     View <ChevronRight className="size-3" />
@@ -380,6 +444,50 @@ function RegisterTable({ rows }: { rows: RegisterRow[] }) {
       </table>
     </Panel>
   );
+}
+
+function registerFilters(
+  searchParams: Readonly<URLSearchParams>,
+  defaultStartDate: string,
+  defaultEndDate: string,
+): RegisterFilters {
+  const status = searchParams.get("status") ?? "";
+  return {
+    startDate: searchParams.get("startDate") || defaultStartDate,
+    endDate: searchParams.get("endDate") || defaultEndDate,
+    departmentId: searchParams.get("departmentId") ?? "",
+    officeId: searchParams.get("officeId") ?? "",
+    status: validStatuses.has(status) ? (status as AttendanceStatus) : "",
+    attention:
+      searchParams.get("lateOnly") === "true"
+        ? "late"
+        : searchParams.get("missingCheckout") === "true"
+          ? "missing-checkout"
+          : "",
+    search: searchParams.get("search") ?? "",
+  };
+}
+
+function registerSearchParams(filters: RegisterFilters, page: number) {
+  const params = new URLSearchParams({
+    startDate: filters.startDate,
+    endDate: filters.endDate,
+  });
+  if (filters.status) params.set("status", filters.status);
+  if (filters.departmentId) params.set("departmentId", filters.departmentId);
+  if (filters.officeId) params.set("officeId", filters.officeId);
+  if (filters.attention === "late") params.set("lateOnly", "true");
+  if (filters.attention === "missing-checkout") {
+    params.set("missingCheckout", "true");
+  }
+  if (filters.search.trim()) params.set("search", filters.search.trim());
+  if (page > 1) params.set("page", String(page));
+  return params.toString();
+}
+
+function positivePage(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
 function Metric({

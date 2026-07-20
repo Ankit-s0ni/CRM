@@ -462,6 +462,7 @@ describe('Sprint 5 device trust (e2e)', () => {
         name: `Biometric opt-out policy ${stamp}`,
         allowEarlyCheckout: true,
         requireFaceMatch: true,
+        selfieMode: 'REQUIRED',
         allowBiometricOptOut: true,
       },
     });
@@ -577,6 +578,10 @@ describe('Sprint 5 device trust (e2e)', () => {
       where: { id: employeeId },
       data: { workType: 'FIELD' },
     });
+    await prisma.attendancePolicy.update({
+      where: { id: optOutPolicy.id },
+      data: { locationMode: 'FIELD_GPS' },
+    });
     await api(employee)
       .post('/attendance/punches')
       .send(attempt({ accuracyMeters: 101 }))
@@ -589,6 +594,10 @@ describe('Sprint 5 device trust (e2e)', () => {
     await prisma.employee.update({
       where: { id: employeeId },
       data: { workType: 'OFFICE' },
+    });
+    await prisma.attendancePolicy.update({
+      where: { id: optOutPolicy.id },
+      data: { locationMode: 'OFFICE_GEOFENCE' },
     });
 
     await api(employee)

@@ -7,7 +7,11 @@ import {
 import { ImportRowStatus, JobStatus } from '@prisma/client';
 import { PrismaService } from '../../../shared/database/prisma.service';
 import { TenantContextService } from '../../../shared/tenancy/tenant-context.service';
-import { parseEmployeeCsv } from './employee-import-parser';
+import {
+  EMPLOYEE_IMPORT_FIELDS,
+  EMPLOYEE_IMPORT_HEADERS,
+  parseEmployeeCsv,
+} from './employee-import-parser';
 import { EmployeeImportQueue } from './employee-import.queue';
 import { EmployeeImportStorageService } from './employee-import-storage.service';
 import {
@@ -24,6 +28,24 @@ export class EmployeeImportsService {
     private readonly storage: EmployeeImportStorageService,
     private readonly queue: EmployeeImportQueue,
   ) {}
+
+  schema() {
+    return {
+      data: {
+        format: 'CSV',
+        encoding: 'UTF-8',
+        maxFileSizeBytes: 5_242_880,
+        maxRows: 5000,
+        fields: EMPLOYEE_IMPORT_FIELDS,
+        templateCsv: `${EMPLOYEE_IMPORT_HEADERS.join(',')}\n`,
+        notes: [
+          'Create departments and designations before importing employees.',
+          'Managers may already exist or be included in the same file; reporting cycles are rejected.',
+          'Excel users should save the completed file as CSV UTF-8.',
+        ],
+      },
+    };
+  }
 
   presign(dto: PresignEmployeeImportDto) {
     return this.storage.presign(

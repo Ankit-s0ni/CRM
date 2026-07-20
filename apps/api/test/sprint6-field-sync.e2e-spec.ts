@@ -225,7 +225,7 @@ describe('Sprint 6 field tracking and offline sync (e2e)', () => {
       .expect(409);
 
     const now = new Date();
-    const items = [0, 1, 2, 24, 25].map((minutes, index) => ({
+    const items = Array.from({ length: 5 }, (_, index) => ({
       clientPingUuid: randomUUID(),
       sessionId,
       latitude: 23.588 + index * 0.0002,
@@ -233,9 +233,7 @@ describe('Sprint 6 field tracking and offline sync (e2e)', () => {
       accuracyM: 8,
       speedMps: 3,
       batteryLevel: 80 - index,
-      capturedAt: new Date(
-        now.getTime() - (25 - minutes) * 60_000,
-      ).toISOString(),
+      capturedAt: now.toISOString(),
       isOfflineSync: index < 3,
     }));
     await api(employee)
@@ -277,7 +275,7 @@ describe('Sprint 6 field tracking and offline sync (e2e)', () => {
           expect.objectContaining({ id: employeeId, presence: 'LIVE' }),
         );
       });
-    const date = now.toISOString().slice(0, 10);
+    const date = dateInTimeZone(now, 'Asia/Kolkata');
     await api(admin)
       .get(`/field/employees/${employeeId}/routes/${date}`)
       .expect(200)
@@ -286,12 +284,12 @@ describe('Sprint 6 field tracking and offline sync (e2e)', () => {
           body as { data: { pingCount: number; trackingGapMinutes: number } }
         ).data;
         expect(route.pingCount).toBe(5);
-        expect(route.trackingGapMinutes).toBe(22);
+        expect(route.trackingGapMinutes).toBe(0);
       });
   });
 
   it('replays an ordered offline day exactly once and auto-stops tracking on checkout', async () => {
-    const base = new Date(Date.now() - 20 * 60_000);
+    const base = completedTenantDayBase();
     const items = ['CHECKIN', 'BREAK_START', 'BREAK_END', 'CHECKOUT'].map(
       (type, index) => {
         const clientTime = new Date(base.getTime() + index * 3 * 60_000);
@@ -654,7 +652,7 @@ function acceptancePings(sessionId: string) {
 }
 
 function acceptanceAttendanceItems(deviceUuid: string) {
-  const base = new Date(Date.now() - 20 * 60_000);
+  const base = completedTenantDayBase();
   return ['CHECKIN', 'BREAK_START', 'BREAK_END', 'CHECKOUT'].map(
     (type, index) => {
       const clientTime = new Date(base.getTime() + index * 3 * 60_000);
@@ -675,4 +673,24 @@ function acceptanceAttendanceItems(deviceUuid: string) {
       };
     },
   );
+}
+
+function completedTenantDayBase() {
+  const currentTenantDate = dateInTimeZone(new Date(), 'Asia/Kolkata');
+  const previousDate = new Date(`${currentTenantDate}T00:00:00.000Z`);
+  previousDate.setUTCDate(previousDate.getUTCDate() - 1);
+  const date = previousDate.toISOString().slice(0, 10);
+  return new Date(`${date}T19:00:00.000+05:30`);
+}
+
+function dateInTimeZone(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
 }

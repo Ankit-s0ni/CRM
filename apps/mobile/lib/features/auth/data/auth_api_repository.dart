@@ -9,24 +9,35 @@ class AuthApiRepository implements AuthRepository {
   final DeviceIdentity _identity;
   @override
   Future<void> login(String identifier, String password) async {
+    _api.beginWorkspaceDiscovery();
     final identity = await _identity.payload();
     final response = await _api.post<Map<String, dynamic>>(
-      ApiRoutes.login,
+      ApiRoutes.mobileLogin,
       data: {
         'email': identifier.trim().toLowerCase(),
         'password': password,
         'deviceUuid': identity['deviceUuid'],
       },
     );
-    await _api.establishSession(response.data ?? const {});
+    final session = response.data ?? const <String, dynamic>{};
+    final user = session['user'];
+    final workspace = user is Map<String, dynamic> ? user['workspace'] : null;
+    if (workspace is! String || workspace.isEmpty) {
+      throw const FormatException('The workspace could not be resolved.');
+    }
+    await _api.selectWorkspace(workspace);
+    await _api.establishSession(session);
   }
 
   @override
   Future<void> logout() async {
-    final refreshToken = await _api.refreshToken();
-    if (refreshToken != null) {
-      await _api.post(ApiRoutes.logout, data: {'refreshToken': refreshToken});
+    try {
+      final refreshToken = await _api.refreshToken();
+      if (refreshToken != null) {
+        await _api.post(ApiRoutes.logout, data: {'refreshToken': refreshToken});
+      }
+    } finally {
+      await _api.clearSession();
     }
-    await _api.clearSession();
   }
 }

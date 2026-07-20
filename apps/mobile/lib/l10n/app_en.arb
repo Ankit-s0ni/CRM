@@ -216,5 +216,8 @@
   "shiftCorrection": "Shift correction",
   "minutesValue": "{count} minutes",
   "@minutesValue": {"placeholders": {"count": {"type": "int"}}},
-  "savedOfflineSynced": "Saved offline · synced successfully"
+  "savedOfflineSynced": "Saved offline · synced successfully",
+  "logout": "Log out",
+  "logoutConfirmTitle": "Log out of DeltCRM?",
+  "logoutConfirmMessage": "You will need to enter your email and password to sign in again."
 }

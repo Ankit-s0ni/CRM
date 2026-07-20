@@ -46,6 +46,7 @@ import { PayrollLockModule } from './modules/payroll-lock/payroll-lock.module';
 import { LeaveModule } from './modules/leave/leave.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { PlatformBillingModule } from './modules/platform/billing/platform-billing.module';
+import { TenantAuditModule } from './modules/tenant-audit/tenant-audit.module';
 
 @Module({
   imports: [
@@ -109,6 +110,7 @@ import { PlatformBillingModule } from './modules/platform/billing/platform-billi
     LeaveModule,
     BillingModule,
     PlatformBillingModule,
+    TenantAuditModule,
   ],
   controllers: [AppController],
   providers: [

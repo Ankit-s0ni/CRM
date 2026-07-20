@@ -668,4 +668,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get savedOfflineSynced => 'حُفظ دون اتصال · تمت المزامنة بنجاح';
+
+  @override
+  String get logout => 'تسجيل الخروج';
+
+  @override
+  String get logoutConfirmTitle => 'تسجيل الخروج من DeltCRM؟';
+
+  @override
+  String get logoutConfirmMessage =>
+      'ستحتاج إلى إدخال بريدك الإلكتروني وكلمة المرور لتسجيل الدخول مرة أخرى.';
 }

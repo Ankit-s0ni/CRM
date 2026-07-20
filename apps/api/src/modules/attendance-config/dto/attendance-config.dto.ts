@@ -19,6 +19,7 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateOfficeDto {
@@ -90,6 +91,18 @@ export class PolicyAssignmentDto {
 }
 export class ReplacePolicyAssignmentsDto {
   @IsArray() @ArrayMaxSize(501) assignments!: PolicyAssignmentDto[];
+}
+
+export class AssignEmployeePolicyDto {
+  @ApiProperty({
+    format: 'uuid',
+    nullable: true,
+    description:
+      'Direct policy override. Use null to inherit department or tenant policy.',
+  })
+  @ValidateIf((_object, value) => value !== null)
+  @IsUUID()
+  policyId!: string | null;
 }
 
 export class CreateShiftDto {

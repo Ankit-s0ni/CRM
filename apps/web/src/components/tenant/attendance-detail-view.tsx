@@ -8,15 +8,27 @@ import {
   Laptop,
   LockKeyhole,
   MapPin,
+  PencilLine,
   ShieldCheck,
   Smartphone,
   TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useAuthStore } from "@/lib/auth-store";
+import { RouteFeatureInfo } from "@/components/help/feature-info";
 import { cn } from "@/lib/utils";
-import { EmptyState, ErrorState, LoadingState, Panel } from "./page-primitives";
+import {
+  EmptyState,
+  ErrorState,
+  Field,
+  LoadingState,
+  Panel,
+  PrimaryButton,
+  inputClass,
+} from "./page-primitives";
 import {
   formatClock,
   formatMinutes,
@@ -60,10 +72,14 @@ type DayResponse = {
 export function AttendanceDetailView({
   employeeId,
   initialDate,
+  returnTo,
 }: {
   employeeId: string;
   initialDate?: string;
+  returnTo: string;
 }) {
+  const router = useRouter();
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const startDate = initialDate ?? localIsoDate();
   const [month, setMonth] = useState(startDate.slice(0, 7));
   const [selectedDate, setSelectedDate] = useState(startDate);
@@ -72,6 +88,14 @@ export function AttendanceDetailView({
   );
   const [dayData, setDayData] = useState<DayResponse["data"] | null>(null);
   const [error, setError] = useState("");
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const canCorrect = permissions.some((permission) =>
+    [
+      "attendance.regularizations.manage",
+      "attendance.approvals.manage",
+    ].includes(permission),
+  );
+  const visibleDayData = dayData?.date === selectedDate ? dayData : null;
 
   useEffect(() => {
     let active = true;
@@ -129,7 +153,8 @@ export function AttendanceDetailView({
     <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-center gap-4">
         <Link
-          href="/app/attendance/register"
+          aria-label="Back to attendance register"
+          href={returnTo}
           className="grid size-10 place-items-center rounded-xl border border-[#d8d4e3] bg-white"
         >
           <ArrowLeft className="size-4" />
@@ -138,9 +163,12 @@ export function AttendanceDetailView({
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
             Attendance detail
           </p>
-          <h1 className="mt-1 text-2xl font-bold">
-            {monthData?.employee.fullName ?? "Employee attendance"}
-          </h1>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="text-2xl font-bold">
+              {monthData?.employee.fullName ?? "Employee attendance"}
+            </h1>
+            <RouteFeatureInfo />
+          </div>
           <p className="mt-1 text-xs text-[#777587]">
             {monthData
               ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? "Employee"} · ${monthData.employee.department.name}`
@@ -186,10 +214,27 @@ export function AttendanceDetailView({
               days={monthData.days}
               selectedDate={selectedDate}
               onSelect={setSelectedDate}
+              allowMissing={canCorrect}
             />
-            <DayEvidence data={dayData} selectedDate={selectedDate} />
+            <DayEvidence
+              data={visibleDayData}
+              selectedDate={selectedDate}
+              onCorrect={canCorrect ? () => setCorrectionOpen(true) : undefined}
+            />
           </div>
         </>
+      )}
+      {correctionOpen && monthData && (
+        <CreateCorrectionDialog
+          data={visibleDayData}
+          employeeId={employeeId}
+          employeeName={monthData.employee.fullName}
+          selectedDate={selectedDate}
+          onClose={() => setCorrectionOpen(false)}
+          onCreated={(id) =>
+            router.push(`/app/attendance/regularizations/${id}`)
+          }
+        />
       )}
     </div>
   );
@@ -234,11 +279,13 @@ function MonthCalendar({
   days,
   selectedDate,
   onSelect,
+  allowMissing,
 }: {
   month: string;
   days: AttendanceDay[];
   selectedDate: string;
   onSelect: (date: string) => void;
+  allowMissing: boolean;
 }) {
   const first = new Date(`${month}-01T12:00:00`);
   const count = new Date(
@@ -273,15 +320,16 @@ function MonthCalendar({
         {Array.from({ length: count }, (_, index) => {
           const date = `${month}-${String(index + 1).padStart(2, "0")}`;
           const day = byDate.get(date);
+          const selectable = Boolean(day) || (allowMissing && date <= localIsoDate());
           const tone = day ? statusTone(day.status) : null;
           return (
             <button
               key={date}
-              disabled={!day}
+              disabled={!selectable}
               onClick={() => onSelect(date)}
               className={cn(
                 "min-h-24 rounded-xl border p-2 text-left transition",
-                day
+                selectable
                   ? "border-[#e4e1ee] bg-white hover:border-[#aaa3cd]"
                   : "border-transparent bg-[#f8f6fa] text-[#aaa3ad]",
                 selectedDate === date &&
@@ -315,9 +363,11 @@ function MonthCalendar({
 function DayEvidence({
   data,
   selectedDate,
+  onCorrect,
 }: {
   data: DayResponse["data"] | null;
   selectedDate: string;
+  onCorrect?: () => void;
 }) {
   if (!data)
     return (
@@ -326,6 +376,14 @@ function DayEvidence({
           title="No evidence for this day"
           body={`There is no finalized or open attendance record for ${selectedDate}.`}
         />
+        {onCorrect && selectedDate <= localIsoDate() && (
+          <div className="px-5 pb-5">
+            <PrimaryButton className="w-full" onClick={onCorrect}>
+              <PencilLine className="size-4" />
+              Mark attendance manually
+            </PrimaryButton>
+          </div>
+        )}
       </Panel>
     );
   const tone = statusTone(data.status);
@@ -372,7 +430,20 @@ function DayEvidence({
         </div>
       )}
       <div className="p-5">
-        <h3 className="font-semibold">Evidence timeline</h3>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="font-semibold">Evidence timeline</h3>
+          {onCorrect && !data.isLocked && (
+            <button
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#3525cd] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4f46e5]"
+              onClick={onCorrect}
+            >
+              <PencilLine className="size-4" />
+              {data.status === "ABSENT"
+                ? "Mark present / Correct"
+                : "Correct attendance"}
+            </button>
+          )}
+        </div>
         <div className="mt-5 grid gap-0">
           {data.timeline.map((event, index) => (
             <Timeline
@@ -390,6 +461,162 @@ function DayEvidence({
       </div>
     </aside>
   );
+}
+
+function CreateCorrectionDialog({
+  data,
+  employeeId,
+  employeeName,
+  selectedDate,
+  onClose,
+  onCreated,
+}: {
+  data: DayResponse["data"] | null;
+  employeeId: string;
+  employeeName: string;
+  selectedDate: string;
+  onClose: () => void;
+  onCreated: (id: string) => void;
+}) {
+  const [checkin, setCheckin] = useState("");
+  const [checkout, setCheckout] = useState("");
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
+
+  async function submit() {
+    if (!data && (!checkin || !checkout)) {
+      setError(
+        "Check-in and checkout are both required when marking an unrecorded day.",
+      );
+      return;
+    }
+    if (!checkin && !checkout) {
+      setError("Enter a corrected check-in or checkout time.");
+      return;
+    }
+    if (reason.trim().length < 5) {
+      setError("Add a short reason for the audit trail.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const response = await apiClient.post<{ data: { id: string } }>(
+        `/regularizations/employees/${employeeId}`,
+        {
+          attendanceLogId: data?.id,
+          attendanceDate: data ? undefined : selectedDate,
+          requestedCheckin: checkin
+            ? correctedTimestamp(selectedDate, checkin)
+            : undefined,
+          requestedCheckout: checkout
+            ? correctedTimestamp(selectedDate, checkout)
+            : undefined,
+          reason: reason.trim(),
+          idempotencyKey,
+        },
+      );
+      await apiClient.post(
+        `/regularizations/${response.data.data.id}/approve`,
+        { comment: `HR manual correction: ${reason.trim()}` },
+      );
+      onCreated(response.data.data.id);
+    } catch (cause) {
+      setError(correctionError(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-[#1b1b24]/55 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-correction-title"
+    >
+      <div className="my-auto w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="create-correction-title" className="text-xl font-bold">
+              Correct attendance
+            </h2>
+            <p className="mt-1 text-sm text-[#646273]">
+              {employeeName} · {selectedDate}
+            </p>
+          </div>
+          <button aria-label="Close correction dialog" onClick={onClose}>
+            <span className="text-2xl text-[#646273]">×</span>
+          </button>
+        </div>
+        <p className="mt-4 rounded-xl bg-[#f5f2ff] p-3 text-xs leading-5 text-[#464555]">
+          {data
+            ? `Recorded: ${formatClock(data.firstCheckin)} to ${formatClock(data.lastCheckout)}. `
+            : "No attendance was recorded for this day. "}
+          Enter the correct check-in and checkout. Saving applies the correction
+          immediately and records the reason in the audit history.
+        </p>
+        {error && <div className="mt-4"><ErrorState message={error} /></div>}
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <Field label="Corrected check-in">
+            <input
+              aria-label="Corrected check-in"
+              className={inputClass}
+              type="time"
+              value={checkin}
+              onChange={(event) => setCheckin(event.target.value)}
+            />
+          </Field>
+          <Field label="Corrected checkout">
+            <input
+              aria-label="Corrected checkout"
+              className={inputClass}
+              type="time"
+              value={checkout}
+              onChange={(event) => setCheckout(event.target.value)}
+            />
+          </Field>
+        </div>
+        <div className="mt-4">
+          <Field label="Reason">
+            <textarea
+              aria-label="Correction reason"
+              className={`${inputClass} h-24 py-3`}
+              maxLength={1000}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Field>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            className="h-11 rounded-xl border border-[#d8d4e3] px-5 text-sm font-semibold"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <PrimaryButton disabled={busy} onClick={submit}>
+            {busy ? "Saving…" : "Save correction"}
+          </PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function correctedTimestamp(date: string, time: string) {
+  return new Date(`${date}T${time}:00`).toISOString();
+}
+
+function correctionError(cause: unknown) {
+  if (typeof cause !== "object" || cause === null || !("response" in cause))
+    return "The correction could not be created.";
+  const response = (cause as { response?: { data?: { message?: string } } })
+    .response;
+  return response?.data?.message ?? "The correction could not be created.";
 }
 
 function Timeline({

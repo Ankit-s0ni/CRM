@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { WorkType } from '@prisma/client';
 import {
+  IsEmail,
   IsEnum,
   IsOptional,
   IsString,
@@ -27,6 +28,11 @@ export class UpdateEmployeeDto {
   @MinLength(2)
   @MaxLength(120)
   fullName?: string;
+
+  @ApiPropertyOptional({ example: 'aarav.sharma@acme.com' })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @ApiPropertyOptional({ example: '+919876543210', nullable: true })
   @IsOptional()

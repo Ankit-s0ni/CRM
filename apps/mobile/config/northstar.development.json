@@ -1,14 +1,15 @@
 {
   "APP_ENV": "development",
-  "API_BASE_URL": "http://localhost:3000/v1",
-  "LOCAL_MODE": "true",
-  "TENANT_ID": "northstar-oman",
-  "COMPANY_NAME": "Northstar Logistics LLC",
-  "PRODUCT_NAME": "Northstar People",
+  "API_BASE_URL": "http://127.0.0.1:4001",
+  "LOCAL_MODE": "false",
+  "TENANT_ID": "acme",
+  "WORKSPACE_SUBDOMAIN": "acme",
+  "COMPANY_NAME": "Acme Logistics",
+  "PRODUCT_NAME": "DeltCRM",
   "DEFAULT_LOCALE": "en",
   "TENANT_TIMEZONE": "Asia/Muscat",
   "CURRENCY_CODE": "OMR",
   "COUNTRY_CODE": "OM",
-  "SUPPORT_EMAIL": "people@northstar.om",
+  "SUPPORT_EMAIL": "support@deltcrm.com",
   "BRAND_COLOR": "1E2329"
 }

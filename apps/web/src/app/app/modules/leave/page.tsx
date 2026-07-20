@@ -1,3 +1,5 @@
-import { LeaveModuleHub } from "@/components/tenant/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function LeaveModulePage() { return <LeaveModuleHub />; }
+export default function LeaveModulePage() {
+  redirect("/app/attendance/leave");
+}

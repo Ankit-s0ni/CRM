@@ -1,6 +1,7 @@
 import {
   AttendanceStatus,
   EventType,
+  RequestStatus,
   SecurityAlertType,
   WorkType,
 } from '@prisma/client';
@@ -54,6 +55,20 @@ describe('AttendanceDashboardService', () => {
           },
         ]),
       },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          employee: null,
+          roles: [
+            {
+              role: {
+                permissions: [
+                  { permission: { key: 'organization.employees.read' } },
+                ],
+              },
+            },
+          ],
+        }),
+      },
     };
     const prisma = {
       forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
@@ -65,7 +80,14 @@ describe('AttendanceDashboardService', () => {
       { tenantId: 'tenant-1' } as never,
     );
 
-    const result = await service.get({ date: '2026-07-17' });
+    const result = await service.get(
+      { date: '2026-07-17' },
+      'user-1',
+      new Set([
+        'attendance.regularizations.manage',
+        'attendance.security-alerts.read',
+      ]),
+    );
 
     expect(result.data.timezone).toBe('Asia/Muscat');
     expect(result.data.summary).toEqual({
@@ -89,10 +111,110 @@ describe('AttendanceDashboardService', () => {
     });
   });
 
+  it('scopes HR queue counts to a manager reporting chain and omits forbidden groups', async () => {
+    const tx = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          employee: { id: 'manager-1' },
+          roles: [
+            {
+              role: {
+                permissions: [
+                  {
+                    permission: {
+                      key: 'organization.employees.reports.read',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      },
+      employee: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'manager-1', managerId: null },
+          { id: 'report-1', managerId: 'manager-1' },
+          { id: 'outside-1', managerId: null },
+        ]),
+        count: jest
+          .fn()
+          .mockResolvedValueOnce(2)
+          .mockResolvedValueOnce(1)
+          .mockResolvedValueOnce(0)
+          .mockResolvedValueOnce(1)
+          .mockResolvedValueOnce(1),
+      },
+      leaveRequest: { count: jest.fn().mockResolvedValue(3) },
+      registeredDevice: { count: jest.fn().mockResolvedValue(2) },
+      securityAlert: { count: jest.fn() },
+      regularizationRequest: { count: jest.fn() },
+    };
+    const service = new AttendanceDashboardService(
+      {
+        forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
+          callback(tx),
+        ),
+      } as never,
+      { tenantId: 'tenant-1' } as never,
+    );
+
+    const result = await service.hrSummary(
+      'manager-user-1',
+      new Set([
+        'organization.employees.reports.read',
+        'leave.approve',
+        'attendance.devices.read',
+      ]),
+    );
+
+    expect(result.data.workforce).toEqual({
+      active: 2,
+      onNotice: 1,
+      terminated: 0,
+      missingManager: 1,
+      joiningSoon: 1,
+    });
+    expect(result.data.queues).toEqual({
+      pendingLeave: 3,
+      pendingDevices: 2,
+      openSecurityAlerts: null,
+      pendingRegularizations: null,
+    });
+    expect(tx.employee.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: { in: ['manager-1', 'report-1'] },
+        }) as unknown,
+      }),
+    );
+    expect(tx.leaveRequest.count).toHaveBeenCalledWith({
+      where: {
+        employeeId: { in: ['manager-1', 'report-1'] },
+        status: RequestStatus.PENDING,
+      },
+    });
+    expect(tx.securityAlert.count).not.toHaveBeenCalled();
+  });
+
   it('rejects impossible ISO dates', async () => {
     const tx = {
       tenantSettings: {
         findUnique: jest.fn().mockResolvedValue({ timezone: 'UTC' }),
+      },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          employee: null,
+          roles: [
+            {
+              role: {
+                permissions: [
+                  { permission: { key: 'organization.employees.read' } },
+                ],
+              },
+            },
+          ],
+        }),
       },
     };
     const service = new AttendanceDashboardService(
@@ -104,9 +226,16 @@ describe('AttendanceDashboardService', () => {
       { tenantId: 'tenant-1' } as never,
     );
 
-    await expect(service.get({ date: '2026-02-30' })).rejects.toThrow(
-      'Dashboard date must be a valid ISO date',
-    );
+    await expect(
+      service.get(
+        { date: '2026-02-30' },
+        'user-1',
+        new Set([
+          'attendance.regularizations.manage',
+          'attendance.security-alerts.read',
+        ]),
+      ),
+    ).rejects.toThrow('Dashboard date must be a valid ISO date');
   });
 });
 

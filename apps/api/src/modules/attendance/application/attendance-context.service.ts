@@ -26,6 +26,7 @@ export type ResolvedAttendanceContext = {
   policy: AttendancePolicySnapshot;
   holiday: boolean;
   weeklyOff: boolean;
+  weeklyOffs: Prisma.JsonValue;
   exceptionId: string | null;
   exceptionType: AttendanceExceptionValue | null;
   leaveFraction: number | null;
@@ -159,6 +160,7 @@ export class AttendanceContextService {
       policy,
       holiday: !!holiday,
       weeklyOff: isWeeklyOff(weeklyOffs, attendanceDate.value, timezone),
+      weeklyOffs,
       exceptionId: exception?.id ?? null,
       exceptionType: exception ? exceptionType(exception.exceptionType) : null,
       leaveFraction: exception

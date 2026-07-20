@@ -15,8 +15,13 @@ import {
 } from 'class-validator';
 
 export class CreateRegularizationDto {
+  @IsOptional()
   @IsUUID()
-  attendanceLogId!: string;
+  attendanceLogId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  attendanceDate?: string;
 
   @IsOptional()
   @IsDateString()

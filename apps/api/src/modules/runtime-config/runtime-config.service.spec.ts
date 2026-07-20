@@ -46,6 +46,7 @@ describe('RuntimeConfigService', () => {
         canPunch: true,
         locationMode: AttendanceLocationMode.OFFICE_GEOFENCE,
         selfieMode: SelfieMode.DISABLED,
+        leave: { enabled: true, policyCount: 0, canRequest: false },
       },
       onboarding: {
         locationPermissionRequired: true,
@@ -78,6 +79,24 @@ describe('RuntimeConfigService', () => {
     });
   });
 
+  it('does not treat another active device as the current installation', async () => {
+    const deviceId = '60000000-0000-4000-8000-000000000001';
+    const fixture = createFixture({ modules: ['ATTENDANCE'] });
+    const findDevice = fixture.tx.registeredDevice.findFirst as jest.Mock;
+    findDevice.mockResolvedValue({ id: deviceId });
+
+    const unbound = await fixture.service.getForCurrentEmployee();
+    expect(unbound.data.onboarding.deviceRegistrationComplete).toBe(false);
+    expect(findDevice).not.toHaveBeenCalled();
+
+    const bound = await fixture.service.getForCurrentEmployee(deviceId);
+    expect(bound.data.onboarding.deviceRegistrationComplete).toBe(true);
+    expect(findDevice).toHaveBeenCalledWith({
+      where: { id: deviceId, employeeId, status: 'ACTIVE' },
+      select: { id: true },
+    });
+  });
+
   it('fails before returning tenant data for an inactive employee', async () => {
     const fixture = createFixture({
       employeeStatus: EmployeeStatus.TERMINATED,
@@ -98,6 +117,17 @@ function createFixture(input: {
   employeeStatus?: EmployeeStatus;
   policy?: ReturnType<typeof policy> | null;
 }) {
+  const modules = input.modules ?? ['ATTENDANCE'];
+  const capabilityKeys = [
+    'ATTENDANCE_CORE',
+    'ATTENDANCE_OFFICE_GEOFENCE',
+    'ATTENDANCE_DEVICE_TRUST',
+    'ATTENDANCE_SELFIE',
+    'ATTENDANCE_REGULARIZATION',
+    ...(modules.includes('FIELD_TRACKING')
+      ? ['ATTENDANCE_FIELD_TRACKING']
+      : []),
+  ];
   const tx = {
     tenant: {
       findUnique: jest.fn().mockResolvedValue({
@@ -131,9 +161,20 @@ function createFixture(input: {
     tenantModule: {
       findMany: jest
         .fn()
-        .mockResolvedValue(
-          (input.modules ?? ['ATTENDANCE']).map((key) => ({ module: { key } })),
-        ),
+        .mockResolvedValue(modules.map((key) => ({ module: { key } }))),
+    },
+    tenantSubscription: {
+      findFirst: jest.fn().mockResolvedValue({
+        plan: {
+          capabilities: capabilityKeys.map((key) => ({
+            included: true,
+            capability: { key },
+          })),
+        },
+      }),
+    },
+    tenantCapabilityOverride: {
+      findMany: jest.fn().mockResolvedValue([]),
     },
     policyAssignment: {
       findMany: jest
@@ -147,6 +188,7 @@ function createFixture(input: {
     registeredDevice: { findFirst: jest.fn().mockResolvedValue(null) },
     biometricConsent: { findFirst: jest.fn().mockResolvedValue(null) },
     faceEnrollment: { findFirst: jest.fn().mockResolvedValue(null) },
+    leavePolicy: { count: jest.fn().mockResolvedValue(0) },
   } as unknown as PrismaTransaction;
   const prisma = {
     forTenant: (callback: (transaction: PrismaTransaction) => unknown) =>

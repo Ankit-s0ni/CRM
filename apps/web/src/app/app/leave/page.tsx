@@ -1,3 +1,5 @@
-import { LeaveBalancesView } from "@/components/tenant/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function LeavePage() { return <LeaveBalancesView />; }
+export default function LeavePage() {
+  redirect("/app/attendance/leave/balances");
+}

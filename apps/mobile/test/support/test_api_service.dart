@@ -8,7 +8,11 @@ import 'package:hrms_attendance/core/network/token_store.dart';
 
 ApiService createTestApiService({Map<String, dynamic>? runtime}) {
   final dio = Dio()..httpClientAdapter = _ImmediateAdapter(runtime);
-  return ApiService(TokenStore(const FlutterSecureStorage()), dio: dio);
+  return ApiService(
+    TokenStore(const FlutterSecureStorage()),
+    dio: dio,
+    refreshDio: dio,
+  );
 }
 
 class _ImmediateAdapter implements HttpClientAdapter {
@@ -34,6 +38,12 @@ class _ImmediateAdapter implements HttpClientAdapter {
 }
 
 Object _payload(String path, Map<String, dynamic>? runtime) {
+  if (path == '/auth/refresh') {
+    return {
+      'accessToken': 'restored-access-token',
+      'refreshToken': 'rotated-refresh-token',
+    };
+  }
   if (path == '/mobile/runtime-config') {
     return {'data': runtime ?? testRuntimeConfig()};
   }
@@ -42,6 +52,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       'data': {
         'fullName': 'Priya Sharma',
         'employeeCode': 'EMP-1024',
+        'workType': 'OFFICE',
         'department': {'name': 'HR Operations'},
         'designation': {'name': 'Senior Associate'},
         'manager': {'fullName': 'Mariam Al Balushi'},
@@ -56,10 +67,31 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
   if (path == '/attendance/me/today') {
     return {
       'data': {
-        'attendanceDate': 'Monday, 23 October 2023',
-        'timezone': 'Muscat Corporate Office, Oman',
-        'openAction': 'CHECKIN',
-        'shift': {'name': 'Day Shift 9:00-18:00'},
+        'attendanceDate': '2026-07-19',
+        'timezone': 'Asia/Muscat',
+        'openAction': 'CHECKOUT',
+        'shift': {
+          'name': 'Day Shift',
+          'startTime': '09:00',
+          'endTime': '18:00',
+        },
+        'policy': {
+          'name': 'Muscat Office Policy',
+          'locationMode': 'OFFICE_GEOFENCE',
+          'selfieMode': 'DISABLED',
+          'requireRegisteredDevice': true,
+        },
+        'workplace': {'name': 'Muscat Corporate Office', 'radiusMeters': 150},
+        'workOverview': {
+          'workMinutes': 1890,
+          'targetMinutes': 2400,
+          'lateMinutes': 12,
+          'overtimeMinutes': 45,
+        },
+        'nextHoliday': {'name': 'Renaissance Day', 'date': '2026-07-23'},
+        'timeline': [
+          {'eventType': 'CHECKIN', 'eventTime': '2026-07-19T05:10:00.000Z'},
+        ],
       },
     };
   }
@@ -191,7 +223,6 @@ Map<String, dynamic> testRuntimeConfig({
     'attendance': {'enabled': attendance},
     'fieldTracking': {'enabled': fieldTracking},
     'regularization': {'enabled': regularization},
-    'leave': {'enabled': leave},
   },
   'attendance': {
     'canPunch': attendance,
@@ -200,6 +231,11 @@ Map<String, dynamic> testRuntimeConfig({
     'registeredDeviceRequired': deviceRequired,
     'integrityRequired': attendance,
     'maxOfflineSyncHours': 48,
+    'leave': {
+      'enabled': attendance,
+      'policyCount': attendance && leave ? 1 : 0,
+      'canRequest': attendance && leave,
+    },
   },
   'fieldTracking': {
     'enabled': fieldTracking,

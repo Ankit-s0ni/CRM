@@ -1,0 +1,294 @@
+@startuml
+' =====================================================================
+' DeltCRM Attendance MVP - Configuration and Punch Sequence v1
+' Detailed sequence from HR policy publication to dynamic employee punch.
+' =====================================================================
+title DeltCRM Attendance MVP - HR Configuration to Employee Punch Sequence
+
+skinparam backgroundColor #FCFAFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #555260
+  ActorBorderColor #35333F
+  ActorBackgroundColor #FFFFFF
+  LifeLineBorderColor #7A7687
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #3C2AD6
+  ParticipantBackgroundColor #ECE8FF
+  BoxBorderColor #CBC6D8
+  BoxBackgroundColor #F7F4FC
+  GroupBorderColor #3C2AD6
+  GroupBackgroundColor #F3F0FF
+}
+
+actor "Business Admin / HR" as HR
+actor Employee
+
+box "DeltCRM Web" #F7F4FC
+  participant "HR Portal" as Web
+end box
+
+box "DeltCRM API" #F7F4FC
+  participant "Auth + Tenant Guard" as Guard
+  participant "Attendance Config" as Config
+  participant "Effective Policy Resolver" as Resolver
+  participant "Mobile Runtime Config" as Runtime
+  participant "Attendance Verification" as Verify
+  participant "Attendance Aggregate" as Attendance
+  participant "Reporting / Payroll Lock" as Reporting
+  database "PostgreSQL + RLS" as DB
+  collections "Audit + Outbox" as Audit
+end box
+
+box "Employee Runtime" #F7F4FC
+  participant "Flutter App" as App
+  participant "GPS / Permissions" as GPS
+  participant "Camera / Biometrics" as Camera
+  participant "Device Integrity Provider" as Integrity
+end box
+
+== 1. HR configures the Attendance MVP ==
+
+HR -> Web: Sign in to tenant workspace
+Web -> Guard: POST /auth/login
+Guard -> DB: Validate tenant, user and password
+DB --> Guard: Active tenant user + roles/permissions
+Guard --> Web: Access/refresh tokens
+
+HR -> Web: Enable/open Attendance module
+Web -> Guard: GET /workspace/modules
+Guard -> DB: Read tenant module entitlement
+DB --> Guard: ATTENDANCE active
+Guard --> Web: Entitled module catalog
+
+HR -> Web: Save timezone, weekly offs and working hours
+Web -> Guard: PATCH /tenant-settings
+Guard -> DB: Validate tenant + settings permission
+Guard -> DB: Persist settings
+Guard -> Audit: Record configuration change
+Guard --> Web: Updated settings
+
+HR -> Web: Create office + geofence
+Web -> Config: POST /offices
+Config -> Guard: Authorize office management
+Config -> DB: Persist coordinates, radius, timezone
+Config -> Audit: Record office creation
+Config --> Web: Office
+
+HR -> Web: Create shifts / dated rosters
+Web -> Config: POST /shifts and /rosters
+Config -> Guard: Authorize schedule management
+Config -> DB: Persist schedule
+Config -> Audit: Record schedule change
+Config --> Web: Saved schedule
+
+group Example: office location-only policy
+  HR -> Web: Set office geofence, selfie disabled,\nfield tracking disabled
+  Web -> Config: POST /attendance-policies
+  note right of Web
+    locationMode = OFFICE_GEOFENCE
+    selfieMode = DISABLED
+    fieldTrackingEnabled = false
+    requireRegisteredDevice = HR selection
+  end note
+  Config -> Guard: Authorize policy management
+  Config -> Config: Validate entitlement and dependencies
+  Config -> DB: Persist versioned policy
+  Config -> Audit: Record policy version and actor
+  Config --> Web: Policy + warnings/impact
+end
+
+HR -> Web: Assign tenant, department or employee policy
+Web -> Config: POST /attendance-policy-assignments
+Config -> Config: Validate scope and conflicting priority
+Config -> DB: Persist assignment
+Config -> DB: Increment runtimeConfigVersion
+Config -> Audit: Publish tenant.runtime-config.changed.v1
+Config --> Web: Assignment saved
+
+HR -> Web: Create/import employee and assign office/shift
+Web -> Guard: Employee/import/assignment endpoints
+Guard -> DB: Quota, tenant and permission checks
+Guard -> DB: Persist employee and assignments
+Guard -> Audit: Record lifecycle/assignment changes
+Guard --> Web: Employee readiness state
+
+HR -> Web: Invite/link employee account
+Web -> Guard: POST /users/invitations
+Guard -> DB: Create invitation atomically
+Guard -> Audit: Queue invitation event
+Guard --> Web: Invitation accepted/queued
+
+== 2. Employee login and dynamic runtime bootstrap ==
+
+Employee -> App: Open DeltCRM and sign in
+App -> Guard: POST /auth/login
+Guard -> DB: Resolve tenant user + active employee
+DB --> Guard: Authenticated employee context
+Guard --> App: Access/refresh tokens
+
+App -> Runtime: GET /mobile/runtime-config
+Runtime -> Guard: Validate active employee and runtime permission
+Runtime -> DB: Read tenant modules/settings/branding
+Runtime -> Resolver: Resolve effective Attendance policy
+Resolver -> DB: Read employee/department/tenant assignments
+Resolver --> Runtime: Winning policy + precedence reason
+Runtime -> DB: Read office/device/consent/enrollment readiness
+Runtime --> App: Tenant brand + modules + effective capabilities + ETag
+
+note over Runtime,App
+  Location-only projection:
+  Attendance enabled
+  OFFICE_GEOFENCE
+  selfie DISABLED
+  field tracking disabled
+  location permission required
+  no biometric onboarding
+end note
+
+alt Registered device is required and not approved
+  App -> Guard: POST /devices/register
+  Guard -> DB: Create PENDING_APPROVAL registration
+  Guard -> Audit: Notify HR device queue
+  Guard --> App: Pending approval
+  HR -> Web: Review employee device
+  Web -> Guard: POST /devices/{id}/approve + reason
+  Guard -> DB: Activate trusted device
+  Guard -> Audit: Record approval
+  Guard --> Web: Approved
+  App -> Runtime: Refresh runtime configuration
+  Runtime --> App: Device readiness complete
+else Registered device is optional or already approved
+  App -> App: Continue onboarding
+end
+
+alt Location required
+  App -> GPS: Request foreground precise location
+  GPS --> App: Granted / denied
+  alt Permission denied
+    App --> Employee: Explain requirement; block punch
+  end
+end
+
+alt Selfie REQUIRED
+  App -> Camera: Request consent, enrollment and camera
+  Camera --> App: Face readiness
+else Selfie DISABLED
+  App -> App: Skip camera, consent and face enrollment
+end
+
+alt Field tracking enabled and entitled
+  App -> GPS: Request background location when field session starts
+else Field tracking disabled
+  App -> App: Hide field tab; never request background location
+end
+
+== 3. Location-only check-in ==
+
+Employee -> App: Tap Check in
+App -> GPS: Capture current precise position
+GPS --> App: latitude, longitude, accuracy, mock flag
+App -> Integrity: Request integrity/attestation evidence
+Integrity --> App: Signed integrity token
+
+note right of App
+  No selfie is captured or uploaded
+  because selfieMode = DISABLED.
+end note
+
+App -> Verify: POST /attendance/punches
+note right of Verify
+  type = CHECKIN
+  requestId = idempotency key
+  clientTime
+  GPS evidence
+  device identity + integrity token
+  no selfieKey
+end note
+
+Verify -> Guard: Validate JWT tenant, employee and entitlement
+Guard --> Verify: Authorized employee context
+Verify -> DB: Load employee, effective policy, office and device
+Verify -> Resolver: Re-resolve effective policy server-side
+Resolver --> Verify: OFFICE_GEOFENCE + selfie DISABLED
+Verify -> Integrity: Validate integrity token
+Integrity --> Verify: Genuine / rooted / mock result
+
+alt Integrity unavailable or invalid
+  Verify -> Audit: Record failed verification
+  Verify --> App: INTEGRITY_FAILED / PROVIDER_UNAVAILABLE
+  App --> Employee: Actionable failure and retry
+else Integrity passes
+  Verify -> Verify: Validate client clock skew and duplicate requestId
+  Verify -> DB: Find assigned active office geofence
+  Verify -> Verify: Validate accuracy and calculate distance
+
+  alt No office / poor accuracy / outside geofence
+    Verify -> Audit: Record location failure evidence
+    Verify --> App: Coded location failure + safe details
+    App --> Employee: Enable GPS or move inside approved office
+  else Inside assigned office geofence
+    Verify -> Verify: Mark face check policy-skipped
+    Verify -> Attendance: Apply CHECKIN event
+    Attendance -> DB: Lock employee/day and write event + daily record
+    Attendance -> Audit: Write verification, audit and outbox atomically
+    DB --> Attendance: Committed Attendance state
+    Attendance --> Verify: Server-confirmed check-in
+    Verify --> App: 201 + verification checks + Attendance state
+    App --> Employee: Check-in successful
+  end
+end
+
+== 4. Check-out, correction and month-end ==
+
+Employee -> App: Tap Check out
+App -> GPS: Capture required location again
+App -> Integrity: Request fresh integrity evidence
+App -> Verify: POST /attendance/punches (CHECKOUT)
+Verify -> Attendance: Repeat current effective-policy verification
+Attendance -> DB: Write checkout and finalize worked minutes
+Attendance -> Audit: Publish finalized Attendance event
+Attendance --> App: Completed day
+App --> Employee: Show timeline and totals
+
+opt Employee reports missing/incorrect punch
+  Employee -> App: Submit correction with reason and requested times
+  App -> Attendance: POST /attendance/regularizations
+  Attendance -> DB: Create PENDING request
+  Attendance -> Audit: Notify authorized HR/manager
+  Attendance --> App: Request submitted
+
+  HR -> Web: Review request and evidence
+  Web -> Attendance: Approve/reject with comment
+  Attendance -> DB: Check manager scope and payroll lock
+  alt Period unlocked and request approved
+    Attendance -> DB: Apply correction and recalculate daily record
+    Attendance -> Audit: Record decision and changed values
+    Attendance --> Web: Corrected Attendance state
+  else Rejected or period locked
+    Attendance --> Web: Coded rejection/locked response
+  end
+end
+
+HR -> Web: Generate period report
+Web -> Reporting: POST /reports
+Reporting -> DB: Validate entitlement, permission and period
+Reporting -> Audit: Queue report job
+Reporting --> Web: QUEUED report
+Reporting -> DB: Read finalized tenant-scoped Attendance
+Reporting -> Audit: Store completed private report metadata
+Reporting --> Web: COMPLETED + expiring download
+
+HR -> Web: Review export and lock payroll period
+Web -> Reporting: POST /payroll-locks
+Reporting -> DB: Validate completed immutable export
+Reporting -> DB: Persist period lock
+Reporting -> Audit: Record lock actor, reason and checksum
+Reporting --> Web: Locked period
+
+note over Attendance,Reporting
+  Mutations affecting a locked payroll period fail closed
+  until an authorized, audited reopen operation succeeds.
+end note
+
+@enduml

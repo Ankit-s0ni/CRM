@@ -39,6 +39,8 @@ describe('Sprint 4 attendance dashboard (e2e)', () => {
   let businessAdmin: Session;
   let hrAdmin: Session;
   let employeeSession: Session;
+  let scopedOfficeId: string;
+  let foreignOfficeId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -60,8 +62,8 @@ describe('Sprint 4 attendance dashboard (e2e)', () => {
     businessAdmin = await createUserSession(tenantA, 'BUSINESS_ADMIN');
     hrAdmin = await createUserSession(tenantA, 'HR_ADMIN');
     employeeSession = await createUserSession(tenantA, 'EMPLOYEE');
-    await createAttendanceFixture(tenantA, false);
-    await createAttendanceFixture(tenantB, true);
+    scopedOfficeId = await createAttendanceFixture(tenantA, false);
+    foreignOfficeId = await createAttendanceFixture(tenantB, true);
   });
 
   afterAll(async () => {
@@ -105,6 +107,39 @@ describe('Sprint 4 attendance dashboard (e2e)', () => {
     await api(employeeSession)
       .get('/attendance/dashboard?date=2026-07-17')
       .expect(403);
+  });
+
+  it('scopes dashboard employees and aggregates by office without tenant leakage', async () => {
+    const scoped = await api(businessAdmin)
+      .get(`/attendance/dashboard?date=2026-07-17&officeId=${scopedOfficeId}`)
+      .expect(200);
+    const scopedBody = scoped.body as DashboardBody;
+
+    expect(scopedBody.data.summary).toEqual({
+      present: 1,
+      late: 0,
+      absent: 0,
+      onField: 0,
+      onBreak: 0,
+      notYetIn: 0,
+    });
+    expect(scopedBody.data.employees.map(({ fullName }) => fullName)).toEqual([
+      'Aisha Dashboard',
+    ]);
+
+    const foreign = await api(businessAdmin)
+      .get(`/attendance/dashboard?date=2026-07-17&officeId=${foreignOfficeId}`)
+      .expect(200);
+    const foreignBody = foreign.body as DashboardBody;
+    expect(foreignBody.data.employees).toEqual([]);
+    expect(foreignBody.data.summary).toEqual({
+      present: 0,
+      late: 0,
+      absent: 0,
+      onField: 0,
+      onBreak: 0,
+      notYetIn: 0,
+    });
   });
 
   it('rejects invalid calendar dates', async () => {
@@ -217,6 +252,25 @@ describe('Sprint 4 attendance dashboard (e2e)', () => {
             : new Date('2026-07-17T05:00:00.000Z'),
       })),
     });
+
+    const office = await prisma.officeLocation.create({
+      data: {
+        tenantId,
+        officeName: `${foreign ? 'Foreign' : 'Scoped'} Dashboard Office ${stamp}`,
+        latitude: foreign ? 24.4539 : 23.588,
+        longitude: foreign ? 54.3773 : 58.3829,
+        radiusMeters: 150,
+      },
+    });
+    await prisma.employeeOfficeAssignment.create({
+      data: {
+        tenantId,
+        employeeId: employees[0].id,
+        officeLocationId: office.id,
+        isPrimary: true,
+      },
+    });
+    return office.id;
   }
 });
 
@@ -236,6 +290,8 @@ async function cleanupTenant(prisma: PrismaClient, tenantId: string) {
   await prisma.regularizationRequest.deleteMany({ where: { tenantId } });
   await prisma.securityAlert.deleteMany({ where: { tenantId } });
   await prisma.attendanceLog.deleteMany({ where: { tenantId } });
+  await prisma.employeeOfficeAssignment.deleteMany({ where: { tenantId } });
+  await prisma.officeLocation.deleteMany({ where: { tenantId } });
   await prisma.employmentEvent.deleteMany({ where: { tenantId } });
   await prisma.employee.deleteMany({ where: { tenantId } });
   await prisma.department.deleteMany({ where: { tenantId } });

@@ -18,6 +18,71 @@ export const EMPLOYEE_IMPORT_HEADERS = [
   'date_of_joining',
 ] as const;
 
+export const EMPLOYEE_IMPORT_FIELDS = [
+  {
+    key: 'employee_code',
+    label: 'Employee code',
+    required: true,
+    format: 'Unique code, up to 30 characters',
+    example: 'EMP-001',
+  },
+  {
+    key: 'full_name',
+    label: 'Full name',
+    required: true,
+    format: '2 to 120 characters',
+    example: 'Aisha Khan',
+  },
+  {
+    key: 'phone',
+    label: 'Phone',
+    required: false,
+    format: 'International format beginning with +',
+    example: '+971501234567',
+  },
+  {
+    key: 'work_type',
+    label: 'Work type',
+    required: true,
+    format: 'OFFICE, FIELD, or HYBRID',
+    example: 'OFFICE',
+  },
+  {
+    key: 'department',
+    label: 'Department',
+    required: true,
+    format: 'Name of an existing department',
+    example: 'Operations',
+  },
+  {
+    key: 'designation',
+    label: 'Designation',
+    required: false,
+    format: 'Name of an existing designation',
+    example: 'Coordinator',
+  },
+  {
+    key: 'manager_employee_code',
+    label: 'Manager employee code',
+    required: false,
+    format: 'Existing code or a manager included in the same file',
+    example: 'EMP-001',
+  },
+  {
+    key: 'date_of_joining',
+    label: 'Date of joining',
+    required: true,
+    format: 'YYYY-MM-DD',
+    example: '2026-07-19',
+  },
+] as const satisfies ReadonlyArray<{
+  key: (typeof EMPLOYEE_IMPORT_HEADERS)[number];
+  label: string;
+  required: boolean;
+  format: string;
+  example: string;
+}>;
+
 export type EmployeeImportRawRow = Record<
   (typeof EMPLOYEE_IMPORT_HEADERS)[number],
   string

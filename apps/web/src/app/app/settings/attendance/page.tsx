@@ -1,2 +1,5 @@
-import { AttendanceDefaultsView } from "@/components/tenant/settings-views";
-export default function AttendanceDefaultsPage() { return <AttendanceDefaultsView />; }
+import { redirect } from "next/navigation";
+
+export default function AttendanceDefaultsPage() {
+  redirect("/app/attendance/policies");
+}

@@ -39,13 +39,17 @@ export class DesignationsService {
         skip,
         take: limit,
         orderBy: { name: 'asc' },
+        include: { _count: { select: { employees: true } } },
       });
       const total = await tx.designation.count({ where });
       return { data, total };
     });
 
     return {
-      data,
+      data: data.map(({ _count, ...designation }) => ({
+        ...designation,
+        employeeCount: _count.employees,
+      })),
       pagination: {
         page,
         limit,

@@ -74,59 +74,69 @@ export class RuntimeConfigService {
         });
       }
       const employee = await this.employeeForUser(tx, userId);
-      const [moduleRows, policy, device, consent, enrollment] =
-        await Promise.all([
-          tx.tenantModule.findMany({
-            where: {
-              tenantId,
-              isActive: true,
-              module: { availability: 'AVAILABLE' },
-            },
-            select: { module: { select: { key: true } } },
-          }),
-          this.effectivePolicy(tx, employee),
-          jwtDeviceId
-            ? tx.registeredDevice.findFirst({
-                where: {
-                  id: jwtDeviceId,
-                  employeeId: employee.id,
-                  status: 'ACTIVE',
-                },
-                select: { id: true },
-              })
-            : tx.registeredDevice.findFirst({
-                where: { employeeId: employee.id, status: 'ACTIVE' },
-                select: { id: true },
-              }),
-          tx.biometricConsent.findFirst({
-            where: { employeeId: employee.id },
-            orderBy: { consentedAt: 'desc' },
-            select: { action: true },
-          }),
-          tx.faceEnrollment.findFirst({
-            where: { employeeId: employee.id, status: 'ACTIVE' },
-            select: { id: true },
-          }),
-        ]);
+      const [
+        moduleRows,
+        policy,
+        device,
+        consent,
+        enrollment,
+        leavePolicyCount,
+      ] = await Promise.all([
+        tx.tenantModule.findMany({
+          where: {
+            tenantId,
+            isActive: true,
+            module: { availability: 'AVAILABLE' },
+          },
+          select: { module: { select: { key: true } } },
+        }),
+        this.effectivePolicy(tx, employee),
+        jwtDeviceId
+          ? tx.registeredDevice.findFirst({
+              where: {
+                id: jwtDeviceId,
+                employeeId: employee.id,
+                status: 'ACTIVE',
+              },
+              select: { id: true },
+            })
+          : Promise.resolve(null),
+        tx.biometricConsent.findFirst({
+          where: { employeeId: employee.id },
+          orderBy: { consentedAt: 'desc' },
+          select: { action: true },
+        }),
+        tx.faceEnrollment.findFirst({
+          where: { employeeId: employee.id, status: 'ACTIVE' },
+          select: { id: true },
+        }),
+        tx.leavePolicy.count({ where: { tenantId, isActive: true } }),
+      ]);
       const settings = tenant.settings ?? defaultSettings(tenantId);
       const release = mobileReleasePolicy();
       const moduleKeys = new Set(moduleRows.map(({ module }) => module.key));
+      const capabilityKeys = await this.effectiveCapabilityKeys(tx, tenantId);
       const attendanceEnabled = moduleKeys.has('ATTENDANCE');
-      const locationMode = attendanceEnabled
-        ? (policy?.locationMode ?? legacyLocationMode(policy))
-        : AttendanceLocationMode.NONE;
-      const selfieMode = attendanceEnabled
-        ? (policy?.selfieMode ?? legacySelfieMode(policy))
-        : SelfieMode.DISABLED;
+      const locationMode =
+        attendanceEnabled && capabilityKeys.has('ATTENDANCE_OFFICE_GEOFENCE')
+          ? (policy?.locationMode ?? legacyLocationMode(policy))
+          : AttendanceLocationMode.NONE;
+      const selfieMode =
+        attendanceEnabled && capabilityKeys.has('ATTENDANCE_SELFIE')
+          ? (policy?.selfieMode ?? legacySelfieMode(policy))
+          : SelfieMode.DISABLED;
       const fieldTrackingEnabled = isFieldTrackingEnabled({
         moduleKeys,
+        capabilityKeys,
         settingsEnabled: settings.fieldTrackingEnabled,
         policy,
         workType: employee.workType,
       });
       const faceRequired = selfieMode === SelfieMode.REQUIRED;
       const registeredDeviceRequired =
-        attendanceEnabled && (policy?.requireRegisteredDevice ?? true);
+        attendanceEnabled &&
+        capabilityKeys.has('ATTENDANCE_DEVICE_TRUST') &&
+        (policy?.requireRegisteredDevice ?? true);
       const biometricConsentRequired =
         faceRequired && policy?.allowBiometricOptOut !== true;
       return {
@@ -153,8 +163,11 @@ export class RuntimeConfigService {
           modules: {
             attendance: { enabled: attendanceEnabled },
             fieldTracking: { enabled: fieldTrackingEnabled },
-            regularization: { enabled: moduleKeys.has('REGULARIZATION') },
-            leave: { enabled: moduleKeys.has('LEAVE') },
+            regularization: {
+              enabled: capabilityKeys.has('ATTENDANCE_REGULARIZATION'),
+            },
+            // Kept for older mobile builds; Leave is included with Attendance.
+            leave: { enabled: attendanceEnabled },
           },
           attendance: {
             canPunch: attendanceEnabled,
@@ -163,6 +176,11 @@ export class RuntimeConfigService {
             registeredDeviceRequired,
             integrityRequired: attendanceEnabled,
             maxOfflineSyncHours: policy?.maxOfflineSyncHours ?? 48,
+            leave: {
+              enabled: attendanceEnabled,
+              policyCount: leavePolicyCount,
+              canRequest: attendanceEnabled && leavePolicyCount > 0,
+            },
           },
           fieldTracking: {
             enabled: fieldTrackingEnabled,
@@ -199,10 +217,10 @@ export class RuntimeConfigService {
     return { data: resolved.data, etag: `W/"${resolved.etagSeed}"` };
   }
 
-  getAttendanceCapabilities() {
+  async getAttendanceCapabilities() {
     const tenantId = this.requireTenantId();
     return this.prisma.forTenant(async (tx) => {
-      const [settings, modules] = await Promise.all([
+      const [settings, modules, capabilityKeys] = await Promise.all([
         tx.tenantSettings.findUnique({ where: { tenantId } }),
         tx.tenantModule.findMany({
           where: {
@@ -212,19 +230,141 @@ export class RuntimeConfigService {
           },
           select: { module: { select: { key: true } } },
         }),
+        this.effectiveCapabilityKeys(tx, tenantId),
       ]);
       const keys = new Set(modules.map(({ module }) => module.key));
+      const fieldTrackingEntitled =
+        keys.has('FIELD_TRACKING') &&
+        capabilityKeys.has('ATTENDANCE_FIELD_TRACKING');
+      const fieldTrackingEnabled = settings?.fieldTrackingEnabled ?? false;
+      const fieldTrackingRelevant =
+        fieldTrackingEntitled && fieldTrackingEnabled
+          ? await this.hasRelevantFieldTrackingEmployee(tx, tenantId)
+          : false;
       return {
         data: {
           attendanceEntitled: keys.has('ATTENDANCE'),
-          fieldTrackingEntitled: keys.has('FIELD_TRACKING'),
-          fieldTrackingEnabled: settings?.fieldTrackingEnabled ?? false,
+          officeGeofenceEntitled: capabilityKeys.has(
+            'ATTENDANCE_OFFICE_GEOFENCE',
+          ),
+          deviceTrustEntitled: capabilityKeys.has('ATTENDANCE_DEVICE_TRUST'),
+          selfieEntitled: capabilityKeys.has('ATTENDANCE_SELFIE'),
+          regularizationEntitled: capabilityKeys.has(
+            'ATTENDANCE_REGULARIZATION',
+          ),
+          payrollExportEntitled: capabilityKeys.has(
+            'ATTENDANCE_PAYROLL_EXPORT',
+          ),
+          fieldTrackingEntitled,
+          fieldTrackingEnabled,
+          fieldTrackingRelevant,
           fieldTrackingIntervalMin: settings?.fieldTrackingIntervalMin ?? 15,
           biometricEnforcementAvailable: canEnforceBiometrics(),
           runtimeConfigVersion: settings?.runtimeConfigVersion ?? 1,
         },
       };
     });
+  }
+
+  private async hasRelevantFieldTrackingEmployee(
+    tx: PrismaTransaction,
+    tenantId: string,
+  ) {
+    const employees = await tx.employee.findMany({
+      where: {
+        tenantId,
+        status: EmployeeStatus.ACTIVE,
+        workType: { in: [WorkType.FIELD, WorkType.HYBRID] },
+      },
+      select: { id: true, deptId: true, workType: true },
+    });
+    if (!employees.length) return false;
+
+    const employeeIds = employees.map(({ id }) => id);
+    const departmentIds = [...new Set(employees.map(({ deptId }) => deptId))];
+    const assignments = await tx.policyAssignment.findMany({
+      where: {
+        tenantId,
+        OR: [
+          { scope: 'EMPLOYEE', employeeId: { in: employeeIds } },
+          { scope: 'DEPARTMENT', deptId: { in: departmentIds } },
+          { scope: 'TENANT_DEFAULT' },
+        ],
+      },
+      select: {
+        scope: true,
+        employeeId: true,
+        deptId: true,
+        policy: {
+          select: {
+            fieldTrackingEnabled: true,
+            allowHybridFieldTracking: true,
+          },
+        },
+      },
+    });
+
+    return employees.some((employee) => {
+      const policy =
+        assignments.find(
+          (assignment) =>
+            assignment.scope === 'EMPLOYEE' &&
+            assignment.employeeId === employee.id,
+        )?.policy ??
+        assignments.find(
+          (assignment) =>
+            assignment.scope === 'DEPARTMENT' &&
+            assignment.deptId === employee.deptId,
+        )?.policy ??
+        assignments.find((assignment) => assignment.scope === 'TENANT_DEFAULT')
+          ?.policy;
+      return Boolean(
+        policy?.fieldTrackingEnabled &&
+        (employee.workType === WorkType.FIELD ||
+          policy.allowHybridFieldTracking),
+      );
+    });
+  }
+
+  private async effectiveCapabilityKeys(
+    tx: PrismaTransaction,
+    tenantId: string,
+  ) {
+    const now = new Date();
+    const [subscription, overrides] = await Promise.all([
+      tx.tenantSubscription.findFirst({
+        where: {
+          tenantId,
+          status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] },
+        },
+        include: {
+          plan: {
+            include: {
+              capabilities: { include: { capability: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      tx.tenantCapabilityOverride.findMany({
+        where: {
+          tenantId,
+          OR: [{ startsAt: null }, { startsAt: { lte: now } }],
+          AND: [{ OR: [{ endsAt: null }, { endsAt: { gt: now } }] }],
+        },
+        include: { capability: true },
+      }),
+    ]);
+    const keys = new Set(
+      subscription?.plan.capabilities
+        .filter(({ included }) => included)
+        .map(({ capability }) => capability.key) ?? [],
+    );
+    for (const override of overrides) {
+      if (override.mode === 'ENABLE') keys.add(override.capability.key);
+      if (override.mode === 'DISABLE') keys.delete(override.capability.key);
+    }
+    return keys;
   }
 
   updateAttendanceCapabilities(dto: UpdateAttendanceCapabilitiesDto) {
@@ -237,18 +377,25 @@ export class RuntimeConfigService {
     const tenantId = this.requireTenantId();
     return this.prisma.forTenant(async (tx) => {
       if (dto.fieldTrackingEnabled === true) {
-        const entitled = await tx.tenantModule.findFirst({
-          where: {
-            tenantId,
-            isActive: true,
-            module: { key: 'FIELD_TRACKING', availability: 'AVAILABLE' },
-          },
-          select: { id: true },
-        });
-        if (!entitled) {
+        const [entitledModule, capabilityKeys] = await Promise.all([
+          tx.tenantModule.findFirst({
+            where: {
+              tenantId,
+              isActive: true,
+              module: { key: 'FIELD_TRACKING', availability: 'AVAILABLE' },
+            },
+            select: { id: true },
+          }),
+          this.effectiveCapabilityKeys(tx, tenantId),
+        ]);
+        if (
+          !entitledModule ||
+          !capabilityKeys.has('ATTENDANCE_FIELD_TRACKING')
+        ) {
           throw new ForbiddenException({
             code: 'MODULE_ACCESS_DENIED',
-            message: 'FIELD_TRACKING is not active for this workspace',
+            message:
+              'Field Tracking is not included in this workspace subscription',
           });
         }
       }
@@ -296,7 +443,7 @@ export class RuntimeConfigService {
     userId = this.requireUserId(),
   ) {
     const employee = await this.employeeForUser(tx, userId);
-    const [policy, settings, modules] = await Promise.all([
+    const [policy, settings, modules, capabilityKeys] = await Promise.all([
       this.effectivePolicy(tx, employee),
       tx.tenantSettings.findUnique({ where: { tenantId: employee.tenantId } }),
       tx.tenantModule.findMany({
@@ -307,9 +454,11 @@ export class RuntimeConfigService {
         },
         select: { module: { select: { key: true } } },
       }),
+      this.effectiveCapabilityKeys(tx, employee.tenantId),
     ]);
     const enabled = isFieldTrackingEnabled({
       moduleKeys: new Set(modules.map(({ module }) => module.key)),
+      capabilityKeys,
       settingsEnabled: settings?.fieldTrackingEnabled ?? false,
       policy,
       workType: employee.workType,
@@ -429,12 +578,14 @@ function legacySelfieMode(policy: EffectivePolicy | null) {
 
 function isFieldTrackingEnabled(input: {
   moduleKeys: Set<string>;
+  capabilityKeys: Set<string>;
   settingsEnabled: boolean;
   policy: EffectivePolicy | null;
   workType: WorkType;
 }) {
   if (
     !input.moduleKeys.has('FIELD_TRACKING') ||
+    !input.capabilityKeys.has('ATTENDANCE_FIELD_TRACKING') ||
     !input.settingsEnabled ||
     input.policy?.fieldTrackingEnabled !== true
   ) {

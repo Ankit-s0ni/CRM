@@ -410,6 +410,72 @@ export class AttendanceConfigService {
     return result;
   }
 
+  async assignEmployeePolicy(employeeId: string, policyId: string | null) {
+    const tenantId = this.tenantId();
+    const result = await this.prisma.forTenant(async (tx) => {
+      const employee = await tx.employee.findUnique({
+        where: { id: employeeId },
+        select: {
+          id: true,
+          status: true,
+          officeAssignments: { select: { id: true }, take: 1 },
+        },
+      });
+      if (!employee || employee.status !== 'ACTIVE') this.notFound('Employee');
+
+      const policy = policyId
+        ? await tx.attendancePolicy.findUnique({ where: { id: policyId } })
+        : null;
+      if (policyId && !policy) this.notFound('Policy');
+      if (
+        policy?.locationMode === 'OFFICE_GEOFENCE' &&
+        !employee.officeAssignments.length
+      ) {
+        throw new BadRequestException({
+          code: 'OFFICE_CONFIGURATION_REQUIRED',
+          message:
+            'Assign an office to this employee before applying an office-geofence policy',
+        });
+      }
+
+      const previous = await tx.policyAssignment.findMany({
+        where: { scope: 'EMPLOYEE', employeeId },
+      });
+      await tx.policyAssignment.deleteMany({
+        where: { scope: 'EMPLOYEE', employeeId },
+      });
+      const assignment = policyId
+        ? await tx.policyAssignment.create({
+            data: {
+              tenantId,
+              policyId,
+              scope: 'EMPLOYEE',
+              employeeId,
+            },
+          })
+        : null;
+      await this.record(
+        tx,
+        'attendance.employee.policy.assigned',
+        'Employee',
+        employeeId,
+        previous,
+        assignment,
+      );
+      await bumpRuntimeConfigVersion(tx, tenantId);
+      return {
+        data: {
+          employeeId,
+          assignment,
+          policy,
+          inheritanceMode: policy ? 'EMPLOYEE' : 'INHERITED',
+        },
+      };
+    });
+    await this.policyCache.invalidate(tenantId);
+    return result;
+  }
+
   async resolvePolicy(employeeId: string, date: string) {
     const tenantId = this.tenantId();
     const cached = await this.policyCache.get(tenantId, employeeId, date);

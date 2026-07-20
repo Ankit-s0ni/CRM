@@ -36,6 +36,7 @@ describe('Employee imports (e2e)', () => {
   let factory: TestDataFactory;
   let sequence = 0;
   const tenantIds = new Set<string>();
+  const planIds = new Set<string>();
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -60,6 +61,11 @@ describe('Employee imports (e2e)', () => {
   afterAll(async () => {
     for (const tenantId of tenantIds)
       await cleanupTenant(adminPrisma, tenantId);
+    if (planIds.size) {
+      await adminPrisma.subscriptionPlan.deleteMany({
+        where: { id: { in: [...planIds] } },
+      });
+    }
     await app.close();
     await adminPrisma.$disconnect();
 
@@ -234,6 +240,8 @@ describe('Employee imports (e2e)', () => {
       api(workspace).post('/employees').send({
         employeeCode: 'MAN-1',
         fullName: 'Manual Last Seat',
+        email: 'manual.last.seat@employee.test',
+        phone: '+919000000096',
         workType: 'OFFICE',
         dateOfJoining: '2026-01-15',
         deptId: organization.departmentId,
@@ -279,9 +287,19 @@ describe('Employee imports (e2e)', () => {
       employeeCount: '101-250 employees',
     });
     tenantIds.add(signup.tenantId);
+    const plan = await adminPrisma.subscriptionPlan.create({
+      data: {
+        name: `Import Test Plan ${stamp}`,
+        pricePerUser: 0,
+        currency: 'INR',
+        maxEmployees: seatCount,
+        billingPeriod: 'MONTHLY',
+      },
+    });
+    planIds.add(plan.id);
     await adminPrisma.tenantSubscription.updateMany({
       where: { tenantId: signup.tenantId },
-      data: { seatCount },
+      data: { seatCount, planId: plan.id },
     });
     await TenantContextService.run({ tenantId: signup.tenantId }, () =>
       authService.verifyToken(

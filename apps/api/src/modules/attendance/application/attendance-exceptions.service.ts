@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ExceptionSource, ExceptionType, Prisma } from '@prisma/client';
 import { AuditService } from '../../../shared/audit/audit.service';
 import type { PrismaTransaction } from '../../../shared/database/prisma.service';
 import { PrismaService } from '../../../shared/database/prisma.service';
@@ -30,8 +30,13 @@ export class AttendanceExceptionsService {
   list(query: AttendanceExceptionQueryDto) {
     return this.prisma.forTenant(async (tx) => {
       const where: Prisma.AttendanceExceptionWhereInput = {
+        source: ExceptionSource.MANUAL,
         employeeId: query.employeeId,
-        exceptionType: query.exceptionType,
+        exceptionType:
+          query.exceptionType ??
+          ({
+            in: [ExceptionType.ON_DUTY, ExceptionType.WFH, ExceptionType.OTHER],
+          } satisfies Prisma.EnumExceptionTypeFilter),
         ...(query.startDate || query.endDate
           ? {
               startDate: query.endDate
@@ -78,7 +83,9 @@ export class AttendanceExceptionsService {
 
   get(id: string) {
     return this.prisma.forTenant(async (tx) => {
-      const value = await tx.attendanceException.findUnique({ where: { id } });
+      const value = await tx.attendanceException.findFirst({
+        where: { id, source: ExceptionSource.MANUAL },
+      });
       if (!value) this.notFound();
       const employee = await tx.employee.findUnique({
         where: { id: value.employeeId },
@@ -114,8 +121,8 @@ export class AttendanceExceptionsService {
 
   update(id: string, dto: UpdateAttendanceExceptionDto) {
     return this.prisma.forTenant(async (tx) => {
-      const current = await tx.attendanceException.findUnique({
-        where: { id },
+      const current = await tx.attendanceException.findFirst({
+        where: { id, source: ExceptionSource.MANUAL },
       });
       if (!current) this.notFound();
       const employeeId = dto.employeeId ?? current.employeeId;
@@ -149,8 +156,8 @@ export class AttendanceExceptionsService {
 
   remove(id: string) {
     return this.prisma.forTenant(async (tx) => {
-      const current = await tx.attendanceException.findUnique({
-        where: { id },
+      const current = await tx.attendanceException.findFirst({
+        where: { id, source: ExceptionSource.MANUAL },
       });
       if (!current) this.notFound();
       await this.lockEmployees(tx, [current.employeeId]);

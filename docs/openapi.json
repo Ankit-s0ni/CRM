@@ -679,6 +679,75 @@
         ]
       }
     },
+    "/workspace/modules/{key}/health": {
+      "get": {
+        "operationId": "WorkspaceController_getModuleHealth",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get entitlement, dependencies, and setup health for one module",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
+    "/workspace/settings/health": {
+      "get": {
+        "operationId": "WorkspaceController_getSettingsHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get permission-filtered workspace setup readiness",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
+    "/workspace/integrations": {
+      "get": {
+        "operationId": "WorkspaceController_getIntegrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe server integration configuration diagnostics",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
     "/departments": {
       "get": {
         "operationId": "OrganizationController_listDepartments",
@@ -1167,6 +1236,18 @@
             }
           },
           {
+            "name": "quickFilter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "JOINING_SOON",
+                "MISSING_MANAGER"
+              ]
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -1335,6 +1416,35 @@
         ]
       }
     },
+    "/employees/{id}/workspace": {
+      "get": {
+        "operationId": "EmployeesController_workspace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a role-scoped employee workspace summary",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
     "/employees/{id}": {
       "get": {
         "operationId": "EmployeesController_getEmployee",
@@ -1476,6 +1586,26 @@
         "summary": "Reactivate a terminated employee under quota",
         "tags": [
           "Employees"
+        ]
+      }
+    },
+    "/employee-imports/schema": {
+      "get": {
+        "operationId": "EmployeeImportsController_schema",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the supported employee CSV schema and template",
+        "tags": [
+          "Employee Imports"
         ]
       }
     },
@@ -1660,6 +1790,185 @@
         "summary": "Idempotently retry failed valid rows",
         "tags": [
           "Employee Imports"
+        ]
+      }
+    },
+    "/employees/{employeeId}/documents": {
+      "get": {
+        "operationId": "EmployeeDocumentsController_list",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List safe employee document metadata",
+        "tags": [
+          "Employee Documents"
+        ]
+      },
+      "post": {
+        "operationId": "EmployeeDocumentsController_register",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterEmployeeDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register uploaded employee document metadata",
+        "tags": [
+          "Employee Documents"
+        ]
+      }
+    },
+    "/employees/{employeeId}/documents/presign": {
+      "post": {
+        "operationId": "EmployeeDocumentsController_presign",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignEmployeeDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private employee document upload URL",
+        "tags": [
+          "Employee Documents"
+        ]
+      }
+    },
+    "/employees/{employeeId}/documents/{documentId}/download": {
+      "get": {
+        "operationId": "EmployeeDocumentsController_download",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a short-lived private document URL",
+        "tags": [
+          "Employee Documents"
+        ]
+      }
+    },
+    "/employees/{employeeId}/documents/{documentId}": {
+      "delete": {
+        "operationId": "EmployeeDocumentsController_remove",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Permanently delete an employee document",
+        "tags": [
+          "Employee Documents"
         ]
       }
     },
@@ -3005,6 +3314,26 @@
         ]
       }
     },
+    "/platform/catalog": {
+      "get": {
+        "operationId": "PlatformCatalogController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List customer-facing products, add-ons, and capabilities",
+        "tags": [
+          "Platform Product Catalog"
+        ]
+      }
+    },
     "/platform/tenants/{tenantId}/modules": {
       "get": {
         "operationId": "PlatformTenantModulesController_list",
@@ -3068,6 +3397,74 @@
         "summary": "Atomically replace active tenant modules",
         "tags": [
           "Platform Tenant Modules"
+        ]
+      }
+    },
+    "/platform/tenants/{tenantId}/entitlements": {
+      "get": {
+        "operationId": "PlatformTenantEntitlementsController_list",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get plan, overrides, and effective tenant entitlements",
+        "tags": [
+          "Platform Tenant Entitlements"
+        ]
+      }
+    },
+    "/platform/tenants/{tenantId}/entitlements/overrides": {
+      "put": {
+        "operationId": "PlatformTenantEntitlementsController_replace",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceTenantCapabilityOverridesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace audited tenant capability overrides",
+        "tags": [
+          "Platform Tenant Entitlements"
         ]
       }
     },
@@ -3983,6 +4380,45 @@
         ]
       }
     },
+    "/attendance-policies/employees/{employeeId}": {
+      "put": {
+        "operationId": "AttendanceConfigController_assignEmployeePolicy",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignEmployeePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set or clear one employee-specific attendance policy override",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
     "/shifts": {
       "get": {
         "operationId": "AttendanceConfigController_listShifts",
@@ -4524,6 +4960,15 @@
             }
           },
           {
+            "name": "officeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "status",
             "required": false,
             "in": "query",
@@ -4586,6 +5031,26 @@
         "summary": "Get the shared Business Admin and HR Admin live board",
         "tags": [
           "Attendance Dashboard"
+        ]
+      }
+    },
+    "/dashboard/hr-summary": {
+      "get": {
+        "operationId": "HrDashboardController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get permission-filtered, employee-scoped HR action counts",
+        "tags": [
+          "HR Dashboard"
         ]
       }
     },
@@ -4793,6 +5258,24 @@
       "get": {
         "operationId": "AttendanceQueryController_register",
         "parameters": [
+          {
+            "name": "lateOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return only records with late minutes greater than zero",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingCheckout",
+            "required": false,
+            "in": "query",
+            "description": "Return checked-in records that do not have a checkout",
+            "schema": {
+              "type": "boolean"
+            }
+          },
           {
             "name": "page",
             "required": false,
@@ -6959,6 +7442,45 @@
         ]
       }
     },
+    "/leave-balances/{id}/adjust": {
+      "post": {
+        "operationId": "LeaveController_adjustBalance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustLeaveBalanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adjust an employee leave balance with an audit entry",
+        "tags": [
+          "Leave"
+        ]
+      }
+    },
     "/leave-requests": {
       "get": {
         "operationId": "LeaveController_requests",
@@ -7554,6 +8076,45 @@
         ]
       }
     },
+    "/platform/plans/{id}/impact": {
+      "post": {
+        "operationId": "PlatformBillingController_planImpact",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview tenants and features affected by a plan edit",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
     "/platform/invoices": {
       "get": {
         "operationId": "PlatformBillingController_invoices",
@@ -7719,6 +8280,26 @@
         "summary": "Get provider latency and webhook health",
         "tags": [
           "Platform Billing"
+        ]
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "operationId": "TenantAuditController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search the current tenant audit history",
+        "tags": [
+          "Tenant Audit"
         ]
       }
     }
@@ -8085,6 +8666,14 @@
           "objectKey"
         ]
       },
+      "PresignEmployeeDocumentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RegisterEmployeeDocumentDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateRoleDto": {
         "type": "object",
         "properties": {
@@ -8179,6 +8768,11 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Employee to link atomically when the invited user accepts the invitation"
           }
         },
         "required": [
@@ -8476,6 +9070,22 @@
             "items": {
               "type": "string"
             }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PRODUCT",
+              "ADD_ON"
+            ]
+          },
+          "parentModuleId": {
+            "type": "string"
+          },
+          "catalogOrder": {
+            "type": "number"
+          },
+          "customerVisible": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -8514,6 +9124,22 @@
             "items": {
               "type": "string"
             }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PRODUCT",
+              "ADD_ON"
+            ]
+          },
+          "parentModuleId": {
+            "type": "string"
+          },
+          "catalogOrder": {
+            "type": "number"
+          },
+          "customerVisible": {
+            "type": "boolean"
           }
         }
       },
@@ -8533,6 +9159,10 @@
         "required": [
           "moduleKeys"
         ]
+      },
+      "ReplaceTenantCapabilityOverridesDto": {
+        "type": "object",
+        "properties": {}
       },
       "CreateImpersonationDto": {
         "type": "object",
@@ -8667,6 +9297,20 @@
       "ReplacePolicyAssignmentsDto": {
         "type": "object",
         "properties": {}
+      },
+      "AssignEmployeePolicyDto": {
+        "type": "object",
+        "properties": {
+          "policyId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Direct policy override. Use null to inherit department or tenant policy."
+          }
+        },
+        "required": [
+          "policyId"
+        ]
       },
       "CreateShiftDto": {
         "type": "object",
@@ -9289,6 +9933,10 @@
         "properties": {}
       },
       "UpdateLeavePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdjustLeaveBalanceDto": {
         "type": "object",
         "properties": {}
       },

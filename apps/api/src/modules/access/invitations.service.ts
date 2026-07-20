@@ -11,6 +11,8 @@ import { createHash, randomBytes } from 'crypto';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { TenantContextService } from '../../shared/tenancy/tenant-context.service';
+import { AuditService } from '../../shared/audit/audit.service';
+import { bumpRuntimeConfigVersion } from '../runtime-config/runtime-config-version';
 import {
   AcceptInvitationDto,
   CreateInvitationDto,
@@ -21,6 +23,7 @@ type InvitationPayload = {
   tenantId: string;
   inviterId: string;
   roleIds: string[];
+  employeeId?: string;
 };
 
 @Injectable()
@@ -28,6 +31,7 @@ export class InvitationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tenantContextService: TenantContextService,
+    private readonly auditService: AuditService,
   ) {}
 
   async create(dto: CreateInvitationDto, inviterId: string) {
@@ -38,6 +42,9 @@ export class InvitationsService {
     await this.prisma.forTenant(async (tx) => {
       await this.assertEmailAvailable(tx, email);
       await this.assertRoles(tx, dto.roleIds);
+      if (dto.employeeId) {
+        await this.assertEmployeeAvailable(tx, dto.employeeId);
+      }
       const pending = await tx.verificationToken.findFirst({
         where: {
           email,
@@ -52,12 +59,31 @@ export class InvitationsService {
           message: 'A pending invitation already exists for this email',
         });
       }
+      if (dto.employeeId) {
+        const pendingEmployeeInvitation = await tx.verificationToken.findFirst({
+          where: {
+            tenantId,
+            purpose: TokenPurpose.USER_INVITE,
+            consumedAt: null,
+            expiresAt: { gt: new Date() },
+            payload: { path: ['employeeId'], equals: dto.employeeId },
+          },
+          select: { id: true },
+        });
+        if (pendingEmployeeInvitation) {
+          throw new ConflictException({
+            code: 'EMPLOYEE_INVITATION_PENDING',
+            message: 'This employee already has a pending account invitation',
+          });
+        }
+      }
 
       await this.writeInvitation(tx, {
         tenantId,
         inviterId,
         email,
         roleIds: dto.roleIds,
+        employeeId: dto.employeeId,
         token,
       });
     });
@@ -98,6 +124,7 @@ export class InvitationsService {
         inviterId,
         email,
         roleIds: payload.roleIds,
+        employeeId: payload.employeeId,
         token,
       });
       invitationFound = true;
@@ -176,6 +203,32 @@ export class InvitationsService {
         },
         include: { roles: { include: { role: true } } },
       });
+      if (payload.employeeId) {
+        const linked = await tx.employee.updateMany({
+          where: {
+            id: payload.employeeId,
+            tenantId: payload.tenantId,
+            userId: null,
+          },
+          data: { userId: user.id },
+        });
+        if (linked.count !== 1) {
+          throw new ConflictException({
+            code: 'INVITATION_EMPLOYEE_UNAVAILABLE',
+            message: 'The employee is missing or already has a login account',
+          });
+        }
+        await bumpRuntimeConfigVersion(tx, payload.tenantId);
+        await this.auditService.append(tx, {
+          tenantId: payload.tenantId,
+          actorUserId: user.id,
+          action: 'identity.employee-account.linked',
+          module: 'identity',
+          entityType: 'Employee',
+          entityId: payload.employeeId,
+          newValue: { userId: user.id, email: user.email },
+        });
+      }
       await tx.verificationToken.updateMany({
         where: {
           tenantId: payload.tenantId,
@@ -193,6 +246,7 @@ export class InvitationsService {
           tenantId: user.tenantId,
           email: user.email,
           roles: user.roles.map(({ role }) => role.name),
+          employeeId: payload.employeeId ?? null,
         },
       };
     });
@@ -214,6 +268,7 @@ export class InvitationsService {
           tenantId: input.tenantId,
           inviterId: input.inviterId,
           roleIds: input.roleIds,
+          ...(input.employeeId ? { employeeId: input.employeeId } : {}),
         },
       },
     });
@@ -243,6 +298,26 @@ export class InvitationsService {
     }
   }
 
+  private async assertEmployeeAvailable(
+    tx: PrismaTransaction,
+    employeeId: string,
+  ) {
+    const employee = await tx.employee.findFirst({
+      where: {
+        id: employeeId,
+        tenantId: this.requireTenantId(),
+        userId: null,
+      },
+      select: { id: true },
+    });
+    if (!employee) {
+      throw new ConflictException({
+        code: 'EMPLOYEE_ACCOUNT_EXISTS',
+        message: 'The employee is missing or already has a login account',
+      });
+    }
+  }
+
   private readPayload(payload: Prisma.JsonValue): InvitationPayload {
     if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
       this.throwInvalidInvitation();
@@ -252,7 +327,8 @@ export class InvitationsService {
       typeof value.tenantId !== 'string' ||
       typeof value.inviterId !== 'string' ||
       !Array.isArray(value.roleIds) ||
-      !value.roleIds.every((roleId) => typeof roleId === 'string')
+      !value.roleIds.every((roleId) => typeof roleId === 'string') ||
+      (value.employeeId !== undefined && typeof value.employeeId !== 'string')
     ) {
       this.throwInvalidInvitation();
     }
@@ -260,6 +336,8 @@ export class InvitationsService {
       tenantId: value.tenantId,
       inviterId: value.inviterId,
       roleIds: value.roleIds,
+      employeeId:
+        typeof value.employeeId === 'string' ? value.employeeId : undefined,
     };
   }
 

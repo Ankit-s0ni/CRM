@@ -126,6 +126,28 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
           );
         }
         final options = snapshot.data!;
+        if (options.policies
+            .where((policy) => policy['isActive'] != false)
+            .isEmpty) {
+          return const AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.event_busy_outlined, color: AppTheme.slate),
+                SizedBox(height: 12),
+                Text(
+                  'Leave policy not configured',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Your HR team has not created an active leave policy yet. You can apply for leave as soon as it is configured.',
+                  style: TextStyle(color: AppTheme.slate, height: 1.45),
+                ),
+              ],
+            ),
+          );
+        }
         return Form(
           key: _formKey,
           child: Column(

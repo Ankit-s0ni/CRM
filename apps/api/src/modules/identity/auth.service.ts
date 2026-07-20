@@ -327,19 +327,10 @@ export class AuthService {
       );
     }
 
-    let isPasswordValid = false;
-    try {
-      if (
-        user.passwordHash === 'dummy_hash' &&
-        passwordPlain === 'dummy_password'
-      ) {
-        isPasswordValid = true;
-      } else {
-        isPasswordValid = await argon2.verify(user.passwordHash, passwordPlain);
-      }
-    } catch {
-      isPasswordValid = false;
-    }
+    const isPasswordValid = await this.verifyPassword(
+      user.passwordHash,
+      passwordPlain,
+    );
 
     if (!isPasswordValid) {
       // Increment failed_login_count
@@ -382,6 +373,51 @@ export class AuthService {
     await this.recordLoginAttempt(email, true, null, ipAddress, userAgent);
 
     return this.buildSession(user, ipAddress, userAgent, undefined, deviceUuid);
+  }
+
+  async mobileLogin(
+    email: string,
+    passwordPlain: string,
+    ipAddress?: string,
+    userAgent?: string,
+    deviceUuid?: string,
+  ) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const candidates = await this.prisma.forAdmin((tx) =>
+      tx.user.findMany({
+        where: {
+          email: normalizedEmail,
+          roles: { some: { role: { name: 'EMPLOYEE' } } },
+        },
+        select: { tenantId: true, passwordHash: true },
+      }),
+    );
+    const matches = (
+      await Promise.all(
+        candidates.map(async (candidate) => ({
+          tenantId: candidate.tenantId,
+          valid: await this.verifyPassword(
+            candidate.passwordHash,
+            passwordPlain,
+          ),
+        })),
+      )
+    ).filter((candidate) => candidate.valid);
+
+    // Never guess when identical employee credentials exist in multiple tenants.
+    if (matches.length !== 1) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return TenantContextService.run({ tenantId: matches[0].tenantId }, () =>
+      this.login(
+        normalizedEmail,
+        passwordPlain,
+        ipAddress,
+        userAgent,
+        deviceUuid,
+      ),
+    );
   }
 
   async refresh(
@@ -766,6 +802,17 @@ export class AuthService {
 
   private hashToken(token: string) {
     return createHash('sha256').update(token).digest('hex');
+  }
+
+  private async verifyPassword(passwordHash: string, passwordPlain: string) {
+    try {
+      if (passwordHash === 'dummy_hash' && passwordPlain === 'dummy_password') {
+        return true;
+      }
+      return await argon2.verify(passwordHash, passwordPlain);
+    } catch {
+      return false;
+    }
   }
 
   private readPayload(payload: Prisma.JsonValue | null) {

@@ -2,12 +2,14 @@
 
 import { Activity, BatteryMedium, CircleDot, LocateFixed, RefreshCw, Route, UsersRound } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { AdminPage, ErrorState, LoadingState, Panel, PrimaryButton } from "./page-primitives";
 import { FieldMap } from "./field-map";
+import { FeatureInfo } from "@/components/help/feature-info";
 
 type PresenceState = "LIVE" | "STALE" | "OFFLINE";
 type FieldEmployee = {
@@ -36,11 +38,14 @@ type FieldEmployee = {
 };
 
 export function FieldMonitoringView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const accessToken = useAuthStore(({ accessToken }) => accessToken);
   const tenantId = useAuthStore(({ user }) => user?.tenantId);
   const [employees, setEmployees] = useState<FieldEmployee[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
-  const [filter, setFilter] = useState<"ALL" | PresenceState>("ALL");
+  const filter = presenceFilter(searchParams.get("presence"));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -119,6 +124,14 @@ export function FieldMonitoringView() {
       description="Live, stale, and offline field employees with privacy-safe location evidence."
       title="Field Operations"
     >
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-[#d9d5e5] bg-[#f5f2ff] p-4 text-sm leading-6 text-[#545160]">
+        <FeatureInfo helpKey="background-tracking" />
+        <p>
+          Location is shown only for employees enabled by an active field
+          attendance policy and only during eligible work sessions. Raw route
+          evidence follows the workspace retention policy.
+        </p>
+      </div>
       <div className="mb-5 grid gap-3 sm:grid-cols-4">
         <Stat label="Field employees" value={employees.length} icon={UsersRound} />
         <Stat label="Live now" value={employees.filter(({ presence }) => presence === "LIVE").length} icon={Activity} tone="green" />
@@ -133,9 +146,15 @@ export function FieldMonitoringView() {
             <div className="flex flex-wrap gap-2">
               {(["ALL", "LIVE", "STALE", "OFFLINE"] as const).map((state) => (
                 <button
+                  aria-pressed={filter === state}
                   className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", filter === state ? "bg-[#302f39] text-white" : "bg-[#f0ecf9] text-[#5e5b68]")}
                   key={state}
-                  onClick={() => setFilter(state)}
+                  onClick={() =>
+                    router.push(
+                      `${pathname}${state === "ALL" ? "" : `?presence=${state}`}`,
+                      { scroll: false },
+                    )
+                  }
                   type="button"
                 >{state}</button>
               ))}
@@ -180,6 +199,12 @@ export function FieldMonitoringView() {
       </div>
     </AdminPage>
   );
+}
+
+function presenceFilter(value: string | null): "ALL" | PresenceState {
+  return value === "LIVE" || value === "STALE" || value === "OFFLINE"
+    ? value
+    : "ALL";
 }
 
 async function fetchLiveEmployees() {

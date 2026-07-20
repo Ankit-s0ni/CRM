@@ -16,7 +16,10 @@ accessible information (`i`) action explaining:
 - who can access or change it;
 - what employee, payroll, security or mobile-app behavior it affects.
 
-**Status:** Proposed plan, implementation not started  
+**Status:** Complete
+
+**Completed:** July 19, 2026
+
 **Primary surface:** Tenant HR/Business Admin web portal  
 **Current module home:** `/app/modules/attendance`  
 **Design direction:** Preserve the existing DeltCRM charcoal, white and indigo
@@ -67,12 +70,12 @@ architecture, routing shell and contextual-guidance change.
 
 Keep the existing four primary entries:
 
-| Entry | Purpose |
-|---|---|
-| Dashboard | Cross-module business summary and urgent work |
-| Employees | Directory, employee details, organization and imports |
-| Modules | Attendance, Leave and future product modules |
-| Settings | Company, users/roles, billing and workspace-level settings |
+| Entry     | Purpose                                                    |
+| --------- | ---------------------------------------------------------- |
+| Dashboard | Cross-module business summary and urgent work              |
+| Employees | Directory, employee details, organization and imports      |
+| Modules   | Attendance, Leave and future product modules               |
+| Settings  | Company, users/roles, billing and workspace-level settings |
 
 Do not add every Attendance screen back into the tenant sidebar.
 
@@ -81,14 +84,14 @@ Do not add every Attendance screen back into the tenant sidebar.
 Once the user enters Attendance, replace the generic `All modules / Attendance /
 Leave` strip with a persistent Attendance workspace navigation:
 
-| Navigation item | Primary user question | Route |
-|---|---|---|
-| Overview | What needs attention today? | `/app/modules/attendance` |
-| Today | Who is present, late, absent or incomplete? | `/app/attendance/register` |
-| Requests | What needs review or approval? | `/app/attendance/requests` |
-| Field | Where are active field teams? | `/app/attendance/field` |
-| Reports | What can I export or close for payroll? | `/app/attendance/reports` |
-| Setup | How should attendance work for this company? | `/app/attendance/setup` |
+| Navigation item | Primary user question                        | Route                      |
+| --------------- | -------------------------------------------- | -------------------------- |
+| Overview        | What needs attention today?                  | `/app/modules/attendance`  |
+| Today           | Who is present, late, absent or incomplete?  | `/app/attendance/register` |
+| Requests        | What needs review or approval?               | `/app/attendance/requests` |
+| Field           | Where are active field teams?                | `/app/attendance/field`    |
+| Reports         | What can I export or close for payroll?      | `/app/attendance/reports`  |
+| Setup           | How should attendance work for this company? | `/app/attendance/setup`    |
 
 Desktop behavior: a compact horizontal sub-navigation below the main header.
 
@@ -123,7 +126,7 @@ Required sections:
   high-severity security alerts and stale field sessions.
 - Quick actions: Open register, Review requests, Generate report and Add policy,
   filtered by permission.
-- Setup health: policy assignment coverage, unpublished roster, missing office
+- Setup health: policy assignment coverage, upcoming roster coverage, missing office
   geofence, device/biometric readiness and mobile capability state.
 - Month-end readiness: report status and payroll lock state, shown only to users
   with the corresponding permission.
@@ -136,9 +139,9 @@ Use the existing Attendance Register as the primary screen.
 
 Tabs or views:
 
-| View | Purpose |
-|---|---|
-| Register | Employee-by-employee attendance status |
+| View       | Purpose                                                         |
+| ---------- | --------------------------------------------------------------- |
+| Register   | Employee-by-employee attendance status                          |
 | Exceptions | Late, missing punch, absence and verification exception filters |
 
 Employee attendance detail remains a child route at
@@ -149,9 +152,9 @@ preserved filter/date state.
 
 Combine the two approval queues into one workspace:
 
-| Tab | Existing source | Preserved route |
-|---|---|---|
-| OD & WFH | Attendance exceptions | `/app/attendance/exceptions` |
+| Tab         | Existing source         | Preserved route                   |
+| ----------- | ----------------------- | --------------------------------- |
+| OD & WFH    | Attendance exceptions   | `/app/attendance/exceptions`      |
 | Corrections | Regularization requests | `/app/attendance/regularizations` |
 
 The canonical entry `/app/attendance/requests` redirects to the first tab the
@@ -179,10 +182,10 @@ background location for office-only policies.
 
 Combine reporting and payroll finalization:
 
-| Tab | Existing source | Preserved route |
-|---|---|---|
+| Tab            | Existing source                                | Preserved route           |
+| -------------- | ---------------------------------------------- | ------------------------- |
 | Reports center | Muster, payroll, late/OT, violations, distance | `/app/attendance/reports` |
-| Payroll close | Lock/reopen and immutable history | `/app/attendance/payroll` |
+| Payroll close  | Lock/reopen and immutable history              | `/app/attendance/payroll` |
 
 The Payroll Close tab is permission-gated. It must show the completed export it
 will lock, the affected period and the consequences for corrections/leave before
@@ -192,12 +195,12 @@ the confirmation action.
 
 Replace six or more equal feature cards with four guided setup groups:
 
-| Setup group | Tabs/features | Existing routes |
-|---|---|---|
-| Rules & verification | Attendance defaults, employee app behavior, policies | `/app/settings/attendance`, `/app/modules/attendance/capabilities`, `/app/attendance/policies` |
-| Work schedule | Shifts, rosters | `/app/attendance/shifts`, `/app/attendance/rosters` |
-| Workplaces & calendar | Offices/geofences, holidays | `/app/attendance/offices`, `/app/attendance/holidays` |
-| Trust & devices | Employee devices, security feed | `/app/attendance/devices`, `/app/attendance/security` |
+| Setup group           | Tabs/features                                        | Existing routes                                                                                |
+| --------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Rules & verification  | Attendance defaults, employee app behavior, policies | `/app/settings/attendance`, `/app/modules/attendance/capabilities`, `/app/attendance/policies` |
+| Work schedule         | Shifts, rosters                                      | `/app/attendance/shifts`, `/app/attendance/rosters`                                            |
+| Workplaces & calendar | Offices/geofences, holidays                          | `/app/attendance/offices`, `/app/attendance/holidays`                                          |
+| Trust & devices       | Employee devices, security feed                      | `/app/attendance/devices`, `/app/attendance/security`                                          |
 
 Canonical setup landing route: `/app/attendance/setup`.
 
@@ -206,27 +209,27 @@ example `3 policies, 14 employees unassigned` rather than only a description.
 
 ## 6. Current-to-Proposed Route Map
 
-| Current route | Proposed location | Migration action |
-|---|---|---|
-| `/app/modules/attendance` | Attendance Overview | Replace card directory with operational overview |
-| `/app/attendance/register` | Today / Register | Keep route |
-| `/app/attendance/register/:employeeId` | Today / Employee detail | Keep route and add breadcrumb/filter return |
-| `/app/attendance/exceptions` | Requests / OD & WFH | Keep route inside Requests shell |
-| `/app/attendance/regularizations` | Requests / Corrections | Keep route inside Requests shell |
-| `/app/attendance/regularizations/:id` | Requests / Correction decision | Keep route |
-| `/app/attendance/field` | Field / Live | Keep route, entitlement-gate navigation |
-| `/app/attendance/field/:employeeId/route` | Field / Route history | Keep route |
-| `/app/attendance/reports` | Reports / Reports center | Keep route |
-| `/app/attendance/payroll` | Reports / Payroll close | Keep route inside Reports shell |
-| `/app/settings/attendance` | Setup / Rules / Defaults | Keep route; change surrounding context to Attendance Setup |
-| `/app/modules/attendance/capabilities` | Setup / Rules / App behavior | Keep route |
-| `/app/attendance/policies` | Setup / Rules / Policies | Keep route |
-| `/app/attendance/shifts` | Setup / Work schedule / Shifts | Keep route |
-| `/app/attendance/rosters` | Setup / Work schedule / Rosters | Keep route |
-| `/app/attendance/offices` | Setup / Workplaces / Offices | Keep route |
-| `/app/attendance/holidays` | Setup / Workplaces / Holidays | Keep route |
-| `/app/attendance/devices` | Setup / Trust / Devices | Keep route |
-| `/app/attendance/security` | Setup / Trust / Security | Keep route |
+| Current route                             | Proposed location               | Migration action                                           |
+| ----------------------------------------- | ------------------------------- | ---------------------------------------------------------- |
+| `/app/modules/attendance`                 | Attendance Overview             | Replace card directory with operational overview           |
+| `/app/attendance/register`                | Today / Register                | Keep route                                                 |
+| `/app/attendance/register/:employeeId`    | Today / Employee detail         | Keep route and add breadcrumb/filter return                |
+| `/app/attendance/exceptions`              | Requests / OD & WFH             | Keep route inside Requests shell                           |
+| `/app/attendance/regularizations`         | Requests / Corrections          | Keep route inside Requests shell                           |
+| `/app/attendance/regularizations/:id`     | Requests / Correction decision  | Keep route                                                 |
+| `/app/attendance/field`                   | Field / Live                    | Keep route, entitlement-gate navigation                    |
+| `/app/attendance/field/:employeeId/route` | Field / Route history           | Keep route                                                 |
+| `/app/attendance/reports`                 | Reports / Reports center        | Keep route                                                 |
+| `/app/attendance/payroll`                 | Reports / Payroll close         | Keep route inside Reports shell                            |
+| `/app/settings/attendance`                | Setup / Rules / Defaults        | Keep route; change surrounding context to Attendance Setup |
+| `/app/modules/attendance/capabilities`    | Setup / Rules / App behavior    | Keep route                                                 |
+| `/app/attendance/policies`                | Setup / Rules / Policies        | Keep route                                                 |
+| `/app/attendance/shifts`                  | Setup / Work schedule / Shifts  | Keep route                                                 |
+| `/app/attendance/rosters`                 | Setup / Work schedule / Rosters | Keep route                                                 |
+| `/app/attendance/offices`                 | Setup / Workplaces / Offices    | Keep route                                                 |
+| `/app/attendance/holidays`                | Setup / Workplaces / Holidays   | Keep route                                                 |
+| `/app/attendance/devices`                 | Setup / Trust / Devices         | Keep route                                                 |
+| `/app/attendance/security`                | Setup / Trust / Security        | Keep route                                                 |
 
 New canonical routes do not replace existing URLs immediately. They provide
 entry points and redirect to the first permitted child. This avoids broken
@@ -262,16 +265,16 @@ Accessibility:
 
 Every feature-level help entry contains:
 
-| Field | Example |
-|---|---|
-| Name | Attendance corrections |
-| Summary | Fix an employee day after a missing or incorrect punch |
-| Use when | The employee submitted a regularization request |
-| How to use | Open request, compare evidence, enter comment, approve/reject |
-| Effect | Recomputes the attendance day unless payroll is locked |
-| Access | HR Admin or attendance regularization manager |
-| Dependencies | Attendance enabled; unlocked payroll period |
-| Related | Attendance register, Payroll close |
+| Field        | Example                                                       |
+| ------------ | ------------------------------------------------------------- |
+| Name         | Attendance corrections                                        |
+| Summary      | Fix an employee day after a missing or incorrect punch        |
+| Use when     | The employee submitted a regularization request               |
+| How to use   | Open request, compare evidence, enter comment, approve/reject |
+| Effect       | Recomputes the attendance day unless payroll is locked        |
+| Access       | HR Admin or attendance regularization manager                 |
+| Dependencies | Attendance enabled; unlocked payroll period                   |
+| Related      | Attendance register, Payroll close                            |
 
 ### 7.3 Placement rules
 
@@ -281,7 +284,7 @@ Add an `i` action to:
 - every Setup group and feature card;
 - every page title;
 - complex metrics/statuses such as stale field session, payroll lock, liveness,
-  device trust, geofence, roster publication and policy assignment;
+  device trust, geofence, roster assignment coverage and policy assignment;
 - every policy control that changes employee permissions or punch verification;
 - destructive, privacy-sensitive or payroll-impacting actions.
 
@@ -351,18 +354,18 @@ The first implementation must include entries for:
 Navigation visibility must continue to use the server-returned permission set.
 Do not duplicate role-name assumptions in UI components.
 
-| Area | Minimum permission examples |
-|---|---|
-| Today | `attendance.records.read` |
-| Requests / OD & WFH | `attendance.exceptions.read` |
-| Requests / Corrections | `attendance.regularizations.manage` |
-| Field | `attendance.field.live.read` or `attendance.field.routes.read` |
-| Reports center | `attendance.reports.read` or `attendance.reports.generate` |
-| Payroll close | `attendance.payroll-lock.manage` |
-| Setup / Rules | corresponding config/policy read or manage permission |
-| Setup / Schedule | shift/roster read or manage permission |
-| Setup / Workplaces | office/holiday read or manage permission |
-| Setup / Trust | device/security read or manage permission |
+| Area                   | Minimum permission examples                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| Today                  | `attendance.records.read`                                      |
+| Requests / OD & WFH    | `attendance.exceptions.read`                                   |
+| Requests / Corrections | `attendance.regularizations.manage`                            |
+| Field                  | `attendance.field.live.read` or `attendance.field.routes.read` |
+| Reports center         | `attendance.reports.read` or `attendance.reports.generate`     |
+| Payroll close          | `attendance.payroll-lock.manage`                               |
+| Setup / Rules          | corresponding config/policy read or manage permission          |
+| Setup / Schedule       | shift/roster read or manage permission                         |
+| Setup / Workplaces     | office/holiday read or manage permission                       |
+| Setup / Trust          | device/security read or manage permission                      |
 
 The route guard/API remains authoritative. Hidden navigation is not security.
 Direct access without permission must still return a consistent forbidden state.
@@ -402,56 +405,56 @@ drift.
 
 ### Work Package A - Navigation foundation
 
-- [ ] Create typed Attendance route/navigation metadata.
-- [ ] Add Attendance workspace context detection to `TenantShell`.
-- [ ] Replace generic module tabs with persistent Attendance navigation.
-- [ ] Add canonical `/requests` and `/setup` entry routes.
-- [ ] Preserve every existing route and deep link.
-- [ ] Add permission and capability filtering tests.
+- [x] Create typed Attendance route/navigation metadata.
+- [x] Add Attendance workspace context detection to `TenantShell`.
+- [x] Replace generic module tabs with persistent Attendance navigation.
+- [x] Add canonical `/requests` and `/setup` entry routes.
+- [x] Preserve every existing route and deep link.
+- [x] Add permission and capability filtering tests.
 
 ### Work Package B - Contextual help
 
-- [ ] Build accessible `FeatureInfo` popover/dialog behavior.
-- [ ] Build the typed Attendance help registry.
-- [ ] Make the global header help button route-aware and functional.
-- [ ] Add help to all feature cards, page titles and complex controls listed in
-  the initial catalog.
-- [ ] Add keyboard, focus, Escape, touch and card-click isolation tests.
-- [ ] Verify help content never exposes internal-only permission or sensitive
-  employee data.
+- [x] Build accessible `FeatureInfo` popover/dialog behavior.
+- [x] Build the typed Attendance help registry.
+- [x] Make the global header help button route-aware and functional.
+- [x] Add help to all feature cards, page titles and complex controls listed in
+      the initial catalog.
+- [x] Add keyboard, focus, Escape, touch and card-click isolation tests.
+- [x] Verify help content never exposes internal-only permission or sensitive
+      employee data.
 
 ### Work Package C - Operational overview
 
-- [ ] Replace the current 13-card module directory with Attendance Overview.
-- [ ] Connect current dashboard/register/request/security/field summary APIs.
-- [ ] Add pre-filtered metric links and attention counts.
-- [ ] Add setup health and month-end readiness.
-- [ ] Define loading, empty, partial-permission and API-error states.
+- [x] Replace the current 13-card module directory with Attendance Overview.
+- [x] Connect current dashboard/register/request/security/field summary APIs.
+- [x] Add pre-filtered metric links and attention counts.
+- [x] Add setup health and month-end readiness.
+- [x] Define loading, empty, partial-permission and API-error states.
 
 ### Work Package D - Group related workflows
 
-- [ ] Add shared Requests shell around exceptions and regularizations.
-- [ ] Add shared Reports shell around reports and payroll close.
-- [ ] Add Setup index and grouped tabs around existing configuration screens.
-- [ ] Preserve URL state for date, filters, active tab and return navigation.
-- [ ] Add breadcrumbs to employee, correction and route detail screens.
+- [x] Add shared Requests shell around exceptions and regularizations.
+- [x] Add shared Reports shell around reports and payroll close.
+- [x] Add Setup index and grouped tabs around existing configuration screens.
+- [x] Preserve URL state for date, filters, active tab and return navigation.
+- [x] Add breadcrumbs to employee, correction and route detail screens.
 
 ### Work Package E - Dynamic capability behavior
 
-- [ ] Use tenant runtime/entitlement data for Field and biometric visibility.
-- [ ] Verify office-only, field, biometric and attendance-disabled tenant variants.
-- [ ] Show Business Admin enablement guidance without exposing purchase controls
-  to HR/Manager roles.
-- [ ] Keep mobile runtime behavior unchanged and API-authoritative.
+- [x] Use tenant runtime/entitlement data for Field and biometric visibility.
+- [x] Verify office-only, field, biometric and attendance-disabled tenant variants.
+- [x] Show Business Admin enablement guidance without exposing purchase controls
+      to HR/Manager roles.
+- [x] Keep mobile runtime behavior unchanged and API-authoritative.
 
 ### Work Package F - Polish and release
 
-- [ ] Responsive verification at 1440, 1024, 768 and 390 widths.
-- [ ] No horizontal overflow except intentional wide attendance tables.
-- [ ] Screen-reader labels and logical tab/focus order.
-- [ ] Visual regression screenshots for each workspace and help state.
-- [ ] Full permission matrix and direct-route denial tests.
-- [ ] Update HR user guide and route documentation.
+- [x] Responsive verification at 1440, 1024, 768 and 390 widths.
+- [x] No horizontal overflow except intentional wide attendance tables.
+- [x] Screen-reader labels and logical tab/focus order.
+- [x] Visual regression screenshots for each workspace and help state.
+- [x] Full permission matrix and direct-route denial tests.
+- [x] Update HR user guide and route documentation.
 
 ## 11. Test Plan
 
@@ -484,7 +487,9 @@ drift.
 
 ### API/regression checks
 
-- No API contract changes are required for the first navigation release.
+- The release uses backward-compatible, tenant-scoped query additions for exact
+  overview links: dashboard office scope plus register `lateOnly` and
+  `missingCheckout` filters. Existing callers remain compatible.
 - Existing Attendance, Sprint 6 dynamic runtime and Sprint 7 full-loop e2e suites
   remain green.
 - Any new overview aggregation endpoint must enforce tenant isolation and scope;
@@ -493,20 +498,20 @@ drift.
 
 ## 12. Definition of Done
 
-- [ ] HR can explain where to go for daily review, requests, field work, reports
-  and setup after seeing only the Attendance navigation.
-- [ ] No existing Attendance feature or deep link is lost.
-- [ ] No role sees an unauthorized or irrelevant feature entry.
-- [ ] Every feature and complex policy has useful accessible `i` guidance.
-- [ ] The global help button is contextual and functional.
-- [ ] Daily work is available in one click; setup is separated from operations.
-- [ ] Requests, reports/payroll and setup pairs are coherently grouped.
-- [ ] Desktop, tablet and mobile-web navigation pass accessibility and overflow
-  checks.
-- [ ] Existing API, web and dynamic mobile-runtime regression suites pass.
-- [ ] HR documentation matches the implemented navigation and help content.
+- [x] HR can explain where to go for daily review, requests, field work, reports
+      and setup after seeing only the Attendance navigation.
+- [x] No existing Attendance feature or deep link is lost.
+- [x] No role sees an unauthorized or irrelevant feature entry.
+- [x] Every feature and complex policy has useful accessible `i` guidance.
+- [x] The global help button is contextual and functional.
+- [x] Daily work is available in one click; setup is separated from operations.
+- [x] Requests, reports/payroll and setup pairs are coherently grouped.
+- [x] Desktop, tablet and mobile-web navigation pass accessibility and overflow
+      checks.
+- [x] Existing API, web and dynamic mobile-runtime regression suites pass.
+- [x] HR documentation matches the implemented navigation and help content.
 
-## 13. Recommended Implementation Order
+## 13. Implemented Order
 
 1. Navigation metadata and `FeatureInfo` foundation.
 2. Persistent Attendance workspace navigation.
@@ -517,3 +522,30 @@ drift.
 
 This order improves usability early without rewriting working Attendance feature
 screens or changing API contracts prematurely.
+
+## 14. Completion Evidence
+
+| Requirement area                                                                                 | Authoritative implementation evidence                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typed navigation, route preservation, active state, breadcrumbs and guards                       | `apps/web/src/lib/attendance-navigation.ts`, `apps/web/src/components/tenant/attendance-workspace-nav.tsx`, and `apps/web/src/components/tenant/tenant-shell.tsx`             |
+| Operational Overview, attention queues, exact metric links, setup health and month-end readiness | `apps/web/src/components/tenant/attendance-workspaces.tsx` and the scoped query handling in `apps/api/src/modules/attendance-dashboard` and `apps/api/src/modules/attendance` |
+| Requests, Reports and Setup grouping                                                             | Canonical `/app/attendance/requests` and `/app/attendance/setup` pages plus section metadata and the existing preserved child routes                                          |
+| Contextual help                                                                                  | The 26-entry typed registry in `apps/web/src/content/attendance-help.ts`, `FeatureInfo`, `FeatureHelpDrawer`, route-aware header help and complex-control integrations        |
+| Permission, entitlement and direct-route behavior                                                | Server-returned permission filtering, effective employee-policy Field relevance, read-safe scoped-manager capability projection, `AttendanceRouteGate`, and manager/employee/Business Admin/disabled-module Playwright variants |
+| URL and deep-link behavior                                                                       | URL-backed register, request, device, security and field filters; safe `returnTo` handling for employee and correction details; field route breadcrumbs                       |
+| HR documentation                                                                                 | `docs/ATTENDANCE-HR-PORTAL-GUIDE.md` and the cross-reference in `docs/SPRINT-8-USER-GUIDE.md`                                                                                 |
+
+Final verification on July 19, 2026:
+
+- Full web Playwright suite: 85 tests passed, including 20 Attendance metadata
+  and restructure tests, the existing Attendance regressions, platform visual
+  coverage, and tenant configuration flows.
+- Consolidated Attendance API regression: 5 suites and 31 tests passed. Coverage
+  includes office/department scope, cross-tenant isolation, effective
+  employee-policy Field relevance, scoped-manager capability reads, field sync,
+  dynamic runtime, and HR operations.
+- Web and API lint passed; web lint reported zero errors and 14 existing
+  advisory warnings.
+- Web and API TypeScript checks passed.
+- Next.js production build passed for all 55 routes; Nest production build
+  passed.

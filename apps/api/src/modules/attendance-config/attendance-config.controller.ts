@@ -20,6 +20,7 @@ import { RequireModule } from '../../shared/authorization/require-module.decorat
 import { RequirePermissions } from '../../shared/authorization/require-permissions.decorator';
 import { AttendanceConfigService } from './attendance-config.service';
 import {
+  AssignEmployeePolicyDto,
   AssignOfficeEmployeesDto,
   BulkResolveDto,
   BulkRosterDto,
@@ -169,6 +170,18 @@ export class AttendanceConfigController {
     @Body() dto: ReplacePolicyAssignmentsDto,
   ) {
     return this.service.replacePolicyAssignments(id, dto);
+  }
+
+  @Put('attendance-policies/employees/:employeeId')
+  @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_MANAGE)
+  @ApiOperation({
+    summary: 'Set or clear one employee-specific attendance policy override',
+  })
+  assignEmployeePolicy(
+    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+    @Body() dto: AssignEmployeePolicyDto,
+  ) {
+    return this.service.assignEmployeePolicy(employeeId, dto.policyId);
   }
 
   @Get('shifts')

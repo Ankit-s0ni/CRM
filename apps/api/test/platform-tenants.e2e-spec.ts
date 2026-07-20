@@ -197,9 +197,12 @@ describe('Platform tenant lifecycle (e2e)', () => {
       .set('Authorization', `Bearer ${platform.accessToken}`)
       .expect(200);
     const plan = (
-      plans.body as { data: Array<{ id: string; name: string }> }
+      plans.body as {
+        data: Array<{ id: string; name: string; maxEmployees: number }>;
+      }
     ).data.find(({ name }) => name === 'Starter Trial');
     expect(plan).toBeTruthy();
+    const seatCount = plan!.maxEmployees;
 
     const createPayload = {
       companyName,
@@ -208,7 +211,7 @@ describe('Platform tenant lifecycle (e2e)', () => {
       planId: plan!.id,
       moduleKeys: ['ATTENDANCE'],
       timezone: 'Asia/Kolkata',
-      seatCount: 100,
+      seatCount,
     };
     const support = await platformSession(
       `tenant-support-${stamp}@deltcrm.test`,
@@ -228,8 +231,12 @@ describe('Platform tenant lifecycle (e2e)', () => {
       .set('Authorization', `Bearer ${platform.accessToken}`)
       .set('Idempotency-Key', idempotencyKey)
       .set('x-request-id', `create-${stamp}`)
-      .send(createPayload)
-      .expect(201);
+      .send(createPayload);
+    if (createdResponse.status !== 201) {
+      throw new Error(
+        `Tenant provisioning failed: ${JSON.stringify(createdResponse.body)}`,
+      );
+    }
     const created = createdResponse.body as CreatedTenant;
     tenantId = created.tenant.id;
     expect(created).toMatchObject({
@@ -311,7 +318,7 @@ describe('Platform tenant lifecycle (e2e)', () => {
         companyName: `${companyName} Updated`,
         settings: { timezone: 'Asia/Dubai' },
       },
-      usage: { employees: 0, seats: 100, percentage: 0 },
+      usage: { employees: 0, seats: seatCount, percentage: 0 },
       modules: [expect.objectContaining({ key: 'ATTENDANCE', isActive: true })],
     });
 

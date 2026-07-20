@@ -4,7 +4,7 @@ import '../../../../l10n/l10n_context.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key, required this.onReady});
-  final VoidCallback onReady;
+  final Future<void> Function() onReady;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -14,8 +14,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) widget.onReady();
+    Future<void>.delayed(const Duration(milliseconds: 700), () async {
+      if (mounted) await widget.onReady();
     });
   }
 
