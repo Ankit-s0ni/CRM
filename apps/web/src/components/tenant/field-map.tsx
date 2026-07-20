@@ -92,10 +92,10 @@ function OpenStreetMapFieldMap({
         geofences.forEach(
           (office) =>
             leaflet.circle([office.latitude, office.longitude], {
-              fillColor: "#4f46e5",
+              fillColor: "#434343",
               fillOpacity: 0.08,
               radius: office.radiusMeters,
-              color: "#4f46e5",
+              color: "#434343",
               opacity: 0.8,
               weight: 2,
             }).addTo(initializedMap),
@@ -104,7 +104,7 @@ function OpenStreetMapFieldMap({
           leaflet.polyline(
             path.map(({ latitude, longitude }) => [latitude, longitude]),
             {
-              color: "#3525cd",
+              color: "#27272a",
               opacity: 0.95,
               weight: 5,
             },
@@ -150,7 +150,7 @@ function OpenStreetMapFieldMap({
     <div
       aria-label="Field location map"
       className={cn(
-        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-zinc-300 bg-stone-200",
         onMapClick && "cursor-crosshair",
         className,
       )}
@@ -161,10 +161,10 @@ function OpenStreetMapFieldMap({
         .field-map-marker__pin { display:block; width:30px; height:30px; border:4px solid white; border-radius:999px 999px 999px 0; box-shadow:0 4px 12px rgba(25,24,35,.28); transform:rotate(-45deg); }
         .field-map-marker__pin--live { background:#138a55; }
         .field-map-marker__pin--stale, .field-map-marker__pin--gap { background:#c06b18; }
-        .field-map-marker__pin--offline { background:#777587; }
+        .field-map-marker__pin--offline { background:#a5a5a5; }
         .field-map-marker__pin--stop { background:#0d6e78; }
         .field-map-marker__pin--punch { background:#a23063; }
-        .field-map-marker__pin--default { background:#3525cd; }
+        .field-map-marker__pin--default { background:#27272a; }
         .field-map-marker__pin--selected { box-shadow:0 0 0 5px rgba(53,37,205,.24),0 4px 12px rgba(25,24,35,.28); }
       `}</style>
     </div>
@@ -190,7 +190,7 @@ export function DeterministicFieldMap({
   return (
     <div
       className={cn(
-        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-[#d9d5e5] bg-[#ebe8e3]",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-zinc-300 bg-stone-200",
         onMapClick && "cursor-crosshair",
         className,
       )}
@@ -214,7 +214,7 @@ export function DeterministicFieldMap({
         preserveAspectRatio="none"
         viewBox="0 0 1000 600"
       >
-        <g className="stroke-[#aaa7a1]" opacity=".45">
+        <g className="stroke-stone-400" opacity=".45">
           <path d="M0 115 C180 80 250 175 410 142 S720 55 1000 112" fill="none" strokeWidth="20" />
           <path d="M165 0 C185 130 120 290 205 600" fill="none" strokeWidth="12" />
           <path d="M0 470 C230 420 410 530 640 460 S820 390 1000 430" fill="none" strokeWidth="10" />
@@ -223,8 +223,8 @@ export function DeterministicFieldMap({
           const point = project(office, bounds);
           return (
             <g key={office.id}>
-              <circle cx={point.x} cy={point.y} fill="#4f46e51c" r={Math.max(24, Math.min(80, office.radiusMeters / 5))} stroke="#4f46e5" strokeDasharray="6 5" strokeWidth="2" />
-              <text fill="#3525cd" fontSize="12" fontWeight="700" x={point.x + 12} y={point.y - 14}>{office.label}</text>
+              <circle cx={point.x} cy={point.y} fill="#4343431c" r={Math.max(24, Math.min(80, office.radiusMeters / 5))} stroke="#434343" strokeDasharray="6 5" strokeWidth="2" />
+              <text fill="#27272a" fontSize="12" fontWeight="700" x={point.x + 12} y={point.y - 14}>{office.label}</text>
             </g>
           );
         })}
@@ -232,7 +232,7 @@ export function DeterministicFieldMap({
           <polyline
             fill="none"
             points={projectedPath.map(({ x, y }) => `${x},${y}`).join(" ")}
-            stroke="#3525cd"
+            stroke="#27272a"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="7"
@@ -257,19 +257,19 @@ export function DeterministicFieldMap({
             <span className={cn(
               "grid size-9 place-items-center rounded-full border-4 border-white text-white shadow-lg transition",
               markerTone(marker.tone),
-              active && "scale-125 ring-4 ring-[#3525cd]/20",
+              active && "scale-125 ring-4 ring-primary/20",
             )}>
               <MapPin className="size-4" />
             </span>
             {marker.label && (
-              <span className="mt-1 block max-w-32 truncate rounded-md bg-[#302f39] px-2 py-1 text-[10px] font-semibold text-white shadow">
+              <span className="mt-1 block max-w-32 truncate rounded-md bg-zinc-700 px-2 py-1 text-[10px] font-semibold text-white shadow">
                 {marker.label}
               </span>
             )}
           </button>
         );
       })}
-      <div className="absolute bottom-3 left-3 rounded-lg border border-[#d9d5e5] bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-[#5e5b68] shadow-sm backdrop-blur">
+      <div className="absolute bottom-3 left-3 rounded-lg border border-zinc-300 bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-zinc-500 shadow-sm backdrop-blur">
         Deterministic map provider
       </div>
     </div>
@@ -302,10 +302,10 @@ function project(point: MapCoordinate, bounds: ReturnType<typeof mapBounds>) {
 }
 
 function markerTone(tone: MapMarker["tone"]) {
-  if (tone === "live") return "bg-[#138a55]";
-  if (tone === "stale" || tone === "gap") return "bg-[#c06b18]";
-  if (tone === "offline") return "bg-[#777587]";
-  if (tone === "stop") return "bg-[#0d6e78]";
-  if (tone === "punch") return "bg-[#a23063]";
-  return "bg-[#3525cd]";
+  if (tone === "live") return "bg-emerald-700";
+  if (tone === "stale" || tone === "gap") return "bg-amber-600";
+  if (tone === "offline") return "bg-outline";
+  if (tone === "stop") return "bg-cyan-700";
+  if (tone === "punch") return "bg-rose-700";
+  return "bg-primary";
 }

@@ -94,18 +94,18 @@ export function WeeklyOffEditor({
 
   return (
     <section
-      className="rounded-xl border border-[#e4e1ee] bg-[#f8f6ff] p-5"
+      className="rounded-xl border border-surface-variant bg-zinc-50 p-5"
       aria-labelledby={`weekly-off-${mode}-title`}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-[#3525cd] shadow-sm">
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-primary shadow-sm">
           <CalendarDays className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <h3 id={`weekly-off-${mode}-title`} className="font-semibold">
             Weekly-off pattern
           </h3>
-          <p className="mt-1 text-xs leading-5 text-[#646273]">
+          <p className="mt-1 text-xs leading-5 text-on-surface-variant">
             {mode === "compact"
               ? "Choose a common weekend or select any days your team takes off every week."
               : "Set every-week or occurrence-based weekly offs for each weekday."}
@@ -129,13 +129,13 @@ export function WeeklyOffEditor({
         />
       )}
 
-      <div className="mt-5 rounded-lg border border-[#ded9f0] bg-white px-4 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#777587]">
+      <div className="mt-5 rounded-lg border border-zinc-200 bg-white px-4 py-3">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-outline">
           Current schedule
         </p>
-        <p className="mt-1 text-sm font-medium text-[#292734]">{summary}</p>
+        <p className="mt-1 text-sm font-medium text-[#2e2e2e]">{summary}</p>
         {mode === "compact" && (
-          <p className="mt-1 text-xs text-[#777587]">
+          <p className="mt-1 text-xs text-outline">
             Occurrence-based schedules can be configured later in Company
             Settings.
           </p>
@@ -168,7 +168,7 @@ function CompactEditor({
               aria-pressed={active}
               className={
                 active
-                  ? "border-[#3525cd] bg-[#ece9ff] text-[#3525cd]"
+                  ? "border-primary bg-zinc-50 text-primary"
                   : "bg-white"
               }
               onClick={() => onPreset(preset.days)}
@@ -187,8 +187,8 @@ function CompactEditor({
               htmlFor={`compact-weekly-off-${day.code}`}
               className={`grid cursor-pointer justify-items-center gap-2 rounded-lg border px-2 py-3 text-center transition ${
                 checked
-                  ? "border-[#3525cd] bg-white text-[#3525cd] shadow-sm"
-                  : "border-[#ded9f0] bg-white/60 text-[#646273] hover:border-[#aaa3cd]"
+                  ? "border-primary bg-white text-primary shadow-sm"
+                  : "border-zinc-200 bg-white/60 text-on-surface-variant hover:border-zinc-400"
               }`}
             >
               <Checkbox
@@ -235,7 +235,7 @@ function AdvancedEditor({
           <fieldset
             key={day.code}
             aria-label={`${day.label} weekly off`}
-            className={`rounded-lg border bg-white p-4 transition ${selected ? "border-[#aaa3cd]" : "border-[#e4e1ee]"}`}
+            className={`rounded-lg border bg-white p-4 transition ${selected ? "border-zinc-400" : "border-surface-variant"}`}
           >
             <div className="flex flex-wrap items-center gap-4">
               <Label
@@ -252,7 +252,7 @@ function AdvancedEditor({
               {selected && (
                 <select
                   aria-label={`${day.label} recurrence`}
-                  className="h-9 rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm outline-none focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15"
+                  className="h-9 rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                   value={selectedWeeks ? "selected" : "every"}
                   onChange={(event) =>
                     onRecurrenceChange(
@@ -267,7 +267,7 @@ function AdvancedEditor({
               )}
             </div>
             {selected && selectedWeeks && (
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3 border-t border-[#eeeaf7] pt-4">
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3 border-t border-zinc-100 pt-4">
                 {occurrenceLabels.map((label, index) => {
                   const occurrence = index + 1;
                   const checked =

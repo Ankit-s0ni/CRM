@@ -90,6 +90,31 @@
         ]
       }
     },
+    "/auth/mobile-login": {
+      "post": {
+        "operationId": "AuthController_mobileLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful employee login"
+          }
+        },
+        "summary": "Login an employee and automatically resolve their workspace",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh",
@@ -1506,6 +1531,45 @@
           }
         ],
         "summary": "Update an employee and their relationships",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/account": {
+      "post": {
+        "operationId": "EmployeesController_createEmployeeAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create the employee login and return a temporary password",
         "tags": [
           "Employees"
         ]
@@ -3926,6 +3990,1100 @@
         ]
       }
     },
+    "/platform/plans": {
+      "get": {
+        "operationId": "PlatformBillingController_plans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List plans and module bundles",
+        "tags": [
+          "Platform Billing"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformBillingController_createPlan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a subscription plan with fresh MFA",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/plans/{id}": {
+      "patch": {
+        "operationId": "PlatformBillingController_updatePlan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update plan pricing, limits, and module bundle",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/plans/{id}/impact": {
+      "post": {
+        "operationId": "PlatformBillingController_planImpact",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview tenants and features affected by a plan edit",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/invoices": {
+      "get": {
+        "operationId": "PlatformBillingController_invoices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search invoices across tenants",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/invoices/{id}": {
+      "get": {
+        "operationId": "PlatformBillingController_invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get invoice, tax snapshot and payment attempts",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/payment-transactions": {
+      "get": {
+        "operationId": "PlatformBillingController_transactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search provider payment attempts",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dunning": {
+      "get": {
+        "operationId": "PlatformBillingController_dunning",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List subscriptions in dunning",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dunning/{subscriptionId}/retry": {
+      "post": {
+        "operationId": "PlatformBillingController_retry",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DunningRetryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry payment with permission and fresh MFA",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/dashboard/billing": {
+      "get": {
+        "operationId": "PlatformBillingController_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authoritative revenue and billing KPIs",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/platform/health/payment-providers": {
+      "get": {
+        "operationId": "PlatformBillingController_providerHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get provider latency and webhook health",
+        "tags": [
+          "Platform Billing"
+        ]
+      }
+    },
+    "/billing/profile": {
+      "get": {
+        "operationId": "BillingController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get tenant legal and tax billing profile",
+        "tags": [
+          "Billing"
+        ]
+      },
+      "patch": {
+        "operationId": "BillingController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBillingProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update tenant legal and tax billing profile",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/subscription": {
+      "get": {
+        "operationId": "BillingController_subscription",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current subscription, bundle and seat usage",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/subscription/change-plan": {
+      "post": {
+        "operationId": "BillingController_changePlan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview or confirm a validated plan change",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices": {
+      "get": {
+        "operationId": "BillingController_invoices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List tenant GST invoices",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices/{id}": {
+      "get": {
+        "operationId": "BillingController_invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get immutable invoice and payment evidence",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/invoices/{id}/download": {
+      "get": {
+        "operationId": "BillingController_download",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a short-lived private invoice download",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/payment-methods": {
+      "get": {
+        "operationId": "BillingController_paymentMethods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List masked tokenized payment methods",
+        "tags": [
+          "Billing"
+        ]
+      },
+      "post": {
+        "operationId": "BillingController_addPaymentMethod",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPaymentMethodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Attach a provider-tokenized payment method",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/payment-methods/{id}": {
+      "delete": {
+        "operationId": "BillingController_deletePaymentMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke a tokenized payment method",
+        "tags": [
+          "Billing"
+        ]
+      }
+    },
+    "/billing/webhooks/{provider}": {
+      "post": {
+        "operationId": "BillingWebhookController_handle",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-razorpay-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "stripe-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-razorpay-event-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Provider-native JSON verified against its exact raw bytes"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Consume an authenticated payment provider event",
+        "tags": [
+          "Billing Webhooks"
+        ]
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "operationId": "TenantAuditController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Search the current tenant audit history",
+        "tags": [
+          "Tenant Audit"
+        ]
+      }
+    },
+    "/attendance/check-in": {
+      "post": {
+        "operationId": "AttendanceRuntimeController_checkin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebPunchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Start web attendance for the authenticated employee",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/check-out": {
+      "post": {
+        "operationId": "AttendanceRuntimeController_checkout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebPunchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Close web attendance for the authenticated employee",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/break-start": {
+      "post": {
+        "operationId": "AttendanceRuntimeController_breakStart",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebPunchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Start an attendance break",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/break-end": {
+      "post": {
+        "operationId": "AttendanceRuntimeController_breakEnd",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebPunchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "End the current attendance break",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/me/today": {
+      "get": {
+        "operationId": "AttendanceRuntimeController_today",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get today attendance state and safe event timeline",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/me/history": {
+      "get": {
+        "operationId": "AttendanceRuntimeController_history",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-07",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authenticated employee monthly attendance history",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/me/day": {
+      "get": {
+        "operationId": "AttendanceRuntimeController_day",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-07-16",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an authenticated employee attendance day",
+        "tags": [
+          "Attendance runtime"
+        ]
+      }
+    },
+    "/attendance/register": {
+      "get": {
+        "operationId": "AttendanceQueryController_register",
+        "parameters": [
+          {
+            "name": "lateOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return only records with late minutes greater than zero",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingCheckout",
+            "required": false,
+            "in": "query",
+            "description": "Return checked-in records that do not have a checkout",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get filtered tenant attendance register",
+        "tags": [
+          "Attendance records"
+        ]
+      }
+    },
+    "/attendance/employees/{employeeId}/month": {
+      "get": {
+        "operationId": "AttendanceQueryController_employeeMonth",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get employee monthly attendance calendar and totals",
+        "tags": [
+          "Attendance records"
+        ]
+      }
+    },
+    "/attendance/register/{employeeId}/day": {
+      "get": {
+        "operationId": "AttendanceQueryController_day",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get safe attendance evidence timeline for one day",
+        "tags": [
+          "Attendance records"
+        ]
+      }
+    },
+    "/attendance-exceptions": {
+      "get": {
+        "operationId": "AttendanceQueryController_listExceptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List manual attendance exceptions",
+        "tags": [
+          "Attendance records"
+        ]
+      },
+      "post": {
+        "operationId": "AttendanceQueryController_createException",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttendanceExceptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an OD, WFH, or other manual exception",
+        "tags": [
+          "Attendance records"
+        ]
+      }
+    },
+    "/attendance-exceptions/{id}": {
+      "get": {
+        "operationId": "AttendanceQueryController_getException",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one attendance exception",
+        "tags": [
+          "Attendance records"
+        ]
+      },
+      "patch": {
+        "operationId": "AttendanceQueryController_updateException",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceExceptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an unlocked attendance exception",
+        "tags": [
+          "Attendance records"
+        ]
+      },
+      "delete": {
+        "operationId": "AttendanceQueryController_removeException",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an unlocked attendance exception",
+        "tags": [
+          "Attendance records"
+        ]
+      }
+    },
     "/offices": {
       "get": {
         "operationId": "AttendanceConfigController_listOffices",
@@ -5051,473 +6209,6 @@
         "summary": "Get permission-filtered, employee-scoped HR action counts",
         "tags": [
           "HR Dashboard"
-        ]
-      }
-    },
-    "/attendance/check-in": {
-      "post": {
-        "operationId": "AttendanceRuntimeController_checkin",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebPunchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Start web attendance for the authenticated employee",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/check-out": {
-      "post": {
-        "operationId": "AttendanceRuntimeController_checkout",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebPunchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Close web attendance for the authenticated employee",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/break-start": {
-      "post": {
-        "operationId": "AttendanceRuntimeController_breakStart",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebPunchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Start an attendance break",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/break-end": {
-      "post": {
-        "operationId": "AttendanceRuntimeController_breakEnd",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebPunchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "End the current attendance break",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/me/today": {
-      "get": {
-        "operationId": "AttendanceRuntimeController_today",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get today attendance state and safe event timeline",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/me/history": {
-      "get": {
-        "operationId": "AttendanceRuntimeController_history",
-        "parameters": [
-          {
-            "name": "month",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "2026-07",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get authenticated employee monthly attendance history",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/me/day": {
-      "get": {
-        "operationId": "AttendanceRuntimeController_day",
-        "parameters": [
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "2026-07-16",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get an authenticated employee attendance day",
-        "tags": [
-          "Attendance runtime"
-        ]
-      }
-    },
-    "/attendance/register": {
-      "get": {
-        "operationId": "AttendanceQueryController_register",
-        "parameters": [
-          {
-            "name": "lateOnly",
-            "required": false,
-            "in": "query",
-            "description": "Return only records with late minutes greater than zero",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "missingCheckout",
-            "required": false,
-            "in": "query",
-            "description": "Return checked-in records that do not have a checkout",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 25,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get filtered tenant attendance register",
-        "tags": [
-          "Attendance records"
-        ]
-      }
-    },
-    "/attendance/employees/{employeeId}/month": {
-      "get": {
-        "operationId": "AttendanceQueryController_employeeMonth",
-        "parameters": [
-          {
-            "name": "employeeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get employee monthly attendance calendar and totals",
-        "tags": [
-          "Attendance records"
-        ]
-      }
-    },
-    "/attendance/register/{employeeId}/day": {
-      "get": {
-        "operationId": "AttendanceQueryController_day",
-        "parameters": [
-          {
-            "name": "employeeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get safe attendance evidence timeline for one day",
-        "tags": [
-          "Attendance records"
-        ]
-      }
-    },
-    "/attendance-exceptions": {
-      "get": {
-        "operationId": "AttendanceQueryController_listExceptions",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List manual attendance exceptions",
-        "tags": [
-          "Attendance records"
-        ]
-      },
-      "post": {
-        "operationId": "AttendanceQueryController_createException",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAttendanceExceptionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create an OD, WFH, or other manual exception",
-        "tags": [
-          "Attendance records"
-        ]
-      }
-    },
-    "/attendance-exceptions/{id}": {
-      "get": {
-        "operationId": "AttendanceQueryController_getException",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get one attendance exception",
-        "tags": [
-          "Attendance records"
-        ]
-      },
-      "patch": {
-        "operationId": "AttendanceQueryController_updateException",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAttendanceExceptionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update an unlocked attendance exception",
-        "tags": [
-          "Attendance records"
-        ]
-      },
-      "delete": {
-        "operationId": "AttendanceQueryController_removeException",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete an unlocked attendance exception",
-        "tags": [
-          "Attendance records"
         ]
       }
     },
@@ -6823,6 +7514,45 @@
         ]
       }
     },
+    "/regularizations/employees/{employeeId}": {
+      "post": {
+        "operationId": "RegularizationController_createForEmployee",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegularizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit a correction request for an employee",
+        "tags": [
+          "Regularizations"
+        ]
+      }
+    },
     "/regularizations/attachments/presign": {
       "post": {
         "operationId": "RegularizationController_presign",
@@ -7675,633 +8405,6 @@
           "Leave"
         ]
       }
-    },
-    "/billing/profile": {
-      "get": {
-        "operationId": "BillingController_profile",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get tenant legal and tax billing profile",
-        "tags": [
-          "Billing"
-        ]
-      },
-      "patch": {
-        "operationId": "BillingController_updateProfile",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBillingProfileDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update tenant legal and tax billing profile",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/subscription": {
-      "get": {
-        "operationId": "BillingController_subscription",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get current subscription, bundle and seat usage",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/subscription/change-plan": {
-      "post": {
-        "operationId": "BillingController_changePlan",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangePlanDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Preview or confirm a validated plan change",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/invoices": {
-      "get": {
-        "operationId": "BillingController_invoices",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List tenant GST invoices",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/invoices/{id}": {
-      "get": {
-        "operationId": "BillingController_invoice",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get immutable invoice and payment evidence",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/invoices/{id}/download": {
-      "get": {
-        "operationId": "BillingController_download",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a short-lived private invoice download",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/payment-methods": {
-      "get": {
-        "operationId": "BillingController_paymentMethods",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List masked tokenized payment methods",
-        "tags": [
-          "Billing"
-        ]
-      },
-      "post": {
-        "operationId": "BillingController_addPaymentMethod",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddPaymentMethodDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Attach a provider-tokenized payment method",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/payment-methods/{id}": {
-      "delete": {
-        "operationId": "BillingController_deletePaymentMethod",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Revoke a tokenized payment method",
-        "tags": [
-          "Billing"
-        ]
-      }
-    },
-    "/billing/webhooks/{provider}": {
-      "post": {
-        "operationId": "BillingWebhookController_handle",
-        "parameters": [
-          {
-            "name": "provider",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-razorpay-signature",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "stripe-signature",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-razorpay-event-id",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true,
-                "description": "Provider-native JSON verified against its exact raw bytes"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "Consume an authenticated payment provider event",
-        "tags": [
-          "Billing Webhooks"
-        ]
-      }
-    },
-    "/platform/plans": {
-      "get": {
-        "operationId": "PlatformBillingController_plans",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List plans and module bundles",
-        "tags": [
-          "Platform Billing"
-        ]
-      },
-      "post": {
-        "operationId": "PlatformBillingController_createPlan",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePlatformPlanDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a subscription plan with fresh MFA",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/plans/{id}": {
-      "patch": {
-        "operationId": "PlatformBillingController_updatePlan",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update plan pricing, limits, and module bundle",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/plans/{id}/impact": {
-      "post": {
-        "operationId": "PlatformBillingController_planImpact",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePlatformPlanDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Preview tenants and features affected by a plan edit",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/invoices": {
-      "get": {
-        "operationId": "PlatformBillingController_invoices",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Search invoices across tenants",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/invoices/{id}": {
-      "get": {
-        "operationId": "PlatformBillingController_invoice",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get invoice, tax snapshot and payment attempts",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/payment-transactions": {
-      "get": {
-        "operationId": "PlatformBillingController_transactions",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Search provider payment attempts",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/dunning": {
-      "get": {
-        "operationId": "PlatformBillingController_dunning",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List subscriptions in dunning",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/dunning/{subscriptionId}/retry": {
-      "post": {
-        "operationId": "PlatformBillingController_retry",
-        "parameters": [
-          {
-            "name": "subscriptionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DunningRetryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Retry payment with permission and fresh MFA",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/dashboard/billing": {
-      "get": {
-        "operationId": "PlatformBillingController_dashboard",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get authoritative revenue and billing KPIs",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/platform/health/payment-providers": {
-      "get": {
-        "operationId": "PlatformBillingController_providerHealth",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get provider latency and webhook health",
-        "tags": [
-          "Platform Billing"
-        ]
-      }
-    },
-    "/audit-logs": {
-      "get": {
-        "operationId": "TenantAuditController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Search the current tenant audit history",
-        "tags": [
-          "Tenant Audit"
-        ]
-      }
     }
   },
   "info": {
@@ -8497,6 +8600,10 @@
             "type": "string",
             "example": "Aarav Sharma"
           },
+          "email": {
+            "type": "string",
+            "example": "aarav.sharma@acme.com"
+          },
           "phone": {
             "type": "string",
             "example": "+919876543210"
@@ -8533,9 +8640,23 @@
         "required": [
           "employeeCode",
           "fullName",
+          "email",
+          "phone",
           "workType",
           "dateOfJoining",
           "deptId"
+        ]
+      },
+      "CreateEmployeeAccountDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "aarav.sharma@acme.com"
+          }
+        },
+        "required": [
+          "email"
         ]
       },
       "UpdateEmployeeDto": {
@@ -8548,6 +8669,10 @@
           "fullName": {
             "type": "string",
             "example": "Aarav Sharma"
+          },
+          "email": {
+            "type": "string",
+            "example": "aarav.sharma@acme.com"
           },
           "phone": {
             "type": "object",
@@ -9222,6 +9347,90 @@
           "note"
         ]
       },
+      "CreatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "DunningRetryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateBillingProfileDto": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string"
+          },
+          "billingEmail": {
+            "type": "string"
+          },
+          "gstin": {
+            "type": "string"
+          },
+          "pan": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "INR",
+              "AED",
+              "OMR",
+              "QAR",
+              "SAR",
+              "USD"
+            ]
+          }
+        },
+        "required": [
+          "legalName",
+          "billingEmail",
+          "currency"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "object",
+            "default": false
+          }
+        }
+      },
+      "AddPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "providerMethodRef": {
+            "type": "string",
+            "description": "Token/reference returned by the provider SDK"
+          }
+        },
+        "required": [
+          "providerMethodRef"
+        ]
+      },
+      "WebPunchDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client-generated idempotency key for safe retries"
+          }
+        }
+      },
+      "CreateAttendanceExceptionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAttendanceExceptionDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateOfficeDto": {
         "type": "object",
         "properties": {}
@@ -9353,24 +9562,6 @@
         ]
       },
       "CreateRosterImportDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "WebPunchDto": {
-        "type": "object",
-        "properties": {
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Client-generated idempotency key for safe retries"
-          }
-        }
-      },
-      "CreateAttendanceExceptionDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateAttendanceExceptionDto": {
         "type": "object",
         "properties": {}
       },
@@ -9945,72 +10136,6 @@
         "properties": {}
       },
       "LeaveDecisionDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateBillingProfileDto": {
-        "type": "object",
-        "properties": {
-          "legalName": {
-            "type": "string"
-          },
-          "billingEmail": {
-            "type": "string"
-          },
-          "gstin": {
-            "type": "string"
-          },
-          "pan": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "INR",
-              "AED",
-              "OMR",
-              "QAR",
-              "SAR",
-              "USD"
-            ]
-          }
-        },
-        "required": [
-          "legalName",
-          "billingEmail",
-          "currency"
-        ]
-      },
-      "ChangePlanDto": {
-        "type": "object",
-        "properties": {
-          "confirm": {
-            "type": "object",
-            "default": false
-          }
-        }
-      },
-      "AddPaymentMethodDto": {
-        "type": "object",
-        "properties": {
-          "providerMethodRef": {
-            "type": "string",
-            "description": "Token/reference returned by the provider SDK"
-          }
-        },
-        "required": [
-          "providerMethodRef"
-        ]
-      },
-      "CreatePlatformPlanDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdatePlatformPlanDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "DunningRetryDto": {
         "type": "object",
         "properties": {}
       }

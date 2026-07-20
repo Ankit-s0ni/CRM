@@ -8,8 +8,8 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { TenantContextService } from '../src/platform/tenancy/public';
 import { TestDataFactory } from './support/factories';
 
 type Workspace = {

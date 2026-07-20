@@ -68,7 +68,7 @@ export function PlatformBillingOverview() {
       description="Authoritative recurring revenue, collections, outstanding balances and subscription movement across DeltCRM."
       action={
         <Link
-          className="rounded-xl bg-[#3525cd] px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white"
           href="/platform/plans"
         >
           Manage plans
@@ -129,12 +129,12 @@ export function PlatformBillingOverview() {
                 <TableHead
                   columns={["Tenant", "Plan", "Seats", "Status", "Period end"]}
                 />
-                <tbody className="divide-y divide-[#eeeaf3]">
+                <tbody className="divide-y divide-outline-variant">
                   {data.recentSubscriptions.map((subscription) => (
                     <tr key={subscription.id}>
                       <td className="p-4">
                         <strong>{subscription.tenant.companyName}</strong>
-                        <div className="text-xs text-[#777587]">
+                        <div className="text-xs text-outline">
                           {subscription.tenant.subdomain}
                         </div>
                       </td>
@@ -213,7 +213,7 @@ export function PlatformPlansView() {
       action={
         canManage ? (
           <Button
-            className="bg-[#3525cd] text-white"
+            className="bg-primary text-white"
             onClick={() => setSelected(null)}
           >
             <Plus />
@@ -232,8 +232,8 @@ export function PlatformPlansView() {
               className={cn(
                 "flex flex-col rounded-2xl border bg-white p-5 shadow-sm",
                 plan.isActive
-                  ? "border-[#e4e1ee]"
-                  : "border-dashed border-[#c7c4d8] opacity-75",
+                  ? "border-surface-variant"
+                  : "border-dashed border-zinc-300 opacity-75",
               )}
               key={plan.id}
             >
@@ -245,7 +245,7 @@ export function PlatformPlansView() {
                       status={plan.isActive ? "ACTIVE" : "INACTIVE"}
                     />
                   </div>
-                  <p className="mt-2 min-h-10 text-xs leading-5 text-[#777587]">
+                  <p className="mt-2 min-h-10 text-xs leading-5 text-outline">
                     {plan.description}
                   </p>
                 </div>
@@ -260,10 +260,10 @@ export function PlatformPlansView() {
                   </Button>
                 )}
               </div>
-              <div className="mt-6 text-3xl font-bold text-[#3525cd]">
+              <div className="mt-6 text-3xl font-bold text-primary">
                 {formatMoney(plan.pricePerUser, plan.currency)}
               </div>
-              <div className="text-xs text-[#777587]">
+              <div className="text-xs text-outline">
                 per employee · {plan.billingPeriod.toLowerCase()}
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
@@ -279,15 +279,15 @@ export function PlatformPlansView() {
               <div className="mt-5 flex flex-wrap gap-1.5">
                 {plan.modules.map(({ module }) => (
                   <span
-                    className="rounded-lg bg-[#e9f8ef] px-2 py-1 text-[10px] font-semibold text-green-700"
+                    className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-green-700"
                     key={module.id}
                   >
                     {module.name}
                   </span>
                 ))}
               </div>
-              <div className="mt-5 border-t border-[#eeeaf3] pt-4">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-[#777587]">
+              <div className="mt-5 border-t border-outline-variant pt-4">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-outline">
                   Included features
                 </div>
                 <div className="space-y-2">
@@ -301,7 +301,7 @@ export function PlatformPlansView() {
                     </div>
                   ))}
                   {(plan.capabilities?.length ?? 0) > 6 && (
-                    <div className="text-xs font-semibold text-[#3525cd]">
+                    <div className="text-xs font-semibold text-primary">
                       +{plan.capabilities.length - 6} more features
                     </div>
                   )}
@@ -393,13 +393,13 @@ export function PlatformInvoicesView() {
                 "",
               ]}
             />
-            <tbody className="divide-y divide-[#eeeaf3]">
+            <tbody className="divide-y divide-outline-variant">
               {result?.data.map((invoice) => (
-                <tr className="hover:bg-[#fbfaff]" key={invoice.id}>
+                <tr className="hover:bg-zinc-50" key={invoice.id}>
                   <td className="p-4 font-semibold">{invoice.invoiceNumber}</td>
                   <td className="p-4">
                     <strong>{invoice.tenant?.companyName}</strong>
-                    <div className="text-xs text-[#777587]">
+                    <div className="text-xs text-outline">
                       {invoice.tenant?.subdomain}
                     </div>
                   </td>
@@ -426,12 +426,12 @@ export function PlatformInvoicesView() {
             </tbody>
           </table>
           {!result && (
-            <div className="p-10 text-center text-sm text-[#777587]">
+            <div className="p-10 text-center text-sm text-outline">
               Loading invoices...
             </div>
           )}
           {result && !result.data.length && (
-            <div className="p-10 text-center text-sm text-[#777587]">
+            <div className="p-10 text-center text-sm text-outline">
               No invoices match these filters.
             </div>
           )}
@@ -471,7 +471,7 @@ export function PlatformPaymentsView() {
       <PlatformBillingNav active="/platform/billing/payments" />
       <div className="flex flex-wrap gap-3">
         <select
-          className="h-10 rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm"
+          className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
           value={provider}
           onChange={(event) => setProvider(event.target.value)}
         >
@@ -480,7 +480,7 @@ export function PlatformPaymentsView() {
           <option value="STRIPE">Stripe</option>
         </select>
         <select
-          className="h-10 rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm"
+          className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
           value={status}
           onChange={(event) => setStatus(event.target.value)}
         >
@@ -505,7 +505,7 @@ export function PlatformPaymentsView() {
                 "Time",
               ]}
             />
-            <tbody className="divide-y divide-[#eeeaf3]">
+            <tbody className="divide-y divide-outline-variant">
               {result?.data.map((payment) => (
                 <tr key={payment.id}>
                   <td className="p-4 font-mono text-xs">
@@ -513,7 +513,7 @@ export function PlatformPaymentsView() {
                   </td>
                   <td className="p-4">
                     <strong>{payment.invoice?.tenant?.companyName}</strong>
-                    <div className="text-xs text-[#777587]">
+                    <div className="text-xs text-outline">
                       {payment.invoice?.invoiceNumber}
                     </div>
                   </td>
@@ -524,7 +524,7 @@ export function PlatformPaymentsView() {
                   <td className="p-4">
                     <StatusBadge status={payment.status} />
                   </td>
-                  <td className="max-w-56 p-4 text-xs text-[#777587]">
+                  <td className="max-w-56 p-4 text-xs text-outline">
                     {payment.failureReason || "—"}
                   </td>
                   <td className="p-4 text-xs">
@@ -535,7 +535,7 @@ export function PlatformPaymentsView() {
             </tbody>
           </table>
           {result && !result.data.length && (
-            <div className="p-10 text-center text-sm text-[#777587]">
+            <div className="p-10 text-center text-sm text-outline">
               No payment attempts match these filters.
             </div>
           )}
@@ -643,14 +643,14 @@ export function PlatformDunningView() {
                         <StatusBadge status={subscription.dunningState} />
                         <StatusBadge status={subscription.tenant.status} />
                       </div>
-                      <p className="mt-1 text-sm text-[#646273]">
+                      <p className="mt-1 text-sm text-on-surface-variant">
                         {subscription.plan.name} · {subscription.seatCount}{" "}
                         seats ·{" "}
                         {invoice
                           ? `${invoice.invoiceNumber} for ${formatMoney(invoice.amountDue, invoice.currency)}`
                           : "No open invoice"}
                       </p>
-                      <p className="mt-3 text-xs text-[#777587]">
+                      <p className="mt-3 text-xs text-outline">
                         Latest action:{" "}
                         {subscription.dunningHistory[0]?.reason ||
                           "Payment requires attention"}
@@ -659,7 +659,7 @@ export function PlatformDunningView() {
                   </div>
                   {canRetry && (
                     <Button
-                      className="bg-[#3525cd] text-white"
+                      className="bg-primary text-white"
                       disabled={!invoice || busy === subscription.id}
                       onClick={() => void retry(subscription)}
                     >
@@ -687,14 +687,14 @@ export function PlatformDunningView() {
 
 function PlatformBillingNav({ active }: { active: string }) {
   return (
-    <nav className="flex gap-1 overflow-x-auto rounded-xl border border-[#e4e1ee] bg-white p-1">
+    <nav className="flex gap-1 overflow-x-auto rounded-xl border border-surface-variant bg-white p-1">
       {billingLinks.map((link) => (
         <Link
           className={cn(
             "whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold",
             active === link.href
-              ? "bg-[#3525cd] text-white"
-              : "text-[#646273] hover:bg-[#f0ecf9]",
+              ? "bg-primary text-white"
+              : "text-on-surface-variant hover:bg-zinc-50",
           )}
           href={link.href}
           key={link.href}
@@ -722,7 +722,7 @@ function BillingFilters({
   return (
     <div className="flex flex-wrap gap-3">
       <div className="relative min-w-64 flex-1">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#777587]" />
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
         <Input
           className="pl-9"
           placeholder="Search invoice or tenant..."
@@ -731,7 +731,7 @@ function BillingFilters({
         />
       </div>
       <select
-        className="h-10 rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm"
+        className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
         value={status}
         onChange={(event) => onStatus(event.target.value)}
       >
@@ -905,14 +905,14 @@ function PlanEditor({
         onSubmit={submit}
       >
         <div className="flex items-start gap-4">
-          <div className="grid size-11 place-items-center rounded-xl bg-[#efecff] text-[#3525cd]">
+          <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
             <Boxes />
           </div>
           <div>
             <h2 className="text-xl font-bold">
               {plan ? "Edit plan" : "Create plan"}
             </h2>
-            <p className="mt-1 text-sm text-[#646273]">
+            <p className="mt-1 text-sm text-on-surface-variant">
               Define commercial details, included features, and review the
               complete entitlement.
             </p>
@@ -933,10 +933,10 @@ function PlanEditor({
               className={cn(
                 "rounded-lg px-3 py-2 text-center text-xs font-semibold",
                 step === index + 1
-                  ? "bg-[#3525cd] text-white"
+                  ? "bg-primary text-white"
                   : step > index + 1
                     ? "bg-green-100 text-green-700"
-                    : "bg-[#f3f0f7] text-[#777587]",
+                    : "bg-zinc-50 text-outline",
               )}
               key={label}
             >
@@ -1021,7 +1021,7 @@ function PlanEditor({
             <div className="sm:col-span-2">
               <FormField label="Description">
                 <textarea
-                  className="min-h-24 rounded-lg border border-[#c7c4d8] p-3 text-sm"
+                  className="min-h-24 rounded-lg border border-zinc-300 p-3 text-sm"
                   value={value.description}
                   onChange={(event) =>
                     setValue({ ...value, description: event.target.value })
@@ -1036,7 +1036,7 @@ function PlanEditor({
           <div className="mt-6 space-y-6">
             <div>
               <h3 className="font-semibold">Products and add-ons</h3>
-              <p className="mt-1 text-xs text-[#777587]">
+              <p className="mt-1 text-xs text-outline">
                 Add-ons automatically include their required parent product.
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -1044,7 +1044,7 @@ function PlanEditor({
                   const checked = value.moduleKeys.includes(module.key);
                   return (
                     <label
-                      className="flex items-start gap-3 rounded-xl border border-[#e4e1ee] p-4"
+                      className="flex items-start gap-3 rounded-xl border border-surface-variant p-4"
                       key={module.id}
                     >
                       <Checkbox
@@ -1055,10 +1055,10 @@ function PlanEditor({
                       />
                       <span>
                         <strong className="text-sm">{module.name}</strong>
-                        <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                        <span className="mt-1 block text-xs leading-5 text-outline">
                           {module.description}
                         </span>
-                        <span className="mt-2 block text-[10px] font-semibold uppercase text-[#3525cd]">
+                        <span className="mt-2 block text-[10px] font-semibold uppercase text-primary">
                           {module.kind === "ADD_ON"
                             ? `Add-on · Requires ${module.dependencyKeys.join(", ")}`
                             : "Product"}
@@ -1072,7 +1072,7 @@ function PlanEditor({
             {value.moduleKeys.includes("ATTENDANCE") && (
               <div>
                 <h3 className="font-semibold">Attendance features</h3>
-                <p className="mt-1 text-xs text-[#777587]">
+                <p className="mt-1 text-xs text-outline">
                   Core and dependent features are included automatically and
                   cannot form an invalid bundle.
                 </p>
@@ -1089,8 +1089,8 @@ function PlanEditor({
                         className={cn(
                           "flex items-start gap-3 rounded-xl border p-4",
                           unavailable
-                            ? "border-dashed border-[#d8d4df] bg-[#f7f5f8] opacity-60"
-                            : "border-[#e4e1ee]",
+                            ? "border-dashed border-zinc-300 bg-zinc-50 opacity-60"
+                            : "border-surface-variant",
                         )}
                         key={capability.id}
                       >
@@ -1103,7 +1103,7 @@ function PlanEditor({
                         />
                         <span>
                           <strong className="text-sm">{capability.name}</strong>
-                          <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                          <span className="mt-1 block text-xs leading-5 text-outline">
                             {capability.description}
                           </span>
                           {capability.isCore && (
@@ -1112,7 +1112,7 @@ function PlanEditor({
                             </span>
                           )}
                           {unavailable && (
-                            <span className="mt-2 block text-[10px] font-semibold text-[#a14f00]">
+                            <span className="mt-2 block text-[10px] font-semibold text-amber-700">
                               Requires{" "}
                               {capability.requiredModuleKeys
                                 .filter(
@@ -1124,7 +1124,7 @@ function PlanEditor({
                           {!unavailable &&
                             !capability.isCore &&
                             capability.dependencyKeys.length > 0 && (
-                              <span className="mt-2 block text-[10px] font-semibold text-[#3525cd]">
+                              <span className="mt-2 block text-[10px] font-semibold text-primary">
                                 Requires {capability.dependencyKeys.join(", ")}
                               </span>
                             )}
@@ -1174,8 +1174,8 @@ function PlanEditor({
                 )}
               </div>
             )}
-            <div className="rounded-2xl bg-[#f7f5ff] p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-[#3525cd]">
+            <div className="rounded-2xl bg-zinc-50 p-5">
+              <div className="text-xs font-bold uppercase tracking-wide text-primary">
                 Commercial summary
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -1201,12 +1201,12 @@ function PlanEditor({
                     .filter((module) => value.moduleKeys.includes(module.key))
                     .map((module) => (
                       <div
-                        className="flex items-center gap-2 rounded-lg border border-[#e4e1ee] p-3 text-sm"
+                        className="flex items-center gap-2 rounded-lg border border-surface-variant p-3 text-sm"
                         key={module.id}
                       >
                         <Check className="size-4 text-green-600" />
                         {module.name}
-                        <span className="ml-auto text-[9px] uppercase text-[#777587]">
+                        <span className="ml-auto text-[9px] uppercase text-outline">
                           {module.kind.replace("_", "-")}
                         </span>
                       </div>
@@ -1233,7 +1233,7 @@ function PlanEditor({
               </div>
             </div>
             {plan && (
-              <label className="flex items-center gap-3 rounded-xl border border-[#e4e1ee] p-4 text-sm font-semibold">
+              <label className="flex items-center gap-3 rounded-xl border border-surface-variant p-4 text-sm font-semibold">
                 <Checkbox
                   checked={value.isActive}
                   onCheckedChange={(next) =>
@@ -1246,7 +1246,7 @@ function PlanEditor({
           </div>
         )}
 
-        <div className="mt-7 flex justify-between gap-3 border-t border-[#eeeaf3] pt-5">
+        <div className="mt-7 flex justify-between gap-3 border-t border-outline-variant pt-5">
           <Button
             variant="outline"
             type="button"
@@ -1262,7 +1262,7 @@ function PlanEditor({
             )}
           </Button>
           <Button
-            className="bg-[#3525cd] text-white"
+            className="bg-primary text-white"
             disabled={busy || !canContinue}
             type="submit"
           >
@@ -1295,7 +1295,7 @@ function InvoiceDrawer({
       <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="flex items-start">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#777587]">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-outline">
               Invoice evidence
             </div>
             <h2 className="mt-1 text-2xl font-bold">{invoice.invoiceNumber}</h2>
@@ -1310,7 +1310,7 @@ function InvoiceDrawer({
         </div>
         <div className="mt-5 flex gap-2">
           <StatusBadge status={invoice.status} />
-          <span className="rounded-full bg-[#f0ecf9] px-2.5 py-1 text-[10px] font-bold">
+          <span className="rounded-full bg-zinc-50 px-2.5 py-1 text-[10px] font-bold">
             {invoice.currency}
           </span>
         </div>
@@ -1344,7 +1344,7 @@ function InvoiceDrawer({
           </div>
         </BillingPanel>
         <BillingPanel className="mt-6" title="Line items">
-          <div className="divide-y divide-[#eeeaf3]">
+          <div className="divide-y divide-outline-variant">
             {invoice.lineItems?.map((item) => (
               <div
                 className="flex justify-between gap-4 p-4 text-sm"
@@ -1352,7 +1352,7 @@ function InvoiceDrawer({
               >
                 <div>
                   <strong>{item.description}</strong>
-                  <div className="text-xs text-[#777587]">
+                  <div className="text-xs text-outline">
                     Quantity {item.quantity}
                   </div>
                 </div>
@@ -1362,13 +1362,13 @@ function InvoiceDrawer({
           </div>
         </BillingPanel>
         <BillingPanel className="mt-6" title="Payment evidence">
-          <div className="divide-y divide-[#eeeaf3]">
+          <div className="divide-y divide-outline-variant">
             {invoice.transactions?.map((transaction) => (
               <div className="flex items-center gap-3 p-4" key={transaction.id}>
-                <CreditCard className="size-4 text-[#3525cd]" />
+                <CreditCard className="size-4 text-primary" />
                 <div className="flex-1 text-sm">
                   <strong>{transaction.gateway}</strong>
-                  <div className="text-xs text-[#777587]">
+                  <div className="text-xs text-outline">
                     {formatBillingDate(transaction.attemptedAt)}
                   </div>
                 </div>
@@ -1376,14 +1376,14 @@ function InvoiceDrawer({
               </div>
             ))}
             {!invoice.transactions?.length && (
-              <p className="p-5 text-sm text-[#777587]">
+              <p className="p-5 text-sm text-outline">
                 No payment attempts recorded.
               </p>
             )}
           </div>
         </BillingPanel>
         {invoice.pdfChecksum && (
-          <div className="mt-6 break-all rounded-xl bg-[#f5f2f8] p-4 font-mono text-[10px] text-[#646273]">
+          <div className="mt-6 break-all rounded-xl bg-zinc-50 p-4 font-mono text-[10px] text-on-surface-variant">
             SHA-256 {invoice.pdfChecksum}
           </div>
         )}
@@ -1394,8 +1394,8 @@ function InvoiceDrawer({
 
 function PlanFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-[#f5f2f8] p-4">
-      <div className="text-[9px] font-bold uppercase tracking-wider text-[#777587]">
+    <div className="rounded-xl bg-zinc-50 p-4">
+      <div className="text-[9px] font-bold uppercase tracking-wider text-outline">
         {label}
       </div>
       <div className="mt-1 text-sm font-semibold">{value}</div>
@@ -1415,7 +1415,7 @@ function MoneyRow({
     <div
       className={cn(
         "flex justify-between text-sm",
-        strong && "border-t border-[#e4e1ee] pt-3 text-base font-bold",
+        strong && "border-t border-surface-variant pt-3 text-base font-bold",
       )}
     >
       <span>{label}</span>
@@ -1425,7 +1425,7 @@ function MoneyRow({
 }
 function TableHead({ columns }: { columns: string[] }) {
   return (
-    <thead className="bg-[#f7f4fb] text-[10px] uppercase tracking-wider text-[#646273]">
+    <thead className="bg-zinc-50 text-[10px] uppercase tracking-wider text-on-surface-variant">
       <tr>
         {columns.map((column, index) => (
           <th

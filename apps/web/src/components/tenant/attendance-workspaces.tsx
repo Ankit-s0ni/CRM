@@ -198,7 +198,7 @@ export function AttendanceOverview() {
           {departments.length > 0 && (
             <select
               aria-label="Department scope"
-              className="h-10 rounded-lg border border-[#c8c5d0] bg-white px-3 text-sm"
+              className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setDepartmentId(event.target.value)}
               value={departmentId}
             >
@@ -213,7 +213,7 @@ export function AttendanceOverview() {
           {offices.length > 0 && (
             <select
               aria-label="Office scope"
-              className="h-10 rounded-lg border border-[#c8c5d0] bg-white px-3 text-sm"
+              className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setOfficeId(event.target.value)}
               value={officeId}
             >
@@ -225,11 +225,11 @@ export function AttendanceOverview() {
               ))}
             </select>
           )}
-          <label className="text-xs font-bold text-[#646273]">
+          <label className="text-xs font-bold text-on-surface-variant">
             Operational date
             <input
               aria-label="Operational date"
-              className="ml-2 h-10 rounded-lg border border-[#c8c5d0] bg-white px-3 text-sm"
+              className="ml-2 h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setDate(event.target.value)}
               type="date"
               value={date}
@@ -258,13 +258,13 @@ export function AttendanceOverview() {
                 <h2 className="text-lg font-bold" id="today-summary-heading">
                   Today summary
                 </h2>
-                <p className="text-sm text-[#646273]">
+                <p className="text-sm text-on-surface-variant">
                   Each metric opens the register with the matching date and
                   filter.
                 </p>
               </div>
               {data.dashboard?.updatedAt && (
-                <span className="text-xs text-[#777587]">
+                <span className="text-xs text-outline">
                   Updated{" "}
                   {new Intl.DateTimeFormat("en", {
                     hour: "2-digit",
@@ -291,7 +291,7 @@ export function AttendanceOverview() {
           </div>
 
           {data.unavailable.length > 0 && (
-            <p className="rounded-xl border border-[#e4e1ee] bg-white px-4 py-3 text-xs text-[#646273]">
+            <p className="rounded-xl border border-surface-variant bg-white px-4 py-3 text-xs text-on-surface-variant">
               Some optional summaries are unavailable for this role or
               temporarily offline. Available data is shown without replacing
               missing values with estimates.
@@ -479,13 +479,13 @@ export function AttendanceSetupIndex() {
       {capabilities &&
         !capabilities.fieldTrackingEntitled &&
         granted.has("billing.subscription.manage") && (
-          <div className="mb-6 flex gap-3 rounded-xl border border-[#d9d5e5] bg-[#f5f2ff] p-4">
-            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-[#3525cd]" />
+          <div className="mb-6 flex gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4">
+            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-primary" />
             <div>
               <p className="text-sm font-bold">
                 Field Tracking is not included in this workspace
               </p>
-              <p className="mt-1 text-sm text-[#646273]">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Business Admins can review the subscription with the DeltCRM
                 owner. HR users will continue to see only capabilities already
                 available to the workspace.
@@ -522,10 +522,10 @@ function SummaryCard({
   tone: "success" | "danger" | "warning" | "neutral";
 }) {
   const styles = {
-    success: "border-[#bce9ca] bg-[#f1fbf4] text-[#006e2d]",
-    danger: "border-[#ffc8c2] bg-[#fff4f2] text-[#9f1111]",
-    warning: "border-[#f2d29e] bg-[#fff9ed] text-[#895100]",
-    neutral: "border-[#d9d5e5] bg-white text-[#3525cd]",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    danger: "border-red-200 bg-red-50 text-red-800",
+    warning: "border-amber-300 bg-amber-50 text-amber-800",
+    neutral: "border-zinc-300 bg-white text-primary",
   };
   return (
     <Link
@@ -595,13 +595,13 @@ export function AttentionQueue({
   }>;
   return (
     <Panel className="overflow-hidden">
-      <div className="border-b border-[#e4e1ee] p-5">
+      <div className="border-b border-surface-variant p-5">
         <h2 className="text-lg font-bold">Needs attention</h2>
-        <p className="text-sm text-[#646273]">
+        <p className="text-sm text-on-surface-variant">
           Open the queue that needs action instead of searching across screens.
         </p>
       </div>
-      <div className="divide-y divide-[#ece8f1]">
+      <div className="divide-y divide-zinc-100">
         {items.map((item) => (
           <AttendanceTaskCard {...item} key={item.label} />
         ))}
@@ -631,11 +631,11 @@ export function AttendanceTaskCard({
 }) {
   return (
     <div className="flex min-h-16 items-center gap-3 px-5 py-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f0ecf9] text-[#3525cd]">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-zinc-50 text-primary">
         <Icon className="size-4" />
       </span>
       <Link
-        className="min-w-0 flex-1 font-semibold hover:text-[#3525cd]"
+        className="min-w-0 flex-1 font-semibold hover:text-primary"
         href={href}
       >
         {label}
@@ -644,7 +644,7 @@ export function AttendanceTaskCard({
       <span
         className={cn(
           "grid min-w-8 place-items-center rounded-full px-2 py-1 text-xs font-bold",
-          value ? "bg-[#ffddb0] text-[#895100]" : "bg-[#d8f8df] text-[#006e2d]",
+          value ? "bg-amber-200 text-amber-800" : "bg-emerald-100 text-emerald-800",
         )}
       >
         {value}
@@ -689,13 +689,13 @@ function QuickActions({ permissions }: { permissions: ReadonlySet<string> }) {
       <div className="mt-4 grid gap-2">
         {actions.map(({ label, href, icon: Icon }) => (
           <Link
-            className="flex min-h-11 items-center gap-3 rounded-lg border border-[#e4e1ee] px-4 text-sm font-semibold transition hover:border-[#3525cd] hover:bg-[#f8f5ff]"
+            className="flex min-h-11 items-center gap-3 rounded-lg border border-surface-variant px-4 text-sm font-semibold transition hover:border-primary hover:bg-zinc-50"
             href={href}
             key={href}
           >
-            <Icon className="size-4 text-[#3525cd]" />
+            <Icon className="size-4 text-primary" />
             {label}
-            <ArrowRight className="ml-auto size-4 text-[#aaa3ad]" />
+            <ArrowRight className="ml-auto size-4 text-zinc-400" />
           </Link>
         ))}
       </div>
@@ -788,12 +788,12 @@ function SetupHealth({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold">Setup health</h2>
-          <p className="text-sm text-[#646273]">
+          <p className="text-sm text-on-surface-variant">
             Core configuration reported by current setup APIs.
           </p>
         </div>
         <Link
-          className="text-xs font-bold text-[#3525cd]"
+          className="text-xs font-bold text-primary"
           href="/app/attendance/setup"
         >
           Open setup
@@ -801,12 +801,12 @@ function SetupHealth({
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
         {checks.map(({ label, value, ready, icon: Icon }) => (
-          <div className="rounded-lg bg-[#f7f4fb] p-3" key={label}>
+          <div className="rounded-lg bg-zinc-50 p-3" key={label}>
             <div className="flex items-center gap-2">
               <Icon
                 className={cn(
                   "size-4",
-                  ready ? "text-[#006e2d]" : "text-[#895100]",
+                  ready ? "text-emerald-800" : "text-amber-800",
                 )}
               />
               <span className="text-xs font-semibold">{label}</span>
@@ -834,31 +834,31 @@ function MonthEndReadiness({
   return (
     <Panel className="p-5">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-[#302f39] text-white">
+        <span className="grid size-10 place-items-center rounded-lg bg-zinc-700 text-white">
           <LockKeyhole className="size-5" />
         </span>
         <div>
           <h2 className="text-lg font-bold">Month-end readiness</h2>
-          <p className="text-sm text-[#646273]">
+          <p className="text-sm text-on-surface-variant">
             Confirm a completed export before locking attendance for payroll.
           </p>
         </div>
         <FeatureInfo className="ml-auto" helpKey="payroll-lock" />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-[#f7f4fb] p-3">
-          <p className="text-xs text-[#646273]">Completed reports</p>
+        <div className="rounded-lg bg-zinc-50 p-3">
+          <p className="text-xs text-on-surface-variant">Completed reports</p>
           <p className="mt-1 text-xl font-bold">
             {data.completedReports ?? "—"}
           </p>
         </div>
-        <div className="rounded-lg bg-[#f7f4fb] p-3">
-          <p className="text-xs text-[#646273]">Active payroll locks</p>
+        <div className="rounded-lg bg-zinc-50 p-3">
+          <p className="text-xs text-on-surface-variant">Active payroll locks</p>
           <p className="mt-1 text-xl font-bold">{data.activeLocks ?? "—"}</p>
         </div>
       </div>
       <Link
-        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#3525cd]"
+        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-primary"
         href={
           canPayroll ? "/app/attendance/payroll" : "/app/attendance/reports"
         }
@@ -882,7 +882,7 @@ function SetupGroupCard({
   return (
     <Panel className="p-6">
       <div className="flex items-start gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-[#302f39] text-white">
+        <span className="grid size-11 place-items-center rounded-xl bg-zinc-700 text-white">
           <Icon className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -890,7 +890,7 @@ function SetupGroupCard({
             <h2 className="text-lg font-bold">{group.title}</h2>
             <SetupHealthBadge status={status} />
           </div>
-          <p className="mt-1 text-sm leading-6 text-[#646273]">
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">
             {group.description}
           </p>
         </div>
@@ -899,7 +899,7 @@ function SetupGroupCard({
       <div className="mt-5 flex flex-wrap gap-2">
         {group.links.map((link) => (
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d9d5e5] bg-white px-4 text-sm font-semibold text-[#3525cd] hover:bg-[#f5f2ff]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
             href={link.href}
             key={link.href}
           >
@@ -918,9 +918,9 @@ export function SetupHealthBadge({
   status: "ready" | "attention" | "unknown";
 }) {
   const values = {
-    ready: ["Ready", "bg-[#d8f8df] text-[#006e2d]"],
-    attention: ["Needs setup", "bg-[#ffddb0] text-[#895100]"],
-    unknown: ["Review", "bg-[#ece9f2] text-[#646273]"],
+    ready: ["Ready", "bg-emerald-100 text-emerald-800"],
+    attention: ["Needs setup", "bg-amber-200 text-amber-800"],
+    unknown: ["Review", "bg-zinc-100 text-on-surface-variant"],
   } as const;
   return (
     <span

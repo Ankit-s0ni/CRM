@@ -68,7 +68,7 @@ export function TimezoneSelect({
         </select>
         {showDetect ? (
           <button
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[#c7c4d8] bg-white px-3 text-xs font-semibold text-[#3525cd] hover:bg-[#f5f2ff]"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 text-xs font-semibold text-primary hover:bg-zinc-50"
             onClick={useDeviceTimezone}
             type="button"
           >
@@ -76,7 +76,7 @@ export function TimezoneSelect({
           </button>
         ) : null}
       </div>
-      <p className="text-xs text-[#777587]">{description}</p>
+      <p className="text-xs text-outline">{description}</p>
     </div>
   );
 }

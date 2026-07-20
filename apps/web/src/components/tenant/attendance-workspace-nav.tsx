@@ -56,7 +56,7 @@ export function AttendanceWorkspaceChrome({
       {sectionItems.length > 1 && (
         <nav
           aria-label={`${currentSection} section`}
-          className="flex min-h-12 items-center gap-1 overflow-x-auto border-b border-[#e8e4ee] bg-[#fcfbff] px-4 lg:px-7"
+          className="flex min-h-12 items-center gap-1 overflow-x-auto border-b border-zinc-200 bg-zinc-50 px-4 lg:px-7"
         >
           {sectionItems.map((item) => {
             const active = attendanceTabActive(pathname, item.href);
@@ -66,8 +66,8 @@ export function AttendanceWorkspaceChrome({
                 className={cn(
                   "shrink-0 border-b-2 px-3 py-3 text-sm font-semibold transition",
                   active
-                    ? "border-[#3525cd] text-[#3525cd]"
-                    : "border-transparent text-[#777587] hover:text-[#302f39]",
+                    ? "border-primary text-primary"
+                    : "border-transparent text-outline hover:text-zinc-700",
                 )}
                 href={item.href}
                 key={item.href}
@@ -104,7 +104,7 @@ export function AttendanceWorkspaceNav({
   return (
     <nav
       aria-label="Attendance workspace"
-      className="sticky top-16 z-20 flex min-h-14 items-center gap-1 overflow-x-auto border-b border-[#ded9e8] bg-white px-3 shadow-sm lg:px-6"
+      className="sticky top-16 z-20 flex min-h-14 items-center gap-1 overflow-x-auto border-b border-zinc-200 bg-white px-3 shadow-sm lg:px-6"
     >
       {items.map((item) => {
         const active = currentSection === item.section;
@@ -112,7 +112,7 @@ export function AttendanceWorkspaceNav({
           <div
             className={cn(
               "flex shrink-0 items-center rounded-lg",
-              active && "bg-[#f0ecf9]",
+              active && "bg-zinc-50",
             )}
             key={item.href}
           >
@@ -143,7 +143,7 @@ export function AttendanceBreadcrumbs({
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex items-center gap-1 overflow-x-auto px-5 pt-5 text-xs text-[#777587] lg:px-8"
+      className="flex items-center gap-1 overflow-x-auto px-5 pt-5 text-xs text-outline lg:px-8"
     >
       {items.map((crumb, index) => (
         <div
@@ -152,11 +152,11 @@ export function AttendanceBreadcrumbs({
         >
           {index > 0 && <ChevronRight className="size-3" />}
           {index === items.length - 1 ? (
-            <span aria-current="page" className="font-semibold text-[#464555]">
+            <span aria-current="page" className="font-semibold text-on-surface-variant">
               {crumb.label}
             </span>
           ) : (
-            <Link className="hover:text-[#3525cd]" href={crumb.href}>
+            <Link className="hover:text-primary" href={crumb.href}>
               {crumb.label}
             </Link>
           )}
@@ -185,7 +185,7 @@ export function PermissionAwareLink({
       aria-current={active ? "page" : undefined}
       className={cn(
         "whitespace-nowrap px-3 py-3 text-sm font-semibold transition",
-        active ? "text-[#3525cd]" : "text-[#646273] hover:text-[#302f39]",
+        active ? "text-primary" : "text-on-surface-variant hover:text-zinc-700",
       )}
       href={item.href}
     >
@@ -253,7 +253,7 @@ function AttendanceGateState({
         className="mx-auto max-w-5xl p-6"
         role="status"
       >
-        <div className="h-40 animate-pulse rounded-2xl border border-[#e4e1ee] bg-white" />
+        <div className="h-40 animate-pulse rounded-2xl border border-surface-variant bg-white" />
       </div>
     );
   }
@@ -261,22 +261,22 @@ function AttendanceGateState({
   const Icon = unavailable ? Puzzle : LockKeyhole;
   return (
     <section
-      className="mx-auto mt-8 max-w-xl rounded-2xl border border-[#ded9e8] bg-white p-8 text-center shadow-sm"
+      className="mx-auto mt-8 max-w-xl rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm"
       role="alert"
     >
-      <span className="mx-auto grid size-12 place-items-center rounded-xl bg-[#ece9ff] text-[#3525cd]">
+      <span className="mx-auto grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
         <Icon className="size-6" />
       </span>
       <h1 className="mt-4 text-2xl font-bold">
         {unavailable ? "Attendance is unavailable" : "Attendance access denied"}
       </h1>
-      <p className="mt-2 text-sm leading-6 text-[#646273]">
+      <p className="mt-2 text-sm leading-6 text-on-surface-variant">
         {unavailable
           ? "This workspace does not currently have the Attendance module enabled."
           : "Your current workspace permissions do not allow this Attendance area."}
       </p>
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#3525cd] px-5 text-sm font-bold text-white"
+        className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
         href="/app/modules"
       >
         Back to modules
@@ -297,7 +297,7 @@ export function AttendanceSectionTabs({
   return (
     <nav
       aria-label={ariaLabel}
-      className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-[#ece8f1] bg-white px-5 lg:px-8"
+      className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-zinc-100 bg-white px-5 lg:px-8"
     >
       {items.map((item) => {
         const active = attendanceTabActive(pathname, item.href);
@@ -307,8 +307,8 @@ export function AttendanceSectionTabs({
             className={cn(
               "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
               active
-                ? "bg-[#302f39] text-white"
-                : "text-[#646273] hover:bg-[#f0ecf9] hover:text-[#3525cd]",
+                ? "bg-zinc-700 text-white"
+                : "text-on-surface-variant hover:bg-zinc-50 hover:text-primary",
             )}
             href={item.href}
             key={item.href}

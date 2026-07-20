@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { TenantContextService } from '../tenancy/tenant-context.service';
+import { TenantContextService } from '../../platform/tenancy/public';
 
 export type PrismaTransaction = Omit<
   PrismaClient,

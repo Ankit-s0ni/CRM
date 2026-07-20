@@ -17,14 +17,14 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { BillingService } from '../src/modules/billing/application/billing.service';
-import { DunningService } from '../src/modules/billing/application/dunning.service';
-import { synchronizeSubscriptionSeats } from '../src/modules/billing/application/seat-sync';
-import { PlanChangeTiming } from '../src/modules/billing/presentation/billing.dto';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { generateTotp } from '../src/modules/platform/platform-auth/totp';
+import { BillingService } from '../src/platform/billing/application/billing.service';
+import { DunningService } from '../src/platform/billing/application/dunning.service';
+import { synchronizeSubscriptionSeats } from '../src/platform/billing/application/seat-sync';
+import { PlanChangeTiming } from '../src/platform/billing/presentation/billing.dto';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 import { PrismaService } from '../src/shared/database/prisma.service';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { TenantContextService } from '../src/platform/tenancy/public';
 
 describe('Sprint 8 billing GA acceptance (e2e)', () => {
   let app: INestApplication<App>;

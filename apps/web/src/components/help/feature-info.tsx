@@ -53,8 +53,8 @@ export function FeatureInfo({
             className={cn(
               "min-h-11 min-w-11 gap-2 rounded-full",
               tone === "inverse"
-                ? "text-[#e4e1ee] hover:bg-white/10 hover:text-white"
-                : "text-[#646273] hover:bg-[#f0ecf9] hover:text-[#3525cd]",
+                ? "text-surface-variant hover:bg-white/10 hover:text-white"
+                : "text-on-surface-variant hover:bg-zinc-50 hover:text-primary",
               label && "px-3",
               className,
             )}
@@ -78,21 +78,21 @@ export function FeatureHelpDrawer({
   entry: AttendanceHelpEntry | PortalHelpEntry;
 }) {
   return (
-    <DialogContent className="max-h-[88vh] overflow-y-auto border border-[#ded9e8] bg-white p-0 shadow-2xl sm:max-w-xl">
-      <DialogHeader className="bg-[#302f39] px-6 py-6 pr-14 text-white">
-        <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#c3c0ff]">
+    <DialogContent className="max-h-[88vh] overflow-y-auto border border-zinc-200 bg-white p-0 shadow-2xl sm:max-w-xl">
+      <DialogHeader className="bg-zinc-700 px-6 py-6 pr-14 text-white">
+        <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-200">
           <Sparkles className="size-4" />
           Feature guide
         </div>
         <DialogTitle className="text-2xl font-bold leading-tight">
           {entry.title}
         </DialogTitle>
-        <DialogDescription className="mt-2 text-sm leading-6 text-[#e4e1ee]">
+        <DialogDescription className="mt-2 text-sm leading-6 text-surface-variant">
           {entry.summary}
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-6 px-6 py-6 text-[#302f39]">
+      <div className="space-y-6 px-6 py-6 text-zinc-700">
         <HelpSection title="Use this when">
           <p>{entry.useWhen}</p>
         </HelpSection>
@@ -101,7 +101,7 @@ export function FeatureHelpDrawer({
           <ol className="space-y-3">
             {entry.steps.map((step, index) => (
               <li className="flex gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#e2dfff] text-xs font-bold text-[#3525cd]">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-primary">
                   {index + 1}
                 </span>
                 <span className="pt-0.5">{step}</span>
@@ -111,12 +111,12 @@ export function FeatureHelpDrawer({
         </HelpSection>
 
         {entry.effect && (
-          <div className="rounded-xl border border-[#d9d5e5] bg-[#f8f5ff] p-4">
+          <div className="rounded-xl border border-zinc-300 bg-zinc-50 p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold">
-              <ShieldCheck className="size-4 text-[#3525cd]" />
+              <ShieldCheck className="size-4 text-primary" />
               What it affects
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
               {entry.effect}
             </p>
           </div>
@@ -146,7 +146,7 @@ export function FeatureHelpDrawer({
             <div className="flex flex-wrap gap-2">
               {entry.related.map((related) => (
                 <Link
-                  className="rounded-full border border-[#c8c5d0] px-3 py-2 text-xs font-semibold text-[#3525cd] hover:bg-[#f0ecf9]"
+                  className="rounded-full border border-outline-variant px-3 py-2 text-xs font-semibold text-primary hover:bg-zinc-50"
                   href={related.href}
                   key={related.href}
                 >
@@ -188,7 +188,7 @@ export function HeaderContextHelp() {
           render={
             <Button
               aria-label={`About ${portalHelpEntryForPath(pathname).title}`}
-              className="min-h-11 min-w-11 rounded-full text-[#646273]"
+              className="min-h-11 min-w-11 rounded-full text-on-surface-variant"
               size="icon"
               variant="ghost"
             />
@@ -212,8 +212,8 @@ function HelpSection({
 }) {
   return (
     <section>
-      <h3 className="mb-2 text-sm font-bold text-[#1b1b24]">{title}</h3>
-      <div className="text-sm leading-6 text-[#5e5b68]">{children}</div>
+      <h3 className="mb-2 text-sm font-bold text-zinc-900">{title}</h3>
+      <div className="text-sm leading-6 text-zinc-500">{children}</div>
     </section>
   );
 }

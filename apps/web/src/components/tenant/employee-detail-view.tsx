@@ -292,7 +292,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       action={
         <Link
           href="/app/employees"
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d8d4e4] bg-white px-4 text-sm font-semibold text-[#464555]"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-on-surface-variant"
         >
           <ArrowLeft className="size-4" /> Employees
         </Link>
@@ -351,7 +351,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           <div>
             <div className="mb-3">
               <h2 className="text-xl font-bold">Registered devices</h2>
-              <p className="mt-1 text-sm text-[#777587]">
+              <p className="mt-1 text-sm text-outline">
                 Approve, block, or replace devices with an auditable reason.
               </p>
             </div>
@@ -359,12 +359,12 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           </div>
 
           <Panel className="h-fit p-6">
-            <div className="grid size-12 place-items-center rounded-xl bg-[#eeebff] text-[#3525cd]">
+            <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
               <Fingerprint className="size-6" />
             </div>
             <h2 className="mt-5 text-xl font-bold">Biometric identity</h2>
             {!canReadBiometrics ? (
-              <p className="mt-3 text-sm text-[#777587]">
+              <p className="mt-3 text-sm text-outline">
                 You do not have permission to view biometric enrollment status.
               </p>
             ) : biometrics ? (
@@ -393,14 +393,14 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
                   />
                 </div>
                 {biometrics.enrolledAt && (
-                  <p className="mt-4 text-xs text-[#777587]">
+                  <p className="mt-4 text-xs text-outline">
                     Enrolled {formatDate(biometrics.enrolledAt)}
                   </p>
                 )}
                 {canManageBiometrics && biometrics.enrolled && (
                   <button
                     type="button"
-                    className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                    className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-error px-4 text-sm font-semibold text-error"
                     onClick={() => setResetOpen(true)}
                   >
                     Reset face profile
@@ -477,7 +477,7 @@ function EmployeeWorkspaceTabs({
   return (
     <nav
       aria-label="Employee workspace"
-      className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-[#e4e1ee] bg-white p-2"
+      className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-surface-variant bg-white p-2"
     >
       {items
         .filter(
@@ -490,8 +490,8 @@ function EmployeeWorkspaceTabs({
             aria-current={active === item.key ? "page" : undefined}
             className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${
               active === item.key
-                ? "bg-[#3525cd] text-white"
-                : "text-[#646171] hover:bg-[#f0ecf9]"
+                ? "bg-primary text-white"
+                : "text-zinc-500 hover:bg-zinc-50"
             }`}
             key={item.key}
             onClick={() => onChange(item.key)}
@@ -509,12 +509,12 @@ function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="grid size-14 place-items-center rounded-2xl bg-[#e3e0ff] text-[#3525cd]">
+          <div className="grid size-14 place-items-center rounded-2xl bg-zinc-100 text-primary">
             <UserRound className="size-7" />
           </div>
           <div>
             <h2 className="text-xl font-bold">Employment profile</h2>
-            <p className="mt-1 text-sm text-[#777587]">
+            <p className="mt-1 text-sm text-outline">
               {employee.phone || "No phone number recorded"}
             </p>
           </div>
@@ -522,10 +522,10 @@ function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
         <span
           className={`rounded-full px-3 py-1 text-xs font-bold ${
             employee.status === "TERMINATED"
-              ? "bg-[#ffd9d5] text-[#93000a]"
+              ? "bg-red-100 text-on-error-container"
               : employee.status === "ON_NOTICE"
-                ? "bg-[#fff0d4] text-[#7a4d00]"
-                : "bg-[#d8f8df] text-[#005320]"
+                ? "bg-amber-100 text-amber-900"
+                : "bg-emerald-100 text-emerald-900"
           }`}
         >
           {employee.status}
@@ -584,7 +584,7 @@ function EmployeeLifecyclePanel({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold">Employment actions</h2>
-          <p className="mt-1 text-sm leading-6 text-[#777587]">
+          <p className="mt-1 text-sm leading-6 text-outline">
             Update placement and record lifecycle changes here so history,
             access, policies, and payroll evidence remain connected.
           </p>
@@ -592,7 +592,7 @@ function EmployeeLifecyclePanel({
         <div className="flex flex-wrap gap-2">
           {canUpdate && employee.status !== "TERMINATED" && (
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#c7c4d8] bg-white px-4 text-sm font-semibold text-[#3525cd]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary"
               onClick={() => setDialog("edit")}
               type="button"
             >
@@ -601,7 +601,7 @@ function EmployeeLifecyclePanel({
           )}
           {canManageLifecycle && employee.status !== "TERMINATED" && (
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#ba1a1a] bg-white px-4 text-sm font-semibold text-[#ba1a1a]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-error bg-white px-4 text-sm font-semibold text-error"
               onClick={() => setDialog("terminate")}
               type="button"
             >
@@ -760,7 +760,7 @@ function EditEmployeeDialog({
             value={form.phone}
             onChange={(phone) => setForm({ ...form, phone })}
           />
-          <span className="text-xs leading-5 text-[#777587]">
+          <span className="text-xs leading-5 text-outline">
             Select the country code, then enter the local mobile number.
           </span>
         </Field>
@@ -775,7 +775,7 @@ function EditEmployeeDialog({
               setForm({ ...form, email: event.target.value })
             }
           />
-          <span className="text-xs leading-5 text-[#777587]">
+          <span className="text-xs leading-5 text-outline">
             {employee.user
               ? "This is the email used to sign in to the employee app."
               : "This legacy employee has no login account yet. Create it from Account access."}
@@ -1040,11 +1040,11 @@ function ReadinessPanel({
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold">Employee setup checklist</h2>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Complete these steps before the employee starts using attendance.
           </p>
         </div>
-        <span className="rounded-full bg-[#f0ecf9] px-3 py-1 text-sm font-bold text-[#3525cd]">
+        <span className="rounded-full bg-zinc-50 px-3 py-1 text-sm font-bold text-primary">
           {complete}/{total}
         </span>
       </div>
@@ -1060,7 +1060,7 @@ function ReadinessPanel({
           };
           return (
           <button
-            className="flex items-start gap-3 rounded-xl bg-[#f8f5fc] p-4 text-left text-sm transition hover:bg-[#f0ecf9]"
+            className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-left text-sm transition hover:bg-zinc-50"
             key={key}
             onClick={() => onSelect(step.tab)}
             type="button"
@@ -1068,19 +1068,19 @@ function ReadinessPanel({
             <span
               className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
                 ready
-                  ? "bg-[#d8f8df] text-[#005320]"
-                  : "bg-[#fff0d4] text-[#7a4d00]"
+                  ? "bg-emerald-100 text-emerald-900"
+                  : "bg-amber-100 text-amber-900"
               }`}
             >
               {ready ? "Y" : "!"}
             </span>
             <span>
-              <strong className="block text-[#24222c]">{step.title}</strong>
-              <span className="mt-1 block text-xs leading-5 text-[#777587]">
+              <strong className="block text-zinc-800">{step.title}</strong>
+              <span className="mt-1 block text-xs leading-5 text-outline">
                 {ready ? "Complete" : step.description}
               </span>
               {!ready && (
-                <span className="mt-2 block text-xs font-bold text-[#3525cd]">
+                <span className="mt-2 block text-xs font-bold text-primary">
                   {step.action} →
                 </span>
               )}
@@ -1100,7 +1100,7 @@ function AccountSummary({
 }) {
   return (
     <Panel className="h-fit p-6">
-      <div className="grid size-12 place-items-center rounded-xl bg-[#eeebff] text-[#3525cd]">
+      <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
         <KeyRound className="size-6" />
       </div>
       <h2 className="mt-5 text-xl font-bold">Account access</h2>
@@ -1119,7 +1119,7 @@ function AccountSummary({
           />
         </div>
       ) : (
-        <p className="mt-3 text-sm leading-6 text-[#777587]">
+        <p className="mt-3 text-sm leading-6 text-outline">
           No login account is linked yet. Create it from the Account access tab.
         </p>
       )}
@@ -1173,7 +1173,7 @@ function AssignmentsPanel({
           ))}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#3525cd]"
+          className="mt-5 inline-flex text-sm font-bold text-primary"
           href="/app/attendance/rosters"
         >
           Manage shifts and rosters
@@ -1204,13 +1204,13 @@ function AssignmentsPanel({
             />
           </div>
         ) : (
-          <p className="mt-4 text-sm text-[#7a4d00]">
+          <p className="mt-4 text-sm text-amber-900">
             No tenant, department, or employee policy currently resolves for
             this employee.
           </p>
         )}
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#3525cd]"
+          className="mt-5 inline-flex text-sm font-bold text-primary"
           href={`/app/attendance/policies?employeeId=${employeeId}&returnTo=${encodeURIComponent(`/app/employees/${employeeId}?tab=assignments`)}`}
         >
           Change this employee&apos;s policy
@@ -1218,7 +1218,7 @@ function AssignmentsPanel({
       </Panel>
       <Panel className="p-6 lg:col-span-2">
         <h2 className="text-lg font-bold">Assigned Leave policies</h2>
-        <p className="mt-1 text-sm text-[#777587]">
+        <p className="mt-1 text-sm text-outline">
           A balance confirms the employee is assigned to that versioned Leave
           policy.
         </p>
@@ -1232,13 +1232,13 @@ function AssignmentsPanel({
               />
             ))
           ) : (
-            <p className="text-sm text-[#7a4d00]">
+            <p className="text-sm text-amber-900">
               No Leave policy balance is assigned to this employee.
             </p>
           )}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#3525cd]"
+          className="mt-5 inline-flex text-sm font-bold text-primary"
           href="/app/attendance/setup/leave"
         >
           Manage Leave policies
@@ -1260,12 +1260,12 @@ function AttendancePanel({
       <div className="flex flex-wrap items-center justify-between gap-4 p-6">
         <div>
           <h2 className="text-lg font-bold">Recent Attendance</h2>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Latest calculated days, late time, and overtime.
           </p>
         </div>
         <Link
-          className="text-sm font-bold text-[#3525cd]"
+          className="text-sm font-bold text-primary"
           href={`/app/attendance/register/${employeeId}`}
         >
           Open full register
@@ -1274,7 +1274,7 @@ function AttendancePanel({
       {workspace.attendance.recentDays.length ? (
         workspace.attendance.recentDays.map((day) => (
           <div
-            className="grid gap-2 border-t border-[#e4e1ee] px-6 py-4 text-sm sm:grid-cols-[140px_1fr_120px_120px]"
+            className="grid gap-2 border-t border-surface-variant px-6 py-4 text-sm sm:grid-cols-[140px_1fr_120px_120px]"
             key={day.id}
           >
             <span>{formatDate(day.attendanceDate)}</span>
@@ -1284,7 +1284,7 @@ function AttendancePanel({
           </div>
         ))
       ) : (
-        <p className="border-t border-[#e4e1ee] p-6 text-sm text-[#777587]">
+        <p className="border-t border-surface-variant p-6 text-sm text-outline">
           No calculated Attendance days are available yet.
         </p>
       )}
@@ -1313,7 +1313,7 @@ function LeavePanel({
               />
             ))
           ) : (
-            <p className="text-sm text-[#777587]">No balances assigned.</p>
+            <p className="text-sm text-outline">No balances assigned.</p>
           )}
         </div>
       </Panel>
@@ -1321,7 +1321,7 @@ function LeavePanel({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold">Recent requests</h2>
           <Link
-            className="text-sm font-bold text-[#3525cd]"
+            className="text-sm font-bold text-primary"
             href={`/app/attendance/leave/requests?employeeId=${employeeId}&returnTo=/app/employees/${employeeId}`}
           >
             Open full history
@@ -1330,19 +1330,19 @@ function LeavePanel({
         <div className="mt-4 grid gap-3">
           {workspace.leave.recentRequests.length ? (
             workspace.leave.recentRequests.map((request) => (
-              <div className="rounded-xl bg-[#f8f5fc] p-4" key={request.id}>
+              <div className="rounded-xl bg-zinc-50 p-4" key={request.id}>
                 <div className="flex items-center justify-between gap-3">
                   <strong className="text-sm">{request.policy.name}</strong>
                   <span className="text-xs font-bold">{request.status}</span>
                 </div>
-                <p className="mt-1 text-xs text-[#777587]">
+                <p className="mt-1 text-xs text-outline">
                   {formatDate(request.startDate)} to{" "}
                   {formatDate(request.endDate)} · {request.totalDays} days
                 </p>
               </div>
             ))
           ) : (
-            <p className="text-sm text-[#777587]">No leave requests yet.</p>
+            <p className="text-sm text-outline">No leave requests yet.</p>
           )}
         </div>
       </Panel>
@@ -1374,7 +1374,7 @@ function AccountPanel({
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="font-bold">Create employee login</h2>
-                <p className="mt-1 text-sm leading-6 text-[#777587]">
+                <p className="mt-1 text-sm leading-6 text-outline">
                   Enter the work email. DeltCRM will create the Employee login
                   and generate a temporary password immediately.
                 </p>
@@ -1390,24 +1390,24 @@ function AccountPanel({
         <h2 className="text-lg font-bold">Employee access</h2>
         {employee.user ? (
           <div className="mt-4 grid gap-4">
-            <div className="rounded-xl border border-[#bce9ca] bg-[#e8f8ed] p-4">
-              <p className="text-sm font-bold text-[#005320]">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-sm font-bold text-emerald-900">
                 Employee self-service active
               </p>
-              <p className="mt-1 text-xs leading-5 text-[#43614d]">
+              <p className="mt-1 text-xs leading-5 text-emerald-900">
                 The Employee role was assigned automatically when this login
                 was created.
               </p>
             </div>
             {elevatedRoles.length > 0 && (
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-[#777587]">
+                <p className="text-xs font-bold uppercase tracking-wide text-outline">
                   Additional access
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {elevatedRoles.map(({ role }) => (
                     <span
-                      className="rounded-full bg-[#e3e0ff] px-3 py-1 text-xs font-bold text-[#3525cd]"
+                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-primary"
                       key={role.id}
                     >
                       {role.name.replaceAll("_", " ")}
@@ -1418,9 +1418,9 @@ function AccountPanel({
             )}
           </div>
         ) : (
-          <div className="mt-4 rounded-xl border border-[#eadcae] bg-[#fff8df] p-4">
-            <p className="text-sm font-bold text-[#705300]">Not activated</p>
-            <p className="mt-1 text-xs leading-5 text-[#705f2a]">
+          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <p className="text-sm font-bold text-amber-900">Not activated</p>
+            <p className="mt-1 text-xs leading-5 text-amber-900">
               Create the employee login here. The Employee role is assigned
               automatically; no separate role setup is required.
             </p>
@@ -1486,7 +1486,7 @@ function CreateEmployeeAccountDialog({
     >
       {credentials ? (
         <div className="grid gap-4">
-          <div className="rounded-xl border border-[#bce9ca] bg-[#e8f8ed] p-5 text-sm leading-6 text-[#005320]">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
             Login created successfully. Give these temporary credentials to the
             employee.
           </div>
@@ -1521,17 +1521,17 @@ function CreateEmployeeAccountDialog({
               value={email}
             />
           </Field>
-          <div className="rounded-lg bg-[#f5f2ff] p-4 text-sm">
-            <span className="block text-xs font-bold uppercase tracking-wide text-[#777587]">
+          <div className="rounded-lg bg-zinc-50 p-4 text-sm">
+            <span className="block text-xs font-bold uppercase tracking-wide text-outline">
               Account role
             </span>
             <strong className="mt-1 block">Employee self-service</strong>
-            <span className="mt-1 block text-xs leading-5 text-[#777587]">
+            <span className="mt-1 block text-xs leading-5 text-outline">
               Attendance, leave, notifications, and the employee&apos;s own
               profile only. Additional HR access can be granted later.
             </span>
           </div>
-          <p className="rounded-lg bg-[#fff7e8] p-3 text-xs leading-5 text-[#6d4600]">
+          <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
             The temporary password is the employee name plus the first six
             phone digits. It is shown after account creation.
           </p>
@@ -1566,10 +1566,10 @@ function HistoryPanel({ workspace }: { workspace: EmployeeWorkspace }) {
   return (
     <Panel className="p-6">
       <div className="flex items-center gap-3">
-        <ListChecks className="size-5 text-[#3525cd]" />
+        <ListChecks className="size-5 text-primary" />
         <div>
           <h2 className="text-lg font-bold">Employee history</h2>
-          <p className="text-sm text-[#777587]">
+          <p className="text-sm text-outline">
             Employment changes and auditable administrative actions.
           </p>
         </div>
@@ -1578,22 +1578,22 @@ function HistoryPanel({ workspace }: { workspace: EmployeeWorkspace }) {
         {entries.length ? (
           entries.map((entry) => (
             <div
-              className="flex gap-4 rounded-xl border border-[#e4e1ee] p-4"
+              className="flex gap-4 rounded-xl border border-surface-variant p-4"
               key={`${entry.detail}-${entry.id}`}
             >
-              <Clock3 className="mt-0.5 size-4 shrink-0 text-[#3525cd]" />
+              <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
               <div>
                 <p className="text-sm font-semibold capitalize">
                   {entry.title}
                 </p>
-                <p className="mt-1 text-xs text-[#777587]">
+                <p className="mt-1 text-xs text-outline">
                   {entry.detail} · {formatDate(entry.date)}
                 </p>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-[#777587]">No history is available.</p>
+          <p className="text-sm text-outline">No history is available.</p>
         )}
       </div>
     </Panel>
@@ -1701,11 +1701,11 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
     <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
       {canManage && (
         <Panel className="h-fit p-6">
-          <div className="grid size-11 place-items-center rounded-xl bg-[#e3e0ff] text-[#3525cd]">
+          <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
             <Upload className="size-5" />
           </div>
           <h2 className="mt-4 text-lg font-bold">Add document</h2>
-          <p className="mt-1 text-sm leading-6 text-[#777587]">
+          <p className="mt-1 text-sm leading-6 text-outline">
             Files are private. Only authorized HR users receive short-lived
             download links, and every upload or deletion is audited.
           </p>
@@ -1758,7 +1758,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       <Panel className="overflow-hidden">
         <div className="p-6">
           <h2 className="text-lg font-bold">Employee documents</h2>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Review metadata before opening a private file. Delete only according
             to your company retention policy.
           </p>
@@ -1775,24 +1775,24 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
         ) : documents.length ? (
           documents.map((document) => (
             <div
-              className="grid gap-3 border-t border-[#e4e1ee] p-5 sm:grid-cols-[1fr_150px_auto] sm:items-center"
+              className="grid gap-3 border-t border-surface-variant p-5 sm:grid-cols-[1fr_150px_auto] sm:items-center"
               key={document.id}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
                   <FileText className="size-5" />
                 </span>
                 <div className="min-w-0">
                   <strong className="block truncate text-sm">
                     {document.title}
                   </strong>
-                  <span className="block truncate text-xs text-[#777587]">
+                  <span className="block truncate text-xs text-outline">
                     {document.filename} · {formatFileSize(document.fileSize)}
                   </span>
                 </div>
               </div>
-              <div className="text-xs text-[#777587]">
-                <strong className="block text-[#464555]">
+              <div className="text-xs text-outline">
+                <strong className="block text-on-surface-variant">
                   {document.documentType.replaceAll("_", " ")}
                 </strong>
                 {document.expiresAt
@@ -1802,7 +1802,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <div className="flex gap-2">
                 <button
                   aria-label={`Download ${document.title}`}
-                  className="grid size-10 place-items-center rounded-lg border border-[#d8d4e4] text-[#3525cd]"
+                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-primary"
                   onClick={() => download(document)}
                   type="button"
                 >
@@ -1811,7 +1811,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 {canManage && (
                   <button
                     aria-label={`Delete ${document.title}`}
-                    className="grid size-10 place-items-center rounded-lg border border-[#f0b7b2] text-[#ba1a1a]"
+                    className="grid size-10 place-items-center rounded-lg border border-red-300 text-error"
                     onClick={() => remove(document)}
                     type="button"
                   >
@@ -1822,7 +1822,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             </div>
           ))
         ) : (
-          <p className="border-t border-[#e4e1ee] p-6 text-sm text-[#777587]">
+          <p className="border-t border-surface-variant p-6 text-sm text-outline">
             No private documents are stored for this employee yet.
           </p>
         )}
@@ -1853,7 +1853,7 @@ function EmployeeActionDialog({
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#17151f]/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-zinc-900/55 p-4"
       role="dialog"
     >
       <section className="my-6 max-h-[92vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
@@ -1861,8 +1861,8 @@ function EmployeeActionDialog({
           <span
             className={`grid size-11 shrink-0 place-items-center rounded-xl ${
               tone === "danger"
-                ? "bg-[#ffdad6] text-[#93000a]"
-                : "bg-[#efecff] text-[#3525cd]"
+                ? "bg-error-container text-on-error-container"
+                : "bg-zinc-50 text-primary"
             }`}
           >
             {tone === "danger" ? (
@@ -1873,13 +1873,13 @@ function EmployeeActionDialog({
           </span>
           <div>
             <h2 className="text-xl font-bold">{title}</h2>
-            <p className="mt-1 text-sm leading-6 text-[#646273]">
+            <p className="mt-1 text-sm leading-6 text-on-surface-variant">
               {description}
             </p>
           </div>
           <button
             aria-label="Close dialog"
-            className="ml-auto grid size-10 shrink-0 place-items-center rounded-lg text-[#777587] hover:bg-[#f0ecf9]"
+            className="ml-auto grid size-10 shrink-0 place-items-center rounded-lg text-outline hover:bg-zinc-50"
             onClick={onClose}
             type="button"
           >
@@ -1910,7 +1910,7 @@ function DialogActions({
   return (
     <div className="mt-6 flex flex-wrap justify-end gap-3">
       <button
-        className="min-h-11 rounded-xl border border-[#d8d4e4] px-5 text-sm font-semibold"
+        className="min-h-11 rounded-xl border border-zinc-300 px-5 text-sm font-semibold"
         disabled={busy}
         onClick={onCancel}
         type="button"
@@ -1919,7 +1919,7 @@ function DialogActions({
       </button>
       <button
         className={`min-h-11 rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50 ${
-          danger ? "bg-[#ba1a1a]" : "bg-[#3525cd]"
+          danger ? "bg-error" : "bg-primary"
         }`}
         disabled={busy || confirmDisabled}
         onClick={() => void onConfirm()}
@@ -1965,8 +1965,8 @@ function sentenceLabel(value: string) {
 
 function AssignmentRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl bg-[#f8f5fc] p-3">
-      <span className="text-sm text-[#646171]">{label}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 p-3">
+      <span className="text-sm text-zinc-500">{label}</span>
       <strong className="text-right text-sm">{value}</strong>
     </div>
   );
@@ -2005,18 +2005,18 @@ function FaceResetDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[80] grid place-items-center bg-[#17151f]/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center bg-zinc-900/55 p-4"
       role="dialog"
       aria-modal="true"
     >
       <Panel className="w-full max-w-lg p-6 shadow-2xl">
-        <div className="grid size-12 place-items-center rounded-xl bg-[#ffdad6] text-[#93000a]">
+        <div className="grid size-12 place-items-center rounded-xl bg-error-container text-on-error-container">
           <Fingerprint className="size-6" />
         </div>
         <h2 className="mt-5 text-xl font-bold">
           Reset {employeeName}’s face profile?
         </h2>
-        <p className="mt-2 text-sm text-[#777587]">
+        <p className="mt-2 text-sm text-outline">
           Existing biometric evidence will be revoked and deleted. The employee
           must complete enrollment again.
         </p>
@@ -2033,7 +2033,7 @@ function FaceResetDialog({
           <div className="flex gap-3">
             <button
               type="button"
-              className="min-h-11 flex-1 rounded-xl border border-[#d8d4e4] px-4 text-sm font-semibold"
+              className="min-h-11 flex-1 rounded-xl border border-zinc-300 px-4 text-sm font-semibold"
               onClick={onClose}
             >
               Cancel
@@ -2062,9 +2062,9 @@ function Detail({
   icon: typeof UserRound;
 }) {
   return (
-    <div className="rounded-xl bg-[#f6f3fb] p-4">
-      <Icon className="size-5 text-[#3525cd]" />
-      <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#777587]">
+    <div className="rounded-xl bg-zinc-50 p-4">
+      <Icon className="size-5 text-primary" />
+      <p className="mt-3 text-xs font-bold uppercase tracking-wide text-outline">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold">{value}</p>
@@ -2082,10 +2082,10 @@ function IdentityRow({
   positive: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl bg-[#f6f3fb] p-3">
-      <span className="text-sm text-[#646171]">{label}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 p-3">
+      <span className="text-sm text-zinc-500">{label}</span>
       <span
-        className={`inline-flex items-center gap-1 text-sm font-bold ${positive ? "text-[#005320]" : "text-[#7a4d00]"}`}
+        className={`inline-flex items-center gap-1 text-sm font-bold ${positive ? "text-emerald-900" : "text-amber-900"}`}
       >
         {positive && <ShieldCheck className="size-4" />} {value}
       </span>

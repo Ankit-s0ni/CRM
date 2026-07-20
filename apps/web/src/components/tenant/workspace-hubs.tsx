@@ -120,28 +120,28 @@ export function ModulesHub() {
         <div className="grid gap-5 lg:grid-cols-2">
           {attendance && canAccessAttendanceWorkspace(permissions) && (
             <Link
-              className="group rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#4f46e5] hover:shadow-md"
+              className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-container hover:shadow-md"
               href="/app/modules/attendance"
             >
               <div className="flex items-start gap-4">
-                <span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-primary">
                   <ClipboardCheck className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-bold">{attendance.name}</h2>
-                    <ChevronRight className="size-5 text-[#777587] transition group-hover:translate-x-1 group-hover:text-[#3525cd]" />
+                    <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-primary" />
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                  <p className="mt-2 text-sm leading-6 text-zinc-500">
                     Policies, schedules, attendance, leave, device trust, and
                     field monitoring.
                   </p>
-                  <span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">
+                  <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
                     Enabled
                   </span>
                   {attendanceAddOns?.map((module) => (
                     <span
-                      className="ml-2 mt-4 inline-flex rounded-full bg-[#f0ecf9] px-3 py-1 text-xs font-bold text-[#3525cd]"
+                      className="ml-2 mt-4 inline-flex rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-primary"
                       key={module.key}
                     >
                       {module.name}
@@ -158,23 +158,23 @@ export function ModulesHub() {
               "attendance.payroll-lock.manage",
             ].some((permission) => permissions.has(permission)) && (
               <Link
-                className="group rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#4f46e5] hover:shadow-md"
+                className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-container hover:shadow-md"
                 href="/app/modules/payroll"
               >
                 <div className="flex items-start gap-4">
-                  <span className="grid size-12 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-primary">
                     <WalletCards className="size-6" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-bold">{payroll.name}</h2>
-                      <ChevronRight className="size-5 text-[#777587]" />
+                      <ChevronRight className="size-5 text-outline" />
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                    <p className="mt-2 text-sm leading-6 text-zinc-500">
                       Generate payroll evidence, review completed exports, and
                       close finalized Attendance periods.
                     </p>
-                    <span className="mt-4 inline-flex rounded-full bg-[#d8f8df] px-3 py-1 text-xs font-bold text-[#005320]">
+                    <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
                       Enabled
                     </span>
                   </div>
@@ -194,27 +194,27 @@ export function ModulesHub() {
             )
             .map((module) => (
               <Link
-                className="rounded-2xl border border-[#d9d5e5] bg-white p-6 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md"
+                className="rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:border-primary-container hover:shadow-md"
                 href="/app/settings/modules"
                 key={module.key}
               >
                 <div className="flex items-start gap-4">
-                  <span className="grid size-12 place-items-center rounded-xl bg-[#f0ecf9] text-[#5e5b68]">
+                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-zinc-500">
                     <Building2 className="size-6" />
                   </span>
                   <div>
                     <h2 className="text-lg font-bold">{module.name}</h2>
-                    <p className="mt-2 text-sm text-[#5e5b68]">
+                    <p className="mt-2 text-sm text-zinc-500">
                       Review this enabled service, its dependencies, and its
                       current configuration health.
                     </p>
                   </div>
-                  <ChevronRight className="ml-auto size-5 text-[#777587]" />
+                  <ChevronRight className="ml-auto size-5 text-outline" />
                 </div>
               </Link>
             ))}
           {!modules.length && (
-            <Panel className="p-8 text-sm text-[#5e5b68]">
+            <Panel className="p-8 text-sm text-zinc-500">
               No business modules are enabled for this workspace.
             </Panel>
           )}
@@ -430,12 +430,12 @@ export function SettingsHub() {
           return (
             <section key={section.title}>
               <div className="mb-4 flex items-start gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#3525cd] text-sm font-bold text-white">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
                   {index + 1}
                 </span>
                 <div>
                   <h2 className="text-lg font-bold">{section.title}</h2>
-                  <p className="mt-1 text-sm text-[#5e5b68]">
+                  <p className="mt-1 text-sm text-zinc-500">
                     {section.description}
                   </p>
                 </div>
@@ -447,26 +447,26 @@ export function SettingsHub() {
                     return (
                       <Link
                         className={cn(
-                          "group rounded-xl border border-[#e4e1ee] bg-white p-5 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md",
+                          "group rounded-xl border border-surface-variant bg-white p-5 shadow-sm transition hover:border-primary-container hover:shadow-md",
                         )}
                         href={href}
                         key={href}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="grid size-10 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+                          <span className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-primary">
                             <Icon className="size-5" />
                           </span>
-                          <ChevronRight className="ml-auto size-5 text-[#a19ead] group-hover:text-[#3525cd]" />
+                          <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-primary" />
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                           <h3 className="font-bold">{title}</h3>
                           {readiness && <HealthPill value={readiness.status} />}
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+                        <p className="mt-2 text-sm leading-6 text-zinc-500">
                           {description}
                         </p>
                         {readiness?.issues[0] && (
-                          <p className="mt-3 text-xs font-medium text-[#8a4f00]">
+                          <p className="mt-3 text-xs font-medium text-amber-800">
                             {readiness.issues[0].message}
                           </p>
                         )}
@@ -532,17 +532,17 @@ function WorkspaceLaunchChecklist({
   const firstIncomplete = steps.findIndex(({ complete }) => !complete);
 
   return (
-    <Panel className="mb-8 overflow-hidden border-[#c9c3ff]">
-      <div className="border-b border-[#e4e1ee] bg-[#f5f2ff] p-5">
-        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#3525cd]">
+    <Panel className="mb-8 overflow-hidden border-zinc-200">
+      <div className="border-b border-surface-variant bg-zinc-50 p-5">
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">
           Workspace launch checklist
         </p>
         <h2 className="mt-1 text-xl font-bold">Set up in this order</h2>
-        <p className="mt-1 text-sm text-[#5e5b68]">
+        <p className="mt-1 text-sm text-zinc-500">
           Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.
         </p>
       </div>
-      <div className="grid divide-y divide-[#e4e1ee]">
+      <div className="grid divide-y divide-surface-variant">
         {steps.map((step, index) => {
           const available = index <= firstIncomplete || step.complete;
           const Icon = step.icon;
@@ -552,30 +552,30 @@ function WorkspaceLaunchChecklist({
                 className={cn(
                   "grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold",
                   step.complete
-                    ? "bg-[#d9f8df] text-[#146c2e]"
+                    ? "bg-emerald-50 text-emerald-800"
                     : index === firstIncomplete
-                      ? "bg-[#3525cd] text-white"
-                      : "bg-[#efedf4] text-[#777587]",
+                      ? "bg-primary text-white"
+                      : "bg-zinc-100 text-outline",
                 )}
               >
                 {step.complete ? <Check className="size-4" /> : index + 1}
               </span>
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
                 <strong className="block text-sm">{step.title}</strong>
-                <span className="text-xs text-[#777587]">{step.description}</span>
+                <span className="text-xs text-outline">{step.description}</span>
               </span>
-              <span className="ml-auto shrink-0 text-xs font-semibold text-[#3525cd]">
+              <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
                 {step.complete ? "Complete" : index === firstIncomplete ? "Continue setup" : "Complete previous step"}
               </span>
-              {available && <ChevronRight className="size-4 text-[#777587]" />}
+              {available && <ChevronRight className="size-4 text-outline" />}
             </>
           );
           return available ? (
             <Link
-              className="flex items-center gap-3 p-4 transition hover:bg-[#fbf9ff]"
+              className="flex items-center gap-3 p-4 transition hover:bg-surface-variant"
               href={step.href}
               key={step.title}
             >
@@ -654,7 +654,7 @@ export function ModuleSettingsView() {
           ))}
         </div>
       ) : (
-        <Panel className="p-8 text-sm text-[#5e5b68]">
+        <Panel className="p-8 text-sm text-zinc-500">
           No modules are enabled. Review the subscription with the Business
           Admin or DeltCRM support.
         </Panel>
@@ -818,14 +818,14 @@ export function IntegrationSettingsView() {
                 <h2 className="font-bold">{provider.name}</h2>
                 <HealthPill value={provider.status} />
               </div>
-              <p className="mt-3 text-sm leading-6 text-[#5e5b68]">
+              <p className="mt-3 text-sm leading-6 text-zinc-500">
                 {provider.message}
               </p>
             </Panel>
           ))}
         </div>
       )}
-      {note && <p className="mt-5 text-sm text-[#5e5b68]">{note}</p>}
+      {note && <p className="mt-5 text-sm text-zinc-500">{note}</p>}
     </AdminPage>
   );
 }
@@ -862,7 +862,7 @@ function ModuleHealthCard({
   return (
     <Panel className="p-6">
       <div className="flex items-start gap-4">
-        <span className="grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
           <Blocks className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -870,7 +870,7 @@ function ModuleHealthCard({
             <h2 className="font-bold">{module.name}</h2>
             <HealthPill value={health?.status ?? "CHECKING"} />
           </div>
-          <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
             {module.description ?? "DeltCRM workspace module"}
           </p>
         </div>
@@ -878,7 +878,7 @@ function ModuleHealthCard({
       {health && <ModuleReadiness health={health} compact />}
       {href && (
         <Link
-          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#3525cd]"
+          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-primary"
           href={href}
         >
           Open configuration <ChevronRight className="size-4" />
@@ -898,13 +898,13 @@ function ModuleReadiness({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#e4e1ee] bg-white",
+        "rounded-xl border border-surface-variant bg-white",
         compact ? "mt-5 p-4" : "p-6",
       )}
     >
       {!compact && (
         <div className="flex items-center gap-3">
-          <Activity className="size-5 text-[#3525cd]" />
+          <Activity className="size-5 text-primary" />
           <h2 className="font-bold">Configuration health</h2>
           <HealthPill value={health.status} />
         </div>
@@ -912,7 +912,7 @@ function ModuleReadiness({
       <div className="mt-3 flex flex-wrap gap-2">
         {Object.entries(health.configuration).map(([label, value]) => (
           <span
-            className="rounded-full bg-[#f0ecf9] px-3 py-1 text-xs font-semibold text-[#464555]"
+            className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-semibold text-on-surface-variant"
             key={label}
           >
             {label.replaceAll(/([A-Z])/g, " $1")}: {value}
@@ -921,7 +921,7 @@ function ModuleReadiness({
       </div>
       {health.issues.map((issue) => (
         <Link
-          className="mt-3 flex items-start gap-2 rounded-lg bg-[#fff7e8] p-3 text-sm text-[#6d4600]"
+          className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
           href={issue.actionHref}
           key={issue.code}
         >
@@ -947,17 +947,17 @@ function WorkflowLink({
 }) {
   return (
     <Link
-      className="group rounded-xl border border-[#e4e1ee] bg-white p-6 shadow-sm transition hover:border-[#4f46e5] hover:shadow-md"
+      className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-primary-container hover:shadow-md"
       href={href}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]">
+        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
           <Icon className="size-5" />
         </span>
-        <ChevronRight className="ml-auto size-5 text-[#a19ead] group-hover:text-[#3525cd]" />
+        <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-primary" />
       </div>
       <h2 className="mt-5 font-bold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-[#5e5b68]">{description}</p>
+      <p className="mt-2 text-sm leading-6 text-zinc-500">{description}</p>
     </Link>
   );
 }
@@ -971,12 +971,12 @@ function HealthPill({ value }: { value: string }) {
       className={cn(
         "rounded-full px-3 py-1 text-xs font-bold",
         ready
-          ? "bg-[#d8f8df] text-[#005320]"
+          ? "bg-emerald-100 text-emerald-900"
           : blocked
-            ? "bg-[#ffd9d5] text-[#93000a]"
+            ? "bg-red-100 text-on-error-container"
             : neutral
-              ? "bg-[#eeecf3] text-[#5e5b68]"
-              : "bg-[#fff0d4] text-[#7a4d00]",
+              ? "bg-zinc-100 text-zinc-500"
+              : "bg-amber-100 text-amber-900",
       )}
     >
       {value.replaceAll("_", " ")}

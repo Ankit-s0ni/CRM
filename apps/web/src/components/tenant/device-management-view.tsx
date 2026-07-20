@@ -132,8 +132,8 @@ export function DeviceManagementView() {
             type="button"
             className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition ${
               filter === item.value
-                ? "border-[#3525cd] bg-[#3525cd] text-white"
-                : "border-[#d8d4e4] bg-white text-[#464555] hover:border-[#3525cd]"
+                ? "border-primary bg-primary text-white"
+                : "border-zinc-300 bg-white text-on-surface-variant hover:border-primary"
             }`}
           onClick={() =>
             router.push(
@@ -255,7 +255,7 @@ function DeviceTable({
 }) {
   return (
     <Panel className="overflow-hidden">
-      <div className="divide-y divide-[#e4e1ee]">
+      <div className="divide-y divide-surface-variant">
         {devices.map((device) => {
           const candidates = allDevices.filter(
             (candidate) =>
@@ -269,7 +269,7 @@ function DeviceTable({
               className="grid gap-5 p-5 lg:grid-cols-[minmax(220px,1.2fr)_minmax(180px,.8fr)_auto] lg:items-center"
             >
               <div className="flex min-w-0 items-start gap-4">
-                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#eeebff] text-[#3525cd]">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
                   {device.platform === "IOS" ? (
                     <Smartphone className="size-6" />
                   ) : (
@@ -278,22 +278,22 @@ function DeviceTable({
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold text-[#1b1b24]">
+                    <h2 className="font-semibold text-zinc-900">
                       {device.deviceModel || `${device.platform} device`}
                     </h2>
                     {device.isPrimary && (
-                      <span className="rounded-full bg-[#e3e0ff] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#3525cd]">
+                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
                         Primary
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 truncate text-xs text-[#777587]">
+                  <p className="mt-1 truncate text-xs text-outline">
                     {device.osVersion || "Unknown OS"} · App {device.appVersion || "unknown"}
                   </p>
                   {showEmployee && device.employee && (
                     <Link
                       href={`/app/employees/${device.employee.id}`}
-                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#3525cd] hover:underline"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
                     >
                       <UserRound className="size-4" /> {device.employee.fullName} ·{" "}
                       {device.employee.employeeCode}
@@ -303,10 +303,10 @@ function DeviceTable({
               </div>
               <div>
                 <StatusBadge status={device.status} />
-                <p className="mt-2 text-xs text-[#777587]">
+                <p className="mt-2 text-xs text-outline">
                   Registered {formatDate(device.registeredAt)}
                 </p>
-                <p className="mt-1 text-xs text-[#777587]">
+                <p className="mt-1 text-xs text-outline">
                   Last seen {device.lastSeenAt ? formatDate(device.lastSeenAt) : "never"}
                 </p>
               </div>
@@ -322,7 +322,7 @@ function DeviceTable({
                   {(device.status === "PENDING_APPROVAL" || device.status === "ACTIVE") && (
                     <button
                       type="button"
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                       onClick={() => onDecision({ action: "block", device })}
                     >
                       <ShieldAlert className="size-4" /> Block
@@ -331,7 +331,7 @@ function DeviceTable({
                   {device.status === "ACTIVE" && candidates.length > 0 && (
                     <button
                       type="button"
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#3525cd] px-4 text-sm font-semibold text-[#3525cd]"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary px-4 text-sm font-semibold text-primary"
                       onClick={() =>
                         onDecision({ action: "replace", device, candidates })
                       }
@@ -389,7 +389,7 @@ function DeviceDecisionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[80] grid place-items-center bg-[#17151f]/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center bg-zinc-900/55 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="device-decision-title"
@@ -403,7 +403,7 @@ function DeviceDecisionDialog({
             </h2>
               <FeatureInfo helpKey="devices" />
             </div>
-            <p className="mt-1 text-sm text-[#777587]">
+            <p className="mt-1 text-sm text-outline">
               {decision.device.deviceModel || decision.device.platform} ·{" "}
               {decision.device.employee?.fullName || "Employee device"}
             </p>
@@ -411,7 +411,7 @@ function DeviceDecisionDialog({
           <button
             type="button"
             aria-label="Close device action"
-            className="grid size-11 place-items-center rounded-full text-[#646171] hover:bg-[#f2eff8]"
+            className="grid size-11 place-items-center rounded-full text-zinc-500 hover:bg-surface-variant"
             onClick={onClose}
           >
             <X className="size-5" />
@@ -475,10 +475,10 @@ function MetricCard({
   tone?: "neutral" | "warning" | "success" | "danger";
 }) {
   const tones = {
-    neutral: "bg-[#f5f2ff] text-[#3525cd]",
-    warning: "bg-[#fff1d6] text-[#7a4d00]",
-    success: "bg-[#d8f8df] text-[#005320]",
-    danger: "bg-[#ffdad6] text-[#93000a]",
+    neutral: "bg-zinc-50 text-primary",
+    warning: "bg-amber-100 text-amber-900",
+    success: "bg-emerald-100 text-emerald-900",
+    danger: "bg-error-container text-on-error-container",
   };
   return (
     <Panel className="p-5">
@@ -486,17 +486,17 @@ function MetricCard({
         <ShieldCheck className="size-5" />
       </div>
       <div className="mt-4 text-3xl font-bold">{value}</div>
-      <div className="mt-1 text-sm text-[#777587]">{label}</div>
+      <div className="mt-1 text-sm text-outline">{label}</div>
     </Panel>
   );
 }
 
 function StatusBadge({ status }: { status: DeviceStatus }) {
   const styles: Record<DeviceStatus, string> = {
-    PENDING_APPROVAL: "bg-[#fff1d6] text-[#7a4d00]",
-    ACTIVE: "bg-[#d8f8df] text-[#005320]",
-    BLOCKED: "bg-[#ffdad6] text-[#93000a]",
-    REPLACED: "bg-[#ece9f2] text-[#5f5c6b]",
+    PENDING_APPROVAL: "bg-amber-100 text-amber-900",
+    ACTIVE: "bg-emerald-100 text-emerald-900",
+    BLOCKED: "bg-error-container text-on-error-container",
+    REPLACED: "bg-zinc-100 text-zinc-500",
   };
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${styles[status]}`}>

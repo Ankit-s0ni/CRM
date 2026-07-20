@@ -54,19 +54,19 @@ export function InvitationAcceptanceForm() {
 
   if (complete) {
     return (
-      <section className="rounded-2xl border border-[#d9d5e5] bg-white p-8 text-center shadow-xl shadow-[#3525cd]/5">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#d8f8df] text-[#005320]">
+      <section className="rounded-2xl border border-zinc-300 bg-white p-8 text-center shadow-xl shadow-primary/5">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-900">
           <ShieldCheck className="size-7" />
         </div>
-        <h1 className="mt-5 text-2xl font-bold text-[#1c1b1f]">
+        <h1 className="mt-5 text-2xl font-bold text-on-surface">
           Your account is ready
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+        <p className="mt-2 text-sm leading-6 text-zinc-500">
           Sign in to DeltCRM using {email || "your invited email"} and the
           password you just created.
         </p>
         <Link
-          className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#3525cd] font-bold text-white"
+          className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary font-bold text-white"
           href={`/login${loginQuery.size ? `?${loginQuery}` : ""}`}
         >
           Continue to sign in
@@ -76,25 +76,25 @@ export function InvitationAcceptanceForm() {
   }
 
   return (
-    <section className="rounded-2xl border border-[#d9d5e5] bg-white p-8 shadow-xl shadow-[#3525cd]/5">
-      <div className="grid size-14 place-items-center rounded-2xl bg-[#eeebff] text-[#3525cd]">
+    <section className="rounded-2xl border border-zinc-300 bg-white p-8 shadow-xl shadow-primary/5">
+      <div className="grid size-14 place-items-center rounded-2xl bg-zinc-50 text-primary">
         <KeyRound className="size-7" />
       </div>
-      <h1 className="mt-5 text-2xl font-bold text-[#1c1b1f]">
+      <h1 className="mt-5 text-2xl font-bold text-on-surface">
         Create your employee login
       </h1>
-      <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+      <p className="mt-2 text-sm leading-6 text-zinc-500">
         Set the password you will use for the DeltCRM employee app and web
         self-service.
       </p>
       {email && (
-        <div className="mt-5 rounded-xl bg-[#f5f2ff] p-4 text-sm">
-          <span className="block text-xs text-[#777587]">Login email</span>
+        <div className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm">
+          <span className="block text-xs text-outline">Login email</span>
           <strong>{email}</strong>
         </div>
       )}
       {error && (
-        <div className="mt-5 rounded-xl border border-[#ffb4ab] bg-[#ffdad6] p-4 text-sm text-[#93000a]">
+        <div className="mt-5 rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
           {error}
         </div>
       )}
@@ -104,7 +104,7 @@ export function InvitationAcceptanceForm() {
           <span className="relative">
             <input
               autoComplete="new-password"
-              className="h-12 w-full rounded-xl border border-[#c8c5d0] px-4 pr-12 outline-none focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15"
+              className="h-12 w-full rounded-xl border border-outline-variant px-4 pr-12 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
               minLength={8}
               onChange={(event) => setPassword(event.target.value)}
               type={showPassword ? "text" : "password"}
@@ -112,7 +112,7 @@ export function InvitationAcceptanceForm() {
             />
             <button
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-[#5e5b68]"
+              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-zinc-500"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
             >
@@ -124,7 +124,7 @@ export function InvitationAcceptanceForm() {
           Confirm password
           <input
             autoComplete="new-password"
-            className="h-12 rounded-xl border border-[#c8c5d0] px-4 outline-none focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15"
+            className="h-12 rounded-xl border border-outline-variant px-4 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
             minLength={8}
             onChange={(event) => setConfirmation(event.target.value)}
             type={showPassword ? "text" : "password"}
@@ -132,14 +132,14 @@ export function InvitationAcceptanceForm() {
           />
         </label>
         <button
-          className="mt-2 h-12 rounded-xl bg-[#3525cd] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 h-12 rounded-xl bg-primary font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           disabled={busy || !token || password.length < 8 || !confirmation}
           type="submit"
         >
           {busy ? "Creating account..." : "Create account"}
         </button>
       </form>
-      <p className="mt-5 text-center text-xs leading-5 text-[#777587]">
+      <p className="mt-5 text-center text-xs leading-5 text-outline">
         This invitation expires after 24 hours and can only be accepted once.
       </p>
     </section>

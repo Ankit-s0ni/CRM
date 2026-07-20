@@ -124,7 +124,7 @@ export function FieldMonitoringView() {
       description="Live, stale, and offline field employees with privacy-safe location evidence."
       title="Field Operations"
     >
-      <div className="mb-5 flex items-start gap-3 rounded-xl border border-[#d9d5e5] bg-[#f5f2ff] p-4 text-sm leading-6 text-[#545160]">
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4 text-sm leading-6 text-zinc-600">
         <FeatureInfo helpKey="background-tracking" />
         <p>
           Location is shown only for employees enabled by an active field
@@ -141,13 +141,13 @@ export function FieldMonitoringView() {
       {error && <div className="mb-4"><ErrorState message={error} /></div>}
       <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
         <Panel className="overflow-hidden">
-          <div className="border-b border-[#e4e1ee] p-4">
-            <div className="mb-3 text-xs font-bold uppercase tracking-[.14em] text-[#777587]">Team presence</div>
+          <div className="border-b border-surface-variant p-4">
+            <div className="mb-3 text-xs font-bold uppercase tracking-[.14em] text-outline">Team presence</div>
             <div className="flex flex-wrap gap-2">
               {(["ALL", "LIVE", "STALE", "OFFLINE"] as const).map((state) => (
                 <button
                   aria-pressed={filter === state}
-                  className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", filter === state ? "bg-[#302f39] text-white" : "bg-[#f0ecf9] text-[#5e5b68]")}
+                  className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", filter === state ? "bg-zinc-700 text-white" : "bg-zinc-50 text-zinc-500")}
                   key={state}
                   onClick={() =>
                     router.push(
@@ -163,18 +163,18 @@ export function FieldMonitoringView() {
           <div className="max-h-[600px] overflow-y-auto p-2">
             {loading ? <LoadingState /> : filtered.map((employee) => (
               <button
-                className={cn("mb-1 w-full rounded-xl border p-3 text-left transition", selectedId === employee.id ? "border-[#4f46e5] bg-[#f0ecf9]" : "border-transparent hover:bg-[#faf8fd]")}
+                className={cn("mb-1 w-full rounded-xl border p-3 text-left transition", selectedId === employee.id ? "border-primary-container bg-zinc-50" : "border-transparent hover:bg-zinc-50")}
                 key={employee.id}
                 onClick={() => setSelectedId(employee.id)}
                 type="button"
               >
                 <div className="flex items-center gap-3">
-                  <span className={cn("size-2.5 rounded-full", employee.presence === "LIVE" ? "bg-[#138a55]" : employee.presence === "STALE" ? "bg-[#c06b18]" : "bg-[#777587]")} />
+                  <span className={cn("size-2.5 rounded-full", employee.presence === "LIVE" ? "bg-emerald-700" : employee.presence === "STALE" ? "bg-amber-600" : "bg-outline")} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold">{employee.fullName}</div>
-                    <div className="truncate text-xs text-[#777587]">{employee.designation ?? employee.employeeCode} · {employee.department.name}</div>
+                    <div className="truncate text-xs text-outline">{employee.designation ?? employee.employeeCode} · {employee.department.name}</div>
                   </div>
-                  <span className="text-[10px] font-bold text-[#777587]">{employee.presence}</span>
+                  <span className="text-[10px] font-bold text-outline">{employee.presence}</span>
                 </div>
               </button>
             ))}
@@ -186,11 +186,11 @@ export function FieldMonitoringView() {
             <Panel className="flex flex-wrap items-center gap-5 p-4">
               <div className="min-w-48 flex-1">
                 <div className="text-lg font-bold">{selected.fullName}</div>
-                <div className="text-sm text-[#777587]">Last update {selected.location ? relativeTime(selected.location.capturedAt) : "not available"}</div>
+                <div className="text-sm text-outline">Last update {selected.location ? relativeTime(selected.location.capturedAt) : "not available"}</div>
               </div>
               <div className="flex items-center gap-2 text-sm"><BatteryMedium className="size-4" />{selected.location?.batteryLevel ?? "--"}%</div>
               <div className="text-sm">Accuracy {selected.location?.accuracyM ?? "--"}m</div>
-              <Link className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#3525cd] px-4 text-sm font-semibold text-white" href={`/app/attendance/field/${selected.id}/route`}>
+              <Link className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white" href={`/app/attendance/field/${selected.id}/route`}>
                 <Route className="size-4" />View route
               </Link>
             </Panel>
@@ -213,7 +213,7 @@ async function fetchLiveEmployees() {
 }
 
 function Stat({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Activity; tone?: "green" | "amber" }) {
-  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-[#f0ecf9] text-[#3525cd]", tone === "green" && "bg-[#d9f5e7] text-[#138a55]", tone === "amber" && "bg-[#fff0dc] text-[#a65712]")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-[#777587]">{label}</div></div></Panel>;
+  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary", tone === "green" && "bg-emerald-100 text-emerald-700", tone === "amber" && "bg-amber-100 text-amber-700")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></div></Panel>;
 }
 
 function relativeTime(value: string) {

@@ -60,7 +60,7 @@ export function CreateTenantDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[70] grid place-items-center bg-[#24212f]/55 p-4 backdrop-blur-[3px]"
+      className="fixed inset-0 z-[70] grid place-items-center bg-zinc-800/55 p-4 backdrop-blur-[3px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="create-tenant-title"
@@ -75,7 +75,7 @@ export function CreateTenantDialog({
               <h2 id="create-tenant-title" className="text-xl font-bold">
                 Create new tenant
               </h2>
-              <p className="mt-1 text-sm text-[#646273]">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Set up an organization-wide instance and administrative access.
               </p>
             </div>
@@ -92,7 +92,7 @@ export function CreateTenantDialog({
             <label className="text-sm font-semibold">
               Company name
               <Input
-                className="mt-2 h-11 border-[#c8c5d0]"
+                className="mt-2 h-11 border-outline-variant"
                 placeholder="e.g. Muscat Tech Solutions"
                 value={companyName}
                 onChange={(e) => {
@@ -113,7 +113,7 @@ export function CreateTenantDialog({
               Subdomain
               <div className="relative mt-2">
                 <Input
-                  className="h-11 border-[#c8c5d0] pr-28"
+                  className="h-11 border-outline-variant pr-28"
                   placeholder="subdomain"
                   value={subdomain}
                   onChange={(e) =>
@@ -124,7 +124,7 @@ export function CreateTenantDialog({
                   pattern="[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
                   required
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#646273]">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant">
                   .hrmsapp.com
                 </span>
               </div>
@@ -132,7 +132,7 @@ export function CreateTenantDialog({
             <label className="text-sm font-semibold sm:col-span-2">
               Administrator email
               <Input
-                className="mt-2 h-11 border-[#c8c5d0]"
+                className="mt-2 h-11 border-outline-variant"
                 type="email"
                 placeholder="admin@company.om"
                 value={adminEmail}
@@ -143,7 +143,7 @@ export function CreateTenantDialog({
             <label className="text-sm font-semibold">
               Subscription plan
               <select
-                className="mt-2 h-11 w-full rounded-lg border border-[#c8c5d0] bg-white px-3"
+                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-white px-3"
                 value={planId}
                 onChange={(e) => setPlanId(e.target.value)}
                 required
@@ -158,7 +158,7 @@ export function CreateTenantDialog({
             <label className="text-sm font-semibold">
               Employee limit
               <Input
-                className="mt-2 h-11 border-[#c8c5d0]"
+                className="mt-2 h-11 border-outline-variant"
                 type="number"
                 min={1}
                 max={plans.find((p) => p.id === planId)?.maxEmployees || 100000}
@@ -170,7 +170,7 @@ export function CreateTenantDialog({
             <label className="text-sm font-semibold sm:col-span-2">
               Workspace timezone
               <select
-                className="mt-2 h-11 w-full rounded-lg border border-[#c8c5d0] bg-white px-3"
+                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-white px-3"
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
               >
@@ -181,7 +181,7 @@ export function CreateTenantDialog({
               </select>
             </label>
           </div>
-          <div className="mt-5 flex gap-3 rounded-lg bg-[#f6f3fb] p-4 text-sm text-[#464555]">
+          <div className="mt-5 flex gap-3 rounded-lg bg-zinc-50 p-4 text-sm text-on-surface-variant">
             <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
             <p>
               An expiring setup invitation will be sent to the administrator. No
@@ -192,7 +192,7 @@ export function CreateTenantDialog({
             <Button
               type="submit"
               disabled={busy || !plans.length}
-              className="h-12 flex-1 bg-[#3525cd] text-white hover:bg-[#2b1fb0]"
+              className="h-12 flex-1 bg-primary text-white hover:bg-primary/90"
             >
               {busy ? "Creating tenant..." : "Create & send invite"}
               <ArrowRight />
@@ -207,31 +207,31 @@ export function CreateTenantDialog({
             </Button>
           </div>
         </form>
-        <aside className="border-l border-[#e4e1ee] bg-[#f4f1ff] p-6">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#3525cd]">
+        <aside className="border-l border-surface-variant bg-surface-variant p-6">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
             <ShieldCheck className="size-4" />
             Admin security
           </div>
-          <p className="mt-4 text-sm leading-6 text-[#646273]">
+          <p className="mt-4 text-sm leading-6 text-on-surface-variant">
             The business admin will complete secure account setup from their
             email invitation.
           </p>
-          <div className="mt-12 rounded-xl border border-[#d7d2e4] bg-white p-4 shadow-sm">
-            <div className="mb-3 h-2 w-24 rounded bg-[#e4e1ee]" />
-            <div className="grid h-28 place-items-center rounded-lg bg-[radial-gradient(#d9d3ed_1px,transparent_1px)] [background-size:12px_12px]">
-              <div className="grid size-10 place-items-center rounded-full bg-[#e2dfff] text-[#3525cd]">
+          <div className="mt-12 rounded-xl border border-zinc-300 bg-white p-4 shadow-sm">
+            <div className="mb-3 h-2 w-24 rounded bg-surface-variant" />
+            <div className="grid h-28 place-items-center rounded-lg bg-[radial-gradient(#e0e0e0_1px,transparent_1px)] [background-size:12px_12px]">
+              <div className="grid size-10 place-items-center rounded-full bg-zinc-100 text-primary">
                 <MapPin />
               </div>
             </div>
             <p className="mt-3 text-xs font-semibold">Region: Muscat, Oman</p>
-            <p className="text-[10px] text-[#777587]">
+            <p className="text-[10px] text-outline">
               Default timezone: GMT+4
             </p>
           </div>
           <div className="mt-10 h-1.5 overflow-hidden rounded-full bg-white">
-            <div className="h-full w-4/5 bg-[#7cf994]" />
+            <div className="h-full w-4/5 bg-emerald-300" />
           </div>
-          <p className="mt-2 text-[10px] text-[#777587]">
+          <p className="mt-2 text-[10px] text-outline">
             Tenant setup 80% complete
           </p>
         </aside>

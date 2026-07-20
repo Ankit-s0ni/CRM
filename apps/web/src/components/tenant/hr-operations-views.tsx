@@ -174,24 +174,24 @@ export function RegularizationQueueView() {
           {items.length ? (
             items.map((item) => (
               <Link
-                className="grid gap-3 border-b border-[#e4e1ee] p-5 transition last:border-0 hover:bg-[#f8f5ff] md:grid-cols-[1fr_170px_130px_110px] md:items-center"
+                className="grid gap-3 border-b border-surface-variant p-5 transition last:border-0 hover:bg-zinc-50 md:grid-cols-[1fr_170px_130px_110px] md:items-center"
                 href={`/app/attendance/regularizations/${item.id}?returnTo=${encodeURIComponent(`${pathname}?status=${status}`)}`}
                 key={item.id}
               >
                 <div>
                   <div className="font-semibold">{item.employee.fullName}</div>
-                  <div className="mt-1 text-xs text-[#777587]">
+                  <div className="mt-1 text-xs text-outline">
                     {item.employee.employeeCode} · {item.reason}
                   </div>
                 </div>
                 <div className="text-sm">
-                  <span className="block text-xs text-[#777587]">
+                  <span className="block text-xs text-outline">
                     Attendance date
                   </span>
                   {dateOnly(item.attendanceLog.attendanceDate)}
                 </div>
                 <div className="text-sm">
-                  <span className="block text-xs text-[#777587]">Waiting</span>
+                  <span className="block text-xs text-outline">Waiting</span>
                   {age(item.createdAt)}
                 </div>
                 <StatusPill value={item.status} />
@@ -260,7 +260,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
       title="Correction decision"
       description="Compare immutable attendance evidence with the requested correction."
       action={
-        <Link className="text-sm font-semibold text-[#3525cd]" href={returnTo}>
+        <Link className="text-sm font-semibold text-primary" href={returnTo}>
           Back to queue
         </Link>
       }
@@ -275,19 +275,19 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                   <h2 className="text-xl font-bold">
                     {item.employee.fullName}
                   </h2>
-                  <p className="text-sm text-[#777587]">
+                  <p className="text-sm text-outline">
                     {item.employee.employeeCode} ·{" "}
                     {dateOnly(item.attendanceLog.attendanceDate)}
                   </p>
                 </div>
                 <StatusPill value={item.status} />
               </div>
-              <p className="mt-5 rounded-xl bg-[#f5f2ff] p-4 text-sm leading-6">
+              <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm leading-6">
                 {item.reason}
               </p>
             </Panel>
             <Panel className="overflow-hidden">
-              <div className="grid grid-cols-3 bg-[#302f39] px-5 py-3 text-xs font-bold uppercase tracking-wider text-white">
+              <div className="grid grid-cols-3 bg-zinc-700 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white">
                 <span>Evidence</span>
                 <span>Recorded</span>
                 <span>Requested</span>
@@ -322,7 +322,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                 </Field>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <button
-                    className="h-11 rounded-xl border border-[#ba1a1a] font-semibold text-[#ba1a1a]"
+                    className="h-11 rounded-xl border border-error font-semibold text-error"
                     disabled={busy}
                     onClick={() => decide("reject")}
                   >
@@ -339,7 +339,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                 </div>
               </>
             ) : (
-              <p className="mt-3 text-sm text-[#5e5b68]">
+              <p className="mt-3 text-sm text-zinc-500">
                 {item.managerComments || "Decision completed."}
               </p>
             )}
@@ -474,7 +474,7 @@ export function ReportsCenterView({
             )}
           </select>
         </label>
-        <p className="text-xs text-[#777587]">
+        <p className="text-xs text-outline">
           Jobs refresh automatically. Failed jobs can be generated again with
           the same period.
         </p>
@@ -491,20 +491,20 @@ export function ReportsCenterView({
                 new Date(job.expiresAt) <= new Date();
               return (
                 <div
-                  className="grid gap-3 border-b border-[#e4e1ee] p-5 last:border-0 md:grid-cols-[1fr_140px_140px_150px] md:items-center"
+                  className="grid gap-3 border-b border-surface-variant p-5 last:border-0 md:grid-cols-[1fr_140px_140px_150px] md:items-center"
                   key={job.id}
                 >
                   <div>
                     <div className="flex items-center gap-2 font-semibold">
-                      <FileSpreadsheet className="size-4 text-[#3525cd]" />
+                      <FileSpreadsheet className="size-4 text-primary" />
                       {job.reportType.replaceAll("_", " ")}
                     </div>
-                    <div className="mt-1 text-xs text-[#777587]">
+                    <div className="mt-1 text-xs text-outline">
                       {job.period} · contract v1{" "}
                       {job.checksum ? `· ${job.checksum.slice(0, 12)}…` : ""}
                     </div>
                     {job.failureMessage && (
-                      <div className="mt-1 text-xs text-[#93000a]">
+                      <div className="mt-1 text-xs text-on-error-container">
                         {job.failureMessage}
                       </div>
                     )}
@@ -513,7 +513,7 @@ export function ReportsCenterView({
                   <StatusPill value={expired ? "EXPIRED" : job.status} />
                   {job.status === "FAILED" && canGenerate ? (
                     <button
-                      className="h-10 rounded-lg border border-[#c7c4d8] text-sm font-semibold text-[#3525cd]"
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary"
                       disabled={busy}
                       onClick={() => create(job.reportType, job.period)}
                     >
@@ -522,7 +522,7 @@ export function ReportsCenterView({
                     </button>
                   ) : (
                     <button
-                      className="h-10 rounded-lg border border-[#c7c4d8] text-sm font-semibold text-[#3525cd] disabled:opacity-40"
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary disabled:opacity-40"
                       disabled={job.status !== "COMPLETED" || Boolean(expired)}
                       onClick={() => download(job.id)}
                     >
@@ -545,7 +545,7 @@ export function ReportsCenterView({
           )}
         </Panel>
       )}
-      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-[#3525cd]">
+      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-primary">
         <Link href="/app/attendance/register">Open Attendance register</Link>
         {moduleKeys.has("PAYROLL") && (
           <Link href="/app/modules/payroll">Review payroll locks</Link>
@@ -605,7 +605,7 @@ export function PayrollLockView() {
       description="Lock a finalized month against a completed payroll export, with an immutable reopen trail."
       action={
         <Link
-          className="text-sm font-semibold text-[#3525cd]"
+          className="text-sm font-semibold text-primary"
           href="/app/attendance/reports"
         >
           Open reports center
@@ -615,14 +615,14 @@ export function PayrollLockView() {
       {error && <ErrorState message={error} />}
       <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
         <Panel className="h-fit p-6">
-          <div className="grid size-11 place-items-center rounded-xl bg-[#302f39] text-white">
+          <div className="grid size-11 place-items-center rounded-xl bg-zinc-700 text-white">
             <LockKeyhole className="size-5" />
           </div>
           <div className="mt-4 flex items-center gap-2">
             <h2 className="text-lg font-bold">Close a payroll month</h2>
             <FeatureInfo helpKey="payroll-lock" />
           </div>
-          <div className="mt-4 rounded-xl border border-[#f2d29e] bg-[#fff9ed] p-4 text-sm leading-6 text-[#6d4600]">
+          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
             Locking freezes attendance, corrections, OD/WFH changes, and leave
             integration for the selected period. Confirm the completed payroll
             export and affected month before continuing.
@@ -665,13 +665,13 @@ export function PayrollLockView() {
             {locks.length ? (
               locks.map((item) => (
                 <div
-                  className="border-b border-[#e4e1ee] p-5 last:border-0"
+                  className="border-b border-surface-variant p-5 last:border-0"
                   key={item.id}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="text-xl font-bold">{item.period}</div>
-                      <div className="mt-1 text-xs text-[#777587]">
+                      <div className="mt-1 text-xs text-outline">
                         Export {item.export?.id.slice(0, 8)} ·{" "}
                         {item.export?.checksum?.slice(0, 12)}…
                       </div>
@@ -680,7 +680,7 @@ export function PayrollLockView() {
                       <StatusPill value={item.status} />
                       {item.status === "LOCKED" && (
                         <button
-                          className="h-9 rounded-lg border border-[#c7c4d8] px-3 text-sm font-semibold"
+                          className="h-9 rounded-lg border border-zinc-300 px-3 text-sm font-semibold"
                           onClick={() => reopen(item)}
                         >
                           <RotateCcw className="mr-1 inline size-4" />
@@ -692,7 +692,7 @@ export function PayrollLockView() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {item.history.map((entry) => (
                       <span
-                        className="rounded-lg bg-[#f5f2ff] px-3 py-2 text-xs"
+                        className="rounded-lg bg-zinc-50 px-3 py-2 text-xs"
                         key={entry.id}
                       >
                         {entry.action} · {dateTime(entry.createdAt)}
@@ -770,15 +770,15 @@ export function LeaveBalancesView() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {balances.map((balance) => (
             <Panel className="p-6" key={balance.id}>
-              <div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+              <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
                 <CalendarCheck />
               </div>
-              <div className="mt-5 text-sm text-[#777587]">
+              <div className="mt-5 text-sm text-outline">
                 {balance.policy.name}
               </div>
               <div className="mt-1 text-4xl font-bold">
                 {Number(balance.remainingDays)}
-                <span className="ml-2 text-base font-medium text-[#777587]">
+                <span className="ml-2 text-base font-medium text-outline">
                   days
                 </span>
               </div>
@@ -954,7 +954,7 @@ export function LeaveRequestsView({
       }
       action={
         returnTo ? (
-          <Link className="text-sm font-bold text-[#3525cd]" href={returnTo}>
+          <Link className="text-sm font-bold text-primary" href={returnTo}>
             Back to employee
           </Link>
         ) : undefined
@@ -964,12 +964,12 @@ export function LeaveRequestsView({
       {policiesConfigured === false && canDecide && !error ? (
         <Panel className="p-8 text-center">
           <h2 className="text-xl font-bold">Create your first leave policy</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#777587]">
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-outline">
             Define leave types and annual entitlement before employees can
             submit requests. Existing requests, if any, remain preserved.
           </p>
           <Link
-            className="mt-5 inline-flex h-11 items-center rounded-xl bg-[#3525cd] px-5 text-sm font-bold text-white"
+            className="mt-5 inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
             href="/app/attendance/setup/leave"
           >
             Set up leave policies
@@ -982,14 +982,14 @@ export function LeaveRequestsView({
           {items.length ? (
             items.map((item) => (
               <div
-                className="grid gap-3 border-b border-[#e4e1ee] p-5 last:border-0 md:grid-cols-[1fr_190px_100px_190px] md:items-center"
+                className="grid gap-3 border-b border-surface-variant p-5 last:border-0 md:grid-cols-[1fr_190px_100px_190px] md:items-center"
                 key={item.id}
               >
                 <div>
                   <div className="font-semibold">
                     {canDecide ? item.employee.fullName : item.policy.name}
                   </div>
-                  <div className="mt-1 text-xs text-[#777587]">
+                  <div className="mt-1 text-xs text-outline">
                     {canDecide ? `${item.policy.name} · ` : ""}
                     {item.reason} · {item.totalDays} day(s)
                   </div>
@@ -1002,13 +1002,13 @@ export function LeaveRequestsView({
                   {canDecide && item.status === "PENDING" ? (
                     <>
                       <button
-                        className="h-9 flex-1 rounded-lg border border-[#ba1a1a] text-xs font-semibold text-[#ba1a1a]"
+                        className="h-9 flex-1 rounded-lg border border-error text-xs font-semibold text-error"
                         onClick={() => decision(item, "reject")}
                       >
                         Reject
                       </button>
                       <button
-                        className="h-9 flex-1 rounded-lg bg-[#3525cd] text-xs font-semibold text-white"
+                        className="h-9 flex-1 rounded-lg bg-primary text-xs font-semibold text-white"
                         onClick={() => decision(item, "approve")}
                       >
                         Approve
@@ -1016,13 +1016,13 @@ export function LeaveRequestsView({
                     </>
                   ) : item.status === "PENDING" && !employeeId ? (
                     <button
-                      className="h-9 w-full rounded-lg border border-[#c7c4d8] text-xs font-semibold"
+                      className="h-9 w-full rounded-lg border border-zinc-300 text-xs font-semibold"
                       onClick={() => cancel(item)}
                     >
                       Cancel
                     </button>
                   ) : (
-                    <span className="text-xs text-[#777587]">
+                    <span className="text-xs text-outline">
                       {item.managerComments}
                     </span>
                   )}
@@ -1040,7 +1040,7 @@ export function LeaveRequestsView({
       {pages > 1 && (
         <div className="mt-5 flex items-center justify-end gap-3 text-sm">
           <button
-            className="rounded-lg border border-[#c7c4d8] px-4 py-2 font-semibold disabled:opacity-40"
+            className="rounded-lg border border-zinc-300 px-4 py-2 font-semibold disabled:opacity-40"
             disabled={page === 1}
             onClick={() => setPage((current) => current - 1)}
           >
@@ -1050,7 +1050,7 @@ export function LeaveRequestsView({
             Page {page} of {pages}
           </span>
           <button
-            className="rounded-lg border border-[#c7c4d8] px-4 py-2 font-semibold disabled:opacity-40"
+            className="rounded-lg border border-zinc-300 px-4 py-2 font-semibold disabled:opacity-40"
             disabled={page >= pages}
             onClick={() => setPage((current) => current + 1)}
           >
@@ -1085,7 +1085,7 @@ export function NotificationsInboxView() {
       description="Attendance, leave, approval, sync, and security notices for your account."
       action={
         <button
-          className="text-sm font-semibold text-[#3525cd]"
+          className="text-sm font-semibold text-primary"
           onClick={() =>
             apiClient.post("/notifications/read-all", {}).then(load)
           }
@@ -1102,21 +1102,21 @@ export function NotificationsInboxView() {
           {items.length ? (
             items.map((item) => (
               <button
-                className={`flex w-full gap-4 border-b border-[#e4e1ee] p-5 text-left last:border-0 ${item.isRead ? "bg-white" : "bg-[#f5f2ff]"}`}
+                className={`flex w-full gap-4 border-b border-surface-variant p-5 text-left last:border-0 ${item.isRead ? "bg-white" : "bg-zinc-50"}`}
                 key={item.id}
                 onClick={() => read(item)}
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#302f39] text-white">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-700 text-white">
                   <Bell className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-3">
                     <strong>{item.title}</strong>
-                    <span className="text-xs text-[#777587]">
+                    <span className="text-xs text-outline">
                       {dateTime(item.createdAt)}
                     </span>
                   </span>
-                  <span className="mt-1 block text-sm leading-6 text-[#5e5b68]">
+                  <span className="mt-1 block text-sm leading-6 text-zinc-500">
                     {item.body}
                   </span>
                 </span>
@@ -1240,7 +1240,7 @@ export function LeavePoliciesView() {
       {error && <ErrorState message={error} />}
       <Panel className="mb-5 p-5">
         <h2 className="font-bold">How Leave policies apply</h2>
-        <p className="mt-2 text-sm leading-6 text-[#646171]">
+        <p className="mt-2 text-sm leading-6 text-zinc-500">
           A new policy creates an opening balance for every active employee.
           New employees receive the same active policies automatically. Policy
           changes keep existing requests and balance ledger entries intact.
@@ -1253,30 +1253,30 @@ export function LeavePoliciesView() {
           {policies.map((policy) => (
             <Panel className="p-6" key={policy.id}>
               <div className="flex items-start justify-between gap-3">
-                <CalendarCheck className="size-6 text-[#3525cd]" />
+                <CalendarCheck className="size-6 text-primary" />
                 <StatusPill value={policy.isActive ? "ACTIVE" : "INACTIVE"} />
               </div>
               <h2 className="mt-5 text-lg font-bold">{policy.name}</h2>
-              <p className="mt-1 text-sm text-[#777587]">
+              <p className="mt-1 text-sm text-outline">
                 {policy.leaveType.replaceAll("_", " ")} · version{" "}
                 {policy.version ?? 1}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#f5f2ff] p-3">
-                  <span className="text-xs text-[#777587]">Annual</span>
+                <div className="rounded-xl bg-zinc-50 p-3">
+                  <span className="text-xs text-outline">Annual</span>
                   <strong className="mt-1 block">
                     {policy.accrualLogic?.annualEntitlement ?? 0} days
                   </strong>
                 </div>
-                <div className="rounded-xl bg-[#f5f2ff] p-3">
-                  <span className="text-xs text-[#777587]">Carry forward</span>
+                <div className="rounded-xl bg-zinc-50 p-3">
+                  <span className="text-xs text-outline">Carry forward</span>
                   <strong className="mt-1 block">
                     {policy.accrualLogic?.carryForwardLimit ?? 0} days
                   </strong>
                 </div>
               </div>
               <button
-                className="mt-5 text-sm font-bold text-[#3525cd]"
+                className="mt-5 text-sm font-bold text-primary"
                 onClick={() => beginEdit(policy)}
                 type="button"
               >
@@ -1294,9 +1294,9 @@ export function LeavePoliciesView() {
         </Panel>
       )}
       <Panel className="mt-5 overflow-hidden">
-        <div className="border-b border-[#e4e1ee] p-5">
+        <div className="border-b border-surface-variant p-5">
           <h2 className="font-bold">Employee balances</h2>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Make a manual correction only when HR needs to add or subtract
             entitlement.
           </p>
@@ -1306,19 +1306,19 @@ export function LeavePoliciesView() {
         ) : balances.length ? (
           balances.map((balance) => (
             <div
-              className="grid gap-3 border-b border-[#e4e1ee] p-5 last:border-0 md:grid-cols-[1fr_1fr_120px_110px] md:items-center"
+              className="grid gap-3 border-b border-surface-variant p-5 last:border-0 md:grid-cols-[1fr_1fr_120px_110px] md:items-center"
               key={balance.id}
             >
               <div>
                 <strong>{balance.employee?.fullName ?? "Employee"}</strong>
-                <div className="text-xs text-[#777587]">
+                <div className="text-xs text-outline">
                   {balance.employee?.employeeCode}
                 </div>
               </div>
               <span className="text-sm">{balance.policy.name}</span>
               <strong>{Number(balance.remainingDays)} days</strong>
               <button
-                className="rounded-lg border border-[#c7c4d8] px-3 py-2 text-sm font-semibold text-[#3525cd]"
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-primary"
                 onClick={() => adjustBalance(balance)}
                 type="button"
               >
@@ -1456,13 +1456,13 @@ export function LeaveModuleHub() {
           .filter((item) => item.show)
           .map((item) => (
             <Link
-              className="group rounded-xl border border-[#e4e1ee] bg-white p-6 shadow-sm transition hover:border-[#3525cd]"
+              className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-primary"
               href={item.href}
               key={item.href}
             >
-              <CalendarCheck className="size-6 text-[#3525cd]" />
+              <CalendarCheck className="size-6 text-primary" />
               <h2 className="mt-5 text-lg font-bold">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+              <p className="mt-2 text-sm leading-6 text-zinc-500">
                 {item.body}
               </p>
             </Link>
@@ -1475,12 +1475,12 @@ export function LeaveModuleHub() {
 function StatusPill({ value }: { value: string }) {
   const tone =
     value === "APPROVED" || value === "COMPLETED" || value === "LOCKED"
-      ? "bg-[#d8f8df] text-[#005320]"
+      ? "bg-emerald-100 text-emerald-900"
       : value === "REJECTED" || value === "FAILED"
-        ? "bg-[#ffdad6] text-[#93000a]"
+        ? "bg-error-container text-on-error-container"
         : value === "PENDING" || value === "RUNNING"
-          ? "bg-[#fff1c2] text-[#604100]"
-          : "bg-[#f0ecf9] text-[#464555]";
+          ? "bg-amber-100 text-amber-900"
+          : "bg-zinc-50 text-on-surface-variant";
   return (
     <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
       {value.replaceAll("_", " ")}
@@ -1497,10 +1497,10 @@ function Comparison({
   requested: string;
 }) {
   return (
-    <div className="grid grid-cols-3 border-b border-[#e4e1ee] px-5 py-4 text-sm last:border-0">
+    <div className="grid grid-cols-3 border-b border-surface-variant px-5 py-4 text-sm last:border-0">
       <strong>{label}</strong>
       <span>{current}</span>
-      <span className="font-semibold text-[#3525cd]">{requested}</span>
+      <span className="font-semibold text-primary">{requested}</span>
     </div>
   );
 }
@@ -1514,7 +1514,7 @@ function Modal({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-[#1b1b24]/45 p-4">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
       <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">{title}</h2>
@@ -1537,7 +1537,7 @@ function CheckField({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+    <label className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
       <input
         type="checkbox"
         checked={checked}

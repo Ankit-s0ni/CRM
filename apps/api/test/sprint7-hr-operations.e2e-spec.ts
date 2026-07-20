@@ -8,10 +8,10 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { LeaveApprovedProcessor } from '../src/modules/leave/leave-approved.processor';
-import { NotificationDispatcherService } from '../src/modules/notifications/notification-dispatcher.service';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { LeaveApprovedProcessor } from '../src/products/attendance/leave/leave-approved.processor';
+import { NotificationDispatcherService } from '../src/platform/notifications/notification-dispatcher.service';
+import { TenantContextService } from '../src/platform/tenancy/public';
 
 type Session = { accessToken: string; userId: string; tenantId: string };
 type Data<T> = { data: T };

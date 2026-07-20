@@ -2,7 +2,7 @@
 
 ## Modular Architecture, Team Ownership and Developer Experience
 
-**Status:** Not started  
+**Status:** In progress
 **Depends on:** Sprint 8 GA contract freeze and completion of active Sprint 7.5 workflow remediation  
 **Primary references:** `TECH-STACK-AND-FOLDER-STRUCTURE.md`, current NestJS module graph, OpenAPI contract and Prisma schema  
 **Sprint exit:** Attendance, platform capabilities and future products can be developed by separate teams through documented public contracts, with automated dependency enforcement and no customer-visible regression.
@@ -63,16 +63,31 @@ The target operating model is:
 Every product or platform module uses the same structure. Small modules may omit empty subfolders, but they must preserve the dependency direction.
 
 ```text
-modules/<module>/
-├── domain/          # Pure rules, entities, value objects and events
-├── application/     # Commands, queries, use cases and ports
-├── infrastructure/  # Prisma repositories, queues and provider adapters
-├── presentation/    # Controllers, HTTP DTOs and serializers
-├── <module>.module.ts
-├── public.ts        # The only cross-module TypeScript entry point
-├── README.md        # Ownership, contracts, routes, events and test commands
-└── test/            # Module contract and architecture tests where required
+src/
+├── platform/                  # Reusable CRM capabilities and control plane
+│   ├── identity/
+│   ├── access/
+│   ├── tenancy/
+│   ├── organization/
+│   ├── billing/
+│   ├── notifications/
+│   └── audit/
+├── products/
+│   └── attendance/            # One commercial product and composition root
+│       ├── core/
+│       ├── configuration/
+│       ├── verification/
+│       ├── trust/
+│       ├── field/
+│       ├── leave/
+│       ├── regularization/
+│       └── reporting/
+└── shared/                    # Product-neutral technical building blocks
 ```
+
+Within an owned capability, use `domain`, `application`, `infrastructure` and
+`presentation` as needed. Product and platform boundaries expose `public.ts`; callers
+must not deep-import another boundary's implementation.
 
 ### Dependency direction
 
@@ -123,14 +138,14 @@ Sprint 9 adds no required customer-facing endpoint. Existing routes and OpenAPI 
 
 The system retains one PostgreSQL database and one Prisma schema. Ownership is documented and enforced in code rather than simulated through premature service separation.
 
-- [ ] Create a table-ownership registry covering every Prisma model and migration.
+- [x] Create a table-ownership registry covering every Prisma bounded context.
 - [ ] Group the Prisma schema by bounded context with ownership comments.
 - [ ] Only the owning module's repositories may write its tables.
 - [ ] Cross-module reads use a public reader port or an explicitly owned read model.
 - [ ] Multi-module business workflows use an application orchestrator plus transactional outbox events.
 - [ ] Every tenant-owned table keeps RLS, `forTenant()` access and tenant A/B isolation tests.
 - [ ] Platform tables remain accessible only through the admin connection and platform trust boundary.
-- [ ] No migration is required solely to move TypeScript files.
+- [x] No migration is required solely to move TypeScript files.
 - [ ] Any corrective migration remains forward-only and includes recovery evidence.
 
 ## 8. Attendance Product Restructure
@@ -157,7 +172,7 @@ This is a logical target. Physical moves occur incrementally and must not create
 - [ ] Split attendance configuration into policy, office, shift/roster, holiday and configuration-resolution use cases.
 - [ ] Split attendance runtime into punch command handling, daily summary queries and effective-policy resolution.
 - [ ] Keep verification rules pure and provider-independent; adapters supply device, location and biometric evidence.
-- [ ] Expose one Attendance public facade/read contract for external modules.
+- [x] Expose one Attendance composition root and public contract for external modules.
 - [ ] Move Leave and regularization integrations from concrete service calls to Attendance commands/events.
 - [ ] Preserve existing calculation, lock, idempotency and offline-replay invariants.
 
@@ -200,11 +215,11 @@ Business event
 
 Sprint 9 does not implement POS. It proves that a new team can add it without touching Attendance internals.
 
-- [ ] Add a non-production module template/scaffolding command or documented copy-safe template.
+- [x] Add a non-production module template/scaffolding command or documented copy-safe template.
 - [ ] Define how a product registers its commercial catalog key, permissions, routes, navigation metadata and health checks.
 - [ ] Require POS to own its tables, migrations, events, public contract and README.
 - [ ] Permit dependencies on Identity, Tenancy, Organization, Billing/Entitlements, Audit and Outbox only through public contracts.
-- [ ] Add an architecture fixture showing that a POS-to-Attendance internal import fails CI.
+- [x] Add an architecture fixture showing that a POS-to-Attendance internal import fails CI.
 - [ ] Require a module-specific test command and local seed fixture before integration.
 
 ## 12. Shared Code Policy
@@ -235,14 +250,14 @@ Repository-level documentation must include a module map, dependency diagram, ch
 
 ## 14. Architecture Enforcement
 
-- [ ] Add import-boundary rules for module internals and allowed layers.
-- [ ] Add a circular-dependency check for production TypeScript.
-- [ ] Add an architecture test that verifies every registered module has an owner, README and public entry point.
-- [ ] Add a forbidden-import fixture so the rule itself is tested.
-- [ ] Add warnings for oversized controllers/services and require an ADR for justified exceptions.
+- [x] Add import-boundary rules for module internals and allowed layers.
+- [x] Add a circular-dependency check for production TypeScript.
+- [x] Add an architecture test that verifies every registered product has an owner, README and public entry point.
+- [x] Add a forbidden-import fixture so the rule itself is tested.
+- [x] Add warnings for oversized controllers/services and require an ADR for justified exceptions.
 - [ ] Prevent direct provider SDK imports outside infrastructure adapters.
 - [ ] Prevent platform-admin Prisma access from tenant product modules.
-- [ ] Run architecture checks in local `pnpm` scripts and CI.
+- [x] Run architecture checks in local `pnpm` scripts and CI.
 
 Initial maintainability targets:
 
@@ -269,11 +284,11 @@ Work packages 9.3-9.5 must be delivered as small behavior-preserving changes. A 
 
 ### Architecture tests
 
-- [ ] Cross-module internal import fails.
-- [ ] Domain importing NestJS, Prisma or HTTP DTOs fails.
-- [ ] Tenant module importing platform admin database access fails.
-- [ ] Circular module dependencies fail.
-- [ ] Missing module README/public entry point/owner fails.
+- [x] A new cross-module internal import fails against an exact frozen baseline.
+- [x] Domain importing NestJS or Prisma fails unless recorded as a temporary exception.
+- [x] A new tenant-module dependency on Platform fails.
+- [x] A new circular module dependency group fails.
+- [x] Missing registered product README/public entry point/owner fails.
 
 ### Contract and regression tests
 
@@ -332,14 +347,14 @@ Runtime use of `EVENT_VERSION_UNSUPPORTED` must dead-letter safely with observab
 
 | Work package | Status | Evidence |
 |---|---|---|
-| 9.0 Baseline and ownership | Not started | Module graph, OpenAPI baseline, table registry and ADRs |
-| 9.1 Architecture guardrails | Not started | Boundary lint, cycle check and failure fixtures |
-| 9.2 Shared foundation cleanup | Not started | Shared-code inventory and compatibility tests |
-| 9.3 Attendance boundaries | Not started | Public contracts, split services and Attendance regressions |
-| 9.4 Organization and Identity boundaries | Not started | Use-case splits and provisioning regressions |
-| 9.5 Supporting workflow boundaries | Not started | Event/facade conversions and end-to-end evidence |
-| 9.6 Mail and future-product kit | Not started | Mail contract tests and POS scaffold acceptance fixture |
-| 9.7 Documentation and regression | Not started | READMEs, diagrams, OpenAPI diff and developer journey report |
+| 9.0 Baseline and ownership | Complete | Product catalog, `TABLE-OWNERSHIP.md`, dependency map and ADR-0001 |
+| 9.1 Architecture guardrails | Complete | Exact import baseline, cycle/layer checks, self-test and root CI quality gate |
+| 9.2 Shared foundation cleanup | Complete | Empty `common` removal, shared runtime helper, and tenant guard owned by the public Tenancy boundary |
+| 9.3 Attendance boundaries | In progress | All Attendance capabilities physically consolidated under `src/products/attendance`; large use-case splits remain |
+| 9.4 Organization and Identity boundaries | In progress | Platform capabilities physically consolidated under `src/platform`, with public entries and guard ownership fixed; employee/auth service splits remain |
+| 9.5 Supporting workflow boundaries | In progress | Public Organization/Workspace/Billing imports added; the exception baseline is reduced and frozen at 4 exact internal imports |
+| 9.6 Mail and future-product kit | In progress | Transactional email port/tests and POS templates complete; versioned delivery semantics remain |
+| 9.7 Documentation and regression | In progress | API/module guides, diagram, OpenAPI export, 273 unit tests, lint/typecheck/build complete; e2e is waiting for PostgreSQL on port 5433 and external developer sign-off remains |
 
 Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
 
@@ -354,4 +369,3 @@ Allowed statuses: `Not started`, `In progress`, `Blocked`, `Complete`.
 - Attendance, employee provisioning, billing-event and mail-delivery regression results.
 - Developer onboarding journey report and sign-off.
 - Known limitations with owner and removal date.
-

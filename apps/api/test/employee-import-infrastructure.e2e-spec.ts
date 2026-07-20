@@ -6,11 +6,11 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { EmployeeImportStorageService } from '../src/modules/organization/imports/employee-import-storage.service';
-import { EmployeeImportWorker } from '../src/modules/organization/imports/employee-import.worker';
-import { OrganizationModule } from '../src/modules/organization/organization.module';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { EmployeeImportStorageService } from '../src/platform/organization/imports/employee-import-storage.service';
+import { EmployeeImportWorker } from '../src/platform/organization/imports/employee-import.worker';
+import { OrganizationModule } from '../src/platform/organization/organization.module';
+import { TenantContextService } from '../src/platform/tenancy/public';
 
 describe('Employee import infrastructure (e2e)', () => {
   let app: INestApplication<App>;

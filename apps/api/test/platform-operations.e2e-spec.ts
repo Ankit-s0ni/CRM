@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { generateTotp } from '../src/modules/platform/platform-auth/totp';
+import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 import { HealthService } from '../src/shared/health/health.service';
 
 describe('Platform dashboard, audit, alerts and health (e2e)', () => {

@@ -149,13 +149,13 @@ export function ModuleManagement() {
   return (
     <div className="mx-auto max-w-[1500px] p-5 lg:p-8">
       <header className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#3525cd]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
           Commercial catalog
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">
           Products & entitlements
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#646273]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-on-surface-variant">
           Products are sold through plans. Tenant overrides are exceptional; HR
           configures the included Attendance features inside each workspace.
         </p>
@@ -168,9 +168,9 @@ export function ModuleManagement() {
       )}
 
       <div className="grid gap-5 xl:grid-cols-[340px_1fr]">
-        <aside className="rounded-2xl border border-[#ddd9e8] bg-white p-5 shadow-sm">
+        <aside className="rounded-2xl border border-outline-variant bg-white p-5 shadow-sm">
           <h2 className="font-semibold">Product Catalog</h2>
-          <p className="mt-1 text-xs text-[#777587]">
+          <p className="mt-1 text-xs text-outline">
             Customer-facing products, add-ons and capabilities.
           </p>
 
@@ -186,14 +186,14 @@ export function ModuleManagement() {
           </div>
 
           {comingSoon.length > 0 && (
-            <div className="mt-7 border-t border-[#e9e6ef] pt-5">
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#777587]">
+            <div className="mt-7 border-t border-zinc-100 pt-5">
+              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-outline">
                 <Sparkles className="size-4" /> Coming later
               </div>
               <div className="space-y-2">
                 {comingSoon.map((product) => (
                   <div
-                    className="flex items-center gap-3 rounded-xl bg-[#f6f4f8] p-3 text-sm text-[#777587]"
+                    className="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 text-sm text-outline"
                     key={product.id}
                   >
                     <LockKeyhole className="size-4" />
@@ -210,19 +210,19 @@ export function ModuleManagement() {
 
         <main className="space-y-5">
           {selectedProduct && <ProductDetail product={selectedProduct} />}
-          <section className="overflow-hidden rounded-2xl border border-[#ddd9e8] bg-white shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e4e1ee] p-5">
+          <section className="overflow-hidden rounded-2xl border border-outline-variant bg-white shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-surface-variant p-5">
               <div>
                 <h2 className="font-semibold">Tenant product entitlements</h2>
-                <p className="mt-1 text-xs text-[#777587]">
+                <p className="mt-1 text-xs text-outline">
                   Only products and commercial add-ons appear here. Attendance
                   features are defined by the selected plan.
                 </p>
               </div>
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#777587]" />
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
                 <Input
-                  className="h-9 border-[#d7d2df] pl-9"
+                  className="h-9 border-outline-variant pl-9"
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Filter tenants..."
                   value={search}
@@ -233,7 +233,7 @@ export function ModuleManagement() {
             <div className="overflow-x-auto">
               <div className="min-w-[720px]">
                 <div
-                  className="grid border-b border-[#e4e1ee] bg-[#f7f4fb] text-[10px] font-semibold uppercase tracking-wide text-[#646273]"
+                  className="grid border-b border-surface-variant bg-zinc-50 text-[10px] font-semibold uppercase tracking-wide text-on-surface-variant"
                   style={{
                     gridTemplateColumns: `240px repeat(${assignable.length}, minmax(150px, 1fr))`,
                   }}
@@ -241,12 +241,12 @@ export function ModuleManagement() {
                   <div className="p-4">Tenant</div>
                   {assignable.map((item) => (
                     <div
-                      className="border-l border-[#e4e1ee] p-4 text-center"
+                      className="border-l border-surface-variant p-4 text-center"
                       key={item.id}
                     >
                       {item.name}
                       {item.kind === "ADD_ON" && (
-                        <span className="mt-1 block text-[9px] text-[#3525cd]">
+                        <span className="mt-1 block text-[9px] text-primary">
                           Attendance add-on
                         </span>
                       )}
@@ -256,21 +256,21 @@ export function ModuleManagement() {
 
                 {filteredTenants.map((tenant) => (
                   <div
-                    className="grid min-h-20 border-b border-[#eeeaf3] last:border-0"
+                    className="grid min-h-20 border-b border-outline-variant last:border-0"
                     key={tenant.id}
                     style={{
                       gridTemplateColumns: `240px repeat(${assignable.length}, minmax(150px, 1fr))`,
                     }}
                   >
                     <div className="flex items-center gap-3 p-4">
-                      <div className="grid size-9 place-items-center rounded-lg bg-[#ece8fa] text-xs font-bold text-[#3525cd]">
+                      <div className="grid size-9 place-items-center rounded-lg bg-surface-variant text-xs font-bold text-primary">
                         {tenant.companyName.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <div className="text-sm font-semibold">
                           {tenant.companyName}
                         </div>
-                        <div className="text-[10px] text-[#777587]">
+                        <div className="text-[10px] text-outline">
                           {tenant.subscription?.plan.name || "No plan"}
                         </div>
                       </div>
@@ -283,14 +283,14 @@ export function ModuleManagement() {
                         Boolean(busy);
                       return (
                         <div
-                          className="grid place-items-center border-l border-[#eeeaf3]"
+                          className="grid place-items-center border-l border-outline-variant"
                           key={item.id}
                         >
                           <button
                             aria-checked={active}
                             aria-label={`${active ? "Disable" : "Enable"} ${item.name} for ${tenant.companyName}`}
                             className={`relative h-6 w-11 rounded-full transition ${
-                              active ? "bg-green-600" : "bg-[#dedbe6]"
+                              active ? "bg-green-600" : "bg-zinc-200"
                             } disabled:opacity-55`}
                             disabled={disabled}
                             onClick={() => void toggle(tenant.id, item)}
@@ -360,7 +360,7 @@ function ProductButton({
   return (
     <button
       className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left ${
-        selected ? "border-[#3525cd] bg-[#f7f5ff]" : "border-[#e4e1ee]"
+        selected ? "border-primary bg-zinc-50" : "border-surface-variant"
       }`}
       onClick={() => onSelect(product.key)}
       type="button"
@@ -374,7 +374,7 @@ function ProductButton({
           Available product
         </span>
       </span>
-      <ChevronRight className="ml-auto size-4 text-[#777587]" />
+      <ChevronRight className="ml-auto size-4 text-outline" />
     </button>
   );
 }
@@ -382,16 +382,16 @@ function ProductButton({
 function ProductDetail({ product }: { product: PlatformModule }) {
   const capabilities = product.capabilities ?? [];
   return (
-    <section className="rounded-2xl border border-[#ddd9e8] bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-outline-variant bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#3525cd]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
             Available product
           </p>
           <h2 className="mt-1 text-xl font-bold">{product.name}</h2>
-          <p className="mt-2 text-sm text-[#646273]">{product.description}</p>
+          <p className="mt-2 text-sm text-on-surface-variant">{product.description}</p>
         </div>
-        <div className="rounded-xl bg-[#f0ecf9] px-4 py-2 text-xs font-semibold text-[#3525cd]">
+        <div className="rounded-xl bg-zinc-50 px-4 py-2 text-xs font-semibold text-primary">
           {capabilities.length} plan features
         </div>
       </div>
@@ -399,7 +399,7 @@ function ProductDetail({ product }: { product: PlatformModule }) {
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {capabilities.map((capability) => (
           <div
-            className="rounded-xl border border-[#e7e3ed] p-4"
+            className="rounded-xl border border-zinc-200 p-4"
             key={capability.id}
           >
             <div className="flex items-start gap-2">
@@ -408,10 +408,10 @@ function ProductDetail({ product }: { product: PlatformModule }) {
               </span>
               <div>
                 <h3 className="text-sm font-semibold">{capability.name}</h3>
-                <p className="mt-1 text-xs leading-5 text-[#777587]">
+                <p className="mt-1 text-xs leading-5 text-outline">
                   {capability.description}
                 </p>
-                <div className="mt-2 text-[9px] font-bold uppercase tracking-wide text-[#777587]">
+                <div className="mt-2 text-[9px] font-bold uppercase tracking-wide text-outline">
                   {capability.isCore
                     ? "Included with Attendance"
                     : "Selectable by plan"}
@@ -423,16 +423,16 @@ function ProductDetail({ product }: { product: PlatformModule }) {
       </div>
 
       {(product.addOns?.length ?? 0) > 0 && (
-        <div className="mt-5 rounded-xl border border-[#d9d3ef] bg-[#f7f5ff] p-4">
-          <div className="text-xs font-bold uppercase tracking-wide text-[#3525cd]">
+        <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="text-xs font-bold uppercase tracking-wide text-primary">
             Optional add-on
           </div>
           {product.addOns?.map((addOn) => (
             <div className="mt-2 flex items-center gap-3" key={addOn.id}>
-              <MapPin className="size-5 text-[#3525cd]" />
+              <MapPin className="size-5 text-primary" />
               <div>
                 <div className="text-sm font-semibold">{addOn.name}</div>
-                <div className="text-xs text-[#777587]">
+                <div className="text-xs text-outline">
                   {addOn.description}
                 </div>
               </div>

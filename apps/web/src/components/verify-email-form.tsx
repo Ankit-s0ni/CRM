@@ -136,44 +136,44 @@ export function VerifyEmailForm() {
 
   return (
     <>
-      <div className="rounded-[12px] border border-[#e4e1ee] bg-white px-6 pb-7 pt-7 text-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]">
+      <div className="rounded-[12px] border border-surface-variant bg-white px-6 pb-7 pt-7 text-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]">
         <div className="mb-8 flex items-center justify-center gap-2">
           <span
-            className="material-symbols-outlined text-[24px] text-[#3525cd]"
+            className="material-symbols-outlined text-[24px] text-primary"
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
             security
           </span>
-          <span className="text-[20px] font-semibold leading-7 tracking-[-0.01em] text-[#3525cd]">DeltCRM</span>
+          <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-7 w-auto" />
         </div>
 
         <div className="mb-6 flex justify-center">
           <div className="relative flex h-24 w-24 items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-[#3525cd]/10" />
-            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-[#3525cd]">mail</span>
+            <div className="absolute inset-0 rounded-full bg-primary/10" />
+            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-primary">mail</span>
           </div>
         </div>
 
-        <h1 className="mb-2 text-[24px] font-semibold leading-8 tracking-[-0.01em] text-[#1b1b24]">Verify your email</h1>
-        <p className="mb-8 text-[16px] leading-6 text-[#464555]">
+        <h1 className="mb-2 text-[24px] font-semibold leading-8 tracking-[-0.01em] text-zinc-900">Verify your email</h1>
+        <p className="mb-8 text-[16px] leading-6 text-on-surface-variant">
           We sent a 6-digit code to{" "}
-          <span className="font-semibold text-[#1b1b24]">{email || "your email"}</span>
+          <span className="font-semibold text-zinc-900">{email || "your email"}</span>
         </p>
 
         {error ? (
-          <div className="mb-5 rounded-[12px] border border-[#ba1a1a]/15 bg-[#ffdad6] px-4 py-3 text-left text-sm text-[#93000a]">
+          <div className="mb-5 rounded-[12px] border border-error/15 bg-error-container px-4 py-3 text-left text-sm text-on-error-container">
             {error}
           </div>
         ) : null}
 
         {message ? (
-          <div className="mb-5 rounded-[12px] border border-[#006e2d]/15 bg-[#7cf994]/20 px-4 py-3 text-left text-sm text-[#0f5132]">
+          <div className="mb-5 rounded-[12px] border border-emerald-800/15 bg-emerald-300/20 px-4 py-3 text-left text-sm text-emerald-900">
             {message}
           </div>
         ) : null}
 
         {resendMessage ? (
-          <div className="mb-5 rounded-[12px] border border-[#c7c4d8] bg-[#f5f2ff] px-4 py-3 text-left text-sm text-[#464555]">
+          <div className="mb-5 rounded-[12px] border border-zinc-300 bg-zinc-50 px-4 py-3 text-left text-sm text-on-surface-variant">
             {resendMessage}
           </div>
         ) : null}
@@ -196,7 +196,7 @@ export function VerifyEmailForm() {
                   const target = document.getElementById("verification-code");
                   target?.focus();
                 }}
-                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-[#c7c4d8] bg-[#fcf8ff] text-[20px] font-bold text-[#1b1b24] transition-all duration-200 hover:border-[#3525cd] focus:border-[#3525cd]"
+                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-zinc-300 bg-surface text-[20px] font-bold text-zinc-900 transition-all duration-200 hover:border-primary focus:border-primary"
               >
                 {digit.trim() || ""}
               </button>
@@ -206,7 +206,7 @@ export function VerifyEmailForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#3525cd] px-6 text-[14px] font-medium leading-5 text-white shadow-sm transition-all hover:bg-[#2f21b8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-6 text-[14px] font-medium leading-5 text-white shadow-sm transition-all hover:bg-zinc-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               <>
@@ -223,13 +223,13 @@ export function VerifyEmailForm() {
         </form>
 
         <div className="mt-6 space-y-4 text-center">
-          <p className="text-[14px] leading-5 text-[#464555]">
+          <p className="text-[14px] leading-5 text-on-surface-variant">
             Didn&apos;t receive the code?{" "}
             <button
               type="button"
               onClick={handleResend}
               disabled={resending || secondsLeft > 0}
-              className="font-semibold text-[#3525cd] hover:underline disabled:opacity-50 disabled:no-underline"
+              className="font-semibold text-primary hover:underline disabled:opacity-50 disabled:no-underline"
             >
               {resending
                 ? "Resending..."
@@ -241,7 +241,7 @@ export function VerifyEmailForm() {
 
           <div className="pt-1">
             <Link
-              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-[#464555] transition-colors hover:text-[#3525cd]"
+              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-on-surface-variant transition-colors hover:text-primary"
               href="/signup"
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -251,7 +251,7 @@ export function VerifyEmailForm() {
         </div>
       </div>
       <footer className="mt-6 text-center">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#777587]">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-outline">
           Secure Enterprise HRMS Infrastructure
         </p>
       </footer>

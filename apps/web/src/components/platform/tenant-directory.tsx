@@ -110,14 +110,14 @@ export function TenantDirectory() {
         <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Tenants</h1>
-            <p className="mt-1 text-sm text-[#646273]">
+            <p className="mt-1 text-sm text-on-surface-variant">
               Manage organization accounts, subscriptions and operational status
               across Oman.
             </p>
           </div>
           {canCreate && (
             <Button
-              className="h-11 bg-[#3525cd] px-5 text-white shadow-md hover:bg-[#2b1fb0]"
+              className="h-11 bg-primary px-5 text-white shadow-md hover:bg-primary/90"
               onClick={() => setCreateOpen(true)}
             >
               <Plus />
@@ -125,11 +125,11 @@ export function TenantDirectory() {
             </Button>
           )}
         </div>
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-[#e4e1ee] bg-white p-4">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-surface-variant bg-white p-4">
           <div className="relative min-w-[240px] flex-1 sm:hidden">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#777587]" />
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
             <input
-              className="h-10 w-full rounded-lg border border-[#c8c5d0] pl-10 pr-3 text-sm"
+              className="h-10 w-full rounded-lg border border-outline-variant pl-10 pr-3 text-sm"
               placeholder="Search tenants..."
               value={search}
               onChange={(e) => {
@@ -143,7 +143,7 @@ export function TenantDirectory() {
             Filter by:
           </div>
           <select
-            className="h-9 rounded-lg border border-[#d7d2df] bg-[#f8f5fb] px-3 text-sm"
+            className="h-9 rounded-lg border border-outline-variant bg-surface px-3 text-sm"
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
@@ -157,7 +157,7 @@ export function TenantDirectory() {
             <option value="CHURNED">Churned</option>
           </select>
           <select
-            className="h-9 rounded-lg border border-[#d7d2df] bg-[#f8f5fb] px-3 text-sm"
+            className="h-9 rounded-lg border border-outline-variant bg-surface px-3 text-sm"
             value={planId}
             onChange={(e) => {
               setPlanId(e.target.value);
@@ -172,7 +172,7 @@ export function TenantDirectory() {
             ))}
           </select>
           <button
-            className="ml-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#3525cd] hover:bg-[#f4f1ff]"
+            className="ml-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-surface-variant"
             onClick={reset}
           >
             <RotateCcw className="size-4" />
@@ -184,8 +184,8 @@ export function TenantDirectory() {
             {error}
           </div>
         )}
-        <div className="overflow-hidden rounded-xl border border-[#ddd9e8] bg-white shadow-sm">
-          <div className="hidden grid-cols-[1.6fr_1.25fr_.85fr_1fr_.85fr_.7fr] gap-4 bg-[#f2eff8] px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-[#646273] md:grid">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
+          <div className="hidden grid-cols-[1.6fr_1.25fr_.85fr_1fr_.85fr_.7fr] gap-4 bg-surface-variant px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant md:grid">
             <span>Company</span>
             <span>Subdomain</span>
             <span>Plan</span>
@@ -198,17 +198,17 @@ export function TenantDirectory() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-16 animate-pulse rounded-lg bg-[#f3eff8]"
+                  className="h-16 animate-pulse rounded-lg bg-surface-variant"
                 />
               ))}
             </div>
           ) : tenants.length === 0 ? (
             <div className="grid place-items-center px-6 py-20 text-center">
-              <div className="grid size-14 place-items-center rounded-full bg-[#f0edff] text-[#3525cd]">
+              <div className="grid size-14 place-items-center rounded-full bg-surface-variant text-primary">
                 <Building2 />
               </div>
               <h2 className="mt-4 text-lg font-semibold">No tenants found</h2>
-              <p className="mt-1 text-sm text-[#646273]">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Adjust your filters or create the first tenant workspace.
               </p>
             </div>
@@ -226,17 +226,17 @@ export function TenantDirectory() {
                 <Link
                   href={`/platform/tenants/${tenant.id}`}
                   key={tenant.id}
-                  className="grid gap-3 border-t border-[#eeeaf3] px-5 py-5 transition hover:bg-[#fbf9ff] first:border-t-0 md:grid-cols-[1.6fr_1.25fr_.85fr_1fr_.85fr_.7fr] md:items-center md:gap-4 md:px-6"
+                  className="grid gap-3 border-t border-outline-variant px-5 py-5 transition hover:bg-surface-variant first:border-t-0 md:grid-cols-[1.6fr_1.25fr_.85fr_1fr_.85fr_.7fr] md:items-center md:gap-4 md:px-6"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 shrink-0 place-items-center rounded-lg border border-[#e4e1ee] bg-[#faf8fc] text-[#777587]">
+                    <div className="grid size-10 shrink-0 place-items-center rounded-lg border border-surface-variant bg-surface text-outline">
                       <Building2 className="size-4" />
                     </div>
                     <div>
                       <div className="text-sm font-semibold">
                         {tenant.companyName}
                       </div>
-                      <div className="text-[11px] text-[#777587]">
+                      <div className="text-[11px] text-outline">
                         Created{" "}
                         {new Intl.DateTimeFormat("en", {
                           month: "short",
@@ -246,11 +246,11 @@ export function TenantDirectory() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs text-[#464555]">
+                  <div className="text-xs text-on-surface-variant">
                     {tenant.subdomain}.hrmsapp.com
                   </div>
                   <div>
-                    <span className="rounded-full bg-[#ece8fa] px-2 py-1 text-[10px] font-semibold text-[#3525cd]">
+                    <span className="rounded-full bg-surface-variant px-2 py-1 text-[10px] font-semibold text-primary">
                       {tenant.subscription?.plan.name || "No plan"}
                     </span>
                   </div>
@@ -261,9 +261,9 @@ export function TenantDirectory() {
                       </span>
                       <span>{usage}%</span>
                     </div>
-                    <div className="mt-2 h-1.5 rounded-full bg-[#e6e2ec]">
+                    <div className="mt-2 h-1.5 rounded-full bg-surface-container-high">
                       <div
-                        className="h-full rounded-full bg-[#3525cd]"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${usage}%` }}
                       />
                     </div>
@@ -291,7 +291,7 @@ export function TenantDirectory() {
               );
             })
           )}
-          <div className="flex items-center justify-between border-t border-[#e4e1ee] px-5 py-4 text-xs text-[#646273]">
+          <div className="flex items-center justify-between border-t border-surface-variant px-5 py-4 text-xs text-on-surface-variant">
             <span>
               Showing{" "}
               {tenants.length
@@ -309,7 +309,7 @@ export function TenantDirectory() {
               >
                 <ChevronLeft className="size-4" />
               </button>
-              <span className="grid size-8 place-items-center rounded-lg bg-[#3525cd] font-bold text-white">
+              <span className="grid size-8 place-items-center rounded-lg bg-primary font-bold text-white">
                 {page}
               </span>
               <button
@@ -324,11 +324,11 @@ export function TenantDirectory() {
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-3 md:hidden">
           <div className="rounded-xl border bg-white p-4">
-            <Users className="size-5 text-[#3525cd]" />
+            <Users className="size-5 text-primary" />
             <div className="mt-2 text-2xl font-semibold">
               {pagination.total}
             </div>
-            <div className="text-xs text-[#777587]">Tenant accounts</div>
+            <div className="text-xs text-outline">Tenant accounts</div>
           </div>
         </div>
       </div>

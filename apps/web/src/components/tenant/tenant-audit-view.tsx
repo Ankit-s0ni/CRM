@@ -114,7 +114,7 @@ export function TenantAuditView() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <Field label="Search">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-3.5 size-4 text-[#777587]" />
+              <Search className="pointer-events-none absolute left-3 top-3.5 size-4 text-outline" />
               <input
                 className={`${inputClass} pl-10`}
                 onChange={(event) => update("search", event.target.value)}
@@ -166,7 +166,7 @@ export function TenantAuditView() {
             Apply filters
           </PrimaryButton>
           <button
-            className="min-h-11 rounded-xl border border-[#d8d4e4] bg-white px-4 text-sm font-semibold"
+            className="min-h-11 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
             onClick={() => {
               setDraft(emptyFilters);
               setApplied(emptyFilters);
@@ -187,11 +187,11 @@ export function TenantAuditView() {
           <div className="flex flex-wrap items-center justify-between gap-3 p-5">
             <div>
               <h2 className="font-bold">Workspace changes</h2>
-              <p className="mt-1 text-sm text-[#777587]">
+              <p className="mt-1 text-sm text-outline">
                 {response.pagination.total} matching audit records
               </p>
             </div>
-            <span className="rounded-full bg-[#f0ecf9] px-3 py-1 text-xs font-bold text-[#3525cd]">
+            <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-primary">
               Read only
             </span>
           </div>
@@ -202,9 +202,9 @@ export function TenantAuditView() {
         </Panel>
       ) : (
         <Panel className="mt-5 p-10 text-center">
-          <ScrollText className="mx-auto size-9 text-[#777587]" />
+          <ScrollText className="mx-auto size-9 text-outline" />
           <h2 className="mt-4 font-bold">No matching audit history</h2>
-          <p className="mt-2 text-sm text-[#777587]">
+          <p className="mt-2 text-sm text-outline">
             Clear filters or perform an authorized workspace change first.
           </p>
         </Panel>
@@ -215,29 +215,29 @@ export function TenantAuditView() {
 
 function AuditRow({ record }: { record: AuditRecord }) {
   return (
-    <details className="group border-t border-[#e4e1ee] px-5 py-4">
+    <details className="group border-t border-surface-variant px-5 py-4">
       <summary className="grid cursor-pointer list-none gap-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(160px,.7fr)_170px] sm:items-center">
         <div className="min-w-0">
           <strong className="block truncate text-sm">{humanize(record.action)}</strong>
-          <span className="mt-1 block truncate text-xs text-[#777587]">
+          <span className="mt-1 block truncate text-xs text-outline">
             {record.module} · {record.entityType ?? "Workspace"}
             {record.entityId ? ` · ${record.entityId}` : ""}
           </span>
         </div>
-        <div className="text-xs text-[#646171]">
-          <strong className="block text-[#2d2b35]">
+        <div className="text-xs text-zinc-500">
+          <strong className="block text-zinc-700">
             {record.actor?.email ?? "System process"}
           </strong>
           {record.impersonated ? "Platform impersonation" : "Workspace session"}
         </div>
-        <time className="text-xs text-[#777587]" dateTime={record.createdAt}>
+        <time className="text-xs text-outline" dateTime={record.createdAt}>
           {new Date(record.createdAt).toLocaleString()}
         </time>
       </summary>
-      <div className="mt-4 grid gap-4 rounded-xl bg-[#f8f5fc] p-4 lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 rounded-xl bg-zinc-50 p-4 lg:grid-cols-2">
         <Evidence title="Previous value" value={record.oldValue} />
         <Evidence title="New value" value={record.newValue} />
-        <div className="text-xs text-[#646171] lg:col-span-2">
+        <div className="text-xs text-zinc-500 lg:col-span-2">
           Request: {record.requestId ?? "Not recorded"} · IP: {record.ipAddress ?? "Not recorded"}
         </div>
       </div>
@@ -248,8 +248,8 @@ function AuditRow({ record }: { record: AuditRecord }) {
 function Evidence({ title, value }: { title: string; value: unknown }) {
   return (
     <div>
-      <strong className="text-xs uppercase tracking-wide text-[#646171]">{title}</strong>
-      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-white p-3 text-xs text-[#2d2b35]">
+      <strong className="text-xs uppercase tracking-wide text-zinc-500">{title}</strong>
+      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-white p-3 text-xs text-zinc-700">
         {value == null ? "Not recorded" : JSON.stringify(value, null, 2)}
       </pre>
     </div>
@@ -266,20 +266,20 @@ function Pagination({
   const { page, totalPages } = response.pagination;
   if (totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-between border-t border-[#e4e1ee] p-4">
+    <div className="flex items-center justify-between border-t border-surface-variant p-4">
       <button
         aria-label="Previous audit page"
-        className="grid size-10 place-items-center rounded-lg border border-[#d8d4e4] disabled:opacity-40"
+        className="grid size-10 place-items-center rounded-lg border border-zinc-300 disabled:opacity-40"
         disabled={page <= 1}
         onClick={() => onPage(page - 1)}
         type="button"
       >
         <ChevronLeft className="size-4" />
       </button>
-      <span className="text-sm text-[#646171]">Page {page} of {totalPages}</span>
+      <span className="text-sm text-zinc-500">Page {page} of {totalPages}</span>
       <button
         aria-label="Next audit page"
-        className="grid size-10 place-items-center rounded-lg border border-[#d8d4e4] disabled:opacity-40"
+        className="grid size-10 place-items-center rounded-lg border border-zinc-300 disabled:opacity-40"
         disabled={page >= totalPages}
         onClick={() => onPage(page + 1)}
         type="button"

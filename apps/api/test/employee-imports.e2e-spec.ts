@@ -8,10 +8,10 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { EmployeeImportProcessor } from '../src/modules/organization/imports/employee-import.processor';
-import { EmployeeImportStorageService } from '../src/modules/organization/imports/employee-import-storage.service';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { EmployeeImportProcessor } from '../src/platform/organization/imports/employee-import.processor';
+import { EmployeeImportStorageService } from '../src/platform/organization/imports/employee-import-storage.service';
+import { TenantContextService } from '../src/platform/tenancy/public';
 import { TestDataFactory } from './support/factories';
 
 type Workspace = { tenantId: string; accessToken: string; adminUserId: string };

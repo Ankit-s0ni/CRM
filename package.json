@@ -11,6 +11,7 @@
     "test": "turbo run test",
     "test:e2e": "pnpm --filter api test:e2e --runInBand",
     "test:web:e2e": "pnpm --filter web test:e2e",
+    "architecture:check": "pnpm --filter api architecture:test",
     "load:sprint6:pings": "k6 run tests/load/sprint6/field-pings.js",
     "load:sprint6:sync": "k6 run tests/load/sprint6/attendance-sync.js",
     "load:sprint6:sse": "k6 run tests/load/sprint6/field-sse.js",
@@ -30,7 +31,7 @@
     "ops:restore-drill": "bash scripts/operations/postgres-restore-drill.sh",
     "ops:retention-audit": "bash scripts/operations/retention-audit.sh",
     "ops:partition-audit": "bash scripts/operations/partition-boundary-audit.sh",
-    "quality": "pnpm security:check && pnpm release:mobile:check && pnpm release:evidence:validate && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "quality": "pnpm security:check && pnpm release:mobile:check && pnpm release:evidence:validate && pnpm architecture:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

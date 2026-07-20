@@ -156,7 +156,7 @@ export function AttendanceRegisterView() {
     <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
             Attendance operations
           </p>
           <div className="mt-1 flex items-center gap-2">
@@ -165,14 +165,14 @@ export function AttendanceRegisterView() {
             </h1>
             <RouteFeatureInfo />
           </div>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Review daily evidence, hours, exceptions, and payroll locks.
           </p>
         </div>
         <button
           type="button"
           onClick={() => exportCsv(result?.data ?? [])}
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#c7c4d8] bg-white px-4 text-sm font-semibold"
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
         >
           <Download className="size-4" />
           Export current page
@@ -191,19 +191,19 @@ export function AttendanceRegisterView() {
               (summary?.statuses.PRESENT_OPEN ?? 0),
           )}
           icon={CheckCircle2}
-          tone="text-[#006e2d] bg-[#d8f8df]"
+          tone="text-emerald-800 bg-emerald-100"
         />
         <Metric
           label="Late minutes"
           value={formatMinutes(summary?.totals.lateMinutes ?? 0)}
           icon={Clock3}
-          tone="text-[#895100] bg-[#ffddb0]"
+          tone="text-amber-800 bg-amber-200"
         />
         <Metric
           label="Overtime"
           value={formatMinutes(summary?.totals.overtimeMinutes ?? 0)}
           icon={ShieldAlert}
-          tone="text-[#006492] bg-[#cbe6ff]"
+          tone="text-sky-700 bg-sky-200"
         />
       </section>
       <Panel className="mb-5 p-4">
@@ -212,7 +212,7 @@ export function AttendanceRegisterView() {
             <span className="mb-1 block text-xs font-semibold">
               Search employee
             </span>
-            <Search className="absolute bottom-3 left-3 size-4 text-[#777587]" />
+            <Search className="absolute bottom-3 left-3 size-4 text-outline" />
             <input
               className={`${inputClass} pl-9`}
               placeholder="Name or employee ID"
@@ -263,7 +263,7 @@ export function AttendanceRegisterView() {
               </option>
             </select>
           </label>
-          <span className="grid size-11 place-items-center rounded-xl bg-[#ece9ff] text-[#3525cd]">
+          <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
             <Filter className="size-4" />
           </span>
         </div>
@@ -289,7 +289,7 @@ export function AttendanceRegisterView() {
         </Panel>
       )}
       {result && result.pagination.pages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-[#646273]">
+        <div className="mt-4 flex items-center justify-between text-sm text-on-surface-variant">
           <span>
             Showing page {result.pagination.page} of {result.pagination.pages} ·{" "}
             {result.pagination.total} records
@@ -299,7 +299,7 @@ export function AttendanceRegisterView() {
               aria-label="Previous page"
               disabled={page <= 1}
               onClick={() => navigateRegister(filters, page - 1)}
-              className="grid size-9 place-items-center rounded-lg border border-[#c7c4d8] bg-white disabled:opacity-40"
+              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -307,7 +307,7 @@ export function AttendanceRegisterView() {
               aria-label="Next page"
               disabled={page >= result.pagination.pages}
               onClick={() => navigateRegister(filters, page + 1)}
-              className="grid size-9 place-items-center rounded-lg border border-[#c7c4d8] bg-white disabled:opacity-40"
+              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
             >
               <ChevronRight className="size-4" />
             </button>
@@ -329,7 +329,7 @@ function RegisterTable({
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[1120px] border-collapse text-left">
         <thead>
-          <tr className="border-b border-[#e4e1ee] bg-[#f5f2ff] text-[10px] font-bold uppercase tracking-wider text-[#777587]">
+          <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
             <Th>Employee</Th>
             <Th>Date</Th>
             <Th>Status</Th>
@@ -347,18 +347,18 @@ function RegisterTable({
             return (
               <tr
                 key={row.id}
-                className="border-b border-[#eeeaf3] transition last:border-0 hover:bg-[#fbfaff]"
+                className="border-b border-outline-variant transition last:border-0 hover:bg-zinc-50"
               >
                 <Td>
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-[#ddd8ff] to-[#d8f8df] text-xs font-bold text-[#3525cd]">
+                    <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-xs font-bold text-primary">
                       {initials(row.employee.fullName)}
                     </div>
                     <div>
                       <strong className="block text-sm">
                         {row.employee.fullName}
                       </strong>
-                      <span className="text-xs text-[#777587]">
+                      <span className="text-xs text-outline">
                         {row.employee.employeeCode} ·{" "}
                         {row.employee.department.name}
                       </span>
@@ -388,7 +388,7 @@ function RegisterTable({
                   <span className="text-sm">
                     {row.shift?.name ?? "Default"}
                   </span>
-                  <span className="block text-[10px] text-[#777587]">
+                  <span className="block text-[10px] text-outline">
                     {row.employee.office?.officeName ?? "No office"}
                   </span>
                 </Td>
@@ -402,29 +402,29 @@ function RegisterTable({
                   <strong className="text-sm">
                     {formatMinutes(row.workMinutes)}
                   </strong>
-                  <span className="block text-[10px] text-[#777587]">
+                  <span className="block text-[10px] text-outline">
                     Break {formatMinutes(row.breakMinutes)}
                   </span>
                 </Td>
                 <Td>
-                  <span className="text-xs text-[#895100]">
+                  <span className="text-xs text-amber-800">
                     L {formatMinutes(row.lateMinutes)}
                   </span>
-                  <span className="ml-2 text-xs text-[#006492]">
+                  <span className="ml-2 text-xs text-sky-700">
                     OT {formatMinutes(row.overtimeMinutes)}
                   </span>
                 </Td>
                 <Td>
                   <div className="flex items-center gap-2">
                     {row.isLocked && (
-                      <LockKeyhole className="size-4 text-[#646273]" />
+                      <LockKeyhole className="size-4 text-on-surface-variant" />
                     )}
                     {row.evidence.verification.failed > 0 ? (
-                      <ShieldAlert className="size-4 text-[#ba1a1a]" />
+                      <ShieldAlert className="size-4 text-error" />
                     ) : (
-                      <CheckCircle2 className="size-4 text-[#006e2d]" />
+                      <CheckCircle2 className="size-4 text-emerald-800" />
                     )}
-                    <span className="text-[10px] text-[#777587]">
+                    <span className="text-[10px] text-outline">
                       {row.evidence.sources.join(", ") || "Calculated"}
                     </span>
                   </div>
@@ -432,7 +432,7 @@ function RegisterTable({
                 <Td>
                   <Link
                     href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#3525cd]"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-primary"
                   >
                     View <ChevronRight className="size-3" />
                   </Link>
@@ -494,7 +494,7 @@ function Metric({
   label,
   value,
   icon: Icon,
-  tone = "text-[#3525cd] bg-[#ece9ff]",
+  tone = "text-primary bg-zinc-50",
 }: {
   label: string;
   value: string;
@@ -502,13 +502,13 @@ function Metric({
   tone?: string;
 }) {
   return (
-    <article className="flex items-center gap-3 rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm">
+    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-white p-4 shadow-sm">
       <span className={cn("grid size-10 place-items-center rounded-lg", tone)}>
         <Icon className="size-5" />
       </span>
       <div>
         <strong className="block text-xl">{value}</strong>
-        <span className="text-xs text-[#777587]">{label}</span>
+        <span className="text-xs text-outline">{label}</span>
       </div>
     </article>
   );

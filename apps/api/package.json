@@ -22,6 +22,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "architecture:check": "ts-node scripts/check-architecture.ts",
+    "architecture:test": "ts-node scripts/check-architecture.ts --self-test",
+    "quality": "pnpm architecture:test && pnpm typecheck && pnpm lint && pnpm build",
     "openapi:export": "ts-node scripts/export-openapi.ts",
     "ops:observability-drill": "ts-node scripts/observability-drill.ts"
   },

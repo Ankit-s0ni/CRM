@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "products": [
+    {
+      "name": "attendance",
+      "kind": "product",
+      "owner": "attendance-team",
+      "compositionRoot": "src/products/attendance/attendance-product.module.ts",
+      "publicEntry": "src/products/attendance/public.ts",
+      "readme": "src/products/attendance/README.md",
+      "physicalRoots": [
+        { "id": "attendance", "path": "src/products/attendance/core" },
+        {
+          "id": "attendance-config",
+          "path": "src/products/attendance/configuration"
+        },
+        {
+          "id": "attendance-dashboard",
+          "path": "src/products/attendance/dashboard"
+        },
+        { "id": "attendance-sync", "path": "src/products/attendance/sync" },
+        {
+          "id": "attendance-verification",
+          "path": "src/products/attendance/verification"
+        },
+        { "id": "biometrics", "path": "src/products/attendance/biometrics" },
+        { "id": "device-trust", "path": "src/products/attendance/trust" },
+        { "id": "field-tracking", "path": "src/products/attendance/field" },
+        { "id": "leave", "path": "src/products/attendance/leave" },
+        {
+          "id": "payroll-lock",
+          "path": "src/products/attendance/payroll-lock"
+        },
+        {
+          "id": "regularization",
+          "path": "src/products/attendance/regularization"
+        },
+        { "id": "reporting", "path": "src/products/attendance/reporting" },
+        {
+          "id": "runtime-config",
+          "path": "src/products/attendance/runtime-config"
+        },
+        {
+          "id": "security-alerts",
+          "path": "src/products/attendance/security-alerts"
+        }
+      ]
+    },
+    {
+      "name": "identity-access",
+      "kind": "platform-capability",
+      "owner": "identity-team",
+      "publicEntry": "src/platform/identity/public.ts",
+      "readme": "src/platform/identity/README.md",
+      "physicalRoots": [
+        { "id": "identity", "path": "src/platform/identity" },
+        { "id": "access", "path": "src/platform/access" }
+      ]
+    },
+    {
+      "name": "organization",
+      "kind": "platform-capability",
+      "owner": "organization-team",
+      "publicEntry": "src/platform/organization/public.ts",
+      "readme": "src/platform/organization/README.md",
+      "physicalRoots": [
+        { "id": "organization", "path": "src/platform/organization" }
+      ]
+    },
+    {
+      "name": "workspace",
+      "kind": "platform-capability",
+      "owner": "workspace-team",
+      "compositionRoot": "src/platform/workspace/workspace-product.module.ts",
+      "publicEntry": "src/platform/workspace/public.ts",
+      "readme": "src/platform/workspace/README.md",
+      "physicalRoots": [
+        { "id": "workspace", "path": "src/platform/workspace" },
+        {
+          "id": "workspace-settings",
+          "path": "src/platform/workspace-settings"
+        }
+      ]
+    },
+    {
+      "name": "billing",
+      "kind": "platform-capability",
+      "owner": "billing-team",
+      "publicEntry": "src/platform/billing/public.ts",
+      "readme": "src/platform/billing/README.md",
+      "physicalRoots": [{ "id": "billing", "path": "src/platform/billing" }]
+    },
+    {
+      "name": "platform-admin",
+      "kind": "control-plane",
+      "owner": "platform-team",
+      "compositionRoot": "src/platform/control-plane/platform-control-plane.module.ts",
+      "publicEntry": "src/platform/control-plane/public.ts",
+      "readme": "src/platform/control-plane/README.md",
+      "physicalRoots": [
+        { "id": "platform", "path": "src/platform/control-plane" },
+        { "id": "tenant-audit", "path": "src/platform/tenant-audit" }
+      ]
+    },
+    {
+      "name": "notifications",
+      "kind": "integration",
+      "owner": "communications-team",
+      "publicEntry": "src/platform/notifications/public.ts",
+      "readme": "src/platform/notifications/README.md",
+      "physicalRoots": [
+        { "id": "notifications", "path": "src/platform/notifications" }
+      ]
+    },
+    {
+      "name": "platform-foundation",
+      "kind": "platform-foundation",
+      "owner": "platform-team",
+      "readme": "src/platform/README.md",
+      "physicalRoots": [
+        { "id": "tenancy", "path": "src/platform/tenancy" },
+        { "id": "audit", "path": "src/platform/audit" }
+      ]
+    }
+  ],
+  "publicEntries": {
+    "identity": "src/platform/identity/public.ts",
+    "access": "src/platform/access/public.ts",
+    "tenancy": [
+      "src/platform/tenancy/public.ts",
+      "src/platform/tenancy/http.ts"
+    ],
+    "audit": "src/platform/audit/public.ts",
+    "organization": "src/platform/organization/public.ts",
+    "billing": "src/platform/billing/public.ts",
+    "notifications": "src/platform/notifications/public.ts",
+    "workspace": "src/platform/workspace/public.ts",
+    "platform": "src/platform/control-plane/public.ts",
+    "attendance": "src/products/attendance/public.ts"
+  },
+  "foundationModules": ["tenancy", "audit"],
+  "legacyAllowedDependencies": {
+    "access": ["identity"],
+    "attendance": ["identity"],
+    "attendance-config": ["identity", "organization", "workspace"],
+    "attendance-dashboard": ["identity", "organization"],
+    "attendance-sync": ["attendance", "attendance-verification", "identity"],
+    "attendance-verification": [
+      "attendance",
+      "attendance-config",
+      "biometrics",
+      "identity",
+      "security-alerts"
+    ],
+    "billing": ["identity", "platform"],
+    "biometrics": ["identity"],
+    "device-trust": ["identity"],
+    "field-tracking": [
+      "attendance",
+      "identity",
+      "organization",
+      "runtime-config"
+    ],
+    "identity": ["notifications", "workspace"],
+    "leave": ["attendance", "identity"],
+    "notifications": [],
+    "organization": ["billing", "identity"],
+    "payroll-lock": ["identity"],
+    "platform": ["billing", "biometrics"],
+    "regularization": ["attendance", "identity", "organization"],
+    "reporting": ["identity"],
+    "runtime-config": ["identity", "workspace"],
+    "security-alerts": ["biometrics", "identity"],
+    "tenant-audit": ["identity"],
+    "workspace": ["workspace-settings"],
+    "workspace-settings": []
+  },
+  "legacyDomainFrameworkFiles": [
+    "src/platform/billing/domain/billing-money.ts"
+  ],
+  "legacyInternalImportPaths": [
+    "src/platform/billing/application/dunning.service.ts::../../control-plane/tenants/platform-tenants.service",
+    "src/platform/billing/billing.module.ts::../control-plane/tenants/platform-tenants.module",
+    "src/platform/control-plane/tenants/tenant-deletion.service.ts::../../../products/attendance/biometrics/private-evidence-storage.service",
+    "src/platform/control-plane/tenants/platform-tenants.module.ts::../../../products/attendance/biometrics/biometrics.module"
+  ],
+  "legacyCycleGroups": [
+    ["billing", "platform"],
+    [
+      "attendance",
+      "attendance-sync",
+      "attendance-verification",
+      "field-tracking",
+      "leave",
+      "regularization"
+    ]
+  ]
+}

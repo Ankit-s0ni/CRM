@@ -203,7 +203,7 @@ export function AttendanceExceptionsView() {
     <div className="mx-auto w-full max-w-[1500px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
             Attendance operations
           </p>
           <div className="mt-1 flex items-center gap-2">
@@ -212,7 +212,7 @@ export function AttendanceExceptionsView() {
             </h1>
             <RouteFeatureInfo />
           </div>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Record approved on-duty and work-from-home periods before attendance
             finalization.
           </p>
@@ -237,7 +237,7 @@ export function AttendanceExceptionsView() {
               .length ?? 0
           }
           icon={BriefcaseBusiness}
-          tone="bg-[#e3e0ff] text-[#3525cd]"
+          tone="bg-zinc-100 text-primary"
         />
         <SummaryCard
           label="Work from home"
@@ -246,11 +246,11 @@ export function AttendanceExceptionsView() {
             0
           }
           icon={House}
-          tone="bg-[#d9f1ff] text-[#005f79]"
+          tone="bg-sky-100 text-cyan-800"
         />
       </section>
       <Panel className="mb-4 flex flex-wrap items-center gap-2 p-3">
-        <span className="mr-2 text-xs font-semibold text-[#777587]">Show</span>
+        <span className="mr-2 text-xs font-semibold text-outline">Show</span>
         {[
           { value: "", label: "All" },
           { value: "ON_DUTY", label: "On duty" },
@@ -266,8 +266,8 @@ export function AttendanceExceptionsView() {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold",
               type === option.value
-                ? "border-[#3525cd] bg-[#3525cd] text-white"
-                : "border-[#ddd8e7] bg-white text-[#646273]",
+                ? "border-primary bg-primary text-white"
+                : "border-zinc-200 bg-white text-on-surface-variant",
             )}
           >
             {option.label}
@@ -356,7 +356,7 @@ function ExceptionTable({
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[850px] text-left">
         <thead>
-          <tr className="border-b border-[#e4e1ee] bg-[#f5f2ff] text-[10px] font-bold uppercase tracking-wider text-[#777587]">
+          <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
             <Th>Employee</Th>
             <Th>Type</Th>
             <Th>Date range</Th>
@@ -369,13 +369,13 @@ function ExceptionTable({
           {data.map((item) => (
             <tr
               key={item.id}
-              className="border-b border-[#eeeaf3] last:border-0"
+              className="border-b border-outline-variant last:border-0"
             >
               <Td>
                 <strong className="block text-sm">
                   {item.employee?.fullName ?? "Unknown employee"}
                 </strong>
-                <span className="text-xs text-[#777587]">
+                <span className="text-xs text-outline">
                   {item.employee?.employeeCode}
                 </span>
               </Td>
@@ -391,12 +391,12 @@ function ExceptionTable({
                 )}
               </Td>
               <Td>
-                <p className="max-w-sm truncate text-sm text-[#464555]">
+                <p className="max-w-sm truncate text-sm text-on-surface-variant">
                   {item.reason}
                 </p>
               </Td>
               <Td>
-                <span className="text-xs text-[#777587]">
+                <span className="text-xs text-outline">
                   {shortDate(item.updatedAt.slice(0, 10))}
                 </span>
               </Td>
@@ -406,14 +406,14 @@ function ExceptionTable({
                     <button
                       aria-label="Edit exception"
                       onClick={() => onEdit(item)}
-                      className="grid size-8 place-items-center rounded-lg bg-[#ece9ff] text-[#3525cd]"
+                      className="grid size-8 place-items-center rounded-lg bg-zinc-50 text-primary"
                     >
                       <Pencil className="size-3.5" />
                     </button>
                     <button
                       aria-label="Delete exception"
                       onClick={() => onDelete(item)}
-                      className="grid size-8 place-items-center rounded-lg bg-[#ffdad6] text-[#ba1a1a]"
+                      className="grid size-8 place-items-center rounded-lg bg-error-container text-error"
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -454,7 +454,7 @@ function ExceptionEditor({
     form.reason.trim() &&
     !overlap;
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-[#1b1b24]/45 p-4">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
       <div
         role="dialog"
         aria-modal="true"
@@ -463,7 +463,7 @@ function ExceptionEditor({
       >
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#4f46e5]">
+            <p className="text-xs font-bold uppercase tracking-wider text-primary-container">
               Attendance exception
             </p>
             <h2 id="exception-title" className="mt-1 text-xl font-bold">
@@ -473,7 +473,7 @@ function ExceptionEditor({
           <button
             aria-label="Close"
             onClick={onClose}
-            className="grid size-9 place-items-center rounded-lg bg-[#f0ecf9]"
+            className="grid size-9 place-items-center rounded-lg bg-zinc-50"
           >
             <X className="size-4" />
           </button>
@@ -506,8 +506,8 @@ function ExceptionEditor({
                   className={cn(
                     "rounded-xl border p-3 text-xs font-semibold",
                     form.exceptionType === value
-                      ? "border-[#3525cd] bg-[#ece9ff] text-[#3525cd]"
-                      : "border-[#ddd8e7]",
+                      ? "border-primary bg-zinc-50 text-primary"
+                      : "border-zinc-200",
                   )}
                 >
                   {label(value)}
@@ -539,7 +539,7 @@ function ExceptionEditor({
             </Field>
           </div>
           {overlap && (
-            <div className="rounded-xl border border-[#ffb4ab] bg-[#ffdad6] p-3 text-xs text-[#93000a]">
+            <div className="rounded-xl border border-red-300 bg-error-container p-3 text-xs text-on-error-container">
               This overlaps an existing{" "}
               {label(overlap.exceptionType).toLowerCase()} exception from{" "}
               {overlap.startDate} to {overlap.endDate}.
@@ -547,7 +547,7 @@ function ExceptionEditor({
           )}
           <Field label="Approval reason">
             <textarea
-              className="min-h-24 w-full rounded-lg border border-[#c7c4d8] p-3 text-sm outline-none focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15"
+              className="min-h-24 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
               maxLength={500}
               value={form.reason}
               onChange={(event) =>
@@ -556,8 +556,8 @@ function ExceptionEditor({
               placeholder="Add the approved business reason"
             />
           </Field>
-          <div className="rounded-xl bg-[#f5f2ff] p-3 text-xs text-[#646273]">
-            <ShieldCheck className="mr-2 inline size-4 text-[#3525cd]" />
+          <div className="rounded-xl bg-zinc-50 p-3 text-xs text-on-surface-variant">
+            <ShieldCheck className="mr-2 inline size-4 text-primary" />
             Changes are audited and cannot alter payroll-locked attendance
             periods.
           </div>
@@ -574,7 +574,7 @@ function SummaryCard({
   label: title,
   value,
   icon: Icon,
-  tone = "bg-[#ece9ff] text-[#3525cd]",
+  tone = "bg-zinc-50 text-primary",
 }: {
   label: string;
   value: number;
@@ -582,13 +582,13 @@ function SummaryCard({
   tone?: string;
 }) {
   return (
-    <article className="flex items-center gap-3 rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm">
+    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-white p-4 shadow-sm">
       <span className={cn("grid size-10 place-items-center rounded-lg", tone)}>
         <Icon className="size-5" />
       </span>
       <div>
         <strong className="block text-xl">{value}</strong>
-        <span className="text-xs text-[#777587]">{title}</span>
+        <span className="text-xs text-outline">{title}</span>
       </div>
     </article>
   );
@@ -596,10 +596,10 @@ function SummaryCard({
 function TypeBadge({ type }: { type: ExceptionType }) {
   const value =
     type === "WFH"
-      ? "bg-[#d9f1ff] text-[#005f79]"
+      ? "bg-sky-100 text-cyan-800"
       : type === "ON_DUTY"
-        ? "bg-[#e3e0ff] text-[#3525cd]"
-        : "bg-[#ece9f2] text-[#646273]";
+        ? "bg-zinc-100 text-primary"
+        : "bg-zinc-100 text-on-surface-variant";
   return (
     <span
       className={cn(

@@ -280,29 +280,29 @@ export function OfficesView() {
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <h2 className="font-bold">How policy assignment works</h2>
-            <p className="mt-1 text-sm leading-6 text-[#646171]">
+            <p className="mt-1 text-sm leading-6 text-zinc-500">
               DeltCRM resolves one effective policy for each employee. A direct
               employee assignment wins over a department assignment, and a
               department assignment wins over the tenant default.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[#3525cd]">
-            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Employee</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-primary">
+            <span className="rounded-full bg-zinc-100 px-3 py-2">Employee</span>
             <span>overrides</span>
-            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Department</span>
+            <span className="rounded-full bg-zinc-100 px-3 py-2">Department</span>
             <span>overrides</span>
-            <span className="rounded-full bg-[#e3e0ff] px-3 py-2">Tenant</span>
+            <span className="rounded-full bg-zinc-100 px-3 py-2">Tenant</span>
           </div>
         </div>
       </Panel>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e1a84b] bg-[#fff7e7] px-5 py-4 text-sm text-[#654500]">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-400 bg-amber-50 px-5 py-4 text-sm text-amber-900">
         <p>
           <strong>Important:</strong> Saving an office does not enforce its
           geofence by itself. Assign employees to the office and give them an
           attendance policy whose location rule is <strong>Office geofence</strong>.
         </p>
         <a
-          className="font-bold text-[#3525cd]"
+          className="font-bold text-primary"
           href="/app/attendance/policies"
         >
           Review attendance policies
@@ -313,7 +313,7 @@ export function OfficesView() {
       ) : (
         <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
           <Panel className="overflow-hidden">
-            <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-[#e4e1ee] bg-[#f5f2ff] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#777587]">
+            <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-surface-variant bg-zinc-50 px-6 py-3 text-xs font-bold uppercase tracking-wider text-outline">
               <span>Office</span>
               <span>Employees</span>
               <span>Radius</span>
@@ -323,15 +323,15 @@ export function OfficesView() {
               data.map((office) => (
                 <div
                   key={office.id}
-                  className="grid grid-cols-[1fr_100px_90px_130px] items-center border-b border-[#e4e1ee] px-6 py-5 last:border-0"
+                  className="grid grid-cols-[1fr_100px_90px_130px] items-center border-b border-surface-variant px-6 py-5 last:border-0"
                 >
                   <div>
                     <div className="font-semibold">{office.officeName}</div>
-                    <div className="mt-1 text-xs text-[#777587]">
+                    <div className="mt-1 text-xs text-outline">
                       {office.timezone || "Tenant timezone"} ·{" "}
                       {(office.egressIps as string[]).length} trusted networks
                     </div>
-                    <div className="mt-1 text-xs text-[#777587]">
+                    <div className="mt-1 text-xs text-outline">
                       {Number(office.latitude).toFixed(6)}, {Number(office.longitude).toFixed(6)}
                     </div>
                   </div>
@@ -341,13 +341,13 @@ export function OfficesView() {
                   <span className="text-sm">{office.radiusMeters} m</span>
                   <div className="flex gap-3">
                     <button
-                      className="text-left text-xs font-semibold text-[#3525cd]"
+                      className="text-left text-xs font-semibold text-primary"
                       onClick={() => openAssignments(office)}
                     >
                       Assign
                     </button>
                     <button
-                      className="text-left text-xs font-semibold text-[#3525cd]"
+                      className="text-left text-xs font-semibold text-primary"
                       onClick={() => openEdit(office)}
                     >
                       Edit
@@ -456,7 +456,7 @@ export function OfficesView() {
             <div className="flex gap-3">
               {editing && (
                 <button
-                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  className="h-11 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                   onClick={removeOffice}
                 >
                   Delete
@@ -479,7 +479,7 @@ export function OfficesView() {
             {employees.map((employee) => (
               <div
                 key={employee.id}
-                className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-[#f5f2ff] p-3"
+                className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-zinc-50 p-3"
               >
                 <label className="flex items-center gap-3 text-sm">
                   <input
@@ -499,7 +499,7 @@ export function OfficesView() {
                   />
                   <span>
                     <strong>{employee.fullName}</strong>
-                    <span className="block text-xs text-[#777587]">
+                    <span className="block text-xs text-outline">
                       {employee.employeeCode}
                     </span>
                   </span>
@@ -787,10 +787,10 @@ export function PoliciesView() {
           {data.map((policy) => (
             <Panel key={policy.id} className="p-6">
               <div className="flex items-start justify-between">
-                <div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
                   <ShieldCheck />
                 </div>
-                <span className="rounded-full bg-[#7cf994]/35 px-3 py-1 text-xs font-semibold text-[#005320]">
+                <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
                   {policyCoverage(policy.assignments, employees)} employees
                 </span>
               </div>
@@ -827,13 +827,13 @@ export function PoliciesView() {
               </div>
               <div className="mt-5 flex gap-4">
                 <button
-                  className="text-sm font-semibold text-[#3525cd]"
+                  className="text-sm font-semibold text-primary"
                   onClick={() => openRuleEditor(policy)}
                 >
                   Edit rules
                 </button>
                 <button
-                  className="text-sm font-semibold text-[#3525cd]"
+                  className="text-sm font-semibold text-primary"
                   onClick={() => {
                     setEditing(policy);
                     setAssignments(policy.assignments);
@@ -868,7 +868,7 @@ export function PoliciesView() {
               onChange={(e) => setName(e.target.value)}
             />
           </Field>
-          <div className="mt-5 rounded-xl bg-[#f5f2ff] p-4 text-sm text-[#464555]">
+          <div className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-on-surface-variant">
             New policies start with secure default thresholds and can be refined
             after creation.
           </div>
@@ -883,7 +883,7 @@ export function PoliciesView() {
           title={`Assignments · ${editing.name}`}
           onClose={() => setEditing(null)}
         >
-          <div className="mb-5 rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4 text-sm leading-6 text-[#464555]">
+          <div className="mb-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
             Assign the broad tenant default first, use department assignments
             for team-specific rules, and use employee assignments only for
             approved exceptions. This policy currently resolves directly for
@@ -894,13 +894,13 @@ export function PoliciesView() {
             {assignments.map((assignment) => (
               <div
                 key={assignmentKey(assignment)}
-                className="flex items-center justify-between rounded-lg bg-[#f5f2ff] p-3 text-sm"
+                className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 text-sm"
               >
                 <span>
                   {assignmentLabel(assignment, departments, employees)}
                 </span>
                 <button
-                  className="text-xs font-semibold text-[#ba1a1a]"
+                  className="text-xs font-semibold text-error"
                   onClick={() =>
                     setAssignments((current) =>
                       current.filter(
@@ -915,7 +915,7 @@ export function PoliciesView() {
               </div>
             ))}
           </div>
-          <div className="mt-5 grid gap-3 rounded-xl border border-[#e4e1ee] p-4">
+          <div className="mt-5 grid gap-3 rounded-xl border border-surface-variant p-4">
             <Field label="Scope" helpKey="policies">
               <select
                 className={inputClass}
@@ -975,7 +975,7 @@ export function PoliciesView() {
               </Field>
             )}
             <button
-              className="h-10 rounded-lg border border-[#3525cd] text-sm font-semibold text-[#3525cd]"
+              className="h-10 rounded-lg border border-primary text-sm font-semibold text-primary"
               onClick={addAssignment}
             >
               Add assignment
@@ -992,14 +992,14 @@ export function PoliciesView() {
           onClose={() => router.push(returnTo)}
         >
           {focusedError && <ErrorState message={focusedError} />}
-          <div className="rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4 text-sm leading-6 text-[#464555]">
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
             Choose one predefined policy for this employee. An employee policy
             overrides department and tenant defaults. Choose inherited policy
             to remove the employee-specific exception.
           </div>
           {focusedResolution && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-[#f5f2ff] p-4 text-sm">
-              <span className="text-[#646171]">Currently effective</span>
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-50 p-4 text-sm">
+              <span className="text-zinc-500">Currently effective</span>
               <strong>
                 {focusedResolution.policyName} · {sentenceCase(focusedResolution.source)}
               </strong>
@@ -1009,36 +1009,36 @@ export function PoliciesView() {
             <legend className="mb-1 text-sm font-bold">
               Policy for {focusedEmployee.fullName}
             </legend>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e4e1ee] p-4">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-surface-variant p-4">
               <input
                 checked={!focusedPolicyId}
-                className="mt-1 accent-[#3525cd]"
+                className="mt-1 accent-primary"
                 name="employee-policy"
                 onChange={() => setFocusedPolicyId("")}
                 type="radio"
               />
               <span>
                 <strong className="block text-sm">Use inherited policy</strong>
-                <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                <span className="mt-1 block text-xs leading-5 text-outline">
                   Use the employee&apos;s department policy, then tenant default.
                 </span>
               </span>
             </label>
             {data.map((policy) => (
               <label
-                className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e4e1ee] p-4"
+                className="flex cursor-pointer items-start gap-3 rounded-xl border border-surface-variant p-4"
                 key={policy.id}
               >
                 <input
                   checked={focusedPolicyId === policy.id}
-                  className="mt-1 accent-[#3525cd]"
+                  className="mt-1 accent-primary"
                   name="employee-policy"
                   onChange={() => setFocusedPolicyId(policy.id)}
                   type="radio"
                 />
                 <span>
                   <strong className="block text-sm">{policy.name}</strong>
-                  <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                  <span className="mt-1 block text-xs leading-5 text-outline">
                     {policy.locationMode.replaceAll("_", " ")} · Selfie {policy.selfieMode.toLowerCase()} · Device {policy.requireRegisteredDevice ? "required" : "optional"}
                   </span>
                 </span>
@@ -1070,9 +1070,9 @@ export function PoliciesView() {
                 }
               />
             </Field>
-            <div className="rounded-xl border border-[#e4e1ee] p-4">
+            <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Attendance calculation</h3>
-              <p className="mt-1 text-xs leading-5 text-[#777587]">
+              <p className="mt-1 text-xs leading-5 text-outline">
                 Set when a workday becomes late, half-day, complete, or overtime.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
@@ -1101,9 +1101,9 @@ export function PoliciesView() {
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-[#e4e1ee] p-4">
+            <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Punch verification</h3>
-              <p className="mt-1 text-xs leading-5 text-[#777587]">
+              <p className="mt-1 text-xs leading-5 text-outline">
                 Choose what the employee must verify during check-in and check-out.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -1168,7 +1168,7 @@ export function PoliciesView() {
                     </Field>
                   )}
               </div>
-              <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+              <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                 <label className="flex min-h-10 flex-1 items-center gap-3">
                   <input
                     checked={ruleForm.requireRegisteredDevice}
@@ -1185,9 +1185,9 @@ export function PoliciesView() {
                 <FeatureInfo className="ml-auto" helpKey="devices" />
               </div>
             </div>
-            <div className="rounded-xl border border-[#e4e1ee] p-4">
+            <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Offline attendance</h3>
-              <p className="mt-1 text-xs leading-5 text-[#777587]">
+              <p className="mt-1 text-xs leading-5 text-outline">
                 Allow a stored punch to sync when the employee regains connectivity.
               </p>
               <div className="mt-4 max-w-xs">
@@ -1209,12 +1209,12 @@ export function PoliciesView() {
               </div>
             </div>
             {capabilities?.fieldTrackingEntitled !== false && (
-              <div className="rounded-xl border border-[#e4e1ee] p-4">
+              <div className="rounded-xl border border-surface-variant p-4">
                 <h3 className="font-bold">Field workforce tracking</h3>
-                <p className="mt-1 text-xs leading-5 text-[#777587]">
+                <p className="mt-1 text-xs leading-5 text-outline">
                   Optional continuous route tracking for eligible field employees.
                 </p>
-                <div className="mt-3 flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+                <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                   <label className="flex min-h-10 flex-1 items-center gap-3">
                     <input
                       type="checkbox"
@@ -1237,7 +1237,7 @@ export function PoliciesView() {
                   />
                 </div>
                 {ruleForm.fieldTrackingEnabled && (
-                  <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm">
+                  <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                     <input
                       checked={ruleForm.allowHybridFieldTracking}
                       type="checkbox"
@@ -1253,11 +1253,11 @@ export function PoliciesView() {
                 )}
               </div>
             )}
-            <div className="rounded-xl border border-[#ded9ea] bg-[#faf8ff] p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#686575]">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
                 Employee app impact
               </p>
-              <p className="mt-2 text-sm leading-6 text-[#464555]">
+              <p className="mt-2 text-sm leading-6 text-on-surface-variant">
                 Employees using this policy will{" "}
                 {ruleForm.locationMode === "NONE"
                   ? "not be asked for location"
@@ -1275,11 +1275,11 @@ export function PoliciesView() {
                 .
               </p>
             </div>
-            <div className="rounded-xl border border-[#f1c57d] bg-[#fff8eb] p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#7a4d00]">
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-900">
                 Dependencies to verify
               </p>
-              <ul className="mt-2 space-y-1 text-sm leading-6 text-[#5d480e]">
+              <ul className="mt-2 space-y-1 text-sm leading-6 text-amber-900">
                 {ruleForm.locationMode === "OFFICE_GEOFENCE" && (
                   <li>- Every affected employee needs an assigned office.</li>
                 )}
@@ -1310,7 +1310,7 @@ export function PoliciesView() {
             </div>
             <div className="flex gap-3">
               <button
-                className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                className="h-11 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                 onClick={removePolicy}
               >
                 Delete
@@ -1405,11 +1405,11 @@ export function ShiftsView() {
           {data.map((shift) => (
             <Panel key={shift.id} className="p-6">
               <div className="flex items-center justify-between">
-                <div className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
                   <Clock3 />
                 </div>
                 {shift.isOvernight && (
-                  <span className="rounded-full bg-[#ffdcc3] px-3 py-1 text-xs font-semibold text-[#6e3900]">
+                  <span className="rounded-full bg-amber-200 px-3 py-1 text-xs font-semibold text-amber-900">
                     Overnight
                   </span>
                 )}
@@ -1417,11 +1417,11 @@ export function ShiftsView() {
               <h2 className="mt-5 text-lg font-semibold">{shift.name}</h2>
               <div className="mt-5 flex items-center gap-4">
                 <strong className="text-2xl">{shift.startTime}</strong>
-                <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-[#3525cd] to-[#7cf994]" />
+                <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-primary to-emerald-300" />
                 <strong className="text-2xl">{shift.endTime}</strong>
               </div>
               <button
-                className="mt-5 text-sm font-semibold text-[#3525cd]"
+                className="mt-5 text-sm font-semibold text-primary"
                 onClick={() => openEdit(shift)}
               >
                 Edit shift
@@ -1472,7 +1472,7 @@ export function ShiftsView() {
             <div className="flex gap-3">
               {editing && (
                 <button
-                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  className="h-11 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                   onClick={removeShift}
                 >
                   Delete
@@ -1574,7 +1574,7 @@ export function RostersView() {
       description="Plan the working week, bulk assign shifts and import validated CSV schedules."
       action={
         <div className="flex flex-wrap gap-3">
-          <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#c7c4d8] bg-white px-4 text-sm font-semibold">
+          <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold">
             <Upload className="size-4" />
             Import CSV
             <input
@@ -1588,7 +1588,7 @@ export function RostersView() {
             />
           </label>
           <button
-            className="h-11 rounded-xl border border-[#3525cd] bg-white px-4 text-sm font-semibold text-[#3525cd]"
+            className="h-11 rounded-xl border border-primary bg-white px-4 text-sm font-semibold text-primary"
             onClick={() => {
               setBulkOpen(true);
               setBulkResult("");
@@ -1609,30 +1609,30 @@ export function RostersView() {
       ) : (
         <Panel className="overflow-auto">
           <div className="min-w-[850px]">
-            <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] bg-[#f5f2ff]">
-              <div className="p-4 text-xs font-bold uppercase text-[#777587]">
+            <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-surface-variant bg-zinc-50">
+              <div className="p-4 text-xs font-bold uppercase text-outline">
                 Employee
               </div>
               {dateRange(today, end).map((date) => (
                 <div
                   key={date.toISOString()}
-                  className="border-l border-[#e4e1ee] p-4 text-center text-xs font-bold"
+                  className="border-l border-surface-variant p-4 text-center text-xs font-bold"
                 >
                   <div>
                     {date.toLocaleDateString("en", { weekday: "short" })}
                   </div>
-                  <div className="text-[#777587]">{date.getDate()}</div>
+                  <div className="text-outline">{date.getDate()}</div>
                 </div>
               ))}
             </div>
             {employees.map((employee) => (
               <div
                 key={employee.id}
-                className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-[#e4e1ee] last:border-0"
+                className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-surface-variant last:border-0"
               >
                 <div className="p-4">
                   <div className="font-semibold">{employee.fullName}</div>
-                  <div className="text-xs text-[#777587]">
+                  <div className="text-xs text-outline">
                     {employee.employeeCode}
                   </div>
                 </div>
@@ -1645,18 +1645,18 @@ export function RostersView() {
                   return (
                     <div
                       key={date.toISOString()}
-                      className="grid min-h-16 place-items-center border-l border-[#e4e1ee] p-2"
+                      className="grid min-h-16 place-items-center border-l border-surface-variant p-2"
                     >
                       {roster ? (
                         <button
                           title="Remove roster"
-                          className="rounded-lg bg-[#e2dfff] px-2 py-1 text-center text-xs font-semibold text-[#3323cc]"
+                          className="rounded-lg bg-zinc-100 px-2 py-1 text-center text-xs font-semibold text-zinc-500"
                           onClick={() => removeRoster(roster)}
                         >
                           {roster.shift.name}
                         </button>
                       ) : (
-                        <span className="text-[#c7c4d8]">—</span>
+                        <span className="text-zinc-300">—</span>
                       )}
                     </div>
                   );
@@ -1769,7 +1769,7 @@ export function RostersView() {
               {employees.map((employee) => (
                 <label
                   key={employee.id}
-                  className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm"
+                  className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm"
                 >
                   <input
                     type="checkbox"
@@ -1790,7 +1790,7 @@ export function RostersView() {
               ))}
             </fieldset>
             {bulkResult && (
-              <div className="rounded-lg bg-[#d8f8df] p-3 text-sm text-[#005320]">
+              <div className="rounded-lg bg-emerald-100 p-3 text-sm text-emerald-900">
                 {bulkResult}
               </div>
             )}
@@ -1890,7 +1890,7 @@ export function HolidaysView() {
       ) : (
         <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
           <Panel className="p-6">
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-[#777587]">
+            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-outline">
               {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
                 <div key={day} className="p-2">
                   {day}
@@ -1906,12 +1906,12 @@ export function HolidaysView() {
                 return (
                   <div
                     key={day}
-                    className={`min-h-24 rounded-lg border p-2 ${holiday ? "border-[#c3c0ff] bg-[#e2dfff]" : "border-[#e4e1ee] bg-white"}`}
+                    className={`min-h-24 rounded-lg border p-2 ${holiday ? "border-zinc-200 bg-zinc-100" : "border-surface-variant bg-white"}`}
                   >
                     <span className="text-xs font-semibold">{day}</span>
                     {holiday && (
                       <button
-                        className="mt-2 block text-left text-xs font-semibold text-[#3323cc]"
+                        className="mt-2 block text-left text-xs font-semibold text-zinc-500"
                         onClick={() => openEdit(holiday)}
                       >
                         {holiday.holidayName}
@@ -1928,15 +1928,15 @@ export function HolidaysView() {
               {data.map((holiday) => (
                 <button
                   key={holiday.id}
-                  className="flex gap-3 rounded-lg bg-[#f5f2ff] p-3 text-left"
+                  className="flex gap-3 rounded-lg bg-zinc-50 p-3 text-left"
                   onClick={() => openEdit(holiday)}
                 >
-                  <CalendarDays className="size-5 text-[#3525cd]" />
+                  <CalendarDays className="size-5 text-primary" />
                   <span>
                     <span className="block text-sm font-semibold">
                       {holiday.holidayName}
                     </span>
-                    <span className="text-xs text-[#777587]">
+                    <span className="text-xs text-outline">
                       {new Date(holiday.holidayDate).toLocaleDateString()} ·{" "}
                       {holiday.office?.officeName ?? "All offices"}
                     </span>
@@ -1995,7 +1995,7 @@ export function HolidaysView() {
             <div className="flex gap-3">
               {editing && (
                 <button
-                  className="h-11 rounded-xl border border-[#ba1a1a] px-4 text-sm font-semibold text-[#ba1a1a]"
+                  className="h-11 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                   onClick={removeHoliday}
                 >
                   Delete
@@ -2085,13 +2085,13 @@ function OfficeLocationPicker({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="font-semibold">Pin the office entrance</div>
-          <div className="text-xs text-[#777587]">
+          <div className="text-xs text-outline">
             Click the map or use your current location. The circle is the valid
             attendance area.
           </div>
         </div>
         <button
-          className="flex h-10 items-center gap-2 rounded-xl border border-[#c8c5d0] bg-white px-3 text-sm font-semibold text-[#3525cd]"
+          className="flex h-10 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 text-sm font-semibold text-primary"
           disabled={locating}
           onClick={useCurrentLocation}
           type="button"
@@ -2107,7 +2107,7 @@ function OfficeLocationPicker({
         onMapClick={onChange}
       />
       {!coordinate && (
-        <p className="text-xs font-semibold text-[#9a5c00]">
+        <p className="text-xs font-semibold text-amber-700">
           No office location selected yet.
         </p>
       )}
@@ -2169,7 +2169,7 @@ function Dialog({
   return createPortal(
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-[#1b1b24]/45 p-4"
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/45 p-4"
       role="dialog"
     >
       <div
@@ -2178,7 +2178,7 @@ function Dialog({
       >
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-[#777587]">
+          <button onClick={onClose} className="text-outline">
             Close
           </button>
         </div>
@@ -2202,16 +2202,16 @@ function clearStaleScrollLock() {
 }
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-[#f5f2ff] p-3">
-      <div className="text-xs text-[#777587]">{label}</div>
+    <div className="rounded-lg bg-zinc-50 p-3">
+      <div className="text-xs text-outline">{label}</div>
       <div className="mt-1 font-semibold">{value}</div>
     </div>
   );
 }
 function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-[#f0ecf9] px-3 py-1 text-[#464555]">
-      <Check className="mr-1 inline size-3 text-[#006e2d]" />
+    <span className="rounded-full bg-zinc-50 px-3 py-1 text-on-surface-variant">
+      <Check className="mr-1 inline size-3 text-emerald-800" />
       {children}
     </span>
   );

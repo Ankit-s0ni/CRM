@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { generateTotp } from '../src/modules/platform/platform-auth/totp';
+import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 
 type ChallengeBody = { challengeToken: string };
 type PlatformSessionBody = { accessToken: string };

@@ -31,8 +31,16 @@ class HomeController extends AsyncNotifier<HomeSummary> {
         'EEEE, d MMMM',
         tenant.locale.languageCode,
       ).format(DateTime.now()),
-      shiftLabel:
-          '${policy.name} · ${time(policy.shiftStart)}–${time(policy.shiftEnd)}',
+      shiftLabel: (() {
+        final name = policy.name;
+        final formattedTime = '${time(policy.shiftStart)}–${time(policy.shiftEnd)}';
+        final dashTime = '${time(policy.shiftStart)}-${time(policy.shiftEnd)}';
+        
+        if (name.contains(formattedTime) || name.contains(dashTime)) {
+          return name;
+        }
+        return '$name · $formattedTime';
+      })(),
       locationLabel:
           'Muscat Logistics Hub · ${policy.geofenceRadiusMeters}m zone',
       isInsideZone: true,

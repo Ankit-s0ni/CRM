@@ -296,18 +296,18 @@ export function OrganizationView() {
         <LoadingState />
       ) : (
         <div className="grid gap-6">
-          <Panel className="flex flex-wrap items-center gap-4 border-[#c9c3ff] bg-[#f8f6ff] p-5">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#e7e3ff] text-[#3525cd]">
+          <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
               <Info className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
               <h2 className="font-bold">Organization comes before workplace setup</h2>
-              <p className="mt-1 text-sm text-[#5e5b68]">
+              <p className="mt-1 text-sm text-zinc-500">
                 Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.
               </p>
             </div>
             <Link
-              className="inline-flex h-10 items-center rounded-lg bg-[#3525cd] px-4 text-sm font-semibold text-white"
+              className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
               href="/app/attendance/offices"
             >
               Continue to office setup
@@ -317,7 +317,7 @@ export function OrganizationView() {
           <Panel className="p-7">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold">Departments</h2>
-              <Building2 className="text-[#3525cd]" />
+              <Building2 className="text-primary" />
             </div>
             <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
               <input
@@ -435,10 +435,10 @@ function DepartmentNode({
   return (
     <div>
       <div
-        className="flex flex-wrap items-center gap-3 rounded-lg border border-[#e4e1ee] bg-white px-4 py-3"
+        className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-variant bg-white px-4 py-3"
         style={{ marginLeft: depth * 24 }}
       >
-        <div className="grid size-8 place-items-center rounded-lg bg-[#e2dfff] text-[#3525cd]">
+        <div className="grid size-8 place-items-center rounded-lg bg-zinc-100 text-primary">
           <Building2 className="size-4" />
         </div>
         {editing ? (
@@ -456,7 +456,7 @@ function DepartmentNode({
           <>
             <select
               aria-label={`Parent for ${department.name}`}
-              className="h-9 rounded-lg border border-[#d8d4e4] bg-white px-2 text-xs"
+              className="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-xs"
               onChange={(event) =>
                 void onMove(department.id, event.target.value || null)
               }
@@ -474,7 +474,7 @@ function DepartmentNode({
                 ))}
             </select>
             <button
-              className="text-xs font-bold text-[#3525cd]"
+              className="text-xs font-bold text-primary"
               disabled={name.trim().length < 2}
               onClick={async () => {
                 await onRename(department.id, name);
@@ -485,7 +485,7 @@ function DepartmentNode({
               Save
             </button>
             <button
-              className="text-xs text-[#777587]"
+              className="text-xs text-outline"
               onClick={() => {
                 setName(department.name);
                 setEditing(false);
@@ -498,7 +498,7 @@ function DepartmentNode({
         ) : (
           <>
             <button
-              className="rounded-lg p-2 text-[#646171] hover:bg-[#f5f2ff]"
+              className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-50"
               onClick={() => setAddingChild((current) => !current)}
               title="Add child department"
               type="button"
@@ -506,7 +506,7 @@ function DepartmentNode({
               <Plus className="size-4" />
             </button>
             <button
-              className="rounded-lg p-2 text-[#646171] hover:bg-[#f5f2ff]"
+              className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-50"
               onClick={() => setEditing(true)}
               title="Edit department"
               type="button"
@@ -514,7 +514,7 @@ function DepartmentNode({
               <Pencil className="size-4" />
             </button>
             <button
-              className="rounded-lg p-2 text-[#b42318] hover:bg-[#fff0ee]"
+              className="rounded-lg p-2 text-red-700 hover:bg-red-50"
               onClick={() => {
                 if (window.confirm(`Delete ${department.name}?`)) {
                   void onDelete(department.id);
@@ -530,7 +530,7 @@ function DepartmentNode({
       </div>
       {addingChild && (
         <div
-          className="mt-2 flex gap-2 rounded-lg bg-[#f5f2ff] p-3"
+          className="mt-2 flex gap-2 rounded-lg bg-zinc-50 p-3"
           style={{ marginLeft: (depth + 1) * 24 }}
         >
           <input
@@ -581,7 +581,7 @@ function DesignationRow({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(designation.name);
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-[#f5f2ff] px-4 py-3">
+    <div className="flex items-center gap-2 rounded-lg bg-zinc-50 px-4 py-3">
       {editing ? (
         <input
           aria-label={`Rename ${designation.name}`}
@@ -593,13 +593,13 @@ function DesignationRow({
       ) : (
         <span className="flex-1 text-sm font-medium">{designation.name}</span>
       )}
-      <span className="whitespace-nowrap text-xs text-[#777587]">
+      <span className="whitespace-nowrap text-xs text-outline">
         {designation.employeeCount ?? 0} employees
       </span>
       {editing ? (
         <>
           <button
-            className="text-xs font-bold text-[#3525cd]"
+            className="text-xs font-bold text-primary"
             disabled={name.trim().length < 2}
             onClick={async () => {
               await onRename(designation.id, name);
@@ -610,7 +610,7 @@ function DesignationRow({
             Save
           </button>
           <button
-            className="text-xs text-[#777587]"
+            className="text-xs text-outline"
             onClick={() => {
               setName(designation.name);
               setEditing(false);
@@ -623,7 +623,7 @@ function DesignationRow({
       ) : (
         <>
           <button
-            className="rounded-lg p-2 text-[#646171] hover:bg-white"
+            className="rounded-lg p-2 text-zinc-500 hover:bg-white"
             onClick={() => setEditing(true)}
             title="Edit designation"
             type="button"
@@ -631,7 +631,7 @@ function DesignationRow({
             <Pencil className="size-4" />
           </button>
           <button
-            className="rounded-lg p-2 text-[#b42318] hover:bg-[#fff0ee]"
+            className="rounded-lg p-2 text-red-700 hover:bg-red-50"
             onClick={() => {
               if (window.confirm(`Delete ${designation.name}?`)) {
                 void onDelete(designation.id);
@@ -669,7 +669,7 @@ export function EmployeesView() {
       action={
         <div className="flex flex-wrap gap-2">
           <Link
-            className="inline-flex h-11 items-center rounded-xl border border-[#c7c4d8] px-4 text-sm font-semibold text-[#3525cd] hover:bg-[#f5f2ff]"
+            className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
             href="/app/imports/employees"
           >
             <FileUp className="mr-2 size-4" />
@@ -693,13 +693,13 @@ export function EmployeesView() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold">Onboard an employee</h2>
-                <p className="mt-1 text-sm text-[#777587]">
+                <p className="mt-1 text-sm text-outline">
                   Follow these steps in order. Each employee profile shows what
                   is still missing.
                 </p>
               </div>
               <Link
-                className="text-sm font-bold text-[#3525cd]"
+                className="text-sm font-bold text-primary"
                 href="/app/employees/new"
               >
                 Start setup →
@@ -711,12 +711,12 @@ export function EmployeesView() {
                 ["2", "Set attendance", "Assign workplace, shift and policy."],
                 ["3", "Enable access", "Invite the employee and approve their device."],
               ].map(([number, title, body]) => (
-                <li className="rounded-xl bg-[#f5f2ff] p-4" key={number}>
-                  <span className="text-xs font-bold text-[#3525cd]">
+                <li className="rounded-xl bg-zinc-50 p-4" key={number}>
+                  <span className="text-xs font-bold text-primary">
                     STEP {number}
                   </span>
                   <strong className="mt-2 block text-sm">{title}</strong>
-                  <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                  <span className="mt-1 block text-xs leading-5 text-outline">
                     {body}
                   </span>
                 </li>
@@ -725,7 +725,7 @@ export function EmployeesView() {
           </Panel>
           <Panel className="overflow-auto">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-[#f5f2ff] text-xs uppercase tracking-wider text-[#777587]">
+            <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
               <tr>
                 <th className="px-6 py-4">Employee</th>
                 <th>Code</th>
@@ -738,16 +738,16 @@ export function EmployeesView() {
               {data.map((employee) => (
                 <tr
                   key={employee.id}
-                  className="border-t border-[#e4e1ee] transition hover:bg-[#faf8ff]"
+                  className="border-t border-surface-variant transition hover:bg-zinc-50"
                 >
                   <td className="px-6 py-4">
                     <Link
                       href={`/app/employees/${employee.id}`}
-                      className="font-semibold text-[#3525cd] hover:underline"
+                      className="font-semibold text-primary hover:underline"
                     >
                       {employee.fullName}
                     </Link>
-                    <div className="text-xs text-[#777587]">
+                    <div className="text-xs text-outline">
                       {employee.phone || "No phone"}
                     </div>
                   </td>
@@ -755,7 +755,7 @@ export function EmployeesView() {
                   <td>{employee.department?.name || "—"}</td>
                   <td>{employee.workType}</td>
                   <td>
-                    <span className="rounded-full bg-[#7cf994]/35 px-3 py-1 text-xs font-semibold text-[#005320]">
+                    <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
                       {employee.status}
                     </span>
                   </td>
@@ -883,7 +883,7 @@ export function EmployeeEditorView() {
                 value={form.phone}
                 onChange={(phone) => setForm({ ...form, phone })}
               />
-              <p className="mt-2 text-xs leading-5 text-[#777587]">
+              <p className="mt-2 text-xs leading-5 text-outline">
                 Select the country code, then enter the local mobile number.
               </p>
             </Field>
@@ -896,7 +896,7 @@ export function EmployeeEditorView() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
-              <p className="mt-2 text-xs leading-5 text-[#777587]">
+              <p className="mt-2 text-xs leading-5 text-outline">
                 This becomes the employee&apos;s app login email.
               </p>
             </Field>
@@ -950,7 +950,7 @@ export function EmployeeEditorView() {
                 <option value="FIELD">Field</option>
                 <option value="HYBRID">Hybrid</option>
               </select>
-              <p className="mt-2 text-xs leading-5 text-[#777587]">
+              <p className="mt-2 text-xs leading-5 text-outline">
                 {form.workType === "OFFICE"
                   ? "Office employees normally check in at an assigned workplace and do not use continuous field tracking."
                   : form.workType === "FIELD"
@@ -961,11 +961,11 @@ export function EmployeeEditorView() {
           </div>
         </Panel>
         <Panel className="p-7">
-          <div className="grid size-14 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+          <div className="grid size-14 place-items-center rounded-xl bg-zinc-100 text-primary">
             <ShieldCheck />
           </div>
           <h2 className="mt-5 text-lg font-semibold">What happens next?</h2>
-          <p className="mt-2 text-sm leading-6 text-[#777587]">
+          <p className="mt-2 text-sm leading-6 text-outline">
             The employee profile and app login are created together. You will
             receive a temporary password to share securely.
           </p>
@@ -975,10 +975,10 @@ export function EmployeeEditorView() {
               "Approve their registered device if required",
             ].map((step, index) => (
               <li className="flex items-start gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#f0ecf9] text-xs font-bold text-[#3525cd]">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-primary">
                   {index + 2}
                 </span>
-                <span className="pt-0.5 text-[#555263]">{step}</span>
+                <span className="pt-0.5 text-zinc-600">{step}</span>
               </li>
             ))}
           </ol>
@@ -991,19 +991,19 @@ export function EmployeeEditorView() {
           }
           title="Employee login created"
         >
-          <div className="rounded-xl border border-[#bce9ca] bg-[#e8f8ed] p-4 text-sm text-[#005320]">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
             The Employee self-service role is already assigned. No role setup
             is required.
           </div>
-          <div className="mt-4 grid gap-4 rounded-xl border border-[#ddd9eb] p-5">
+          <div className="mt-4 grid gap-4 rounded-xl border border-zinc-200 p-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-[#777587]">
+              <p className="text-xs font-bold uppercase tracking-wide text-outline">
                 Login email
               </p>
               <p className="mt-1 font-semibold">{createdAccount.email}</p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-[#777587]">
+              <p className="text-xs font-bold uppercase tracking-wide text-outline">
                 Temporary password
               </p>
               <p className="mt-1 break-all font-mono font-semibold">
@@ -1011,7 +1011,7 @@ export function EmployeeEditorView() {
               </p>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#c7c4d8] text-sm font-bold text-[#3525cd]"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 text-sm font-bold text-primary"
               onClick={async () => {
                 await navigator.clipboard.writeText(
                   `Email: ${createdAccount.email}\nTemporary password: ${createdAccount.password}`,
@@ -1136,11 +1136,11 @@ export function EmployeeImportView() {
     >
       {error && <ErrorState message={error} />}
       <Panel className="mb-6 overflow-hidden">
-        <div className="border-b border-[#e4e1ee] bg-[#f5f2ff] p-6">
+        <div className="border-b border-surface-variant bg-zinc-50 p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold">Prepare your file</h2>
-              <p className="mt-1 text-sm text-[#5e5b68]">
+              <p className="mt-1 text-sm text-zinc-500">
                 Use the provided columns in the same order. Excel users can open
                 the template and save it as CSV UTF-8.
               </p>
@@ -1160,7 +1160,7 @@ export function EmployeeImportView() {
               "Review imported rows and errors",
             ].map((step, index) => (
               <div className="flex items-center gap-3 text-sm" key={step}>
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#3525cd] text-xs font-bold text-white">
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">
                   {index + 1}
                 </span>
                 <span>{step}</span>
@@ -1175,7 +1175,7 @@ export function EmployeeImportView() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-white text-xs uppercase text-[#777587]">
+              <thead className="bg-white text-xs uppercase text-outline">
                 <tr>
                   <th className="px-5 py-3">Column</th>
                   <th className="px-5 py-3">Required</th>
@@ -1185,17 +1185,17 @@ export function EmployeeImportView() {
               </thead>
               <tbody>
                 {schema.fields.map((field) => (
-                  <tr className="border-t border-[#e4e1ee]" key={field.key}>
+                  <tr className="border-t border-surface-variant" key={field.key}>
                     <td className="px-5 py-3">
                       <div className="font-semibold">{field.label}</div>
-                      <code className="text-xs text-[#5e5b68]">
+                      <code className="text-xs text-zinc-500">
                         {field.key}
                       </code>
                     </td>
                     <td className="px-5 py-3">
                       {field.required ? "Yes" : "No"}
                     </td>
-                    <td className="px-5 py-3 text-[#5e5b68]">{field.format}</td>
+                    <td className="px-5 py-3 text-zinc-500">{field.format}</td>
                     <td className="px-5 py-3 font-mono text-xs">
                       {field.example}
                     </td>
@@ -1203,24 +1203,24 @@ export function EmployeeImportView() {
                 ))}
               </tbody>
             </table>
-            <div className="border-t border-[#e4e1ee] bg-[#fffaf0] px-5 py-4 text-sm text-[#5e5b68]">
+            <div className="border-t border-surface-variant bg-amber-50 px-5 py-4 text-sm text-zinc-500">
               {schema.notes.join(" ")} Maximum {schema.maxRows} employee rows.
             </div>
           </div>
         )}
       </Panel>
-      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-[#c7c4d8] p-8 text-center">
+      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-zinc-300 p-8 text-center">
         <div>
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#e2dfff] text-[#3525cd]">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-zinc-100 text-primary">
             <FileUp />
           </div>
           <h2 className="mt-5 text-xl font-semibold">
             Drop your employee CSV here
           </h2>
-          <p className="mt-2 text-sm text-[#777587]">
+          <p className="mt-2 text-sm text-outline">
             CSV UTF-8 up to 5 MB. The header must match the downloaded template.
           </p>
-          <label className="mt-5 inline-flex h-11 cursor-pointer items-center rounded-xl bg-[#3525cd] px-5 text-sm font-semibold text-white">
+          <label className="mt-5 inline-flex h-11 cursor-pointer items-center rounded-xl bg-primary px-5 text-sm font-semibold text-white">
             {uploading ? "Uploading..." : "Choose CSV"}
             <input
               type="file"
@@ -1240,11 +1240,11 @@ export function EmployeeImportView() {
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="flex flex-wrap items-center gap-4 border-b border-[#e4e1ee] px-6 py-4 last:border-0"
+                className="flex flex-wrap items-center gap-4 border-b border-surface-variant px-6 py-4 last:border-0"
               >
                 <div className="min-w-52 flex-1">
                   <div className="font-semibold">{job.filename}</div>
-                  <div className="text-xs text-[#777587]">
+                  <div className="text-xs text-outline">
                     {job.totalRows} rows
                   </div>
                 </div>
@@ -1252,15 +1252,15 @@ export function EmployeeImportView() {
                   {job.status}
                 </span>
                 <div className="min-w-48 text-xs">
-                  <span className="text-[#006e2d]">
+                  <span className="text-emerald-800">
                     {job.successRows} imported
                   </span>{" "}
                   ·{" "}
-                  <span className="text-[#ba1a1a]">{job.errorRows} errors</span>
+                  <span className="text-error">{job.errorRows} errors</span>
                 </div>
                 {job.errorRows > 0 && (
                   <button
-                    className="text-sm font-semibold text-[#3525cd] hover:underline"
+                    className="text-sm font-semibold text-primary hover:underline"
                     onClick={() => void showErrors(job.id)}
                     type="button"
                   >
@@ -1280,10 +1280,10 @@ export function EmployeeImportView() {
       </div>
       {selectedJobId && (
         <Panel className="mt-6 overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[#e4e1ee] bg-[#f5f2ff] px-6 py-4">
+          <div className="flex items-center justify-between border-b border-surface-variant bg-zinc-50 px-6 py-4">
             <h2 className="font-semibold">Rows that need correction</h2>
             <button
-              className="text-sm font-semibold text-[#3525cd]"
+              className="text-sm font-semibold text-primary"
               onClick={() => {
                 setSelectedJobId(null);
                 setRowErrors(null);
@@ -1298,7 +1298,7 @@ export function EmployeeImportView() {
               <LoadingState />
             </div>
           ) : rowErrors.length ? (
-            <div className="divide-y divide-[#e4e1ee]">
+            <div className="divide-y divide-surface-variant">
               {rowErrors.map((row) => (
                 <div
                   className="grid gap-1 px-6 py-4 text-sm md:grid-cols-[100px_160px_1fr]"
@@ -1306,7 +1306,7 @@ export function EmployeeImportView() {
                 >
                   <strong>Row {row.rowNumber}</strong>
                   <span>{row.employeeCode ?? "No employee code"}</span>
-                  <span className="text-[#93000a]">{row.errorMessage}</span>
+                  <span className="text-on-error-container">{row.errorMessage}</span>
                 </div>
               ))}
             </div>
@@ -1379,16 +1379,16 @@ export function UsersRolesView() {
         <LoadingState />
       ) : (
         <div className="grid gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#d8d4e4] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-300 bg-white p-5">
             <div>
-              <p className="font-bold text-[#24222c]">Employee app accounts</p>
-              <p className="mt-1 text-sm text-[#777587]">
+              <p className="font-bold text-zinc-800">Employee app accounts</p>
+              <p className="mt-1 text-sm text-outline">
                 Create and invite employees from the employee directory. Their
                 Employee self-service role is assigned automatically.
               </p>
             </div>
             <Link
-              className="text-sm font-bold text-[#3525cd]"
+              className="text-sm font-bold text-primary"
               href="/app/employees"
             >
               Open employees →
@@ -1396,22 +1396,22 @@ export function UsersRolesView() {
           </div>
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="overflow-hidden">
-            <div className="border-b border-[#e4e1ee] bg-[#f5f2ff] px-6 py-4 font-semibold">
+            <div className="border-b border-surface-variant bg-zinc-50 px-6 py-4 font-semibold">
               Workspace login accounts
             </div>
             {users.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between border-b border-[#e4e1ee] px-6 py-4 last:border-0"
+                className="flex items-center justify-between border-b border-surface-variant px-6 py-4 last:border-0"
               >
                 <div>
                   <div className="font-semibold">{user.email}</div>
-                  <div className="text-xs text-[#777587]">
+                  <div className="text-xs text-outline">
                     {user.roles.map((role) => role.name).join(", ") ||
                       "No role"}
                   </div>
                 </div>
-                <span className="rounded-full bg-[#7cf994]/35 px-3 py-1 text-xs font-semibold text-[#005320]">
+                <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
                   {user.status}
                 </span>
               </div>
@@ -1419,7 +1419,7 @@ export function UsersRolesView() {
             </Panel>
             <Panel className="p-6">
             <h2 className="mb-1 font-semibold">Elevated roles</h2>
-            <p className="mb-4 text-xs leading-5 text-[#777587]">
+            <p className="mb-4 text-xs leading-5 text-outline">
               These roles are for people who manage the workspace or approve
               work. Employee self-service is intentionally not configured here.
             </p>
@@ -1428,16 +1428,16 @@ export function UsersRolesView() {
                 <Link
                   key={role.id}
                   href={`/app/access/roles/${role.id}`}
-                  className="flex items-center justify-between rounded-lg border border-[#e4e1ee] p-4 hover:border-[#3525cd]"
+                  className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-primary"
                 >
                   <div>
                     <div className="font-semibold">{role.name}</div>
-                    <div className="text-xs text-[#777587]">
+                    <div className="text-xs text-outline">
                       {role.isSystem ? "System role" : "Custom role"} ·{" "}
                       {role.assignedUsers ?? 0} users
                     </div>
                   </div>
-                  <ShieldCheck className="size-5 text-[#3525cd]" />
+                  <ShieldCheck className="size-5 text-primary" />
                 </Link>
               ))}
             </div>
@@ -1451,7 +1451,7 @@ export function UsersRolesView() {
           onClose={() => setInviteOpen(false)}
         >
           {sent ? (
-            <div className="rounded-xl bg-[#d8f8df] p-5 text-sm text-[#005320]">
+            <div className="rounded-xl bg-emerald-100 p-5 text-sm text-emerald-900">
               Invitation created successfully. Delivery is handled by the
               configured notification provider.
             </div>
@@ -1470,7 +1470,7 @@ export function UsersRolesView() {
                 {elevatedRoles.map((role) => (
                   <label
                     key={role.id}
-                    className="flex items-center gap-3 rounded-lg bg-[#f5f2ff] p-3 text-sm"
+                    className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm"
                   >
                     <input
                       type="checkbox"
@@ -1554,10 +1554,10 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
         <LoadingState />
       ) : role.isSystem ? (
         <div className="grid gap-6">
-          <div className="flex items-start gap-3 rounded-xl border border-[#d8d4e4] bg-white p-5 text-sm text-[#555263]">
-            <Info className="mt-0.5 size-5 shrink-0 text-[#3525cd]" />
+          <div className="flex items-start gap-3 rounded-xl border border-zinc-300 bg-white p-5 text-sm text-zinc-600">
+            <Info className="mt-0.5 size-5 shrink-0 text-primary" />
             <div>
-              <strong className="text-[#24222c]">Built-in role</strong>
+              <strong className="text-zinc-800">Built-in role</strong>
               <p className="mt-1 leading-6">
                 DeltCRM assigns and maintains this role automatically. It
                 cannot be edited because changing its technical permissions
@@ -1567,7 +1567,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
           </div>
           <Panel className="p-6">
             <h2 className="text-lg font-bold">What this role is for</h2>
-            <p className="mt-2 text-sm leading-6 text-[#777587]">
+            <p className="mt-2 text-sm leading-6 text-outline">
               {role.name === "EMPLOYEE"
                 ? "Employee self-service for the mobile app, attendance, leave and personal requests. Assign it by inviting an employee from their profile."
                 : role.name === "HR_ADMIN"
@@ -1576,12 +1576,12 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                     ? "Team visibility and approval work for assigned reporting employees."
                     : "Full business administration for this tenant workspace."}
             </p>
-            <p className="mt-4 text-sm font-semibold text-[#555263]">
+            <p className="mt-4 text-sm font-semibold text-zinc-600">
               {selected.size} protected capabilities included
             </p>
             {role.name === "EMPLOYEE" && (
               <Link
-                className="mt-5 inline-flex text-sm font-bold text-[#3525cd]"
+                className="mt-5 inline-flex text-sm font-bold text-primary"
                 href="/app/employees"
               >
                 Manage employee accounts →
@@ -1593,20 +1593,20 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
         <div className="grid gap-6">
           <Panel className="p-6">
               <h2 className="text-lg font-bold">Start with a common role</h2>
-              <p className="mt-1 text-sm text-[#777587]">
+              <p className="mt-1 text-sm text-outline">
                 A preset replaces the current selection. You can adjust it
                 before saving.
               </p>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {ROLE_PRESETS.map((preset) => (
                   <button
-                    className="rounded-xl border border-[#d8d4e4] p-4 text-left transition hover:border-[#3525cd] hover:bg-[#faf8ff]"
+                    className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-primary hover:bg-zinc-50"
                     key={preset.id}
                     onClick={() => applyPreset(preset.keys)}
                     type="button"
                   >
                     <strong className="text-sm">Use {preset.name}</strong>
-                    <p className="mt-1 text-xs leading-5 text-[#777587]">
+                    <p className="mt-1 text-xs leading-5 text-outline">
                       {preset.description}
                     </p>
                   </button>
@@ -1615,13 +1615,13 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
           </Panel>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[#555263]">
+            <p className="text-sm font-semibold text-zinc-600">
               {selected.size} capabilities enabled
             </p>
-            <label className="flex items-center gap-2 text-sm text-[#646171]">
+            <label className="flex items-center gap-2 text-sm text-zinc-500">
               <input
                 checked={showTechnical}
-                className="accent-[#3525cd]"
+                className="accent-primary"
                 onChange={(event) => setShowTechnical(event.target.checked)}
                 type="checkbox"
               />
@@ -1629,7 +1629,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             </label>
           </div>
           {saved && (
-            <div className="flex items-center gap-2 rounded-xl bg-[#d8f8df] p-4 text-sm font-semibold text-[#005320]">
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-100 p-4 text-sm font-semibold text-emerald-900">
               <CheckCircle2 className="size-5" /> Role access saved.
             </div>
           )}
@@ -1637,12 +1637,12 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             {catalog.map((group) => (
               <div
                 key={group.module}
-                className="border-b border-[#e4e1ee] p-6 last:border-0"
+                className="border-b border-surface-variant p-6 last:border-0"
               >
-                <h2 className="mb-1 text-base font-bold text-[#24222c]">
+                <h2 className="mb-1 text-base font-bold text-zinc-800">
                   {sentenceCase(group.module)}
                 </h2>
-                <p className="mb-4 text-sm text-[#777587]">
+                <p className="mb-4 text-sm text-outline">
                   Access related to {group.module.replaceAll("-", " ")} work.
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -1651,11 +1651,11 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                     return (
                       <label
                         key={key}
-                        className="flex items-start gap-3 rounded-xl bg-[#f5f2ff] p-4 text-sm"
+                        className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-sm"
                       >
                         <input
                           type="checkbox"
-                          className="mt-1 accent-[#3525cd]"
+                          className="mt-1 accent-primary"
                           checked={selected.has(key)}
                           disabled={role.isSystem}
                           onChange={(event) => {
@@ -1669,14 +1669,14 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                           }}
                         />
                         <span>
-                          <strong className="block font-semibold text-[#24222c]">
+                          <strong className="block font-semibold text-zinc-800">
                             {sentenceCase(presentation.title)}
                           </strong>
-                          <span className="mt-1 block text-xs leading-5 text-[#777587]">
+                          <span className="mt-1 block text-xs leading-5 text-outline">
                             {presentation.description}
                           </span>
                           {showTechnical && (
-                            <code className="mt-2 block break-all text-[11px] text-[#777587]">
+                            <code className="mt-2 block break-all text-[11px] text-outline">
                               {key}
                             </code>
                           )}
@@ -1704,11 +1704,11 @@ function AccessDialog({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-[#1b1b24]/45 p-4">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-sm text-[#777587]">
+          <button onClick={onClose} className="text-sm text-outline">
             Close
           </button>
         </div>

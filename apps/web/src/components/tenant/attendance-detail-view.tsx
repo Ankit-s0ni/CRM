@@ -155,12 +155,12 @@ export function AttendanceDetailView({
         <Link
           aria-label="Back to attendance register"
           href={returnTo}
-          className="grid size-10 place-items-center rounded-xl border border-[#d8d4e3] bg-white"
+          className="grid size-10 place-items-center rounded-xl border border-zinc-300 bg-white"
         >
           <ArrowLeft className="size-4" />
         </Link>
         <div className="min-w-56 flex-1">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
             Attendance detail
           </p>
           <div className="mt-1 flex items-center gap-2">
@@ -169,17 +169,17 @@ export function AttendanceDetailView({
             </h1>
             <RouteFeatureInfo />
           </div>
-          <p className="mt-1 text-xs text-[#777587]">
+          <p className="mt-1 text-xs text-outline">
             {monthData
               ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? "Employee"} · ${monthData.employee.department.name}`
               : "Monthly calendar and evidence timeline"}
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-[#e4e1ee] bg-white p-1">
+        <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-white p-1">
           <button
             aria-label="Previous month"
             onClick={() => moveMonth(-1)}
-            className="grid size-9 place-items-center rounded-lg hover:bg-[#f0ecf9]"
+            className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -192,7 +192,7 @@ export function AttendanceDetailView({
           <button
             aria-label="Next month"
             onClick={() => moveMonth(1)}
-            className="grid size-9 place-items-center rounded-lg hover:bg-[#f0ecf9]"
+            className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -242,19 +242,19 @@ export function AttendanceDetailView({
 
 function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
   const values = [
-    { label: "Present", value: data.present, color: "text-[#006e2d]" },
-    { label: "Absent", value: data.absent, color: "text-[#ba1a1a]" },
-    { label: "Half days", value: data.halfDays, color: "text-[#895100]" },
-    { label: "Late days", value: data.lateDays, color: "text-[#895100]" },
+    { label: "Present", value: data.present, color: "text-emerald-800" },
+    { label: "Absent", value: data.absent, color: "text-error" },
+    { label: "Half days", value: data.halfDays, color: "text-amber-800" },
+    { label: "Late days", value: data.lateDays, color: "text-amber-800" },
     {
       label: "Worked",
       value: formatMinutes(data.workMinutes),
-      color: "text-[#3525cd]",
+      color: "text-primary",
     },
     {
       label: "Overtime",
       value: formatMinutes(data.overtimeMinutes),
-      color: "text-[#006492]",
+      color: "text-sky-700",
     },
   ];
   return (
@@ -262,9 +262,9 @@ function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
       {values.map((item) => (
         <article
           key={item.label}
-          className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm"
+          className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm"
         >
-          <span className="text-xs text-[#777587]">{item.label}</span>
+          <span className="text-xs text-outline">{item.label}</span>
           <strong className={cn("mt-1 block text-xl", item.color)}>
             {item.value}
           </strong>
@@ -298,15 +298,15 @@ function MonthCalendar({
   return (
     <Panel className="overflow-hidden p-4 lg:p-6">
       <div className="mb-4 flex items-center gap-2">
-        <CalendarDays className="size-5 text-[#3525cd]" />
+        <CalendarDays className="size-5 text-primary" />
         <div>
           <h2 className="font-semibold">Monthly calendar</h2>
-          <p className="text-xs text-[#777587]">
+          <p className="text-xs text-outline">
             Select a recorded day to inspect its evidence.
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#777587]">
+      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-outline">
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
           <span key={label} className="py-2">
             {label}
@@ -330,10 +330,10 @@ function MonthCalendar({
               className={cn(
                 "min-h-24 rounded-xl border p-2 text-left transition",
                 selectable
-                  ? "border-[#e4e1ee] bg-white hover:border-[#aaa3cd]"
-                  : "border-transparent bg-[#f8f6fa] text-[#aaa3ad]",
+                  ? "border-surface-variant bg-white hover:border-zinc-400"
+                  : "border-transparent bg-zinc-50 text-zinc-400",
                 selectedDate === date &&
-                  "border-[#3525cd] ring-2 ring-[#3525cd]/15",
+                  "border-primary ring-2 ring-primary/15",
               )}
             >
               <span className="text-xs font-bold">{index + 1}</span>
@@ -347,7 +347,7 @@ function MonthCalendar({
                   >
                     {tone?.label}
                   </span>
-                  <span className="mt-2 block text-[10px] text-[#777587]">
+                  <span className="mt-2 block text-[10px] text-outline">
                     {formatMinutes(day.workMinutes)}
                   </span>
                 </>
@@ -388,11 +388,11 @@ function DayEvidence({
     );
   const tone = statusTone(data.status);
   return (
-    <aside className="overflow-hidden rounded-xl border border-[#e4e1ee] bg-white shadow-sm xl:sticky xl:top-20">
-      <div className="border-b border-[#e4e1ee] bg-gradient-to-br from-[#f3f0ff] to-[#eefbf3] p-5">
+    <aside className="overflow-hidden rounded-xl border border-surface-variant bg-white shadow-sm xl:sticky xl:top-20">
+      <div className="border-b border-surface-variant bg-gradient-to-br from-zinc-50 to-[#eefbf3] p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#777587]">
+            <p className="text-xs font-bold uppercase tracking-wider text-outline">
               Selected day
             </p>
             <h2 className="mt-1 text-xl font-bold">
@@ -404,7 +404,7 @@ function DayEvidence({
             </h2>
           </div>
           {data.isLocked && (
-            <span className="grid size-9 place-items-center rounded-lg bg-white text-[#646273]">
+            <span className="grid size-9 place-items-center rounded-lg bg-white text-on-surface-variant">
               <LockKeyhole className="size-4" />
             </span>
           )}
@@ -424,9 +424,9 @@ function DayEvidence({
         </div>
       </div>
       {data.exception && (
-        <div className="m-4 rounded-xl border border-[#c3c0ff] bg-[#f0edff] p-3 text-xs">
+        <div className="m-4 rounded-xl border border-zinc-200 bg-surface-variant p-3 text-xs">
           <strong>{data.exception.exceptionType.replaceAll("_", " ")}</strong>
-          <p className="mt-1 text-[#646273]">{data.exception.reason}</p>
+          <p className="mt-1 text-on-surface-variant">{data.exception.reason}</p>
         </div>
       )}
       <div className="p-5">
@@ -434,7 +434,7 @@ function DayEvidence({
           <h3 className="font-semibold">Evidence timeline</h3>
           {onCorrect && !data.isLocked && (
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#3525cd] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4f46e5]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-container"
               onClick={onCorrect}
             >
               <PencilLine className="size-4" />
@@ -453,7 +453,7 @@ function DayEvidence({
             />
           ))}
           {!data.timeline.length && (
-            <p className="text-sm text-[#777587]">
+            <p className="text-sm text-outline">
               Calculated without punch evidence.
             </p>
           )}
@@ -532,7 +532,7 @@ function CreateCorrectionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-[#1b1b24]/55 p-4"
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/55 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="create-correction-title"
@@ -543,15 +543,15 @@ function CreateCorrectionDialog({
             <h2 id="create-correction-title" className="text-xl font-bold">
               Correct attendance
             </h2>
-            <p className="mt-1 text-sm text-[#646273]">
+            <p className="mt-1 text-sm text-on-surface-variant">
               {employeeName} · {selectedDate}
             </p>
           </div>
           <button aria-label="Close correction dialog" onClick={onClose}>
-            <span className="text-2xl text-[#646273]">×</span>
+            <span className="text-2xl text-on-surface-variant">×</span>
           </button>
         </div>
-        <p className="mt-4 rounded-xl bg-[#f5f2ff] p-3 text-xs leading-5 text-[#464555]">
+        <p className="mt-4 rounded-xl bg-zinc-50 p-3 text-xs leading-5 text-on-surface-variant">
           {data
             ? `Recorded: ${formatClock(data.firstCheckin)} to ${formatClock(data.lastCheckout)}. `
             : "No attendance was recorded for this day. "}
@@ -592,7 +592,7 @@ function CreateCorrectionDialog({
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button
-            className="h-11 rounded-xl border border-[#d8d4e3] px-5 text-sm font-semibold"
+            className="h-11 rounded-xl border border-zinc-300 px-5 text-sm font-semibold"
             disabled={busy}
             onClick={onClose}
           >
@@ -641,13 +641,13 @@ function Timeline({
           className={cn(
             "grid size-8 place-items-center rounded-full",
             event.timeSuspect
-              ? "bg-[#ffdad6] text-[#ba1a1a]"
-              : "bg-[#ece9ff] text-[#3525cd]",
+              ? "bg-error-container text-error"
+              : "bg-zinc-50 text-primary",
           )}
         >
           <Icon className="size-4" />
         </span>
-        {!last && <span className="min-h-10 w-px flex-1 bg-[#ddd8e7]" />}
+        {!last && <span className="min-h-10 w-px flex-1 bg-zinc-200" />}
       </div>
       <div className="pb-5">
         <div className="flex items-center justify-between gap-2">
@@ -658,12 +658,12 @@ function Timeline({
             {formatClock(event.eventTime)}
           </span>
         </div>
-        <p className="mt-1 text-[10px] uppercase tracking-wide text-[#777587]">
+        <p className="mt-1 text-[10px] uppercase tracking-wide text-outline">
           {event.source}
           {event.isOfflineSync ? " · Offline sync" : ""}
         </p>
         {event.timeSuspect && (
-          <p className="mt-1 inline-flex items-center gap-1 text-[10px] text-[#ba1a1a]">
+          <p className="mt-1 inline-flex items-center gap-1 text-[10px] text-error">
             <TriangleAlert className="size-3" />
             Time requires review
           </p>
@@ -676,7 +676,7 @@ function Mini({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white/80 p-2">
       <strong className="block text-sm">{value}</strong>
-      <span className="text-[9px] uppercase text-[#777587]">{label}</span>
+      <span className="text-[9px] uppercase text-outline">{label}</span>
     </div>
   );
 }

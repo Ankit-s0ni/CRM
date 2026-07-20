@@ -18,12 +18,12 @@ export function AdminPage({
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight text-[#1b1b24]">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
               {title}
             </h1>
             <RouteFeatureInfo />
           </div>
-          <p className="mt-1 text-sm text-[#464555]">{description}</p>
+          <p className="mt-1 text-sm text-on-surface-variant">{description}</p>
         </div>
         {action}
       </div>
@@ -41,7 +41,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={`rounded-xl border border-[#e4e1ee] bg-white shadow-sm ${className}`}
+      className={`rounded-xl border border-surface-variant bg-white shadow-sm ${className}`}
     >
       {children}
     </section>
@@ -54,7 +54,7 @@ export function PrimaryButton(
   return (
     <button
       {...props}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3525cd] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4f46e5] disabled:opacity-50 ${props.className ?? ""}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-container disabled:opacity-50 ${props.className ?? ""}`}
     />
   );
 }
@@ -70,7 +70,7 @@ export function Field({
 }) {
   return (
     <div className="relative">
-      <label className="grid gap-2 text-sm font-medium text-[#1b1b24]">
+      <label className="grid gap-2 text-sm font-medium text-zinc-900">
         <span className={helpKey ? "min-h-9 pr-10" : undefined}>{label}</span>
         {children}
       </label>
@@ -85,7 +85,7 @@ export function Field({
 }
 
 export const inputClass =
-  "h-11 w-full rounded-lg border border-[#c7c4d8] bg-white px-3 text-sm outline-none transition focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/15";
+  "h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15";
 
 export function LoadingState() {
   return (
@@ -93,7 +93,7 @@ export function LoadingState() {
       {[0, 1, 2].map((item) => (
         <div
           key={item}
-          className="h-16 animate-pulse rounded-xl bg-[#f0ecf9]"
+          className="h-16 animate-pulse rounded-xl bg-zinc-50"
         />
       ))}
     </div>
@@ -104,14 +104,14 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
     <div className="grid min-h-56 place-items-center p-8 text-center">
       <div>
         <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="mt-2 max-w-md text-sm text-[#777587]">{body}</p>
+        <p className="mt-2 max-w-md text-sm text-outline">{body}</p>
       </div>
     </div>
   );
 }
 export function ErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-xl border border-[#ffb4ab] bg-[#ffdad6] p-4 text-sm text-[#93000a]">
+    <div className="rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
       {message}
     </div>
   );

@@ -1,0 +1,42 @@
+@startuml
+title DeltCRM API Product Boundaries
+skinparam componentStyle rectangle
+
+component "AppModule" as app
+component "Attendance Product" as attendance
+component "Identity & Access" as identity
+component Organization as organization
+component Workspace as workspace
+component Billing as billing
+component "Platform Control Plane" as platform
+component Notifications as notifications
+component "Shared Infrastructure" as shared
+
+app --> attendance : composition root
+app --> identity : public
+app --> organization : public
+app --> workspace : public
+app --> billing : public
+app --> platform : public
+app --> notifications : public
+
+attendance --> identity : public auth guard
+attendance --> organization : public readers
+organization --> billing : public seat command
+identity --> notifications : delivery port
+identity --> workspace : public settings
+
+attendance --> shared
+identity --> shared
+organization --> shared
+workspace --> shared
+billing --> shared
+platform --> shared
+notifications --> shared
+
+note right of attendance
+  Leave, biometrics, device trust,
+  field tracking and regularization
+  are internal Attendance capabilities.
+end note
+@enduml

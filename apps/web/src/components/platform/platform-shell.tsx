@@ -24,6 +24,7 @@ import { platformApiClient } from "@/lib/platform-api-client";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const navigation = [
   { label: "Dashboard", href: "/platform", icon: LayoutDashboard, enabled: true, exact: true },
@@ -60,16 +61,16 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
     finally { clearImpersonation(); }
   }
 
-  if (!hasHydrated || !accessToken) return <div className="min-h-screen bg-[#fcf8ff]" />;
+  if (!hasHydrated || !accessToken) return <div className="min-h-screen bg-surface" />;
 
   return (
-    <div className="min-h-screen bg-[#fcf8ff] text-[#1c1b1f]">
+    <div className="min-h-screen bg-surface text-on-surface">
       {mobileOpen && (
         <button className="fixed inset-0 z-40 bg-black/35 lg:hidden" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />
       )}
-      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-[#4f46e5] text-white shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-primary-container text-white shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex h-20 items-center gap-3 px-6">
-          <div className="grid size-10 place-items-center rounded-xl bg-white text-[#4f46e5]"><Building2 className="size-5" /></div>
+          <img src="/logo-square.png" alt="DeltCRM Logo" className="size-10 object-contain" />
           <div><div className="text-lg font-bold leading-5">DeltCRM</div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-indigo-100">Super Admin</div></div>
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button>
         </div>
@@ -78,7 +79,7 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
             const active = item.enabled && (item.exact ? pathname === item.href : pathname.startsWith(item.href));
             const Icon = item.icon;
             return item.enabled ? (
-              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)} className={cn("flex h-11 items-center gap-4 rounded-lg border-l-4 px-4 text-sm transition", active ? "border-[#7cf994] bg-[#3525cd]/55 text-white" : "border-transparent text-indigo-100 hover:bg-white/10 hover:text-white")}>
+              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)} className={cn("flex h-11 items-center gap-4 rounded-lg border-l-4 px-4 text-sm transition", active ? "border-emerald-300 bg-primary/55 text-white" : "border-transparent text-indigo-100 hover:bg-white/10 hover:text-white")}>
                 <Icon className="size-[18px]" />{item.label}
               </Link>
             ) : (
@@ -92,12 +93,14 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="lg:pl-[280px]">
-        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-[#e4e1ee] bg-white/95 px-4 backdrop-blur lg:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-surface-variant bg-white/95 px-4 backdrop-blur lg:px-6">
           <button className="mr-3 lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu /></button>
-          <div className="relative hidden w-full max-w-[460px] sm:block"><Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#777587]" /><input className="h-10 w-full rounded-full bg-[#f5f1fb] pl-11 pr-4 text-sm outline-none ring-[#3525cd] focus:ring-2" placeholder="Search tenants, logs, or settings..." /></div>
-          <div className="ml-auto flex items-center gap-5 text-[#464555]"><Bell className="size-[18px]" /><CircleHelp className="size-[18px]" /><div className="h-6 w-px bg-[#e4e1ee]" /><div className="grid size-8 place-items-center rounded-full bg-[#4f46e5] text-[10px] font-bold text-white">{user?.email.slice(0, 2).toUpperCase()}</div><div className="hidden text-right sm:block"><div className="max-w-40 truncate text-xs font-semibold">{user?.email}</div><div className="text-[10px] text-[#777587]">{user?.role === "SUPER_ADMIN" ? "Super Admin" : "Support"}</div></div><ChevronDown className="size-4" /></div>
+          <div className="relative hidden w-full max-w-[460px] sm:block"><Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-outline" /><input className="h-10 w-full rounded-full bg-zinc-50 pl-11 pr-4 text-sm outline-none ring-primary focus:ring-2" placeholder="Search tenants, logs, or settings..." /></div>
+          <div className="ml-auto flex items-center gap-5 text-on-surface-variant">
+            <div className="hidden sm:block"><ThemeSwitcher /></div>
+            <Bell className="size-[18px]" /><CircleHelp className="size-[18px]" /><div className="h-6 w-px bg-surface-variant" /><div className="grid size-8 place-items-center rounded-full bg-primary-container text-[10px] font-bold text-white">{user?.email.slice(0, 2).toUpperCase()}</div><div className="hidden text-right sm:block"><div className="max-w-40 truncate text-xs font-semibold">{user?.email}</div><div className="text-[10px] text-outline">{user?.role === "SUPER_ADMIN" ? "Super Admin" : "Support"}</div></div><ChevronDown className="size-4" /></div>
         </header>
-        {impersonation && <div className="flex flex-wrap items-center gap-3 border-b border-orange-300 bg-orange-100 px-5 py-3 text-sm text-orange-950"><ShieldCheck className="size-4" /><span>Impersonation session active: acting as <strong>{impersonation.targetEmail}</strong> for {impersonation.workspaceName}</span><span className="text-xs opacity-70">Ends {new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit" }).format(new Date(impersonation.expiresAt))}</span><Button className="ml-auto h-8 bg-[#1c1b1f] px-4 text-white" onClick={endImpersonation}>Exit Session</Button></div>}
+        {impersonation && <div className="flex flex-wrap items-center gap-3 border-b border-orange-300 bg-orange-100 px-5 py-3 text-sm text-orange-950"><ShieldCheck className="size-4" /><span>Impersonation session active: acting as <strong>{impersonation.targetEmail}</strong> for {impersonation.workspaceName}</span><span className="text-xs opacity-70">Ends {new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit" }).format(new Date(impersonation.expiresAt))}</span><Button className="ml-auto h-8 bg-on-surface px-4 text-white" onClick={endImpersonation}>Exit Session</Button></div>}
         <main>{children}</main>
       </div>
     </div>

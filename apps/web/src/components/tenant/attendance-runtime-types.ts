@@ -70,43 +70,43 @@ export function statusTone(status: AttendanceStatus) {
   > = {
     PRESENT_OPEN: {
       label: "Working",
-      className: "bg-[#d8f8df] text-[#006e2d]",
-      dot: "bg-[#00a642]",
+      className: "bg-emerald-100 text-emerald-800",
+      dot: "bg-emerald-600",
     },
     PRESENT: {
       label: "Present",
-      className: "bg-[#d8f8df] text-[#006e2d]",
-      dot: "bg-[#00a642]",
+      className: "bg-emerald-100 text-emerald-800",
+      dot: "bg-emerald-600",
     },
     HALF_DAY: {
       label: "Half day",
-      className: "bg-[#ffddb0] text-[#895100]",
-      dot: "bg-[#ef9d00]",
+      className: "bg-amber-200 text-amber-800",
+      dot: "bg-amber-500",
     },
     ABSENT: {
       label: "Absent",
-      className: "bg-[#ffdad6] text-[#ba1a1a]",
-      dot: "bg-[#d32f2f]",
+      className: "bg-error-container text-error",
+      dot: "bg-red-600",
     },
     ON_LEAVE: {
       label: "On leave",
-      className: "bg-[#e3e0ff] text-[#3525cd]",
-      dot: "bg-[#4f46e5]",
+      className: "bg-zinc-100 text-primary",
+      dot: "bg-primary-container",
     },
     HOLIDAY: {
       label: "Holiday",
-      className: "bg-[#cbe6ff] text-[#006492]",
-      dot: "bg-[#0086c4]",
+      className: "bg-sky-200 text-sky-700",
+      dot: "bg-sky-600",
     },
     WEEKLY_OFF: {
       label: "Weekly off",
-      className: "bg-[#ece9f2] text-[#646273]",
-      dot: "bg-[#aaa3ad]",
+      className: "bg-zinc-100 text-on-surface-variant",
+      dot: "bg-zinc-400",
     },
     ON_DUTY: {
       label: "On duty",
-      className: "bg-[#d9f1ff] text-[#005f79]",
-      dot: "bg-[#0091b3]",
+      className: "bg-sky-100 text-cyan-800",
+      dot: "bg-cyan-600",
     },
   };
   return values[status];

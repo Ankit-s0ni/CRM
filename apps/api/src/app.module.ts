@@ -8,45 +8,25 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './shared/database/database.module';
-import { TenancyModule } from './shared/tenancy/tenancy.module';
-import { TenantMiddleware } from './shared/tenancy/tenant.middleware';
-import { IdentityModule } from './modules/identity/identity.module';
+import { TenancyModule } from './platform/tenancy/public';
+import { TenantMiddleware } from './platform/tenancy/http';
+import { IdentityModule } from './platform/identity/public';
 import { AuthorizationModule } from './shared/authorization/authorization.module';
-import { WorkspaceModule } from './modules/workspace/workspace.module';
+import { WorkspaceProductModule } from './platform/workspace/public';
 import { ApiExceptionFilter } from './shared/http/api-exception.filter';
 import { RequestIdMiddleware } from './shared/http/request-id.middleware';
 import { createValidationPipe } from './shared/http/validation';
 import { OutboxModule } from './shared/events/outbox.module';
-import { OrganizationModule } from './modules/organization/organization.module';
-import { AccessModule } from './modules/access/access.module';
-import { AuditModule } from './shared/audit/audit.module';
+import { OrganizationModule } from './platform/organization/public';
+import { AccessModule } from './platform/access/public';
+import { AuditModule } from './platform/audit/public';
 import { LoggerModule } from 'nestjs-pino';
 import { HealthModule } from './shared/health/health.module';
 import { ObservabilityModule } from './shared/observability/observability.module';
-import { PlatformAuthModule } from './modules/platform/platform-auth/platform-auth.module';
-import { PlatformTenantsModule } from './modules/platform/tenants/platform-tenants.module';
-import { PlatformModulesModule } from './modules/platform/modules/platform-modules.module';
-import { ImpersonationModule } from './modules/platform/impersonation/impersonation.module';
-import { PlatformOperationsModule } from './modules/platform/operations/platform-operations.module';
-import { WorkspaceSettingsModule } from './modules/workspace-settings/workspace-settings.module';
-import { AttendanceConfigModule } from './modules/attendance-config/attendance-config.module';
-import { AttendanceDashboardModule } from './modules/attendance-dashboard/attendance-dashboard.module';
-import { AttendanceModule } from './modules/attendance/attendance.module';
-import { DeviceTrustModule } from './modules/device-trust/device-trust.module';
-import { BiometricsModule } from './modules/biometrics/biometrics.module';
-import { AttendanceVerificationModule } from './modules/attendance-verification/attendance-verification.module';
-import { SecurityAlertsModule } from './modules/security-alerts/security-alerts.module';
-import { FieldTrackingModule } from './modules/field-tracking/field-tracking.module';
-import { AttendanceSyncModule } from './modules/attendance-sync/attendance-sync.module';
-import { RuntimeConfigModule } from './modules/runtime-config/runtime-config.module';
-import { RegularizationModule } from './modules/regularization/regularization.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { ReportingModule } from './modules/reporting/reporting.module';
-import { PayrollLockModule } from './modules/payroll-lock/payroll-lock.module';
-import { LeaveModule } from './modules/leave/leave.module';
-import { BillingModule } from './modules/billing/billing.module';
-import { PlatformBillingModule } from './modules/platform/billing/platform-billing.module';
-import { TenantAuditModule } from './modules/tenant-audit/tenant-audit.module';
+import { NotificationsModule } from './platform/notifications/public';
+import { BillingModule } from './platform/billing/public';
+import { AttendanceProductModule } from './products/attendance/public';
+import { PlatformControlPlaneModule } from './platform/control-plane/public';
 
 @Module({
   imports: [
@@ -80,37 +60,17 @@ import { TenantAuditModule } from './modules/tenant-audit/tenant-audit.module';
     TenancyModule,
     DatabaseModule,
     IdentityModule,
-    WorkspaceModule,
+    WorkspaceProductModule,
     AuthorizationModule,
     OutboxModule,
     OrganizationModule,
     AccessModule,
     AuditModule,
     HealthModule,
-    PlatformAuthModule,
-    PlatformTenantsModule,
-    PlatformModulesModule,
-    ImpersonationModule,
-    PlatformOperationsModule,
-    WorkspaceSettingsModule,
-    AttendanceConfigModule,
-    AttendanceDashboardModule,
-    AttendanceModule,
-    DeviceTrustModule,
-    BiometricsModule,
-    AttendanceVerificationModule,
-    SecurityAlertsModule,
-    FieldTrackingModule,
-    AttendanceSyncModule,
-    RuntimeConfigModule,
-    RegularizationModule,
+    PlatformControlPlaneModule,
+    AttendanceProductModule,
     NotificationsModule,
-    ReportingModule,
-    PayrollLockModule,
-    LeaveModule,
     BillingModule,
-    PlatformBillingModule,
-    TenantAuditModule,
   ],
   controllers: [AppController],
   providers: [

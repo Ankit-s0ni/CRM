@@ -16,8 +16,8 @@ import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { generateTotp } from '../src/modules/platform/platform-auth/totp';
-import { TenantDeletionService } from '../src/modules/platform/tenants/tenant-deletion.service';
+import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
+import { TenantDeletionService } from '../src/platform/control-plane/tenants/tenant-deletion.service';
 
 describe('Sprint 8 tenant deletion and biometric purge (e2e)', () => {
   let app: INestApplication<App>;

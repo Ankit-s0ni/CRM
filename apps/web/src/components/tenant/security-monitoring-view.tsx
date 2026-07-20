@@ -230,25 +230,25 @@ export function SecurityMonitoringView() {
     <div className="mx-auto min-h-[calc(100vh-64px)] w-full max-w-[1440px] px-4 py-8 lg:px-6">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-[#4f46e5]">
+          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-primary-container">
             Attendance integrity
           </p>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-[-.02em] text-[#1b1b24]">
+            <h1 className="text-3xl font-bold tracking-[-.02em] text-zinc-900">
               Security Monitoring Feed
             </h1>
             <RouteFeatureInfo />
           </div>
-          <p className="mt-1 text-base text-[#464555]">
+          <p className="mt-1 text-base text-on-surface-variant">
             Real-time integrity tracking for attendance and geofencing.
           </p>
         </div>
-        <Card className="flex min-w-72 items-center gap-6 rounded-xl border-[#d9d5e3] bg-white p-4 shadow-sm">
+        <Card className="flex min-w-72 items-center gap-6 rounded-xl border-zinc-300 bg-white p-4 shadow-sm">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#777587]">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-outline">
               Violations in view
             </p>
-            <p className="text-2xl font-bold text-[#ba1a1a]">
+            <p className="text-2xl font-bold text-error">
               {response?.meta.total ?? 0}
             </p>
           </div>
@@ -258,7 +258,7 @@ export function SecurityMonitoringView() {
                 key={height + index}
                 className={cn(
                   "flex-1 rounded-t-sm",
-                  index === 6 ? "bg-[#ba1a1a]" : "bg-[#4f46e5]/15",
+                  index === 6 ? "bg-error" : "bg-primary-container/15",
                 )}
                 style={{ height: `${height}%` }}
               />
@@ -277,8 +277,8 @@ export function SecurityMonitoringView() {
             className={cn(
               "shrink-0 rounded-full border-0 px-5 text-sm font-semibold",
               type === filter.value
-                ? "bg-[#3525cd] text-white hover:bg-[#4f46e5] hover:text-white"
-                : "bg-[#eae6f4] text-[#464555] hover:bg-[#e2dfff]",
+                ? "bg-primary text-white hover:bg-primary-container hover:text-white"
+                : "bg-surface-container-high text-on-surface-variant hover:bg-zinc-100",
             )}
           >
             {filter.label}
@@ -295,7 +295,7 @@ export function SecurityMonitoringView() {
           onChange={(event) =>
             updateQuery({ status: event.target.value as AlertStatus | "" })
           }
-          className="ml-auto h-9 shrink-0 rounded-full border border-[#c7c4d8] bg-white px-4 text-sm font-semibold text-[#464555]"
+          className="ml-auto h-9 shrink-0 rounded-full border border-zinc-300 bg-white px-4 text-sm font-semibold text-on-surface-variant"
         >
           <option value="">All statuses</option>
           <option value="OPEN">Open</option>
@@ -305,7 +305,7 @@ export function SecurityMonitoringView() {
         </select>
         {severity && (
           <button
-            className="shrink-0 rounded-full bg-[#ffdad6] px-4 py-2 text-xs font-bold text-[#93000a]"
+            className="shrink-0 rounded-full bg-error-container px-4 py-2 text-xs font-bold text-on-error-container"
             onClick={() => updateQuery({ severity: "" })}
             type="button"
           >
@@ -315,7 +315,7 @@ export function SecurityMonitoringView() {
       </div>
 
       {error && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl bg-[#ffdad6] p-4 text-[#93000a]">
+        <div className="mb-5 flex items-center gap-3 rounded-xl bg-error-container p-4 text-on-error-container">
           <AlertTriangle className="size-5" />
           <p className="text-sm font-medium">{error}</p>
           <Button variant="ghost" className="ml-auto" onClick={load}>
@@ -340,11 +340,11 @@ export function SecurityMonitoringView() {
           ))}
         </section>
       ) : (
-        <Card className="grid min-h-72 place-items-center border-[#d9d5e3] bg-white text-center">
+        <Card className="grid min-h-72 place-items-center border-zinc-300 bg-white text-center">
           <div>
-            <ShieldCheck className="mx-auto mb-4 size-12 text-[#006e2d]" />
+            <ShieldCheck className="mx-auto mb-4 size-12 text-emerald-800" />
             <h2 className="text-xl font-bold">No matching security events</h2>
-            <p className="mt-1 text-sm text-[#777587]">
+            <p className="mt-1 text-sm text-outline">
               Change the filters or check back after new attendance attempts.
             </p>
           </div>
@@ -402,9 +402,9 @@ function AlertCard({
   return (
     <Card
       className={cn(
-        "group overflow-hidden rounded-xl border-[#d9d5e3] bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg",
+        "group overflow-hidden rounded-xl border-zinc-300 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg",
         featured
-          ? "col-span-12 border-l-4 border-l-[#ba1a1a] lg:col-span-8"
+          ? "col-span-12 border-l-4 border-l-error lg:col-span-8"
           : "col-span-12 md:col-span-6 lg:col-span-4",
       )}
     >
@@ -421,7 +421,7 @@ function AlertCard({
             >
               {alert.severity}
             </span>
-            <span className="text-xs font-semibold text-[#777587]">
+            <span className="text-xs font-semibold text-outline">
               {relativeTime(alert.createdAt)}
               {alert.employee?.department?.name
                 ? ` • ${alert.employee.department.name}`
@@ -429,14 +429,14 @@ function AlertCard({
             </span>
           </div>
           <div className="mb-4 flex items-start gap-4">
-            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
               <AlertTypeIcon type={alert.alertType} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold leading-7 text-[#1b1b24]">
+              <h2 className="text-xl font-semibold leading-7 text-zinc-900">
                 {alert.title}
               </h2>
-              <p className="mt-1 text-sm text-[#464555]">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 <strong>
                   {alert.employee?.fullName ?? "Unknown employee"}
                 </strong>
@@ -446,7 +446,7 @@ function AlertCard({
               </p>
             </div>
           </div>
-          <div className="mb-5 grid grid-cols-2 gap-4 border-y border-[#e4e1ee] py-4 text-sm">
+          <div className="mb-5 grid grid-cols-2 gap-4 border-y border-surface-variant py-4 text-sm">
             <Metric
               label="Violation"
               value={typeLabel(alert.alertType)}
@@ -469,7 +469,7 @@ function AlertCard({
           <div className="mt-auto flex flex-wrap gap-3">
             <Button
               onClick={onOpen}
-              className="bg-[#3525cd] text-white hover:bg-[#4f46e5]"
+              className="bg-primary text-white hover:bg-primary-container"
             >
               <Eye className="size-4" /> View verification log
             </Button>
@@ -513,12 +513,12 @@ function AlertDrawer({
   return (
     <div className="fixed inset-0 z-[70] bg-black/40" onMouseDown={onClose}>
       <aside
-        className="ml-auto h-full w-full max-w-xl overflow-y-auto bg-[#fcf8ff] p-6 shadow-2xl"
+        className="ml-auto h-full w-full max-w-xl overflow-y-auto bg-surface p-6 shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#4f46e5]">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary-container">
               Verification evidence
             </p>
             <h2 className="mt-1 text-2xl font-bold">{alert.title}</h2>
@@ -533,7 +533,7 @@ function AlertDrawer({
             <X className="size-5" />
           </Button>
         </div>
-        <Card className="mb-5 border-[#d9d5e3] bg-white p-5">
+        <Card className="mb-5 border-zinc-300 bg-white p-5">
           <div className="grid grid-cols-2 gap-5">
             <Metric
               label="Employee"
@@ -554,7 +554,7 @@ function AlertDrawer({
           />
         )}
         {evidence?.selfie && (
-          <Card className="mt-5 overflow-hidden border-[#d9d5e3] bg-white p-4">
+          <Card className="mt-5 overflow-hidden border-zinc-300 bg-white p-4">
             {/* The URL is fetched only after forensic authorization and expires in 60 seconds. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -562,15 +562,15 @@ function AlertDrawer({
               alt="Authorized attendance attempt evidence"
               className="max-h-80 w-full rounded-lg object-contain"
             />
-            <p className="mt-2 text-xs text-[#777587]">
+            <p className="mt-2 text-xs text-outline">
               Private evidence link expires in {evidence.selfie.expiresIn}{" "}
               seconds.
             </p>
           </Card>
         )}
         {!evidence && alert.verificationLogId && (
-          <Card className="mt-5 grid min-h-36 place-items-center border-[#d9d5e3] bg-white">
-            <p className="text-sm text-[#777587]">
+          <Card className="mt-5 grid min-h-36 place-items-center border-zinc-300 bg-white">
+            <p className="text-sm text-outline">
               Authorizing private evidence…
             </p>
           </Card>
@@ -659,10 +659,10 @@ function MapPreview({
   distance?: number;
 }) {
   return (
-    <div className="relative min-h-48 w-full overflow-hidden rounded-xl border border-[#c7c4d8] bg-[#f0ecf9] md:w-64">
-      <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(#c7c4d8_1px,transparent_1px),linear-gradient(90deg,#c7c4d8_1px,transparent_1px)] [background-size:32px_32px]" />
-      <div className="absolute left-1/2 top-1/2 size-32 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#4f46e5]/50 bg-[#4f46e5]/10" />
-      <MapPin className="absolute left-[72%] top-[28%] size-9 fill-[#ba1a1a] text-[#ba1a1a] drop-shadow" />
+    <div className="relative min-h-48 w-full overflow-hidden rounded-xl border border-zinc-300 bg-zinc-50 md:w-64">
+      <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(#cecece_1px,transparent_1px),linear-gradient(90deg,#cecece_1px,transparent_1px)] [background-size:32px_32px]" />
+      <div className="absolute left-1/2 top-1/2 size-32 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-primary-container/50 bg-primary-container/10" />
+      <MapPin className="absolute left-[72%] top-[28%] size-9 fill-error text-error drop-shadow" />
       <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-white/90 p-2 text-center text-[10px] font-bold shadow backdrop-blur">
         {distance !== undefined
           ? `${formatDistance(distance)} FROM APPROVED ZONE`
@@ -684,7 +684,7 @@ function LoadingFeed() {
         <div
           key={`${span}-${index}`}
           className={cn(
-            "col-span-12 h-64 animate-pulse rounded-xl bg-[#eae6f4]",
+            "col-span-12 h-64 animate-pulse rounded-xl bg-surface-container-high",
             span === 8 ? "lg:col-span-8" : "md:col-span-6 lg:col-span-4",
           )}
         />
@@ -704,13 +704,13 @@ function Metric({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#777587]">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-outline">
         {label}
       </p>
       <p
         className={cn(
           "truncate text-sm font-semibold",
-          danger && "text-[#ba1a1a]",
+          danger && "text-error",
         )}
       >
         {value}
@@ -744,9 +744,9 @@ function statusLabel(status: AlertStatus) {
 }
 
 function severityClass(severity: SecurityAlert["severity"]) {
-  if (severity === "CRITICAL") return "bg-[#ffdad6] text-[#93000a]";
-  if (severity === "WARNING") return "bg-[#ffdcc3] text-[#6e3900]";
-  return "bg-[#e2dfff] text-[#3525cd]";
+  if (severity === "CRITICAL") return "bg-error-container text-on-error-container";
+  if (severity === "WARNING") return "bg-amber-200 text-amber-900";
+  return "bg-zinc-100 text-primary";
 }
 
 function formatDistance(meters: number) {

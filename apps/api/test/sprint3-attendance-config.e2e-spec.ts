@@ -9,10 +9,10 @@ import { resolve } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AuthService } from '../src/modules/identity/auth.service';
-import { EmployeeImportStorageService } from '../src/modules/organization/imports/employee-import-storage.service';
+import { AuthService } from '../src/platform/identity/auth.service';
+import { EmployeeImportStorageService } from '../src/platform/organization/imports/employee-import-storage.service';
 import { DEFAULT_ROLE_PERMISSIONS } from '../src/shared/authorization/permissions.constants';
-import { TenantContextService } from '../src/shared/tenancy/tenant-context.service';
+import { TenantContextService } from '../src/platform/tenancy/public';
 import { TestDataFactory } from './support/factories';
 
 type Session = { tenantId: string; accessToken: string; userId: string };

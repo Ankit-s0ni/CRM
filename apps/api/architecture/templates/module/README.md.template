@@ -1,0 +1,22 @@
+# {{ModuleName}}
+
+## Purpose
+
+Describe the business capability and the team that owns it.
+
+## Owns
+
+- Tables and business invariants owned by this module
+- Commands, queries, routes, and versioned events
+
+## Does Not Own
+
+- Explicitly list adjacent responsibilities to prevent overlap
+
+## Public Contract
+
+Only exports from `public.ts` may be imported by another module.
+
+## Local Verification
+
+Document the focused unit, integration, and e2e commands for this module.

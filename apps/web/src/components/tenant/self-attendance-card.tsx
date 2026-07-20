@@ -115,14 +115,14 @@ export function SelfAttendanceCard({
     return (
       <div
         className={cn(
-          "animate-pulse rounded-2xl bg-[#eeeaf7]",
+          "animate-pulse rounded-2xl bg-zinc-100",
           compact ? "h-24" : "h-48",
         )}
       />
     );
   if (!today)
     return error ? (
-      <div className="rounded-xl border border-[#ffb4ab] bg-[#ffdad6] p-4 text-sm text-[#93000a]">
+      <div className="rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
         {error}
       </div>
     ) : null;
@@ -149,13 +149,13 @@ export function SelfAttendanceCard({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-[#ddd8f0] bg-white shadow-sm",
+        "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm",
         compact ? "p-4" : "p-5",
       )}
       aria-label="My attendance"
     >
       <div className="flex flex-wrap items-center gap-4">
-        <div className="grid size-11 place-items-center rounded-xl bg-[#ece9ff] text-[#3525cd]">
+        <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
           <TimerReset className="size-5" />
         </div>
         <div className="min-w-36 flex-1">
@@ -170,7 +170,7 @@ export function SelfAttendanceCard({
               {tone.label}
             </span>
           </div>
-          <p className="mt-1 text-xs text-[#777587]">
+          <p className="mt-1 text-xs text-outline">
             {today.shift
               ? `${today.shift.name ?? "Shift"} · ${today.shift.startTime}–${today.shift.endTime}`
               : today.timezone}
@@ -181,20 +181,20 @@ export function SelfAttendanceCard({
             <strong className="block text-lg">
               {formatMinutes(today.totals.workMinutes)}
             </strong>
-            <span className="text-[10px] uppercase text-[#777587]">Worked</span>
+            <span className="text-[10px] uppercase text-outline">Worked</span>
           </div>
           <div>
             <strong className="block text-lg">
               {formatMinutes(today.totals.breakMinutes)}
             </strong>
-            <span className="text-[10px] uppercase text-[#777587]">Break</span>
+            <span className="text-[10px] uppercase text-outline">Break</span>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             disabled={busy || today.isLocked}
             onClick={() => punch(primaryAction)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#3525cd] px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
           >
             <PrimaryIcon className="size-4" />
             {busy ? "Saving…" : label}
@@ -203,7 +203,7 @@ export function SelfAttendanceCard({
             <button
               disabled={busy || today.isLocked}
               onClick={() => punch("break-start")}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#c7c4d8] px-4 text-sm font-semibold text-[#3525cd]"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary"
             >
               <Coffee className="size-4" />
               Break
@@ -212,7 +212,7 @@ export function SelfAttendanceCard({
         </div>
       </div>
       {error && (
-        <p className="mt-3 rounded-lg bg-[#ffdad6] p-3 text-xs text-[#93000a]">
+        <p className="mt-3 rounded-lg bg-error-container p-3 text-xs text-on-error-container">
           {error}
         </p>
       )}

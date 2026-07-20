@@ -3,7 +3,7 @@ import { VerifyEmailForm } from "@/components/verify-email-form";
 
 export default function VerifyEmailPage() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fcf8ff] px-6 py-10">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface px-6 py-10">
       <main className="relative z-10 w-full max-w-[420px]">
         <Suspense>
           <VerifyEmailForm />

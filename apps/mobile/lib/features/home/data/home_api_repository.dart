@@ -88,7 +88,17 @@ String _shiftLabel(Map<String, dynamic>? shift) {
   final name = shift['name'] as String? ?? 'Assigned shift';
   final start = shift['startTime'] as String?;
   final end = shift['endTime'] as String?;
-  return start == null || end == null ? name : '$name · $start–$end';
+  
+  if (start == null || end == null) return name;
+  
+  final timeDash = '$start-$end';
+  final timeEnDash = '$start–$end';
+  
+  if (name.contains(timeDash) || name.contains(timeEnDash)) {
+    return name;
+  }
+  
+  return '$name · $timeEnDash';
 }
 
 String _dateLabel(String? value) {

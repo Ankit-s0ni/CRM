@@ -122,7 +122,7 @@ export function AttendanceCapabilitiesView() {
       description="Control the tenant-wide capability boundary. Policy assignments decide the exact behavior for each employee."
       action={
         <Button
-          className="h-11 bg-[#3525cd] px-5 text-white hover:bg-[#2b1fb0]"
+          className="h-11 bg-primary px-5 text-white hover:bg-primary/90"
           disabled={
             !canManage || saving || !capabilities?.fieldTrackingEntitled
           }
@@ -178,7 +178,7 @@ export function AttendanceCapabilitiesView() {
           <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
             <Panel className="p-7">
               <div className="flex items-start gap-4">
-                <span className="grid size-11 place-items-center rounded-xl bg-[#e2dfff] text-[#3525cd]">
+                <span className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
                   <Radar className="size-5" />
                 </span>
                 <div>
@@ -188,7 +188,7 @@ export function AttendanceCapabilitiesView() {
                     </h2>
                     <FeatureInfo helpKey="background-tracking" />
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-[#5e5b68]">
+                  <p className="mt-1 text-sm leading-6 text-zinc-500">
                     Turning this off ends active field sessions and rejects new
                     tracking requests. Eligible employee policies still need to
                     enable field tracking individually.
@@ -196,13 +196,13 @@ export function AttendanceCapabilitiesView() {
                 </div>
               </div>
               {!capabilities.fieldTrackingEntitled ? (
-                <div className="mt-6 flex gap-3 rounded-xl border border-[#ddd7ea] bg-[#f6f3fb] p-4">
-                  <LockKeyhole className="mt-0.5 size-5 shrink-0 text-[#5e5b68]" />
+                <div className="mt-6 flex gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                  <LockKeyhole className="mt-0.5 size-5 shrink-0 text-zinc-500" />
                   <div>
                     <p className="text-sm font-bold">
                       Not included for this workspace
                     </p>
-                    <p className="mt-1 text-sm text-[#5e5b68]">
+                    <p className="mt-1 text-sm text-zinc-500">
                       {canManageSubscription
                         ? "Review the workspace subscription with the DeltCRM platform owner before enabling tracked field work."
                         : "Field Tracking is unavailable for this workspace. Office and non-tracked attendance continue normally."}
@@ -211,12 +211,12 @@ export function AttendanceCapabilitiesView() {
                 </div>
               ) : (
                 <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_180px]">
-                  <label className="flex items-center justify-between gap-4 rounded-xl border border-[#e4e1ee] p-4">
+                  <label className="flex items-center justify-between gap-4 rounded-xl border border-surface-variant p-4">
                     <span>
                       <span className="block text-sm font-bold">
                         Allow field tracking
                       </span>
-                      <span className="mt-1 block text-xs text-[#777587]">
+                      <span className="mt-1 block text-xs text-outline">
                         Effective only for FIELD and explicitly allowed HYBRID
                         employees.
                       </span>
@@ -224,7 +224,7 @@ export function AttendanceCapabilitiesView() {
                     <input
                       aria-label="Allow field tracking"
                       checked={fieldEnabled}
-                      className="size-5 accent-[#3525cd]"
+                      className="size-5 accent-primary"
                       disabled={!canManage}
                       onChange={(event) =>
                         setFieldEnabled(event.target.checked)
@@ -249,7 +249,7 @@ export function AttendanceCapabilitiesView() {
                 </div>
               )}
               {saved && (
-                <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#006e2d]">
+                <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-800">
                   <CheckCircle2 className="size-4" />
                   Runtime configuration updated.
                 </p>
@@ -258,7 +258,7 @@ export function AttendanceCapabilitiesView() {
 
             <Panel className="p-7">
               <h2 className="text-lg font-bold">Employee policy impact</h2>
-              <p className="mt-2 text-sm leading-6 text-[#5e5b68]">
+              <p className="mt-2 text-sm leading-6 text-zinc-500">
                 Department and employee assignments override the tenant default.
                 The mobile app receives only the final effective behavior.
               </p>
@@ -285,7 +285,7 @@ export function AttendanceCapabilitiesView() {
                 />
               </dl>
               <Link
-                className="mt-6 flex h-9 w-full items-center justify-center rounded-md border border-[#d9d5e5] bg-white px-4 text-sm font-medium transition hover:bg-[#f6f3fb]"
+                className="mt-6 flex h-9 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium transition hover:bg-zinc-50"
                 href="/app/attendance/policies"
               >
                 Manage employee policies
@@ -314,7 +314,7 @@ function StatusCard({
   return (
     <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-[#f0ecf9] text-[#3525cd]">
+        <span className="grid size-10 place-items-center rounded-lg bg-zinc-50 text-primary">
           <Icon className="size-5" />
         </span>
         <div className="flex items-center gap-1">
@@ -322,23 +322,23 @@ function StatusCard({
             <FeatureInfo className="min-h-9 min-w-9" helpKey={helpKey} />
           )}
           <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "bg-[#d8f8df] text-[#005320]" : "bg-[#efedf3] text-[#646273]"}`}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "bg-emerald-100 text-emerald-900" : "bg-zinc-100 text-on-surface-variant"}`}
           >
             {enabled ? "Enabled" : "Off"}
           </span>
         </div>
       </div>
       <h2 className="mt-4 font-bold">{label}</h2>
-      <p className="mt-1 text-xs leading-5 text-[#777587]">{detail}</p>
+      <p className="mt-1 text-xs leading-5 text-outline">{detail}</p>
     </Panel>
   );
 }
 
 function Impact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f3fb] px-4 py-3">
-      <dt className="text-[#5e5b68]">{label}</dt>
-      <dd className="font-bold text-[#302f39]">{value}</dd>
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-zinc-50 px-4 py-3">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="font-bold text-zinc-700">{value}</dd>
     </div>
   );
 }

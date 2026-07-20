@@ -190,11 +190,11 @@ export function TenantDashboard() {
       return (
         <div className="mx-auto max-w-4xl p-5 lg:p-8">
           <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#4f46e5]">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
               Employee workspace
             </p>
             <h1 className="mt-1 text-3xl font-bold">Today</h1>
-            <p className="mt-1 text-sm text-[#777587]">
+            <p className="mt-1 text-sm text-outline">
               Record your workday and review the server-confirmed state.
             </p>
           </div>
@@ -268,13 +268,13 @@ function DashboardHeader({
   return (
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#4f46e5]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-container">
           Workspace operations
         </p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">
           HR operations
         </h1>
-        <p className="mt-1 text-sm text-[#777587]">
+        <p className="mt-1 text-sm text-outline">
           Welcome, {userName}. Review today&apos;s workforce and every queue
           that needs action.
         </p>
@@ -283,14 +283,14 @@ function DashboardHeader({
         className={cn(
           "rounded-full border px-4 py-2 text-xs font-bold",
           stale
-            ? "border-[#f2c078] bg-[#fff3df] text-[#895100]"
-            : "border-[#bce9ca] bg-[#e8f8ed] text-[#006e2d]",
+            ? "border-[#f2c078] bg-amber-100 text-amber-800"
+            : "border-emerald-200 bg-emerald-50 text-emerald-800",
         )}
       >
         <span
           className={cn(
             "mr-2 inline-block size-2 rounded-full",
-            stale ? "bg-[#d97706]" : "animate-pulse bg-[#00a642]",
+            stale ? "bg-amber-600" : "animate-pulse bg-emerald-600",
           )}
         />
         {data
@@ -354,16 +354,16 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
   return (
     <section
       aria-label="Business Admin overview"
-      className="mb-5 rounded-2xl border border-[#ddd8f0] bg-gradient-to-r from-[#f4f1ff] via-white to-[#eefbf3] p-4"
+      className="mb-5 rounded-2xl border border-zinc-200 bg-gradient-to-r from-surface-variant via-white to-[#eefbf3] p-4"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">Workspace overview</h2>
-          <p className="text-xs text-[#777587]">
+          <p className="text-xs text-outline">
             Business Admin controls and readiness
           </p>
         </div>
-        <span className="rounded-full bg-[#3525cd] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+        <span className="rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
           Owner view
         </span>
       </div>
@@ -372,15 +372,15 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
           <Link
             key={label}
             href={href}
-            className="group rounded-xl border border-white bg-white/85 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#aaa3cd]"
+            className="group rounded-xl border border-white bg-white/85 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400"
           >
             <div className="flex items-start justify-between">
-              <Icon className="size-5 text-[#4f46e5]" />
-              <ArrowRight className="size-4 text-[#aaa3cd] transition group-hover:translate-x-0.5" />
+              <Icon className="size-5 text-primary-container" />
+              <ArrowRight className="size-4 text-zinc-400 transition group-hover:translate-x-0.5" />
             </div>
             <div className="mt-3 text-xl font-bold">{value}</div>
-            <div className="text-xs font-semibold text-[#464555]">{label}</div>
-            <p className="mt-1 truncate text-[11px] text-[#777587]">{detail}</p>
+            <div className="text-xs font-semibold text-on-surface-variant">{label}</div>
+            <p className="mt-1 truncate text-[11px] text-outline">{detail}</p>
           </Link>
         ))}
       </div>
@@ -425,12 +425,12 @@ function WorkforceOverview({
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <h2 className="font-semibold">Workforce</h2>
-          <p className="text-xs text-[#777587]">
+          <p className="text-xs text-outline">
             Counts follow your employee reporting scope
           </p>
         </div>
         <Link
-          className="text-xs font-bold text-[#3525cd]"
+          className="text-xs font-bold text-primary"
           href="/app/employees"
         >
           Open directory
@@ -439,15 +439,15 @@ function WorkforceOverview({
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {cards.map((card) => (
           <Link
-            className="group rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm transition hover:border-[#4f46e5]"
+            className="group rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-primary-container"
             href={card.href}
             key={card.label}
           >
             <div className="flex items-start justify-between gap-2">
               <strong className="text-2xl">{card.value}</strong>
-              <ArrowRight className="size-4 text-[#aaa3cd] group-hover:text-[#3525cd]" />
+              <ArrowRight className="size-4 text-zinc-400 group-hover:text-primary" />
             </div>
-            <span className="mt-1 block text-xs font-semibold text-[#646273]">
+            <span className="mt-1 block text-xs font-semibold text-on-surface-variant">
               {card.label}
             </span>
           </Link>
@@ -463,43 +463,43 @@ function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
       label: "Present",
       value: summary.present,
       href: "/app/attendance/register?status=CLOCKED_IN",
-      tone: "text-[#006e2d]",
-      accent: "bg-[#d8f8df]",
+      tone: "text-emerald-800",
+      accent: "bg-emerald-100",
     },
     {
       label: "Late",
       value: summary.late,
       href: "/app/attendance/register?status=LATE",
-      tone: "text-[#895100]",
-      accent: "bg-[#ffddb0]",
+      tone: "text-amber-800",
+      accent: "bg-amber-200",
     },
     {
       label: "Absent",
       value: summary.absent,
       href: "/app/attendance/register?status=ABSENT",
-      tone: "text-[#ba1a1a]",
-      accent: "bg-[#ffdad6]",
+      tone: "text-error",
+      accent: "bg-error-container",
     },
     {
       label: "On field",
       value: summary.onField,
       href: "/app/attendance/register?status=ON_FIELD",
-      tone: "text-[#006492]",
-      accent: "bg-[#cbe6ff]",
+      tone: "text-sky-700",
+      accent: "bg-sky-200",
     },
     {
       label: "On break",
       value: summary.onBreak,
       href: "/app/attendance/register?status=ON_BREAK",
-      tone: "text-[#5d3f00]",
-      accent: "bg-[#f4e4bd]",
+      tone: "text-amber-900",
+      accent: "bg-amber-200",
     },
     {
       label: "Not yet in",
       value: summary.notYetIn,
       href: "/app/attendance/register?status=NOT_YET_IN",
-      tone: "text-[#464555]",
-      accent: "bg-[#ece9f2]",
+      tone: "text-on-surface-variant",
+      accent: "bg-zinc-100",
     },
   ];
   return (
@@ -511,10 +511,10 @@ function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
         <Link
           href={card.href}
           key={card.label}
-          className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm transition hover:border-[#4f46e5]"
+          className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-primary-container"
         >
           <div className={cn("mb-3 size-2 rounded-full", card.accent)} />
-          <p className="text-xs font-medium text-[#777587]">{card.label}</p>
+          <p className="text-xs font-medium text-outline">{card.label}</p>
           <p className={cn("mt-1 text-2xl font-bold", card.tone)}>
             {card.value}
           </p>
@@ -540,26 +540,26 @@ function DashboardToolbar({
   onView: (value: "grid" | "list") => void;
 }) {
   return (
-    <div className="mb-4 rounded-xl border border-[#e4e1ee] bg-white p-3 shadow-sm">
+    <div className="mb-4 rounded-xl border border-surface-variant bg-white p-3 shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative min-w-56 flex-1">
           <span className="sr-only">Search dashboard employees</span>
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#777587]" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
           <input
             value={search}
             onChange={(event) => onSearch(event.target.value)}
             placeholder="Search employees..."
-            className="h-9 w-full rounded-lg bg-[#f4f1f8] pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]"
+            className="h-9 w-full rounded-lg bg-zinc-50 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary-container"
           />
         </label>
-        <div className="ml-auto flex rounded-lg bg-[#f4f1f8] p-1">
+        <div className="ml-auto flex rounded-lg bg-zinc-50 p-1">
           <button
             aria-label="Grid view"
             aria-pressed={view === "grid"}
             onClick={() => onView("grid")}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "grid" && "bg-white text-[#3525cd] shadow-sm",
+              view === "grid" && "bg-white text-primary shadow-sm",
             )}
           >
             <LayoutGrid className="size-4" />
@@ -570,7 +570,7 @@ function DashboardToolbar({
             onClick={() => onView("list")}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "list" && "bg-white text-[#3525cd] shadow-sm",
+              view === "list" && "bg-white text-primary shadow-sm",
             )}
           >
             <List className="size-4" />
@@ -586,8 +586,8 @@ function DashboardToolbar({
             className={cn(
               "shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
               status === filter.value
-                ? "border-[#3525cd] bg-[#3525cd] text-white"
-                : "border-[#ddd8e7] bg-white text-[#646273] hover:border-[#aaa3cd]",
+                ? "border-primary bg-primary text-white"
+                : "border-zinc-200 bg-white text-on-surface-variant hover:border-zinc-400",
             )}
           >
             {filter.label}
@@ -607,11 +607,11 @@ function EmployeeBoard({
 }) {
   if (!employees.length)
     return (
-      <div className="grid min-h-72 place-items-center rounded-xl border border-dashed border-[#c7c4d8] bg-white p-8 text-center">
+      <div className="grid min-h-72 place-items-center rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center">
         <div>
-          <UsersRound className="mx-auto size-9 text-[#aaa3cd]" />
+          <UsersRound className="mx-auto size-9 text-zinc-400" />
           <h2 className="mt-3 font-semibold">No employees match this view</h2>
-          <p className="mt-1 text-sm text-[#777587]">
+          <p className="mt-1 text-sm text-outline">
             Try another status or clear the search.
           </p>
         </div>
@@ -647,12 +647,12 @@ function EmployeeCard({
   return (
     <article
       className={cn(
-        "rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm transition hover:border-[#aaa3cd]",
+        "rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-zinc-400",
         compact && "flex flex-wrap items-center gap-4",
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#ddd8ff] to-[#d8f8df] text-sm font-bold text-[#3525cd]">
+        <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-sm font-bold text-primary">
           {initials(employee.fullName)}
           <span
             className={cn(
@@ -665,7 +665,7 @@ function EmployeeCard({
           <h3 className="truncate text-sm font-semibold">
             {employee.fullName}
           </h3>
-          <p className="truncate text-xs text-[#777587]">
+          <p className="truncate text-xs text-outline">
             {employee.designation || employee.employeeCode} ·{" "}
             {employee.department.name}
           </p>
@@ -685,14 +685,14 @@ function EmployeeCard({
         >
           {status.label}
         </span>
-        <span className="text-[11px] text-[#646273]">
+        <span className="text-[11px] text-on-surface-variant">
           {employee.checkinTime
             ? `In ${formatTime(employee.checkinTime)}`
             : "No check-in"}
         </span>
       </div>
       {!compact && (
-        <div className="mt-4 flex items-center justify-between border-t border-[#f0edf5] pt-3 text-[11px] text-[#777587]">
+        <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3 text-[11px] text-outline">
           <span className="inline-flex items-center gap-1">
             <MapPin className="size-3" />
             {employee.office?.officeName || employee.workType}
@@ -730,7 +730,7 @@ function NeedsAttention({
       body: "Requests awaiting review",
       href: "/app/attendance/regularizations?status=PENDING",
       icon: CalendarClock,
-      tone: "bg-[#ece9ff] text-[#3525cd]",
+      tone: "bg-zinc-50 text-primary",
     });
   }
   if (openSecurityAlerts !== null) {
@@ -740,7 +740,7 @@ function NeedsAttention({
       body: "Open or acknowledged alerts",
       href: "/app/attendance/security?status=OPEN",
       icon: ShieldAlert,
-      tone: "bg-[#ffdad6] text-[#ba1a1a]",
+      tone: "bg-error-container text-error",
     });
   }
   if (attention.absenteeAlerts !== null) {
@@ -750,7 +750,7 @@ function NeedsAttention({
       body: "Employees past alert grace",
       href: "/app/attendance/register?status=ABSENT",
       icon: AlertTriangle,
-      tone: "bg-[#ffddb0] text-[#895100]",
+      tone: "bg-amber-200 text-amber-800",
     });
   }
   if (queues?.pendingLeave !== null && queues?.pendingLeave !== undefined) {
@@ -760,7 +760,7 @@ function NeedsAttention({
       body: "Requests awaiting a decision",
       href: "/app/attendance/leave/approvals?status=PENDING",
       icon: Umbrella,
-      tone: "bg-[#e4f2ff] text-[#005f8d]",
+      tone: "bg-sky-50 text-sky-800",
     });
   }
   if (queues?.pendingDevices !== null && queues?.pendingDevices !== undefined) {
@@ -770,24 +770,24 @@ function NeedsAttention({
       body: "Registrations awaiting approval",
       href: "/app/attendance/devices?status=PENDING_APPROVAL",
       icon: Smartphone,
-      tone: "bg-[#eee9ff] text-[#3525cd]",
+      tone: "bg-zinc-50 text-primary",
     });
   }
   return (
-    <aside className="rounded-xl border border-[#e4e1ee] bg-white p-4 shadow-sm xl:sticky xl:top-20">
+    <aside className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm xl:sticky xl:top-20">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-semibold">Needs attention</h2>
-          <p className="text-xs text-[#777587]">Live operational queues</p>
+          <p className="text-xs text-outline">Live operational queues</p>
         </div>
-        <CircleDot className="size-5 text-[#4f46e5]" />
+        <CircleDot className="size-5 text-primary-container" />
       </div>
       <div className="mt-4 grid gap-3">
         {items.map(({ label, count, body, href, icon: Icon, tone }) => (
           <Link
             key={label}
             href={href}
-            className="group rounded-xl border border-[#ece9f2] p-4 transition hover:border-[#aaa3cd]"
+            className="group rounded-xl border border-zinc-100 p-4 transition hover:border-zinc-400"
           >
             <div className="flex items-start gap-3">
               <span
@@ -803,21 +803,21 @@ function NeedsAttention({
                   <strong className="text-xl">{count}</strong>
                   <span className="text-xs font-semibold">{label}</span>
                 </div>
-                <p className="mt-1 text-[11px] text-[#777587]">{body}</p>
+                <p className="mt-1 text-[11px] text-outline">{body}</p>
               </div>
-              <ArrowRight className="ml-auto mt-2 size-4 text-[#aaa3cd] transition group-hover:translate-x-0.5" />
+              <ArrowRight className="ml-auto mt-2 size-4 text-zinc-400 transition group-hover:translate-x-0.5" />
             </div>
           </Link>
         ))}
         {!items.length && (
-          <p className="rounded-xl bg-[#f8f5fc] p-4 text-sm text-[#777587]">
+          <p className="rounded-xl bg-zinc-50 p-4 text-sm text-outline">
             No authorized action queues are waiting for you.
           </p>
         )}
       </div>
       <Link
         href="/app/attendance/register"
-        className="mt-4 flex h-10 items-center justify-center gap-2 rounded-lg border border-[#c7c4d8] text-xs font-semibold text-[#3525cd]"
+        className="mt-4 flex h-10 items-center justify-center gap-2 rounded-lg border border-zinc-300 text-xs font-semibold text-primary"
       >
         Open attendance register <ArrowRight className="size-3" />
       </Link>
@@ -832,38 +832,38 @@ function statusPresentation(status: DashboardStatus) {
   > = {
     CLOCKED_IN: {
       label: "Clocked in",
-      badge: "bg-[#d8f8df] text-[#006e2d]",
-      dot: "bg-[#00a642]",
+      badge: "bg-emerald-100 text-emerald-800",
+      dot: "bg-emerald-600",
     },
     LATE: {
       label: "Late",
-      badge: "bg-[#ffddb0] text-[#895100]",
-      dot: "bg-[#ef9d00]",
+      badge: "bg-amber-200 text-amber-800",
+      dot: "bg-amber-500",
     },
     ABSENT: {
       label: "Absent",
-      badge: "bg-[#ffdad6] text-[#ba1a1a]",
-      dot: "bg-[#d32f2f]",
+      badge: "bg-error-container text-error",
+      dot: "bg-red-600",
     },
     ON_FIELD: {
       label: "On field",
-      badge: "bg-[#cbe6ff] text-[#006492]",
-      dot: "bg-[#0086c4]",
+      badge: "bg-sky-200 text-sky-700",
+      dot: "bg-sky-600",
     },
     ON_BREAK: {
       label: "On break",
-      badge: "bg-[#f4e4bd] text-[#5d3f00]",
-      dot: "bg-[#c58b00]",
+      badge: "bg-amber-200 text-amber-900",
+      dot: "bg-amber-600",
     },
     NOT_YET_IN: {
       label: "Not yet in",
-      badge: "bg-[#ece9f2] text-[#646273]",
-      dot: "bg-[#aaa3ad]",
+      badge: "bg-zinc-100 text-on-surface-variant",
+      dot: "bg-zinc-400",
     },
     OFF: {
       label: "Off",
-      badge: "bg-[#ece9f2] text-[#646273]",
-      dot: "bg-[#aaa3ad]",
+      badge: "bg-zinc-100 text-on-surface-variant",
+      dot: "bg-zinc-400",
     },
   };
   return values[status];

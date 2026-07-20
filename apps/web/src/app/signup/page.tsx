@@ -2,29 +2,21 @@ import { SignupForm } from "@/components/signup-form";
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b24] md:flex">
-      <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(79,62,219,0.2),_transparent_28%),linear-gradient(180deg,#2f2f3a_0%,#2d2d38_100%)] px-[50px] pb-[36px] pt-[50px] md:flex md:w-[50.4%] md:flex-col md:justify-between">
-        <div className="absolute right-[-96px] top-[-96px] h-72 w-72 rounded-full bg-[#4c3fff] opacity-20 blur-3xl" />
-        <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-[#3ef08b] opacity-[0.08] blur-3xl" />
+    <div className="min-h-screen bg-surface text-zinc-900 md:flex">
+      <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(79,62,219,0.2),_transparent_28%),linear-gradient(180deg,#353535_0%,#333333_100%)] px-[50px] pb-[36px] pt-[50px] md:flex md:w-[50.4%] md:flex-col md:justify-between">
+        <div className="absolute right-[-96px] top-[-96px] h-72 w-72 rounded-full bg-zinc-400 opacity-20 blur-3xl" />
+        <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-emerald-400 opacity-[0.08] blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#3525cd] shadow-lg">
-            <span
-              className="material-symbols-outlined text-white"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              corporate_fare
-            </span>
-          </div>
-          <h1 className="text-[21px] font-semibold leading-8 tracking-[-0.01em] text-[#f3effc]">DeltCRM</h1>
+          <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-8 w-auto invert brightness-0" />
         </div>
 
         <div className="relative z-10 flex flex-col gap-10">
           <div className="space-y-5">
-            <h2 className="max-w-[392px] text-[33px] font-bold leading-[1.12] tracking-[-0.03em] text-[#f3effc]">
+            <h2 className="max-w-[392px] text-[33px] font-bold leading-[1.12] tracking-[-0.03em] text-zinc-50">
               The most reliable HRMS for Mumbai&apos;s fast-growing teams.
             </h2>
-            <p className="max-w-[450px] text-[18px] leading-[1.55] text-[#ddd9ea]">
+            <p className="max-w-[450px] text-[18px] leading-[1.55] text-zinc-200">
               Streamline payroll, leave, and attendance with an enterprise-grade platform that sets up in minutes.
             </p>
           </div>
@@ -53,17 +45,17 @@ export default function SignupPage() {
               },
             ].map((benefit) => (
               <li key={benefit.title} className="flex items-start gap-4">
-                <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#7cf994]">
+                <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-300">
                   <span
-                    className="material-symbols-outlined text-[18px] text-[#005320]"
+                    className="material-symbols-outlined text-[18px] text-emerald-900"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     check
                   </span>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold leading-5 text-[#f3effc]">{benefit.title}</p>
-                  <p className="max-w-[370px] text-[14px] leading-6 text-[#d8d5e4]">{benefit.body}</p>
+                  <p className="text-[14px] font-semibold leading-5 text-zinc-50">{benefit.title}</p>
+                  <p className="max-w-[370px] text-[14px] leading-6 text-zinc-300">{benefit.body}</p>
                 </div>
               </li>
             ))}
@@ -71,13 +63,13 @@ export default function SignupPage() {
         </div>
 
         <div className="relative z-10 border-t border-white/10 pt-7">
-          <p className="text-[12px] font-semibold leading-4 tracking-[0.02em] text-[#c9c4d9]">
+          <p className="text-[12px] font-semibold leading-4 tracking-[0.02em] text-zinc-300">
             Trusted by 500+ enterprises across India.
           </p>
         </div>
       </section>
 
-      <main className="flex flex-1 justify-center bg-[#fcf8ff] px-6 py-10 md:px-[64px] md:py-[66px]">
+      <main className="flex flex-1 justify-center bg-surface px-6 py-10 md:px-[64px] md:py-[66px]">
         <SignupForm />
       </main>
     </div>

@@ -3,21 +3,21 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme inline {
-  --color-primary: #3525cd;
-  --color-primary-container: #4f46e5;
+  --color-primary: var(--theme-primary, #2563eb);
+  --color-primary-container: var(--theme-primary-container, #1d4ed8);
   --color-on-primary: #ffffff;
-  --color-surface: #fcf8ff;
-  --color-on-surface: #1c1b1f;
-  --color-surface-variant: #e4e1ee;
-  --color-on-surface-variant: #464555;
+  --color-surface: #ffffff;
+  --color-on-surface: #0a0a0a;
+  --color-surface-variant: #f4f4f5;
+  --color-on-surface-variant: #575757;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #eae6f4;
-  --color-outline: #777587;
-  --color-outline-variant: #c8c5d0;
-  --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
-  --color-secondary-container: #7cf994;
+  --color-surface-container-high: #e6e6e6;
+  --color-outline: #a5a5a5;
+  --color-outline-variant: #d4d4d8;
+  --color-error: #ef4444;
+  --color-error-container: #fee2e2;
+  --color-on-error-container: #991b1b;
+  --color-secondary-container: #d4d4d8;
   
   --font-sans: 'Inter', sans-serif;
   --font-headline-md: 'Inter', sans-serif;
@@ -65,4 +65,34 @@ textarea {
 }
 .animate-shake {
   animation: shake 0.2s ease-in-out 0s 2;
+}
+
+[data-theme="navy"] {
+  --theme-primary: #0f172a;
+  --theme-primary-container: #1e293b;
+}
+
+[data-theme="emerald"] {
+  --theme-primary: #059669;
+  --theme-primary-container: #047857;
+}
+
+[data-theme="teal"] {
+  --theme-primary: #0d9488;
+  --theme-primary-container: #0f766e;
+}
+
+[data-theme="crimson"] {
+  --theme-primary: #e11d48;
+  --theme-primary-container: #be123c;
+}
+
+[data-theme="monochrome"] {
+  --theme-primary: #000000;
+  --theme-primary-container: #111111;
+}
+
+[data-theme="charcoal"] {
+  --theme-primary: #27272a;
+  --theme-primary-container: #434343;
 }
