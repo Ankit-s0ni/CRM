@@ -1518,7 +1518,7 @@ model PayrollLockHistory {
 
 /// PARTITIONED monthly on eventTime (raw SQL).
 model AttendanceEvent {
-  id                      String                 @id @default(uuid(7)) @db.Uuid
+  id                      String                 @default(uuid(7)) @db.Uuid
   tenantId                String                 @db.Uuid
   attendanceLogId         String                 @db.Uuid
   employeeId              String                 @db.Uuid
@@ -1540,7 +1540,8 @@ model AttendanceEvent {
   log                     AttendanceLog          @relation(fields: [attendanceLogId], references: [id])
   regularization          RegularizationRequest? @relation(fields: [regularizationRequestId], references: [id])
 
-  @@unique([tenantId, employeeId, clientEventUuid])
+  @@id([id, eventTime])
+  @@unique([tenantId, employeeId, clientEventUuid, eventTime])
   @@index([tenantId, employeeId, eventTime])
   @@index([tenantId, regularizationRequestId])
   @@map("attendance_events")

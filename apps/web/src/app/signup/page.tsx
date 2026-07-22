@@ -8,16 +8,16 @@ export default function SignupPage() {
         <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-emerald-400 opacity-[0.08] blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-4">
-          <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-8 w-auto invert brightness-0" />
+          <div className="text-[28px] font-bold tracking-tight text-white">DeltCRM</div>
         </div>
 
         <div className="relative z-10 flex flex-col gap-10">
           <div className="space-y-5">
             <h2 className="max-w-[392px] text-[33px] font-bold leading-[1.12] tracking-[-0.03em] text-zinc-50">
-              The most reliable HRMS for Mumbai&apos;s fast-growing teams.
+              The most reliable CRM for fast-growing teams.
             </h2>
             <p className="max-w-[450px] text-[18px] leading-[1.55] text-zinc-200">
-              Streamline payroll, leave, and attendance with an enterprise-grade platform that sets up in minutes.
+              Streamline your workflow with an enterprise-grade platform that sets up in minutes.
             </p>
           </div>
 

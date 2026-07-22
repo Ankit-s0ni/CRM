@@ -333,7 +333,7 @@ export function OnboardingWizard() {
           {[
             "Company profile",
             "Working days",
-            "Verification rules",
+            "Attendance policy",
             "Invite HR",
           ].map((label, index) => (
             <div key={label} className="flex flex-1 items-start last:flex-none">
@@ -371,7 +371,7 @@ export function OnboardingWizard() {
                   : step === 2
                     ? "Define your working week"
                     : step === 3
-                      ? "Set verification defaults"
+                      ? "Define attendance policy"
                       : "Invite your HR team"}
               </h1>
               <p className="mb-8 mt-2 text-on-surface-variant">
@@ -468,6 +468,7 @@ export function OnboardingWizard() {
               {step === 3 && (
                 <div className="grid gap-6">
                   <Toggle
+                    helpKey="selfie-verification"
                     label="Require facial recognition"
                     checked={settings.requireFacialRecognition}
                     onChange={(checked) =>
@@ -477,19 +478,75 @@ export function OnboardingWizard() {
                       })
                     }
                   />
-                  <Field
-                    label={`Face match threshold · ${settings.faceMatchThreshold}%`}
-                  >
+                  {settings.requireFacialRecognition && (
+                    <Field
+                      helpKey="selfie-verification"
+                      label={`Face match threshold · ${settings.faceMatchThreshold}%`}
+                    >
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        className="accent-primary"
+                        value={settings.faceMatchThreshold}
+                        onChange={(event) =>
+                          setSettings({
+                            ...settings,
+                            faceMatchThreshold: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </Field>
+                  )}
+                  <Toggle
+                    helpKey="background-tracking"
+                    label="Enable GPS field tracking"
+                    checked={settings.fieldTrackingEnabled}
+                    onChange={(checked) =>
+                      setSettings({
+                        ...settings,
+                        fieldTrackingEnabled: checked,
+                      })
+                    }
+                  />
+                  {settings.fieldTrackingEnabled && (
+                    <Field
+                      helpKey="background-tracking"
+                      label="Field tracking interval (minutes)"
+                    >
+                      <input
+                        type="number"
+                        className={inputClass}
+                        value={settings.fieldTrackingIntervalMin}
+                        onChange={(event) =>
+                          setSettings({
+                            ...settings,
+                            fieldTrackingIntervalMin: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </Field>
+                  )}
+                  <Toggle
+                    helpKey="attendance-defaults"
+                    label="Enable automatic check-in/out reminders"
+                    checked={settings.checkinReminderEnabled}
+                    onChange={(checked) =>
+                      setSettings({
+                        ...settings,
+                        checkinReminderEnabled: checked,
+                      })
+                    }
+                  />
+                  <Field helpKey="attendance-defaults" label="Absentee alert time">
                     <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      className="accent-primary"
-                      value={settings.faceMatchThreshold}
+                      type="time"
+                      className={inputClass}
+                      value={settings.absenteeAlertTime}
                       onChange={(event) =>
                         setSettings({
                           ...settings,
-                          faceMatchThreshold: Number(event.target.value),
+                          absenteeAlertTime: event.target.value,
                         })
                       }
                     />
@@ -503,8 +560,7 @@ export function OnboardingWizard() {
                     <strong>Business Admin is ready</strong>
                   </div>
                   <p className="text-sm text-on-surface-variant">
-                    Optionally invite your first HR administrator while
-                    completing setup.
+                    Optionally invite your first HR administrator. When you finish setup, we'll email them a secure link to join your workspace and set up their password.
                   </p>
                   <Field label="HR administrator email (optional)">
                     <input
@@ -537,8 +593,12 @@ export function OnboardingWizard() {
           </section>
           <aside className="hidden items-center justify-center bg-zinc-50 p-12 lg:flex">
             <div className="w-full rounded-3xl border border-white bg-white/70 p-10 shadow-2xl">
-              <div className="grid aspect-video place-items-center rounded-2xl bg-gradient-to-br from-primary to-emerald-300">
-                <Building2 className="size-24 text-white" />
+              <div className={`grid aspect-video place-items-center rounded-2xl ${logoPreview ? 'bg-white p-4 border border-zinc-200' : 'bg-gradient-to-br from-primary to-emerald-300'}`}>
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Company logo preview" className="size-full object-contain" />
+                ) : (
+                  <Building2 className="size-24 text-white" />
+                )}
               </div>
               <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-primary">
                 Enterprise grade

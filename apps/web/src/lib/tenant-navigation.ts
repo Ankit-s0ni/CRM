@@ -174,39 +174,10 @@ export const tenantContextNavigation: Record<
       permission: "workspace.settings.read",
     },
     {
-      label: "Organization",
-      href: "/app/settings/organization",
-      icon: Building2,
-      permission: "organization.departments.read",
-    },
-    {
       label: "Admin access",
       href: "/app/settings/access",
       icon: ShieldCheck,
       permission: "identity.roles.read",
-    },
-    {
-      label: "Modules",
-      href: "/app/settings/modules",
-      icon: Blocks,
-      permission: "workspace.modules.read",
-    },
-    {
-      label: "Attendance",
-      href: "/app/attendance/policies",
-      icon: ClipboardCheck,
-      moduleKey: "ATTENDANCE",
-      anyPermissions: ["attendance.policies.read", "attendance.policies.manage"],
-    },
-    {
-      label: "Payroll",
-      href: "/app/settings/payroll",
-      icon: WalletCards,
-      moduleKey: "PAYROLL",
-      anyPermissions: [
-        "attendance.reports.read",
-        "attendance.payroll-lock.manage",
-      ],
     },
     {
       label: "Security",

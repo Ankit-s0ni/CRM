@@ -41,7 +41,7 @@ export function SignupForm() {
 
   const subdomainPreview = useMemo(() => {
     const slug = subdomain || slugifyWorkspace(companyName) || "yourcompany";
-    return `${slug}.hrmsapp.com`;
+    return `${slug}.deltcrm.com`;
   }, [companyName, subdomain]);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -211,7 +211,7 @@ export function SignupForm() {
                 required
               />
             </div>
-            <span className="ml-4 text-[16px] leading-6 text-on-surface-variant">.hrmsapp.com</span>
+            <span className="ml-4 text-[16px] leading-6 text-on-surface-variant">.deltcrm.com</span>
           </div>
           <p className="mt-[2px] flex items-center gap-1 text-[12px] font-semibold leading-4 tracking-[0.02em] text-primary">
             <span className="material-symbols-outlined text-[14px]">link</span>
