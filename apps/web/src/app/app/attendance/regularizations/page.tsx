@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { RegularizationQueueView } from "@/components/tenant/hr-operations-views";
-import { LoadingState } from "@/components/tenant/page-primitives";
+import { RegularizationQueueView } from "@/features/platform/organization/hr-operations-views";
+import { LoadingState } from "@/shared/components/page-primitives";
 
 export default function RegularizationsPage() {
   return (

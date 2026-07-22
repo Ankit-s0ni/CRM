@@ -1,4 +1,4 @@
-import { AttendanceRequestsEntry } from "@/components/tenant/attendance-workspaces";
+import { AttendanceRequestsEntry } from "@/features/platform/organization/attendance-workspaces";
 
 export default function AttendanceRequestsPage() {
   return <AttendanceRequestsEntry />;

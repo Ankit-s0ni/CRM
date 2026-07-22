@@ -1,2 +1,2 @@
-import { RostersView } from "@/components/tenant/attendance-config-views";
+import { RostersView } from "@/features/products/attendance/configuration/attendance-config-views";
 export default function RostersPage() { return <RostersView />; }

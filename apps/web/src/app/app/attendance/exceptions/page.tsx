@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { AttendanceExceptionsView } from "@/components/tenant/attendance-exceptions-view";
-import { LoadingState } from "@/components/tenant/page-primitives";
+import { AttendanceExceptionsView } from "@/features/products/attendance/core/attendance-exceptions-view";
+import { LoadingState } from "@/shared/components/page-primitives";
 
 export default function AttendanceExceptionsPage() {
   return (

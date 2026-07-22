@@ -1,4 +1,4 @@
-import { AttendanceModuleHub } from "@/components/tenant/workspace-hubs";
+import { AttendanceModuleHub } from "@/features/platform/organization/workspace-hubs";
 
 export default function AttendanceModulePage() {
   return <AttendanceModuleHub />;

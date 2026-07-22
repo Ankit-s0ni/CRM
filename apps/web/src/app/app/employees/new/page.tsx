@@ -1,2 +1,2 @@
-import { EmployeeEditorView } from "@/components/tenant/organization-access-views";
+import { EmployeeEditorView } from "@/features/platform/organization/organization-access-views";
 export default function NewEmployeePage() { return <EmployeeEditorView />; }

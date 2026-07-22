@@ -1,4 +1,4 @@
-import { UsersRolesView } from "@/components/tenant/organization-access-views";
+import { UsersRolesView } from "@/features/platform/organization/organization-access-views";
 
 export default function AccessSettingsPage() {
   return <UsersRolesView />;

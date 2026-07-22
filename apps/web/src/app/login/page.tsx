@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/login-form";
+import { LoginForm } from "@/features/platform/identity/login-form";
 import { publicLinks } from "@/lib/public-links";
 import { Suspense } from "react";
 

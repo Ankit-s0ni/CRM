@@ -1,4 +1,4 @@
-import { RegularizationDetailView } from "@/components/tenant/hr-operations-views";
+import { RegularizationDetailView } from "@/features/platform/organization/hr-operations-views";
 
 export default async function RegularizationDetailPage({
   searchParams,

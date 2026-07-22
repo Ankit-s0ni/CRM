@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { InvitationAcceptanceForm } from "@/components/invitation-acceptance-form";
+import { InvitationAcceptanceForm } from "@/features/platform/identity/invitation-acceptance-form";
 
 export default function AcceptInvitationPage() {
   return (

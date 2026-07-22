@@ -1,4 +1,4 @@
-import { FieldRouteView } from "@/components/tenant/field-route-view";
+import { FieldRouteView } from "@/features/products/attendance/field/field-route-view";
 
 export default async function EmployeeRoutePage({ params }: { params: Promise<{ employeeId: string }> }) {
   const { employeeId } = await params;

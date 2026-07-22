@@ -1,5 +1,5 @@
-import { PlatformShell } from "@/components/platform/platform-shell";
-import { TenantDetailView } from "@/components/platform/tenant-detail-view";
+import { PlatformShell } from "@/features/platform/platform-shell";
+import { TenantDetailView } from "@/features/platform/tenant-detail-view";
 
 export default async function PlatformTenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

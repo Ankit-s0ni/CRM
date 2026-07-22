@@ -1,4 +1,4 @@
-import { EmployeeDetailView } from "@/components/tenant/employee-detail-view";
+import { EmployeeDetailView } from "@/features/platform/organization/employee-detail-view";
 
 export default async function EmployeePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

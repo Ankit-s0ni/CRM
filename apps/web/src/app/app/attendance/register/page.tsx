@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { AttendanceRegisterView } from "@/components/tenant/attendance-register-view";
-import { LoadingState } from "@/components/tenant/page-primitives";
+import { AttendanceRegisterView } from "@/features/products/attendance/core/attendance-register-view";
+import { LoadingState } from "@/shared/components/page-primitives";
 
 export default function AttendanceRegisterPage() {
   return (

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { DeviceManagementView } from "@/components/tenant/device-management-view";
-import { LoadingState } from "@/components/tenant/page-primitives";
+import { DeviceManagementView } from "@/features/platform/workspace-settings/device-management-view";
+import { LoadingState } from "@/shared/components/page-primitives";
 
 export default function DevicesPage() {
   return (

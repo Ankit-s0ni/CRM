@@ -1,4 +1,4 @@
-import { AttendanceDetailView } from "@/components/tenant/attendance-detail-view";
+import { AttendanceDetailView } from "@/features/products/attendance/core/attendance-detail-view";
 
 export default async function AttendanceEmployeePage({
   params,

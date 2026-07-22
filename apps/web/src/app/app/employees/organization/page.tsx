@@ -1,4 +1,4 @@
-import { OrganizationView } from "@/components/tenant/organization-access-views";
+import { OrganizationView } from "@/features/platform/organization/organization-access-views";
 
 export default function EmployeeOrganizationPage() {
   return <OrganizationView />;

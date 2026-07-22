@@ -1,0 +1,593 @@
+"use client";
+
+import {
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Download,
+  Filter,
+  LockKeyhole,
+  Search,
+  ShieldAlert,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDeferredValue, useEffect, useState } from "react";
+import { apiClient } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import { RouteFeatureInfo } from "@/features/platform/help/feature-info";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Panel,
+  inputClass,
+} from "@/shared/components/page-primitives";
+import {
+  formatClock,
+  formatMinutes,
+  localIsoDate,
+  statusTone,
+  type AttendanceStatus,
+  type RegisterRow,
+} from "@/features/products/attendance/core/attendance-runtime-types";
+
+type RegisterResponse = {
+  data: RegisterRow[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: {
+    statuses: Partial<Record<AttendanceStatus, number>>;
+    totals: {
+      totalWorkMinutes: number | null;
+      lateMinutes: number | null;
+      overtimeMinutes: number | null;
+    };
+  };
+};
+
+const statusOptions: Array<{ label: string; value: AttendanceStatus | "" }> = [
+  { label: "All statuses", value: "" },
+  { label: "Present", value: "PRESENT" },
+  { label: "Working", value: "PRESENT_OPEN" },
+  { label: "Half day", value: "HALF_DAY" },
+  { label: "Absent", value: "ABSENT" },
+  { label: "On duty", value: "ON_DUTY" },
+  { label: "On leave", value: "ON_LEAVE" },
+  { label: "Holiday", value: "HOLIDAY" },
+  { label: "Weekly off", value: "WEEKLY_OFF" },
+];
+
+type AttentionFilter = "" | "late" | "missing-checkout";
+type RegisterFilters = {
+  startDate: string;
+  endDate: string;
+  departmentId: string;
+  officeId: string;
+  status: AttendanceStatus | "";
+  attention: AttentionFilter;
+  search: string;
+};
+
+const validStatuses = new Set<string>(
+  statusOptions.map(({ value }) => value).filter(Boolean),
+);
+
+export function AttendanceRegisterView() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const today = localIsoDate();
+  const monthStart = `${today.slice(0, 8)}01`;
+  const filters = registerFilters(searchParams, monthStart, today);
+  const page = positivePage(searchParams.get("page"));
+  const deferredSearch = useDeferredValue(filters.search);
+  const [result, setResult] = useState<RegisterResponse | null>(null);
+  const [error, setError] = useState("");
+
+  function updateFilters(
+    patch: Partial<RegisterFilters>,
+    history: "push" | "replace" = "push",
+  ) {
+    const next = { ...filters, ...patch };
+    if (patch.status) next.attention = "";
+    if (patch.attention) next.status = "";
+    navigateRegister(next, 1, history);
+  }
+
+  function navigateRegister(
+    nextFilters: RegisterFilters,
+    nextPage: number,
+    history: "push" | "replace" = "push",
+  ) {
+    const href = `${pathname}?${registerSearchParams(nextFilters, nextPage)}`;
+    router[history](href, { scroll: false });
+  }
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      page: String(page),
+      limit: "25",
+    });
+    if (filters.status) params.set("status", filters.status);
+    if (filters.departmentId) {
+      params.set("departmentId", filters.departmentId);
+    }
+    if (filters.officeId) params.set("officeId", filters.officeId);
+    if (filters.attention === "late") params.set("lateOnly", "true");
+    if (filters.attention === "missing-checkout") {
+      params.set("missingCheckout", "true");
+    }
+    if (deferredSearch.trim()) params.set("search", deferredSearch.trim());
+    apiClient
+      .get<RegisterResponse>(`/attendance/register?${params}`)
+      .then(({ data }) => {
+        if (active) {
+          setResult(data);
+          setError("");
+        }
+      })
+      .catch(() => {
+        if (active)
+          setError(
+            "Attendance register could not be loaded. Check your date range or permissions.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    deferredSearch,
+    filters.endDate,
+    filters.departmentId,
+    filters.officeId,
+    filters.startDate,
+    filters.status,
+    filters.attention,
+    page,
+  ]);
+
+  const summary = result?.summary;
+  return (
+    <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+            Attendance operations
+          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Attendance Register
+            </h1>
+            <RouteFeatureInfo />
+          </div>
+          <p className="mt-1 text-sm text-outline">
+            Review daily evidence, hours, exceptions, and payroll locks.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => exportCsv(result?.data ?? [])}
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
+        >
+          <Download className="size-4" />
+          Export current page
+        </button>
+      </header>
+      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Metric
+          label="Records"
+          value={String(result?.pagination.total ?? 0)}
+          icon={CalendarDays}
+        />
+        <Metric
+          label="Present"
+          value={String(
+            (summary?.statuses.PRESENT ?? 0) +
+              (summary?.statuses.PRESENT_OPEN ?? 0),
+          )}
+          icon={CheckCircle2}
+          tone="text-emerald-800 bg-emerald-100"
+        />
+        <Metric
+          label="Late minutes"
+          value={formatMinutes(summary?.totals.lateMinutes ?? 0)}
+          icon={Clock3}
+          tone="text-amber-800 bg-amber-200"
+        />
+        <Metric
+          label="Overtime"
+          value={formatMinutes(summary?.totals.overtimeMinutes ?? 0)}
+          icon={ShieldAlert}
+          tone="text-sky-700 bg-sky-200"
+        />
+      </section>
+      <Panel className="mb-5 p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="relative min-w-56 flex-1">
+            <span className="mb-1 block text-xs font-semibold">
+              Search employee
+            </span>
+            <Search className="absolute bottom-3 left-3 size-4 text-outline" />
+            <input
+              className={`${inputClass} pl-9`}
+              placeholder="Name or employee ID"
+              value={filters.search}
+              onChange={(event) =>
+                updateFilters({ search: event.target.value }, "replace")
+              }
+            />
+          </label>
+          <DateField
+            label="From"
+            value={filters.startDate}
+            onChange={(startDate) => updateFilters({ startDate })}
+          />
+          <DateField
+            label="To"
+            value={filters.endDate}
+            onChange={(endDate) => updateFilters({ endDate })}
+          />
+          <label className="min-w-44">
+            <span className="mb-1 block text-xs font-semibold">Status</span>
+            <select
+              className={inputClass}
+              value={
+                filters.attention
+                  ? `attention:${filters.attention}`
+                  : filters.status
+              }
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value.startsWith("attention:")) {
+                  updateFilters({
+                    attention: value.slice("attention:".length) as AttentionFilter,
+                  });
+                } else {
+                  updateFilters({ status: value as AttendanceStatus | "" });
+                }
+              }}
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              <option value="attention:late">Late arrival</option>
+              <option value="attention:missing-checkout">
+                Missing checkout
+              </option>
+            </select>
+          </label>
+          <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+            <Filter className="size-4" />
+          </span>
+        </div>
+      </Panel>
+      {error && (
+        <div className="mb-4">
+          <ErrorState message={error} />
+        </div>
+      )}
+      {!result ? (
+        <LoadingState />
+      ) : result.data.length ? (
+        <RegisterTable
+          returnTo={`${pathname}?${registerSearchParams(filters, page)}`}
+          rows={result.data}
+        />
+      ) : (
+        <Panel>
+          <EmptyState
+            title="No attendance records"
+            body="No records match this date range and filter combination."
+          />
+        </Panel>
+      )}
+      {result && result.pagination.pages > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-on-surface-variant">
+          <span>
+            Showing page {result.pagination.page} of {result.pagination.pages} ·{" "}
+            {result.pagination.total} records
+          </span>
+          <div className="flex gap-2">
+            <button
+              aria-label="Previous page"
+              disabled={page <= 1}
+              onClick={() => navigateRegister(filters, page - 1)}
+              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <button
+              aria-label="Next page"
+              disabled={page >= result.pagination.pages}
+              onClick={() => navigateRegister(filters, page + 1)}
+              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RegisterTable({
+  rows,
+  returnTo,
+}: {
+  rows: RegisterRow[];
+  returnTo: string;
+}) {
+  return (
+    <Panel className="overflow-x-auto">
+      <table className="w-full min-w-[1120px] border-collapse text-left">
+        <thead>
+          <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
+            <Th>Employee</Th>
+            <Th>Date</Th>
+            <Th>Status</Th>
+            <Th>Shift</Th>
+            <Th>In / Out</Th>
+            <Th>Work</Th>
+            <Th>Late / OT</Th>
+            <Th>Evidence</Th>
+            <Th />
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const tone = statusTone(row.status);
+            return (
+              <tr
+                key={row.id}
+                className="border-b border-outline-variant transition last:border-0 hover:bg-zinc-50"
+              >
+                <Td>
+                  <div className="flex items-center gap-3">
+                    <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-xs font-bold text-primary">
+                      {initials(row.employee.fullName)}
+                    </div>
+                    <div>
+                      <strong className="block text-sm">
+                        {row.employee.fullName}
+                      </strong>
+                      <span className="text-xs text-outline">
+                        {row.employee.employeeCode} ·{" "}
+                        {row.employee.department.name}
+                      </span>
+                    </div>
+                  </div>
+                </Td>
+                <Td>
+                  <span className="text-sm font-medium">
+                    {new Intl.DateTimeFormat("en", {
+                      day: "2-digit",
+                      month: "short",
+                    }).format(new Date(`${row.attendanceDate}T12:00:00`))}
+                  </span>
+                </Td>
+                <Td>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase",
+                      tone.className,
+                    )}
+                  >
+                    <span className={cn("size-1.5 rounded-full", tone.dot)} />
+                    {tone.label}
+                  </span>
+                </Td>
+                <Td>
+                  <span className="text-sm">
+                    {row.shift?.name ?? "Default"}
+                  </span>
+                  <span className="block text-[10px] text-outline">
+                    {row.employee.office?.officeName ?? "No office"}
+                  </span>
+                </Td>
+                <Td>
+                  <span className="text-sm">
+                    {formatClock(row.firstCheckin)} –{" "}
+                    {formatClock(row.lastCheckout)}
+                  </span>
+                </Td>
+                <Td>
+                  <strong className="text-sm">
+                    {formatMinutes(row.workMinutes)}
+                  </strong>
+                  <span className="block text-[10px] text-outline">
+                    Break {formatMinutes(row.breakMinutes)}
+                  </span>
+                </Td>
+                <Td>
+                  <span className="text-xs text-amber-800">
+                    L {formatMinutes(row.lateMinutes)}
+                  </span>
+                  <span className="ml-2 text-xs text-sky-700">
+                    OT {formatMinutes(row.overtimeMinutes)}
+                  </span>
+                </Td>
+                <Td>
+                  <div className="flex items-center gap-2">
+                    {row.isLocked && (
+                      <LockKeyhole className="size-4 text-on-surface-variant" />
+                    )}
+                    {row.evidence.verification.failed > 0 ? (
+                      <ShieldAlert className="size-4 text-error" />
+                    ) : (
+                      <CheckCircle2 className="size-4 text-emerald-800" />
+                    )}
+                    <span className="text-[10px] text-outline">
+                      {row.evidence.sources.join(", ") || "Calculated"}
+                    </span>
+                  </div>
+                </Td>
+                <Td>
+                  <Link
+                    href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-primary"
+                  >
+                    View <ChevronRight className="size-3" />
+                  </Link>
+                </Td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </Panel>
+  );
+}
+
+function registerFilters(
+  searchParams: Readonly<URLSearchParams>,
+  defaultStartDate: string,
+  defaultEndDate: string,
+): RegisterFilters {
+  const status = searchParams.get("status") ?? "";
+  return {
+    startDate: searchParams.get("startDate") || defaultStartDate,
+    endDate: searchParams.get("endDate") || defaultEndDate,
+    departmentId: searchParams.get("departmentId") ?? "",
+    officeId: searchParams.get("officeId") ?? "",
+    status: validStatuses.has(status) ? (status as AttendanceStatus) : "",
+    attention:
+      searchParams.get("lateOnly") === "true"
+        ? "late"
+        : searchParams.get("missingCheckout") === "true"
+          ? "missing-checkout"
+          : "",
+    search: searchParams.get("search") ?? "",
+  };
+}
+
+function registerSearchParams(filters: RegisterFilters, page: number) {
+  const params = new URLSearchParams({
+    startDate: filters.startDate,
+    endDate: filters.endDate,
+  });
+  if (filters.status) params.set("status", filters.status);
+  if (filters.departmentId) params.set("departmentId", filters.departmentId);
+  if (filters.officeId) params.set("officeId", filters.officeId);
+  if (filters.attention === "late") params.set("lateOnly", "true");
+  if (filters.attention === "missing-checkout") {
+    params.set("missingCheckout", "true");
+  }
+  if (filters.search.trim()) params.set("search", filters.search.trim());
+  if (page > 1) params.set("page", String(page));
+  return params.toString();
+}
+
+function positivePage(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function Metric({
+  label,
+  value,
+  icon: Icon,
+  tone = "text-primary bg-zinc-50",
+}: {
+  label: string;
+  value: string;
+  icon: typeof CalendarDays;
+  tone?: string;
+}) {
+  return (
+    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-white p-4 shadow-sm">
+      <span className={cn("grid size-10 place-items-center rounded-lg", tone)}>
+        <Icon className="size-5" />
+      </span>
+      <div>
+        <strong className="block text-xl">{value}</strong>
+        <span className="text-xs text-outline">{label}</span>
+      </div>
+    </article>
+  );
+}
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label>
+      <span className="mb-1 block text-xs font-semibold">{label}</span>
+      <input
+        type="date"
+        className={inputClass}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+function Th({ children }: { children?: React.ReactNode }) {
+  return <th className="px-4 py-3">{children}</th>;
+}
+function Td({ children }: { children: React.ReactNode }) {
+  return <td className="px-4 py-4">{children}</td>;
+}
+function initials(value: string) {
+  return value
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+function exportCsv(rows: RegisterRow[]) {
+  const values = [
+    [
+      "Date",
+      "Employee",
+      "Code",
+      "Status",
+      "Check in",
+      "Check out",
+      "Work minutes",
+      "Late minutes",
+      "Overtime minutes",
+    ],
+    ...rows.map((row) => [
+      row.attendanceDate,
+      row.employee.fullName,
+      row.employee.employeeCode,
+      row.status,
+      row.firstCheckin ?? "",
+      row.lastCheckout ?? "",
+      row.workMinutes,
+      row.lateMinutes,
+      row.overtimeMinutes,
+    ]),
+  ];
+  const blob = new Blob(
+    [
+      values
+        .map((row) =>
+          row
+            .map((item) => `"${String(item).replaceAll('"', '""')}"`)
+            .join(","),
+        )
+        .join("\n"),
+    ],
+    { type: "text/csv" },
+  );
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "attendance-register.csv";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}

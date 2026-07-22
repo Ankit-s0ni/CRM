@@ -1,4 +1,4 @@
-import { PayrollSettingsView } from "@/components/tenant/workspace-hubs";
+import { PayrollSettingsView } from "@/features/platform/organization/workspace-hubs";
 
 export default function PayrollSettingsPage() {
   return <PayrollSettingsView />;

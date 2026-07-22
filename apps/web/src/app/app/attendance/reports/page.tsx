@@ -1,3 +1,3 @@
-import { ReportsCenterView } from "@/components/tenant/hr-operations-views";
+import { ReportsCenterView } from "@/features/platform/organization/hr-operations-views";
 
 export default function ReportsPage() { return <ReportsCenterView />; }
