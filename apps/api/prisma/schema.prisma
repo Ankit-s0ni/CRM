@@ -449,7 +449,7 @@ model TenantBillingProfile {
   address      Json?
   gstin        String?
   pan          String?
-  currency     String   @default("INR")
+  currency     String   @default("OMR")
   updatedAt    DateTime @updatedAt
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
 
@@ -460,7 +460,7 @@ model SubscriptionPlan {
   id            String                       @id @default(uuid(7)) @db.Uuid
   name          String                       @unique
   pricePerUser  Decimal                      @db.Decimal(10, 2)
-  currency      String                       @default("INR")
+  currency      String                       @default("OMR")
   maxEmployees  Int
   billingPeriod BillingPeriod                @default(MONTHLY)
   description   String?
@@ -641,7 +641,7 @@ model TenantInvoice {
   sgstAmount      Decimal                 @default(0) @db.Decimal(12, 2)
   igstAmount      Decimal                 @default(0) @db.Decimal(12, 2)
   totalAmount     Decimal                 @db.Decimal(12, 2)
-  currency        String                  @default("INR")
+  currency        String                  @default("OMR")
   dueDate         DateTime                @db.Date
   status          InvoiceStatus           @default(DRAFT)
   pdfUrl          String?
@@ -694,7 +694,7 @@ model PaymentTransaction {
   gateway         PaymentGateway
   gatewayRef      String?
   amount          Decimal        @db.Decimal(12, 2)
-  currency        String         @default("INR")
+  currency        String         @default("OMR")
   status          PaymentStatus  @default(PENDING)
   failureReason   String?
   providerEventId String?

@@ -405,7 +405,7 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
       billingEmail: seed.email,
       gstin: '27ABCDE1234F1Z5',
       pan: 'ABCDE1234F',
-      currency: 'INR',
+      currency: 'OMR',
       address: {
         line1: 'DeltCRM Acceptance Office',
         city: 'Mumbai',
@@ -420,7 +420,7 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
       billingEmail: seed.email,
       gstin: '27ABCDE1234F1Z5',
       pan: 'ABCDE1234F',
-      currency: 'INR',
+      currency: 'OMR',
       address: {
         line1: 'DeltCRM Acceptance Office',
         city: 'Mumbai',
@@ -1206,8 +1206,8 @@ async function main() {
     const { moduleKeys, capabilityKeys, ...data } = planSeed;
     const seededPlan = await prisma.subscriptionPlan.upsert({
       where: { name: data.name },
-      update: { ...data, currency: 'INR', isActive: true },
-      create: { ...data, currency: 'INR', isActive: true },
+      update: { ...data, currency: 'OMR', isActive: true },
+      create: { ...data, currency: 'OMR', isActive: true },
     });
     await prisma.subscriptionPlanModule.deleteMany({
       where: { planId: seededPlan.id },

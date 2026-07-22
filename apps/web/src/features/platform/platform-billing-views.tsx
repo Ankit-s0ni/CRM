@@ -109,7 +109,7 @@ export function PlatformBillingOverview() {
               label="Outstanding invoices"
               value={formatMoney(
                 data.outstanding,
-                data.revenueByCurrency[0]?.currency ?? "INR",
+                data.revenueByCurrency[0]?.currency ?? "OMR",
               )}
               detail="Current open invoice balance"
             />
@@ -760,7 +760,7 @@ function PlanEditor({
     name: plan?.name ?? "",
     description: plan?.description ?? "",
     pricePerUser: plan?.pricePerUser ?? "",
-    currency: plan?.currency ?? "INR",
+    currency: plan?.currency ?? "OMR",
     maxEmployees: plan?.maxEmployees ?? 100,
     billingPeriod: plan?.billingPeriod ?? "MONTHLY",
     isActive: plan?.isActive ?? true,
@@ -984,7 +984,7 @@ function PlanEditor({
                   setValue({ ...value, currency: event.target.value })
                 }
               >
-                {["INR", "AED", "OMR", "QAR", "SAR", "USD"].map((currency) => (
+                {["OMR", "AED", "INR", "QAR", "SAR", "USD"].map((currency) => (
                   <option key={currency}>{currency}</option>
                 ))}
               </select>

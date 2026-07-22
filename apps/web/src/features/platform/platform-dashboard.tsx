@@ -43,7 +43,7 @@ export function PlatformDashboard() {
     { label: "Monthly recurring revenue", value: billing?.revenueByCurrency.map(({ currency, mrr }) => formatMoney(mrr, currency)).join(" + ") || "No revenue", detail: "Authoritative active per-seat subscriptions", icon: IndianRupee, tone: "text-primary bg-zinc-50" },
     { label: "Active tenants", value: data.metrics.activeTenants.toLocaleString(), detail: `${data.metrics.suspendedTenants} suspended`, icon: Building2, tone: "text-emerald-700 bg-emerald-100" },
     { label: "Total employees", value: data.metrics.employees.toLocaleString(), detail: `Across ${data.metrics.tenants} workspaces`, icon: Users, tone: "text-blue-700 bg-blue-100" },
-    { label: "Failed payments", value: String(billing?.failedPaymentsThisMonth ?? 0), detail: `${formatMoney(billing?.outstanding ?? "0", billing?.revenueByCurrency[0]?.currency ?? "INR")} outstanding`, icon: CreditCard, tone: "text-red-700 bg-red-100" },
+    { label: "Failed payments", value: String(billing?.failedPaymentsThisMonth ?? 0), detail: `${formatMoney(billing?.outstanding ?? "0", billing?.revenueByCurrency[0]?.currency ?? "OMR")} outstanding`, icon: CreditCard, tone: "text-red-700 bg-red-100" },
   ];
 
   const planTotal = Math.max(1, data.planMix.reduce((sum, plan) => sum + plan.tenants, 0));

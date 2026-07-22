@@ -44,6 +44,19 @@ export function SignupForm() {
     return `${slug}.deltcrm.com`;
   }, [companyName, subdomain]);
 
+  const completedFields = useMemo(() => {
+    let count = 0;
+    if (companyName.trim().length > 0) count++;
+    if (workEmail.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(workEmail)) count++;
+    if (password.trim().length >= 8) count++;
+    if (subdomain.trim().length > 0) count++;
+    if (employeeCount) count++;
+    if (acceptedTerms) count++;
+    return count;
+  }, [companyName, workEmail, password, subdomain, employeeCount, acceptedTerms]);
+
+  const progressPercentage = Math.round((completedFields / 6) * 50);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
@@ -102,10 +115,13 @@ export function SignupForm() {
       <div className="mb-16">
         <div className="mb-[10px] flex items-center justify-between">
           <span className="text-[14px] font-bold leading-5 text-primary">1 of 2 — Verify email next</span>
-          <span className="text-[12px] font-semibold leading-4 tracking-[0.05em] text-on-surface-variant">50% Complete</span>
+          <span className="text-[12px] font-semibold leading-4 tracking-[0.05em] text-on-surface-variant">{progressPercentage}% Complete</span>
         </div>
         <div className="h-[6px] w-full overflow-hidden rounded-full bg-zinc-200">
-          <div className="h-full w-1/2 bg-primary" />
+          <div 
+            className="h-full bg-primary transition-all duration-300 ease-in-out" 
+            style={{ width: `${progressPercentage}%` }} 
+          />
         </div>
       </div>
 
@@ -137,6 +153,7 @@ export function SignupForm() {
           </label>
           <input
             id="company_name"
+            autoComplete="off"
             className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
             placeholder="e.g. Acme Tech Solutions"
             value={companyName}
@@ -158,6 +175,7 @@ export function SignupForm() {
           <input
             id="work_email"
             type="email"
+            autoComplete="email"
             className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
             placeholder="name@company.com"
             value={workEmail}
@@ -174,6 +192,7 @@ export function SignupForm() {
             <input
               id="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               className="h-[40px] w-full rounded-[12px] border border-zinc-300 bg-transparent pl-[15px] pr-12 text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Min. 8 characters"
               value={password}
