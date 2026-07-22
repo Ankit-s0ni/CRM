@@ -10,4 +10,13 @@ REVOKE UPDATE, DELETE, TRUNCATE ON TABLE
   tenant_audit_logs
 FROM platform_runtime;
 
-REVOKE ALL ON TABLE _prisma_migrations FROM platform_runtime;
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT FROM information_schema.tables 
+    WHERE  table_schema = 'public' 
+    AND    table_name   = '_prisma_migrations'
+  ) THEN
+    EXECUTE 'REVOKE ALL ON TABLE _prisma_migrations FROM platform_runtime';
+  END IF;
+END $$;

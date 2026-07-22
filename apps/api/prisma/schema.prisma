@@ -1549,7 +1549,7 @@ model AttendanceEvent {
 
 /// PARTITIONED monthly on verifiedAt. Superset incl. FAILED attempts.
 model AttendanceVerificationLog {
-  id                    String             @id @default(uuid(7)) @db.Uuid
+  id                    String             @default(uuid(7)) @db.Uuid
   tenantId              String             @db.Uuid
   employeeId            String             @db.Uuid
   deviceId              String?            @db.Uuid
@@ -1577,6 +1577,7 @@ model AttendanceVerificationLog {
   failureReasons        Json               @default("[]")
   verifiedAt            DateTime           @default(now())
 
+  @@id([id, verifiedAt])
   @@index([tenantId, employeeId, verifiedAt])
   @@index([tenantId, verificationStatus, verifiedAt])
   @@map("attendance_verification_logs")
@@ -1643,7 +1644,7 @@ model FieldTrackingSession {
 
 /// PARTITIONED monthly on capturedAt; 90-day retention.
 model FieldLocationPing {
-  id             String   @id @default(uuid(7)) @db.Uuid
+  id             String   @default(uuid(7)) @db.Uuid
   tenantId       String   @db.Uuid
   sessionId      String   @db.Uuid
   employeeId     String   @db.Uuid
@@ -1659,6 +1660,7 @@ model FieldLocationPing {
   receivedAt     DateTime @default(now())
   isOfflineSync  Boolean  @default(false)
 
+  @@id([id, capturedAt])
   @@index([tenantId, employeeId, capturedAt])
   @@index([tenantId, sessionId, capturedAt])
   @@map("field_location_pings")
