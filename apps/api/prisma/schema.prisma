@@ -439,6 +439,7 @@ model Tenant {
   employees      Employee[]
   productCategories ProductCategory[]
   productInventories ProductInventory[]
+  productOrders  ProductOrder[]
 
   @@index([status, createdAt])
   @@map("tenants")
@@ -2123,9 +2124,42 @@ model ProductInventory {
 
   category       ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  orderItems     ProductOrderItem[]
 
   @@unique([tenantId, sku])
   @@unique([tenantId, barcode])
   @@index([tenantId, isActive, deletedAt])
   @@map("product_inventory")
+}
+
+model ProductOrder {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String             @db.Uuid
+  orderNumber   Int                @default(autoincrement())
+  subtotal      Decimal            @db.Decimal(10, 2)
+  taxTotal      Decimal            @db.Decimal(10, 2)
+  total         Decimal            @db.Decimal(10, 2)
+  paymentMethod String             
+  status        String             @default("COMPLETED") 
+  createdAt     DateTime           @default(now())
+
+  items         ProductOrderItem[]
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, createdAt])
+  @@map("product_orders")
+}
+
+model ProductOrderItem {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId       String           @db.Uuid
+  productId     String           @db.Uuid
+  quantity      Int
+  unitPrice     Decimal          @db.Decimal(10, 2)
+  subtotal      Decimal          @db.Decimal(10, 2)
+
+  order         ProductOrder     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       ProductInventory @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("product_order_items")
 }

@@ -1,11 +1,11 @@
 # **1\. Category Management**
 
-- [ ] Create category  
-- [ ] Edit category  
-- [ ] Delete (Soft Delete)  
-- [ ] Activate/Deactivate  
-- [ ] Search category  
-- [ ] Category listing  
+- [ ] Create category
+- [ ] Edit category
+- [ ] Delete (Soft Delete)
+- [ ] Activate/Deactivate
+- [ ] Search category
+- [ ] Category listing
 - [ ] Category filtering
 
 ---
@@ -14,61 +14,61 @@
 
 ## **Product CRUD**
 
-- [ ] Add product  
-- [ ] Edit product  
-- [ ] View product  
-- [ ] Soft delete product  
+- [ ] Add product
+- [ ] Edit product
+- [ ] View product
+- [ ] Soft delete product
 - [ ] Restore product
 
 ## **Product Details**
 
-- [ ] Product name  
-- [ ] SKU  
-- [ ] Barcode  
-- [ ] Category  
-- [ ] Selling price  
-- [ ] Cost price  
-- [ ] Tax percentage  
-- [ ] Stock quantity  
-- [ ] Unit  
+- [ ] Product name
+- [ ] SKU
+- [ ] Barcode
+- [ ] Category
+- [ ] Selling price
+- [ ] Cost price
+- [ ] Tax percentage
+- [ ] Stock quantity
+- [ ] Unit
 - [ ] Product image
 
 ## **Product Validation**
 
-- [ ] Duplicate SKU check  
-- [ ] Duplicate barcode check  
-- [ ] Mandatory validation  
-- [ ] Price validation  
+- [ ] Duplicate SKU check
+- [ ] Duplicate barcode check
+- [ ] Mandatory validation
+- [ ] Price validation
 - [ ] Stock validation
 
 ## **Product Search**
 
-- [ ] Search by:  
-      - [ ] Name  
-      - [ ] SKU  
-      - [ ] Barcode  
-      - [ ] Category
+- [ ] Search by:
+  - [ ] Name
+  - [ ] SKU
+  - [ ] Barcode
+  - [ ] Category
 
 ## **Inventory Listing**
 
-- [ ] Pagination  
-- [ ] Filtering  
+- [ ] Pagination
+- [ ] Filtering
 - [ ] Sorting
 
 ## **Inventory Status**
 
-- [ ] Active  
+- [ ] Active
 - [ ] Inactive
 
 ---
 
 # **3\. Stock Management**
 
-- [ ] Stock tracking  
-- [ ] Automatic stock deduction  
-- [ ] Stock validation  
-- [ ] Prevent overselling  
-- [ ] Low stock monitoring  
+- [ ] Stock tracking
+- [ ] Automatic stock deduction
+- [ ] Stock validation
+- [ ] Prevent overselling
+- [ ] Low stock monitoring
 - [ ] Stock availability check
 
 ---
@@ -77,47 +77,41 @@
 
 ## **Layout**
 
-- [ ] Product search  
-- [ ] Barcode input  
-- [ ] Quick Select panel  
-- [ ] Shopping cart  
-- [ ] Order summary  
-- [ ] Payment panel  
+- [ ] Product search
+- [ ] Barcode input
+- [ ] Quick Select panel
+- [ ] Shopping cart
+- [ ] Order summary
+- [ ] Payment panel
 - [ ] Checkout buttons
-
-## **Responsive**
-
-- [ ] Desktop  
-- [ ] Tablet  
-- [ ] Touchscreen POS
 
 ---
 
 # **5\. Barcode Scanning**
 
-- [ ] USB scanner support  
-- [ ] Bluetooth scanner support  
-- [ ] Hidden barcode listener  
-- [ ] Automatic barcode detection  
-- [ ] Enter key trigger  
-- [ ] Auto product lookup  
-- [ ] Auto add to cart  
+- [ ] USB scanner support
+- [ ] Bluetooth scanner support
+- [ ] Hidden barcode listener
+- [ ] Automatic barcode detection
+- [ ] Enter key trigger
+- [ ] Auto product lookup
+- [ ] Auto add to cart
 - [ ] Increase quantity on repeated scan
 
 Validation
 
-- [ ] Barcode exists  
-- [ ] Product active  
+- [ ] Barcode exists
+- [ ] Product active
 - [ ] Stock available
 
 ---
 
 # **6\. Quick Select Products**
 
-- [ ] Category buttons  
-- [ ] Product buttons  
-- [ ] Touch-friendly interface  
-- [ ] Fast product selection  
+- [ ] Category buttons
+- [ ] Product buttons
+- [ ] Touch-friendly interface
+- [ ] Fast product selection
 - [ ] Non-barcoded products
 
 ---
@@ -128,15 +122,15 @@ Predictive Search
 
 Search using
 
-- [ ] Name  
-- [ ] Barcode  
+- [ ] Name
+- [ ] Barcode
 - [ ] SKU
 
 Features
 
-- [ ] Debouncing  
-- [ ] Live suggestions  
-- [ ] Async search  
+- [ ] Debouncing
+- [ ] Live suggestions
+- [ ] Async search
 - [ ] Fast lookup
 
 ---
@@ -145,26 +139,26 @@ Features
 
 ## **Cart Operations**
 
-- [ ] Add item  
-- [ ] Remove item  
-- [ ] Update quantity  
+- [ ] Add item
+- [ ] Remove item
+- [ ] Update quantity
 - [ ] Clear cart
 
 ## **Cart Display**
 
 Each item shows
 
-- [ ] Name  
-- [ ] Quantity  
-- [ ] Unit price  
-- [ ] Tax  
+- [ ] Name
+- [ ] Quantity
+- [ ] Unit price
+- [ ] Tax
 - [ ] Subtotal
 
 ## **Cart Calculations**
 
-- [ ] Subtotal  
-- [ ] Tax  
-- [ ] Discount  
+- [ ] Subtotal
+- [ ] Tax
+- [ ] Discount
 - [ ] Grand total
 
 ---
@@ -173,22 +167,22 @@ Each item shows
 
 Before Checkout
 
-- [ ] Validate products  
-- [ ] Validate stock  
+- [ ] Validate products
+- [ ] Validate stock
 - [ ] Validate product status
 
 During Checkout
 
-- [ ] Create order  
-- [ ] Validate payment  
-- [ ] Generate invoice  
-- [ ] Deduct stock  
-- [ ] Store payment  
+- [ ] Create order
+- [ ] Validate payment
+- [ ] Generate invoice
+- [ ] Deduct stock
+- [ ] Store payment
 - [ ] Complete transaction
 
 Database Transaction
 
-- [ ] Atomic operations  
+- [ ] Atomic operations
 - [ ] Rollback on failure
 
 ---
@@ -197,30 +191,30 @@ Database Transaction
 
 Payment Methods
 
-- [ ] Cash  
-- [ ] Amwal Pay  
+- [ ] Cash
+- [ ] Amwal Pay
 - [ ] Thawani Pay
 
 Payment Features
 
-- [ ] Payment session  
-- [ ] Payment verification  
-- [ ] Payment reference  
+- [ ] Payment session
+- [ ] Payment verification
+- [ ] Payment reference
 - [ ] Payment status
 
 Payment Status
 
-- [ ] Pending  
-- [ ] Success  
-- [ ] Failed  
+- [ ] Pending
+- [ ] Success
+- [ ] Failed
 - [ ] Refunded
 
 Payment Record
 
-- [ ] Provider  
-- [ ] Amount  
-- [ ] Currency  
-- [ ] Reference  
+- [ ] Provider
+- [ ] Amount
+- [ ] Currency
+- [ ] Reference
 - [ ] Timestamp
 
 ---
@@ -229,20 +223,20 @@ Payment Record
 
 Invoice Creation
 
-- [ ] Unique invoice number  
-- [ ] Invoice date/time  
-- [ ] Customer details  
-- [ ] Product list  
-- [ ] Quantity  
-- [ ] Prices  
-- [ ] Tax  
-- [ ] Payment details  
+- [ ] Unique invoice number
+- [ ] Invoice date/time
+- [ ] Customer details
+- [ ] Product list
+- [ ] Quantity
+- [ ] Prices
+- [ ] Tax
+- [ ] Payment details
 - [ ] Grand total
 
 Invoice Rules
 
-- [ ] Permanent record  
-- [ ] Non-editable  
+- [ ] Permanent record
+- [ ] Non-editable
 - [ ] Sequential numbering
 
 ---
@@ -251,18 +245,18 @@ Invoice Rules
 
 Using
 
-- [ ] HTML Template  
+- [ ] HTML Template
 - [ ] Puppeteer
 
 PDF Includes
 
-- [ ] Company logo  
-- [ ] Business details  
-- [ ] Invoice details  
-- [ ] Products  
-- [ ] Taxes  
-- [ ] Payment information  
-- [ ] Footer  
+- [ ] Company logo
+- [ ] Business details
+- [ ] Invoice details
+- [ ] Products
+- [ ] Taxes
+- [ ] Payment information
+- [ ] Footer
 - [ ] Thank you message
 
 ---
@@ -273,10 +267,10 @@ Using Wasabi
 
 Features
 
-- [ ] Upload PDF  
-- [ ] Store URL  
-- [ ] Download invoice  
-- [ ] Secure access  
+- [ ] Upload PDF
+- [ ] Store URL
+- [ ] Download invoice
+- [ ] Secure access
 - [ ] Long-term storage
 
 ---
@@ -289,9 +283,9 @@ Using Resend
 
 Features
 
-- [ ] HTML email  
-- [ ] PDF attachment  
-- [ ] Download link  
+- [ ] HTML email
+- [ ] PDF attachment
+- [ ] Download link
 - [ ] Personalized email
 
 ## **WhatsApp**
@@ -300,13 +294,13 @@ Using OpenWA
 
 Features
 
-- [ ] Invoice link  
-- [ ] Invoice details  
+- [ ] Invoice link
+- [ ] Invoice details
 - [ ] Payment summary
 
 Validation
 
-- [ ] Email validation  
+- [ ] Email validation
 - [ ] Phone validation
 
 ---
@@ -315,12 +309,12 @@ Validation
 
 KPIs
 
-- [ ] Total sales  
-- [ ] Revenue  
-- [ ] Transactions  
-- [ ] Average order value  
-- [ ] Inventory status  
-- [ ] Low stock alerts  
+- [ ] Total sales
+- [ ] Revenue
+- [ ] Transactions
+- [ ] Average order value
+- [ ] Inventory status
+- [ ] Low stock alerts
 - [ ] Recent sales
 
 Real-time updates
@@ -331,42 +325,42 @@ Real-time updates
 
 ## **Sales Report**
 
-- [ ] Daily  
-- [ ] Weekly  
-- [ ] Monthly  
+- [ ] Daily
+- [ ] Weekly
+- [ ] Monthly
 - [ ] Custom range
 
 Metrics
 
-- [ ] Revenue  
-- [ ] Taxes  
-- [ ] Transactions  
+- [ ] Revenue
+- [ ] Taxes
+- [ ] Transactions
 - [ ] Payment methods
 
 ## **Inventory Report**
 
-- [ ] Current stock  
-- [ ] Low stock  
+- [ ] Current stock
+- [ ] Low stock
 - [ ] Stock movement
 
 ## **Product Report**
 
-- [ ] Best sellers  
-- [ ] Slow movers  
+- [ ] Best sellers
+- [ ] Slow movers
 - [ ] High revenue products
 
 ## **Category Report**
 
-- [ ] Category sales  
+- [ ] Category sales
 - [ ] Category performance
 
 ## **Payment Report**
 
-- [ ] Cash  
-- [ ] Amwal  
-- [ ] Thawani  
-- [ ] Pending  
-- [ ] Failed  
+- [ ] Cash
+- [ ] Amwal
+- [ ] Thawani
+- [ ] Pending
+- [ ] Failed
 - [ ] Refunded
 
 ---
@@ -375,12 +369,12 @@ Metrics
 
 Filter by
 
-- [ ] Date  
-- [ ] Product  
-- [ ] Category  
-- [ ] Cashier  
-- [ ] Invoice  
-- [ ] Payment provider  
+- [ ] Date
+- [ ] Product
+- [ ] Category
+- [ ] Cashier
+- [ ] Invoice
+- [ ] Payment provider
 - [ ] Payment status
 
 ---
@@ -389,7 +383,7 @@ Filter by
 
 Export to
 
-- [ ] PDF  
+- [ ] PDF
 - [ ] Excel
 
 ---
@@ -398,54 +392,53 @@ Export to
 
 Company Information
 
-- [ ] Company name  
-- [ ] Logo  
-- [ ] Address  
-- [ ] Phone  
-- [ ] Email  
-- [ ] Website  
+- [ ] Company name
+- [ ] Logo
+- [ ] Address
+- [ ] Phone
+- [ ] Email
+- [ ] Website
 - [ ] Tax registration
 
 ---
 
 # **20\. Financial Settings**
 
-- [ ] Tax percentage  
-- [ ] Currency  
-- [ ] Decimal precision  
+- [ ] Tax percentage
+- [ ] Currency
+- [ ] Decimal precision
 - [ ] Invoice numbering
 
 ---
 
 # **21\. Inventory Settings**
 
-- [ ] Low stock threshold  
+- [ ] Low stock threshold
 - [ ] Barcode preferences
 
 ---
 
 # **22\. Payment Settings**
 
-- [ ] Enable/Disable Amwal  
-- [ ] Enable/Disable Thawani  
+- [ ] Enable/Disable Amwal
+- [ ] Enable/Disable Thawani
 - [ ] Payment preferences
 
 ---
 
 # **23\. Communication Settings**
 
-- [ ] Email receipts  
+- [ ] Email receipts
 - [ ] WhatsApp receipts
 
 ---
 
 # **24\. Receipt Customization**
 
-- [ ] Header  
-- [ ] Footer  
-- [ ] Logo  
-- [ ] Thank you message  
+- [ ] Header
+- [ ] Footer
+- [ ] Logo
+- [ ] Thank you message
 - [ ] Terms & Conditions
 
 ---
-
