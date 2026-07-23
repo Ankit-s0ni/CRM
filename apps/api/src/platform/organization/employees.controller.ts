@@ -27,6 +27,7 @@ import {
   TerminateEmployeeDto,
 } from './dto/terminate-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { UpdateEmployeeAssignmentsDto } from './dto/update-employee-assignments.dto';
 import { EmployeesService } from './employees.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateEmployeeCommand } from './application/commands/create-employee.command';
@@ -158,6 +159,17 @@ export class EmployeesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.employeesService.update(id, dto, user.userId);
+  }
+
+  @Patch(':id/assignments')
+  @RequirePermissions(PERMISSIONS.EMPLOYEES_UPDATE)
+  @ApiOperation({ summary: 'Update an employee work assignments' })
+  updateAssignments(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateEmployeeAssignmentsDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.employeesService.updateAssignments(id, dto, user.userId);
   }
 
   @Post(':id/terminate')

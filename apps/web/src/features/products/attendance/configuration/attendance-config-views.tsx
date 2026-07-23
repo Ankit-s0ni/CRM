@@ -6,6 +6,7 @@ import {
   Clock3,
   Crosshair,
   Plus,
+  Search,
   ShieldCheck,
   Upload,
 } from "lucide-react";
@@ -1497,13 +1498,7 @@ export function RostersView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [form, setForm] = useState({
-    employeeId: "",
-    shiftId: "",
-    rosterDate: iso(today),
-  });
   const [bulkForm, setBulkForm] = useState({
     employeeIds: [] as string[],
     shiftId: "",
@@ -1528,17 +1523,6 @@ export function RostersView() {
   useEffect(() => {
     void loadRosters();
   }, []);
-  async function create() {
-    await apiClient
-      .post("/rosters", form)
-      .then(() => {
-        setOpen(false);
-        load();
-      })
-      .catch(() =>
-        setError("Roster assignment conflicts with an existing employee/date."),
-      );
-  }
   async function bulkAssign() {
     setError("");
     try {
@@ -1587,16 +1571,11 @@ export function RostersView() {
               }
             />
           </label>
-          <button
-            className="h-11 rounded-xl border border-primary bg-white px-4 text-sm font-semibold text-primary"
-            onClick={() => {
-              setBulkOpen(true);
-              setBulkResult("");
-            }}
-          >
-            Bulk assign
-          </button>
-          <PrimaryButton onClick={() => setOpen(true)}>
+          <PrimaryButton onClick={() => {
+            setBulkForm({ employeeIds: [], shiftId: "", startDate: iso(today), endDate: iso(end) });
+            setBulkResult("");
+            setBulkOpen(true);
+          }}>
             <Plus className="size-4" />
             Assign shift
           </PrimaryButton>
@@ -1656,7 +1635,16 @@ export function RostersView() {
                           {roster.shift.name}
                         </button>
                       ) : (
-                        <span className="text-zinc-300">—</span>
+                        <button
+                          className="flex h-full w-full items-center justify-center rounded-lg hover:bg-zinc-100/50"
+                          onClick={() => {
+                            setBulkForm({ employeeIds: [employee.id], shiftId: "", startDate: iso(date), endDate: iso(date) });
+                            setBulkResult("");
+                            setBulkOpen(true);
+                          }}
+                        >
+                          <span className="text-zinc-300">—</span>
+                        </button>
                       )}
                     </div>
                   );
@@ -1672,57 +1660,10 @@ export function RostersView() {
           </div>
         </Panel>
       )}
-      {open && (
-        <Dialog error={error} title="Assign shift" onClose={() => setOpen(false)}>
-          <div className="grid gap-4">
-            <Field label="Employee">
-              <select
-                className={inputClass}
-                value={form.employeeId}
-                onChange={(e) =>
-                  setForm({ ...form, employeeId: e.target.value })
-                }
-              >
-                <option value="">Select employee</option>
-                {employees.map((employee) => (
-                  <option key={employee.id} value={employee.id}>
-                    {employee.fullName}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Shift">
-              <select
-                className={inputClass}
-                value={form.shiftId}
-                onChange={(e) => setForm({ ...form, shiftId: e.target.value })}
-              >
-                <option value="">Select shift</option>
-                {shifts.map((shift) => (
-                  <option key={shift.id} value={shift.id}>
-                    {shift.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Date">
-              <input
-                type="date"
-                className={inputClass}
-                value={form.rosterDate}
-                onChange={(e) =>
-                  setForm({ ...form, rosterDate: e.target.value })
-                }
-              />
-            </Field>
-            <PrimaryButton onClick={create}>Assign shift</PrimaryButton>
-          </div>
-        </Dialog>
-      )}
       {bulkOpen && (
         <Dialog
           error={error}
-          title="Bulk assign shifts"
+          title="Assign shift(s)"
           onClose={() => setBulkOpen(false)}
         >
           <div className="grid gap-4">
@@ -1798,7 +1739,7 @@ export function RostersView() {
               disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length}
               onClick={bulkAssign}
             >
-              Apply bulk roster
+              Apply shift
             </PrimaryButton>
           </div>
         </Dialog>
@@ -2054,7 +1995,10 @@ function OfficeLocationPicker({
   onChange: (coordinate: MapCoordinate) => void;
 }) {
   const [locating, setLocating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searching, setSearching] = useState(false);
   const coordinate = validCoordinate(latitude, longitude);
+
   function useCurrentLocation() {
     if (!navigator.geolocation) return;
     setLocating(true);
@@ -2067,6 +2011,28 @@ function OfficeLocationPicker({
       { enableHighAccuracy: true, timeout: 12_000 },
     );
   }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        onChange({ latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) });
+        setSearchQuery("");
+      } else {
+        alert("Location not found");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Search failed. Please try again.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
   const marker = coordinate
     ? [{ id: "office", label: "Office pin", ...coordinate }]
     : [];
@@ -2082,16 +2048,16 @@ function OfficeLocationPicker({
     : [];
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="font-semibold">Pin the office entrance</div>
           <div className="text-xs text-outline">
-            Click the map or use your current location. The circle is the valid
+            Search for a location, click the map, or use your current location. The circle is the valid
             attendance area.
           </div>
         </div>
         <button
-          className="flex h-10 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 text-sm font-semibold text-primary"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 text-sm font-semibold text-primary transition-colors hover:bg-stone-50"
           disabled={locating}
           onClick={useCurrentLocation}
           type="button"
@@ -2100,6 +2066,29 @@ function OfficeLocationPicker({
           {locating ? "Locating…" : "Use current location"}
         </button>
       </div>
+      
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="relative flex-1">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="size-4 text-outline" />
+          </div>
+          <input
+            type="text"
+            className="block w-full rounded-xl border border-outline-variant bg-white py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Search for a location (e.g., city, street, landmark)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={searching || !searchQuery.trim()}
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {searching ? "Searching..." : "Search"}
+        </button>
+      </form>
+
       <FieldMap
         className="min-h-[280px]"
         geofences={geofence}

@@ -65,7 +65,7 @@ function OpenStreetMapFieldMap({
         const center = points[0] ?? { latitude: 23.588, longitude: 58.3829 };
         const initializedMap = leaflet.map(container.current, {
           center: [center.latitude, center.longitude],
-          scrollWheelZoom: false,
+          scrollWheelZoom: true,
           zoom: points.length ? 14 : 10,
         });
         map = initializedMap;

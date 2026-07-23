@@ -324,7 +324,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         </div>
       )}
       {employee && workspace && activeTab === "assignments" && (
-        <AssignmentsPanel employeeId={employeeId} workspace={workspace} />
+        <AssignmentsPanel employeeId={employeeId} workspace={workspace} onUpdate={load} />
       )}
       {employee && workspace && activeTab === "attendance" && (
         <AttendancePanel employeeId={employeeId} workspace={workspace} />
@@ -1130,15 +1130,27 @@ function AccountSummary({
 function AssignmentsPanel({
   employeeId,
   workspace,
+  onUpdate,
 }: {
   employeeId: string;
   workspace: EmployeeWorkspace;
+  onUpdate: () => void;
 }) {
   const policy = workspace.assignments.effectiveAttendancePolicy;
+  const [editing, setEditing] = useState(false);
+  
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Panel className="p-6">
-        <h2 className="text-lg font-bold">Work assignments</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Work assignments</h2>
+          <button 
+            className="flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-200"
+            onClick={() => setEditing(true)}
+          >
+            <Pencil className="size-3" /> Edit
+          </button>
+        </div>
         <div className="mt-5 grid gap-3">
           <AssignmentRow
             label="Primary office"
@@ -1244,6 +1256,18 @@ function AssignmentsPanel({
           Manage Leave policies
         </Link>
       </Panel>
+      {editing && (
+        <EditAssignmentsModal
+          employeeId={employeeId}
+          currentPrimaryOfficeId={workspace.assignments.offices.find(o => o.isPrimary)?.office.id ?? null}
+          currentDefaultShiftId={workspace.assignments.defaultShift?.id ?? null}
+          onClose={() => setEditing(false)}
+          onSuccess={() => {
+            setEditing(false);
+            onUpdate();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -2096,5 +2120,104 @@ function IdentityRow({
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
     new Date(value),
+  );
+}
+function EditAssignmentsModal({
+  employeeId,
+  currentPrimaryOfficeId,
+  currentDefaultShiftId,
+  onClose,
+  onSuccess,
+}: {
+  employeeId: string;
+  currentPrimaryOfficeId: string | null;
+  currentDefaultShiftId: string | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [offices, setOffices] = useState<any[]>([]);
+  const [shifts, setShifts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    primaryOfficeId: currentPrimaryOfficeId || "",
+    defaultShiftId: currentDefaultShiftId || "",
+  });
+
+  useEffect(() => {
+    Promise.all([apiClient.get("/offices"), apiClient.get("/shifts")])
+      .then(([o, s]) => {
+        setOffices(o.data.data);
+        setShifts(s.data.data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    await apiClient
+      .patch(`/employees/${employeeId}/assignments`, {
+        primaryOfficeId: form.primaryOfficeId || null,
+        defaultShiftId: form.defaultShiftId || null,
+      })
+      .then(onSuccess)
+      .catch(() => alert("Failed to update assignments"))
+      .finally(() => setSaving(false));
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-surface-variant p-4">
+          <h2 className="text-lg font-bold">Edit assignments</h2>
+          <button onClick={onClose}>
+            <X className="size-5 text-outline" />
+          </button>
+        </div>
+        <div className="p-4">
+          <div className="grid gap-4">
+            {loading ? (
+              <LoadingState />
+            ) : (
+              <>
+                <Field label="Primary office">
+                  <select
+                    className={inputClass}
+                    value={form.primaryOfficeId}
+                    onChange={(e) =>
+                      setForm({ ...form, primaryOfficeId: e.target.value })
+                    }
+                  >
+                    <option value="">None</option>
+                    {offices.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.officeName}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Default shift">
+                  <select
+                    className={inputClass}
+                    value={form.defaultShiftId}
+                    onChange={(e) =>
+                      setForm({ ...form, defaultShiftId: e.target.value })
+                    }
+                  >
+                    <option value="">None</option>
+                    {shifts.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <PrimaryButton disabled={saving} onClick={save}>Save assignments</PrimaryButton>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   TerminateEmployeeDto,
 } from './dto/terminate-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { UpdateEmployeeAssignmentsDto } from './dto/update-employee-assignments.dto';
 import { EmployeeQuotaService } from './employee-quota.service';
 import { collectReportingEmployeeIds } from './employee-access';
 import {
@@ -777,6 +778,99 @@ export class EmployeesService {
       return {
         data: { userId: user.id, email },
         temporaryCredentials: { email, password: temporaryPassword },
+      };
+    });
+  }
+
+  async updateAssignments(
+    id: string,
+    dto: UpdateEmployeeAssignmentsDto,
+    createdBy: string,
+  ) {
+    const tenantId = this.requireTenantId();
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await tx.employee.findUnique({
+        where: { id },
+        include: { officeAssignments: true },
+      });
+      if (!employee) this.throwNotFound();
+
+      // Update default shift
+      if (dto.defaultShiftId !== undefined) {
+        if (dto.defaultShiftId) {
+          const shift = await tx.shift.findUnique({
+            where: { id: dto.defaultShiftId, tenantId },
+          });
+          if (!shift) {
+            throw new BadRequestException('Shift not found in this workspace');
+          }
+        }
+        await tx.employee.update({
+          where: { id },
+          data: { defaultShiftId: dto.defaultShiftId },
+        });
+      }
+
+      // Update primary office
+      if (dto.primaryOfficeId !== undefined) {
+        if (dto.primaryOfficeId) {
+          const office = await tx.officeLocation.findUnique({
+            where: { id: dto.primaryOfficeId, tenantId },
+          });
+          if (!office) {
+            throw new BadRequestException('Office not found in this workspace');
+          }
+
+          // Unset all existing primary offices
+          await tx.employeeOfficeAssignment.updateMany({
+            where: { employeeId: id },
+            data: { isPrimary: false },
+          });
+
+          // Upsert the new primary office
+          await tx.employeeOfficeAssignment.upsert({
+            where: {
+              tenantId_employeeId_officeLocationId: {
+                tenantId,
+                employeeId: id,
+                officeLocationId: dto.primaryOfficeId,
+              },
+            },
+            create: {
+              tenantId,
+              employeeId: id,
+              officeLocationId: dto.primaryOfficeId,
+              isPrimary: true,
+            },
+            update: {
+              isPrimary: true,
+            },
+          });
+        } else {
+          // Unset primary
+          await tx.employeeOfficeAssignment.updateMany({
+            where: { employeeId: id },
+            data: { isPrimary: false },
+          });
+        }
+      }
+
+      await this.audit.record(tx, {
+        tenantId,
+        action: 'employee_assignments.updated',
+        resourceType: 'EMPLOYEE',
+        resourceId: id,
+        actorUserId: createdBy,
+        metadata: {
+          employeeCode: employee.employeeCode,
+          defaultShiftId: dto.defaultShiftId,
+          primaryOfficeId: dto.primaryOfficeId,
+        },
+      });
+
+      return {
+        id,
+        updated: true,
       };
     });
   }

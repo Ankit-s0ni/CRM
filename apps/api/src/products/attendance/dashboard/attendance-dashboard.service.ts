@@ -213,6 +213,7 @@ export class AttendanceDashboardService {
         access,
         subscription,
         modules,
+        tenantQuotaUsed,
       ] = await Promise.all([
         canReadWorkforce
           ? Promise.all([
@@ -310,6 +311,12 @@ export class AttendanceDashboardService {
               orderBy: { module: { name: 'asc' } },
             })
           : Promise.resolve(null),
+        tx.employee.count({
+          where: {
+            tenantId,
+            status: { in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_NOTICE] },
+          },
+        }),
       ]);
 
       return {
@@ -348,7 +355,7 @@ export class AttendanceDashboardService {
             : null,
           quota: subscription
             ? {
-                used: subscription.seatCount,
+                used: tenantQuotaUsed,
                 limit: subscription.plan.maxEmployees,
               }
             : null,
