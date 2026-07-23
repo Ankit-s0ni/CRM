@@ -29,9 +29,20 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   configureTrustedProxies(app);
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',').map((value) =>
-      value.trim(),
-    ) ?? ['http://localhost:4002'],
+    origin: (origin, callback) => {
+      const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((v) => v.trim()) ?? [];
+      if (
+        !origin ||
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('blufield.cloud') ||
+        origin.includes('localhost')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   });
 
