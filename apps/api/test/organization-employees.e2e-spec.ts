@@ -701,6 +701,7 @@ async function cleanupTenant(prisma: PrismaClient, tenantId: string) {
   await prisma.user.deleteMany({ where: { tenantId } });
   await prisma.role.deleteMany({ where: { tenantId } });
   await prisma.tenantSettings.deleteMany({ where: { tenantId } });
+  await prisma.tenantSubscriptionHistory.deleteMany({ where: { subscription: { tenantId } } });
   await prisma.tenantSubscription.deleteMany({ where: { tenantId } });
   await prisma.tenant.deleteMany({ where: { id: tenantId } });
 }

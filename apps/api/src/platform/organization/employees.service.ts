@@ -897,7 +897,7 @@ export class EmployeesService {
     });
   }
 
-  private async validateRelationships(
+  async validateRelationships(
     tx: PrismaTransaction,
     deptId: string,
     designationId?: string | null,
@@ -976,7 +976,7 @@ export class EmployeesService {
     return [];
   }
 
-  private async ensureUniqueIdentity(
+  async ensureUniqueIdentity(
     tx: PrismaTransaction,
     employeeCode: string,
     phone?: string | null,

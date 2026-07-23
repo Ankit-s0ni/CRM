@@ -28,13 +28,18 @@ import {
 } from './dto/terminate-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesService } from './employees.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateEmployeeCommand } from './application/commands/create-employee.command';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
 @UseGuards(JwtTenantGuard, PermissionsGuard)
 @Controller('employees')
 export class EmployeesController {
-  constructor(private readonly employeesService: EmployeesService) {}
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Get()
   @RequireAnyPermissions(
@@ -126,7 +131,9 @@ export class EmployeesController {
     @Body() dto: CreateEmployeeDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.employeesService.create(dto, user.userId);
+    return this.commandBus.execute(
+      new CreateEmployeeCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Post(':id/account')

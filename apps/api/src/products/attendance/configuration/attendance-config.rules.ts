@@ -22,6 +22,10 @@ export function haversineMeters(
   return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+export function normalizeName(value: string) {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
 export function assertCoordinates(
   latitude: number,
   longitude: number,
@@ -181,4 +185,37 @@ function normalizeIpAddress(value: string) {
   return trimmed.startsWith('::ffff:') && isIP(trimmed.slice(7)) === 4
     ? trimmed.slice(7)
     : trimmed;
+}
+
+export function timeDate(value: string) {
+  return new Date(`1970-01-01T${value}:00.000Z`);
+}
+
+export function clock(value: Date) {
+  return value.toISOString().slice(11, 16);
+}
+
+export function serializeShift<T extends { startTime: Date; endTime: Date }>(
+  shift: T,
+) {
+  return {
+    ...shift,
+    startTime: clock(shift.startTime),
+    endTime: clock(shift.endTime),
+  };
+}
+
+export function dateRange(start: Date, end: Date) {
+  const values: Date[] = [];
+  for (
+    let cursor = new Date(start);
+    cursor <= end;
+    cursor = new Date(cursor.getTime() + 86_400_000)
+  )
+    values.push(cursor);
+  return values;
+}
+
+export function dateOnly(value: string) {
+  return new Date(`${value}T00:00:00.000Z`);
 }

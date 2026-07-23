@@ -12,3 +12,4 @@ apps/api/node_modules/
 apps/web/node_modules/
 apps/web/playwright-report/
 apps/web/test-results/
+crm-s3-user_accessKeys.csv

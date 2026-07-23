@@ -14,9 +14,9 @@ const LOGO_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 export class TenantAssetStorageService {
   private readonly bucket = process.env.S3_BUCKET ?? 'hrms-uploads';
   private readonly client = new S3Client({
-    endpoint: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
-    region: process.env.S3_REGION ?? 'us-east-1',
-    forcePathStyle: true,
+    endpoint: process.env.S3_ENDPOINT || undefined,
+    region: process.env.S3_REGION ?? 'eu-north-1',
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
     credentials: {
       accessKeyId: process.env.S3_ACCESS_KEY ?? 'minioadmin',
       secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',

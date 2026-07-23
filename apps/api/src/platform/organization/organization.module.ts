@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { DepartmentsService } from './departments.service';
 import { DesignationsController } from './designations.controller';
 import { DesignationsService } from './designations.service';
@@ -14,9 +15,16 @@ import { EmployeeImportQueue } from './imports/employee-import.queue';
 import { PrivateObjectStorageModule } from '../../shared/storage/private-object-storage.module';
 import { EmployeeDocumentsController } from './employee-documents.controller';
 import { EmployeeDocumentsService } from './employee-documents.service';
+import { CreateEmployeeHandler } from './application/commands/create-employee.handler';
+import { SyncBillingOnEmployeeCreatedHandler } from './application/events/sync-billing-on-employee-created.handler';
+import { IEmployeeRepository } from './domain/employee.repository.interface';
+import { PrismaEmployeeRepository } from './infrastructure/prisma-employee.repository';
+
+const CommandHandlers = [CreateEmployeeHandler];
+const EventHandlers = [SyncBillingOnEmployeeCreatedHandler];
 
 @Module({
-  imports: [PrivateObjectStorageModule],
+  imports: [PrivateObjectStorageModule, CqrsModule],
   controllers: [
     OrganizationController,
     DesignationsController,
@@ -34,6 +42,12 @@ import { EmployeeDocumentsService } from './employee-documents.service';
     EmployeeImportProcessor,
     EmployeeImportQueue,
     EmployeeDocumentsService,
+    ...CommandHandlers,
+    ...EventHandlers,
+    {
+      provide: IEmployeeRepository,
+      useClass: PrismaEmployeeRepository,
+    },
   ],
   exports: [
     EmployeeImportStorageService,

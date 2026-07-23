@@ -37,83 +37,149 @@ import {
   UpdateShiftDto,
 } from './dto/attendance-config.dto';
 
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CurrentUser } from '../../../shared/http/current-user.decorator';
+import type { AuthenticatedUser } from '../../../shared/http/authenticated-user';
+
+// Office Commands & Queries
+import { CreateOfficeCommand } from './offices/application/commands/create-office.command';
+import { UpdateOfficeCommand } from './offices/application/commands/update-office.command';
+import { RemoveOfficeCommand } from './offices/application/commands/remove-office.command';
+import { ReplaceOfficeEmployeesCommand } from './offices/application/commands/replace-office-employees.command';
+import { ListOfficesQuery } from './offices/application/queries/list-offices.query';
+import { GetOfficeQuery } from './offices/application/queries/get-office.query';
+import { ListOfficeEmployeesQuery } from './offices/application/queries/list-office-employees.query';
+
+// Shift Commands & Queries
+import { CreateShiftCommand } from './shifts/application/commands/create-shift.command';
+import { UpdateShiftCommand } from './shifts/application/commands/update-shift.command';
+import { RemoveShiftCommand } from './shifts/application/commands/remove-shift.command';
+import { ListShiftsQuery } from './shifts/application/queries/list-shifts.query';
+import { GetShiftQuery } from './shifts/application/queries/get-shift.query';
+
+// Holiday Commands & Queries
+import { CreateHolidayCommand } from './holidays/application/commands/create-holiday.command';
+import { UpdateHolidayCommand } from './holidays/application/commands/update-holiday.command';
+import { RemoveHolidayCommand } from './holidays/application/commands/remove-holiday.command';
+import { ListHolidaysQuery } from './holidays/application/queries/list-holidays.query';
+
+// Roster Commands & Queries
+import { CreateRosterCommand } from './rosters/application/commands/create-roster.command';
+import { BulkRostersCommand } from './rosters/application/commands/bulk-rosters.command';
+import { RemoveRosterCommand } from './rosters/application/commands/remove-roster.command';
+import { ListRostersQuery } from './rosters/application/queries/list-rosters.query';
+import { ResolveShiftQuery } from './rosters/application/queries/resolve-shift.query';
+import { BulkResolveShiftsQuery } from './rosters/application/queries/bulk-resolve-shifts.query';
+
+// Policy Commands & Queries
+import { CreatePolicyCommand } from './policies/application/commands/create-policy.command';
+import { UpdatePolicyCommand } from './policies/application/commands/update-policy.command';
+import { RemovePolicyCommand } from './policies/application/commands/remove-policy.command';
+import { ReplacePolicyAssignmentsCommand } from './policies/application/commands/replace-policy-assignments.command';
+import { AssignEmployeePolicyCommand } from './policies/application/commands/assign-employee-policy.command';
+import { ListPoliciesQuery } from './policies/application/queries/list-policies.query';
+import { GetPolicyQuery } from './policies/application/queries/get-policy.query';
+import { ResolvePolicyQuery } from './policies/application/queries/resolve-policy.query';
+import { BulkResolvePoliciesQuery } from './policies/application/queries/bulk-resolve-policies.query';
+
 @ApiTags('Attendance configuration')
 @ApiBearerAuth()
 @RequireModule('ATTENDANCE')
 @UseGuards(JwtTenantGuard, ModuleGuard, PermissionsGuard)
 @Controller()
 export class AttendanceConfigController {
-  constructor(private readonly service: AttendanceConfigService) {}
+  constructor(
+    private readonly service: AttendanceConfigService,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Get('offices')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_READ)
   @ApiOperation({
     summary: 'List tenant office locations and assignment counts',
   })
-  listOffices() {
-    return this.service.listOffices();
+  listOffices(@CurrentUser() user: AuthenticatedUser) {
+    return this.queryBus.execute(new ListOfficesQuery(user.tenantId));
   }
 
   @Post('offices')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_MANAGE)
   @ApiOperation({ summary: 'Create an office and circular geofence' })
-  createOffice(@Body() dto: CreateOfficeDto) {
-    return this.service.createOffice(dto);
+  createOffice(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateOfficeDto,
+  ) {
+    return this.commandBus.execute(new CreateOfficeCommand(user.tenantId, dto, user.userId));
   }
 
   @Get('offices/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_READ)
   @ApiOperation({ summary: 'Get an office with employees and holidays' })
-  getOffice(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.getOffice(id);
+  getOffice(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.queryBus.execute(new GetOfficeQuery(id, user.tenantId));
   }
 
   @Patch('offices/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_MANAGE)
   @ApiOperation({ summary: 'Update office geofence and network constraints' })
   updateOffice(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOfficeDto,
   ) {
-    return this.service.updateOffice(id, dto);
+    return this.commandBus.execute(new UpdateOfficeCommand(id, user.tenantId, dto, user.userId));
   }
 
   @Delete('offices/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_MANAGE)
   @ApiOperation({ summary: 'Delete an unused office' })
-  removeOffice(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.removeOffice(id);
+  removeOffice(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.commandBus.execute(new RemoveOfficeCommand(id, user.tenantId, user.userId));
   }
 
   @Get('offices/:id/employees')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_READ)
   @ApiOperation({ summary: 'List employees assigned to an office' })
-  officeEmployees(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.listOfficeEmployees(id);
+  officeEmployees(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.queryBus.execute(new ListOfficeEmployeesQuery(id, user.tenantId));
   }
 
   @Put('offices/:id/employees')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_MANAGE)
   @ApiOperation({ summary: 'Atomically replace office employee assignments' })
   replaceOfficeEmployees(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AssignOfficeEmployeesDto,
   ) {
-    return this.service.replaceOfficeEmployees(id, dto);
+    return this.commandBus.execute(new ReplaceOfficeEmployeesCommand(id, user.tenantId, dto, user.userId));
   }
 
   @Get('attendance-policies')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_READ)
   @ApiOperation({ summary: 'List attendance policies and assignments' })
-  listPolicies() {
-    return this.service.listPolicies();
+  listPolicies(@CurrentUser() user: AuthenticatedUser) {
+    return this.queryBus.execute(new ListPoliciesQuery(user.tenantId));
   }
 
   @Post('attendance-policies')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_MANAGE)
   @ApiOperation({ summary: 'Create an attendance policy' })
-  createPolicy(@Body() dto: CreatePolicyDto) {
-    return this.service.createPolicy(dto);
+  createPolicy(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreatePolicyDto,
+  ) {
+    return this.commandBus.execute(new CreatePolicyCommand(user.tenantId, dto));
   }
 
   @Get('attendance-policies/resolve')
@@ -123,10 +189,11 @@ export class AttendanceConfigController {
       'Resolve employee policy by employee, department, then tenant default',
   })
   resolvePolicy(
+    @CurrentUser() user: AuthenticatedUser,
     @Query('employeeId', ParseUUIDPipe) employeeId: string,
     @Query('date') date: string,
   ) {
-    return this.service.resolvePolicy(employeeId, date);
+    return this.queryBus.execute(new ResolvePolicyQuery(employeeId, user.tenantId, date));
   }
 
   @Post('attendance-policies/resolve/bulk')
@@ -134,42 +201,53 @@ export class AttendanceConfigController {
   @ApiOperation({
     summary: 'Resolve policies for up to 500 employees without N+1 queries',
   })
-  resolvePolicies(@Body() dto: BulkResolveDto) {
-    return this.service.resolvePolicies(dto.employeeIds, dto.date);
+  resolvePolicies(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: BulkResolveDto,
+  ) {
+    return this.queryBus.execute(new BulkResolvePoliciesQuery(dto.employeeIds, user.tenantId, dto.date));
   }
 
   @Get('attendance-policies/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_READ)
   @ApiOperation({ summary: 'Get an attendance policy and assignments' })
-  getPolicy(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.getPolicy(id);
+  getPolicy(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.queryBus.execute(new GetPolicyQuery(id, user.tenantId));
   }
 
   @Patch('attendance-policies/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_MANAGE)
   @ApiOperation({ summary: 'Update prospective attendance policy rules' })
   updatePolicy(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePolicyDto,
   ) {
-    return this.service.updatePolicy(id, dto);
+    return this.commandBus.execute(new UpdatePolicyCommand(id, user.tenantId, dto));
   }
 
   @Delete('attendance-policies/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_MANAGE)
-  @ApiOperation({ summary: 'Delete an unassigned attendance policy' })
-  removePolicy(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.removePolicy(id);
+  @ApiOperation({ summary: 'Delete a policy and clear assignments' })
+  removePolicy(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.commandBus.execute(new RemovePolicyCommand(id, user.tenantId));
   }
 
   @Put('attendance-policies/:id/assignments')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_POLICIES_MANAGE)
   @ApiOperation({ summary: 'Atomically replace policy scope assignments' })
   replacePolicyAssignments(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ReplacePolicyAssignmentsDto,
   ) {
-    return this.service.replacePolicyAssignments(id, dto);
+    return this.commandBus.execute(new ReplacePolicyAssignmentsCommand(id, user.tenantId, dto));
   }
 
   @Put('attendance-policies/employees/:employeeId')
@@ -178,34 +256,39 @@ export class AttendanceConfigController {
     summary: 'Set or clear one employee-specific attendance policy override',
   })
   assignEmployeePolicy(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('employeeId', ParseUUIDPipe) employeeId: string,
     @Body() dto: AssignEmployeePolicyDto,
   ) {
-    return this.service.assignEmployeePolicy(employeeId, dto.policyId);
+    return this.commandBus.execute(new AssignEmployeePolicyCommand(employeeId, user.tenantId, dto.policyId));
   }
 
   @Get('shifts')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_READ)
   @ApiOperation({ summary: 'List tenant shifts' })
-  listShifts() {
-    return this.service.listShifts();
+  listShifts(@CurrentUser() user: AuthenticatedUser) {
+    return this.queryBus.execute(new ListShiftsQuery(user.tenantId));
   }
 
   @Post('shifts')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_MANAGE)
   @ApiOperation({ summary: 'Create a day or overnight shift' })
-  createShift(@Body() dto: CreateShiftDto) {
-    return this.service.createShift(dto);
+  createShift(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateShiftDto,
+  ) {
+    return this.commandBus.execute(new CreateShiftCommand(user.tenantId, dto, user.userId));
   }
 
   @Get('shifts/resolve')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_READ)
   @ApiOperation({ summary: 'Resolve employee shift for a date' })
   resolveShift(
+    @CurrentUser() user: AuthenticatedUser,
     @Query('employeeId', ParseUUIDPipe) employeeId: string,
     @Query('date') date: string,
   ) {
-    return this.service.resolveShift(employeeId, date);
+    return this.queryBus.execute(new ResolveShiftQuery(user.tenantId, employeeId, date));
   }
 
   @Post('shifts/resolve/bulk')
@@ -213,90 +296,119 @@ export class AttendanceConfigController {
   @ApiOperation({
     summary: 'Resolve shifts for up to 500 employees without N+1 queries',
   })
-  resolveShifts(@Body() dto: BulkResolveDto) {
-    return this.service.resolveShifts(dto.employeeIds, dto.date);
+  resolveShifts(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: BulkResolveDto,
+  ) {
+    return this.queryBus.execute(new BulkResolveShiftsQuery(user.tenantId, dto.employeeIds, dto.date));
   }
 
   @Get('shifts/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_READ)
   @ApiOperation({ summary: 'Get a shift' })
-  getShift(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.getShift(id);
+  getShift(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.queryBus.execute(new GetShiftQuery(id, user.tenantId));
   }
 
   @Patch('shifts/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_MANAGE)
   @ApiOperation({ summary: 'Update shift times and overnight derivation' })
   updateShift(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateShiftDto,
   ) {
-    return this.service.updateShift(id, dto);
+    return this.commandBus.execute(new UpdateShiftCommand(id, user.tenantId, dto, user.userId));
   }
 
   @Delete('shifts/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_SHIFTS_MANAGE)
   @ApiOperation({ summary: 'Delete an unused shift' })
-  removeShift(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.removeShift(id);
+  removeShift(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.commandBus.execute(new RemoveShiftCommand(id, user.tenantId, user.userId));
   }
 
   @Get('rosters')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_ROSTERS_READ)
   @ApiOperation({ summary: 'List dated roster assignments' })
-  listRosters(@Query() query: RosterQueryDto) {
-    return this.service.listRosters(query);
+  listRosters(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: RosterQueryDto,
+  ) {
+    return this.queryBus.execute(new ListRostersQuery(user.tenantId, query));
   }
 
   @Post('rosters')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_ROSTERS_MANAGE)
   @ApiOperation({ summary: 'Create an idempotent dated roster assignment' })
-  createRoster(@Body() dto: CreateRosterDto) {
-    return this.service.createRoster(dto);
+  createRoster(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateRosterDto,
+  ) {
+    return this.commandBus.execute(new CreateRosterCommand(user.tenantId, dto, user.userId));
   }
 
   @Post('rosters/bulk')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_ROSTERS_MANAGE)
   @ApiOperation({ summary: 'Bulk assign a shift with row-level conflicts' })
-  bulkRosters(@Body() dto: BulkRosterDto) {
-    return this.service.bulkRosters(dto);
+  bulkRosters(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: BulkRosterDto,
+  ) {
+    return this.commandBus.execute(new BulkRostersCommand(user.tenantId, dto, user.userId));
   }
 
   @Delete('rosters/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_ROSTERS_MANAGE)
   @ApiOperation({ summary: 'Delete a roster assignment' })
-  removeRoster(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.removeRoster(id);
+  removeRoster(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.commandBus.execute(new RemoveRosterCommand(id, user.tenantId, user.userId));
   }
 
   @Get('holidays')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_READ)
   @ApiOperation({ summary: 'List tenant-wide and office holidays' })
-  listHolidays() {
-    return this.service.listHolidays();
+  listHolidays(@CurrentUser() user: AuthenticatedUser) {
+    return this.queryBus.execute(new ListHolidaysQuery(user.tenantId));
   }
 
   @Post('holidays')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_MANAGE)
   @ApiOperation({ summary: 'Create a tenant-wide or office holiday' })
-  createHoliday(@Body() dto: CreateHolidayDto) {
-    return this.service.createHoliday(dto);
+  createHoliday(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateHolidayDto,
+  ) {
+    return this.commandBus.execute(new CreateHolidayCommand(user.tenantId, dto, user.userId));
   }
 
   @Patch('holidays/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_MANAGE)
   @ApiOperation({ summary: 'Update holiday name, date, or scope' })
   updateHoliday(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateHolidayDto,
   ) {
-    return this.service.updateHoliday(id, dto);
+    return this.commandBus.execute(new UpdateHolidayCommand(id, user.tenantId, dto, user.userId));
   }
 
   @Delete('holidays/:id')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_MANAGE)
   @ApiOperation({ summary: 'Delete a holiday' })
-  removeHoliday(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.removeHoliday(id);
+  removeHoliday(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.commandBus.execute(new RemoveHolidayCommand(id, user.tenantId, user.userId));
   }
 }
