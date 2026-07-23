@@ -13,5 +13,6 @@ allowBuilds:
   "msgpackr-extract": true
   "prisma": true
   protobufjs: true
+  puppeteer: false
   "sharp": true
   "unrs-resolver": true
