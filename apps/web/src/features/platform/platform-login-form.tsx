@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { usePlatformAuthStore } from "@/lib/platform-auth-store";
 
 export function PlatformLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const setSession = usePlatformAuthStore((state) => state.setSession);
   const returnTo = searchParams.get("returnTo") || "/platform";
 
   const [email, setEmail] = useState("");
@@ -41,6 +43,7 @@ export function PlatformLoginForm() {
         if (data.mfaRequired && data.challengeToken) {
           setChallengeToken(data.challengeToken);
         } else {
+          setSession(data);
           router.replace(returnTo);
         }
       } else {
@@ -56,6 +59,7 @@ export function PlatformLoginForm() {
         if (!response.ok) {
           throw new Error(data.message || "Invalid authentication code.");
         }
+        setSession(data);
         router.replace(returnTo);
       }
     } catch (err: any) {
