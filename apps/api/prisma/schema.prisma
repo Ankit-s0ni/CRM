@@ -437,6 +437,7 @@ model Tenant {
   deletionJobs   TenantDeletionJob[]
   users          User[]
   employees      Employee[]
+  productCategories ProductCategory[]
 
   @@index([status, createdAt])
   @@map("tenants")
@@ -2075,4 +2076,27 @@ model OutboxEvent {
 
   @@index([publishedAt, deadLetteredAt, availableAt, createdAt], map: "outbox_events_delivery_idx")
   @@map("outbox_events")
+}
+
+// ---------------- POS ----------------
+model ProductCategory {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  tenantId    String    @db.Uuid
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+
+  parentId    String?   @db.Uuid
+  parent      ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ProductCategory[] @relation("CategoryHierarchy")
+
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, parentId, name])
+  @@index([tenantId, isActive, deletedAt])
+  @@map("product_categories")
 }

@@ -11,6 +11,7 @@ import {
   Upload,
   UsersRound,
   WalletCards,
+  Store,
 } from "lucide-react";
 
 export type TenantNavItem = {
@@ -112,6 +113,12 @@ export const tenantContextNavigation: Record<
         "attendance.config.read",
         "attendance.approvals.manage",
       ],
+    },
+    {
+      label: "Point of Sale",
+      href: "/app/pos",
+      icon: Store,
+      moduleKey: "POS",
     },
     {
       label: "Payroll",
@@ -244,6 +251,7 @@ export function tenantNavigationContext(
   if (
     pathname.startsWith("/app/modules") ||
     pathname.startsWith("/app/attendance") ||
+    pathname.startsWith("/app/pos") ||
     pathname.startsWith("/app/leave")
   )
     return "modules";

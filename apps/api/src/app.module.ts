@@ -26,6 +26,7 @@ import { ObservabilityModule } from './shared/observability/observability.module
 import { NotificationsModule } from './platform/notifications/public';
 import { BillingModule } from './platform/billing/public';
 import { AttendanceProductModule } from './products/attendance/public';
+import { PosProductModule } from './products/pos/public';
 import { PlatformControlPlaneModule } from './platform/control-plane/public';
 
 @Module({
@@ -69,6 +70,7 @@ import { PlatformControlPlaneModule } from './platform/control-plane/public';
     HealthModule,
     PlatformControlPlaneModule,
     AttendanceProductModule,
+    PosProductModule,
     NotificationsModule,
     BillingModule,
   ],

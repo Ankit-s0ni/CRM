@@ -33,6 +33,11 @@ import {
   AttendanceRouteGate,
   AttendanceWorkspaceChrome,
 } from "@/features/products/attendance/core/attendance-workspace-nav";
+import { isPosWorkspacePath } from "@/lib/pos-navigation";
+import {
+  PosRouteGate,
+  PosWorkspaceChrome,
+} from "@/features/products/pos/core/pos-workspace-nav";
 import { PortalSearch } from "@/shared/components/portal-search";
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
@@ -162,6 +167,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       : null;
   const attendanceCapabilitiesLoaded =
     attendanceCapabilityState?.pathname === pathname;
+  const posWorkspace = isPosWorkspacePath(pathname);
   return (
     <div className="min-h-screen bg-surface text-zinc-900">
       {mobileOpen && (
@@ -278,6 +284,8 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             capabilities={attendanceCapabilities}
             permissions={user.permissions ?? []}
           />
+        ) : posWorkspace ? (
+          <PosWorkspaceChrome />
         ) : (
           contextItems.length > 0 && (
             <nav
@@ -315,6 +323,8 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             >
               {children}
             </AttendanceRouteGate>
+          ) : posWorkspace ? (
+            <PosRouteGate>{children}</PosRouteGate>
           ) : (
             children
           )}

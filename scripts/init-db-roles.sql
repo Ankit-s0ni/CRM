@@ -6,13 +6,14 @@
 -- app_user: the role the NestJS app connects as (NO BYPASSRLS)
 CREATE ROLE app_user LOGIN PASSWORD 'app_password';
 
--- app_admin: migration and infrastructure owner (BYPASSRLS)
-CREATE ROLE app_admin LOGIN PASSWORD 'admin_password' BYPASSRLS;
+-- app_admin: migration and infrastructure owner (BYPASSRLS, CREATEDB for shadow DBs)
+CREATE ROLE app_admin LOGIN PASSWORD 'admin_password' BYPASSRLS CREATEDB;
 
 -- Runtime-only connection for platform repositories.
 CREATE ROLE platform_runtime LOGIN PASSWORD 'platform_password' BYPASSRLS;
 
 -- Grant permissions on the database
 GRANT ALL PRIVILEGES ON DATABASE hrms_dev TO app_admin;
+GRANT ALL ON SCHEMA public TO app_admin;
 GRANT CONNECT ON DATABASE hrms_dev TO app_user;
 GRANT CONNECT ON DATABASE hrms_dev TO platform_runtime;
