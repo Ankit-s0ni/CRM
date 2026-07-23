@@ -315,9 +315,10 @@ export class AuthService {
       throw new ForbiddenException('User account is suspended');
     }
 
-    if (!user.emailVerifiedAt) {
-      throw new ForbiddenException('Email verification required');
-    }
+    // TODO: Re-enable email verification when email service is ready
+    // if (!user.emailVerifiedAt) {
+    //   throw new ForbiddenException('Email verification required');
+    // }
 
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       await this.recordLoginAttempt(
