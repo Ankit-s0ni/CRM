@@ -17,7 +17,8 @@ export class PlatformDatabaseService implements OnModuleInit, OnModuleDestroy {
     this.pool = new Pool({
       connectionString:
         process.env.DATABASE_URL_PLATFORM ??
-        'postgresql://platform_runtime:platform_password@localhost:5433/hrms_dev?schema=public',
+        process.env.DATABASE_URL ??
+        'postgresql://crm_user:crm_password_secure_123@localhost:5432/crm_db?schema=public',
       max: 10,
     });
     this.client = new PrismaClient({ adapter: new PrismaPg(this.pool) });
