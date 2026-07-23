@@ -2,12 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../shared/database/prisma.service';
 import { TenantContextService } from '../../../platform/tenancy/public';
 import puppeteer from 'puppeteer';
+import { EmailService } from '../../../platform/email/email.service';
+import { WhatsappService } from '../../../platform/whatsapp/whatsapp.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly tenantContext: TenantContextService
+    private readonly tenantContext: TenantContextService,
+    private readonly emailService: EmailService,
+    private readonly whatsappService: WhatsappService
   ) {}
 
   async findAll() {
@@ -141,5 +145,28 @@ export class OrdersService {
     } finally {
       await browser.close();
     }
+  }
+
+  async shareOrder(id: string, type: 'email' | 'whatsapp', target: string) {
+    const pdfBuffer = await this.generateInvoicePdf(id);
+    const order = await this.findOne(id);
+    
+    if (type === 'email') {
+      await this.emailService.sendEmailWithAttachment(
+        target,
+        `Receipt for Order #${order.orderNumber}`,
+        'Thank you for your business. Please find your receipt attached.',
+        pdfBuffer,
+        `receipt-${order.orderNumber}.pdf`
+      );
+    } else if (type === 'whatsapp') {
+      await this.whatsappService.sendDocument(
+        target,
+        pdfBuffer,
+        `receipt-${order.orderNumber}.pdf`,
+        `Thank you for your business! Here is your receipt for Order #${order.orderNumber}`
+      );
+    }
+    return { success: true };
   }
 }

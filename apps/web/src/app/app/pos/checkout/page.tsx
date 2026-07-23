@@ -28,6 +28,10 @@ export default function PosCheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [completedOrder, setCompletedOrder] = useState<{ id: string, total: number } | null>(null);
+  const [shareEmail, setShareEmail] = useState('');
+  const [sharePhone, setSharePhone] = useState('');
+  const [isSharing, setIsSharing] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch all active products
@@ -124,14 +128,45 @@ export default function PosCheckoutPage() {
         items: cart.map(item => ({ productId: item.id, quantity: item.cartQuantity })),
         paymentMethod
       };
-      await apiClient.post('/pos/checkout', payload);
+      const res = await apiClient.post('/pos/checkout', payload);
       setSuccess('Order completed successfully!');
+      setCompletedOrder({ id: res.data.id, total: totals.total });
       setCart([]);
       fetchProducts(); // Refresh stock
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Checkout failed');
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!completedOrder || (!shareEmail && !sharePhone)) return;
+    setIsSharing(true);
+    
+    try {
+      const promises = [];
+      if (shareEmail) {
+        promises.push(apiClient.post(`/pos/orders/${completedOrder.id}/share`, { type: 'email', target: shareEmail }));
+      }
+      if (sharePhone) {
+        promises.push(apiClient.post(`/pos/orders/${completedOrder.id}/share`, { type: 'whatsapp', target: sharePhone }));
+      }
+      
+      await Promise.all(promises);
+      
+      let msg = 'Receipt shared successfully';
+      if (shareEmail && sharePhone) msg += ' via Email and WhatsApp!';
+      else if (shareEmail) msg += ' via Email!';
+      else if (sharePhone) msg += ' via WhatsApp!';
+      
+      alert(msg);
+      setShareEmail('');
+      setSharePhone('');
+    } catch (err: any) {
+      alert(`Failed to share: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -291,6 +326,58 @@ export default function PosCheckoutPage() {
           </button>
         </div>
       </div>
+
+      {/* Success & Share Modal */}
+      {completedOrder && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+            <p className="text-gray-500 mb-8">Amount Paid: <strong className="text-gray-900">${completedOrder.total.toFixed(2)}</strong></p>
+
+            <div className="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 space-y-3">
+              <label className="block text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">Share Digital Receipt</label>
+              
+              <input 
+                type="email" 
+                placeholder="Email Address"
+                value={shareEmail}
+                onChange={e => setShareEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              <input 
+                type="tel" 
+                placeholder="WhatsApp Number (e.g. +1234567890)"
+                value={sharePhone}
+                onChange={e => setSharePhone(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-[#25D366] outline-none"
+              />
+              
+              <button 
+                onClick={handleShare}
+                disabled={isSharing || (!shareEmail && !sharePhone)}
+                className="w-full bg-blue-500 text-white py-3 rounded font-medium hover:bg-blue-600 disabled:opacity-50 mt-2"
+              >
+                {isSharing ? 'Sending...' : 'Send Receipt(s)'}
+              </button>
+            </div>
+
+            <button 
+              onClick={() => {
+                setCompletedOrder(null);
+                setShareEmail('');
+                setSharePhone('');
+                setSuccess('');
+              }}
+              className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+            >
+              Start New Sale
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
