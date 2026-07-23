@@ -5,4 +5,5 @@ allowBuilds:
   msgpackr-extract: true
   prisma: true
   protobufjs: true
+  puppeteer: set this to true or false
   unrs-resolver: true

@@ -1,8 +1,9 @@
-import { LayoutDashboard, Tags, Boxes, Settings2, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Tags, Boxes, Settings2, ShoppingCart, Receipt } from "lucide-react";
 
 export const posWorkspaceItems = [
   { label: "Overview", href: "/app/pos", icon: LayoutDashboard },
   { label: "Checkout", href: "/app/pos/checkout", icon: ShoppingCart },
+  { label: "Orders", href: "/app/pos/order", icon: Receipt },
   { label: "Categories", href: "/app/pos/categories", icon: Tags },
   { label: "Inventory", href: "/app/pos/inventory", icon: Boxes },
   { label: "Settings", href: "/app/pos/settings", icon: Settings2 },
