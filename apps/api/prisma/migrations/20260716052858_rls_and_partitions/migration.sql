@@ -11,14 +11,19 @@
 --   4. Append-only enforcement on audit logs
 -- =====================================================================
 
--- ---------------------------------------------------------------
--- 0. Roles. The application connects as app_user (NO BYPASSRLS).
---    The platform/super-admin module and migrations use app_admin.
--- ---------------------------------------------------------------
--- CREATE ROLE app_user  LOGIN PASSWORD :'APP_PASSWORD';
--- CREATE ROLE app_admin LOGIN PASSWORD :'ADMIN_PASSWORD' BYPASSRLS;
--- GRANT USAGE ON SCHEMA public TO app_user;
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
+-- Automatically initialize required database roles if they do not exist
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_user') THEN 
+    CREATE ROLE app_user LOGIN PASSWORD 'app_password'; 
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_admin') THEN 
+    CREATE ROLE app_admin LOGIN PASSWORD 'admin_password' BYPASSRLS SUPERUSER; 
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'platform_runtime') THEN 
+    CREATE ROLE platform_runtime LOGIN PASSWORD 'platform_password'; 
+  END IF;
+END $$;
 
 -- ---------------------------------------------------------------
 -- 1. Row-Level Security
