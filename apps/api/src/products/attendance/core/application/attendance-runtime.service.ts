@@ -322,32 +322,169 @@ export class AttendanceRuntimeService {
     const range = monthRange(month);
     return this.prisma.forTenant(async (tx) => {
       const employee = await this.resolver.employeeForUser(tx, userId);
-      const logs = await tx.attendanceLog.findMany({
-        where: {
-          employeeId: employee.id,
-          attendanceDate: { gte: range.start, lte: range.end },
-        },
-        orderBy: { attendanceDate: 'desc' },
-        select: {
-          id: true,
-          attendanceDate: true,
-          attendanceStatus: true,
-          firstCheckin: true,
-          lastCheckout: true,
-          totalWorkMinutes: true,
-          lateMinutes: true,
-          overtimeMinutes: true,
-          breakMinutes: true,
-          finalizedAt: true,
-          lockedAt: true,
-        },
+      const office = employee.officeAssignments[0]?.office;
+      const [settings, assignments, logs, holidays, exceptions, payrollLock] =
+        await Promise.all([
+          tx.tenantSettings.findUniqueOrThrow({
+            where: { tenantId: employee.tenantId },
+          }),
+          tx.policyAssignment.findMany({
+            where: {
+              OR: [
+                { scope: 'EMPLOYEE', employeeId: employee.id },
+                { scope: 'DEPARTMENT', deptId: employee.deptId },
+                { scope: 'TENANT_DEFAULT' },
+              ],
+            },
+            include: { policy: true },
+          }),
+          tx.attendanceLog.findMany({
+            where: {
+              employeeId: employee.id,
+              attendanceDate: { gte: range.start, lte: range.end },
+            },
+            orderBy: { attendanceDate: 'desc' },
+            select: {
+              id: true,
+              attendanceDate: true,
+              attendanceStatus: true,
+              firstCheckin: true,
+              lastCheckout: true,
+              totalWorkMinutes: true,
+              lateMinutes: true,
+              overtimeMinutes: true,
+              breakMinutes: true,
+              finalizedAt: true,
+              lockedAt: true,
+            },
+          }),
+          tx.tenantHoliday.findMany({
+            where: {
+              holidayDate: { gte: range.start, lte: range.end },
+              OR: [
+                { officeLocationId: null },
+                ...(office ? [{ officeLocationId: office.id }] : []),
+              ],
+            },
+            select: {
+              holidayDate: true,
+              holidayName: true,
+              officeLocationId: true,
+            },
+          }),
+          tx.attendanceException.findMany({
+            where: {
+              employeeId: employee.id,
+              startDate: { lte: range.end },
+              endDate: { gte: range.start },
+            },
+            include: {
+              leaveRequest: {
+                select: {
+                  status: true,
+                  policy: { select: { name: true } },
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          tx.payrollLockPeriod.findUnique({
+            where: {
+              tenantId_period: {
+                tenantId: employee.tenantId,
+                period: month,
+              },
+            },
+            select: { status: true },
+          }),
+        ]);
+      const assignment =
+        assignments.find(({ scope }) => scope === 'EMPLOYEE') ??
+        assignments.find(({ scope }) => scope === 'DEPARTMENT') ??
+        assignments.find(({ scope }) => scope === 'TENANT_DEFAULT');
+      const weeklyOffs = assignment?.policy.weeklyOffs ?? settings.weeklyOffs;
+      const timezone = office?.timezone ?? settings.timezone;
+      const today = DateTime.now().setZone(timezone).toISODate()!;
+      const logsByDate = new Map(
+        logs.map((log) => [log.attendanceDate.toISOString().slice(0, 10), log]),
+      );
+      const holidaysByDate = new Map(
+        holidays.map((holiday) => [
+          holiday.holidayDate.toISOString().slice(0, 10),
+          holiday,
+        ]),
+      );
+      const calendarDays = monthDates(month).map((date) => {
+        const log = logsByDate.get(date);
+        const holiday = holidaysByDate.get(date);
+        const exception = exceptions.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
+        const beforeJoining = date < databaseDate(employee.dateOfJoining);
+        const afterExit =
+          employee.dateOfExit != null &&
+          date > databaseDate(employee.dateOfExit);
+        const isToday = date === today;
+        const isFuture = date > today;
+        const weeklyOff = isConfiguredWeeklyOff(weeklyOffs, date, timezone);
+        const leave =
+          exception?.exceptionType === 'LEAVE' &&
+          (!exception.leaveRequest ||
+            exception.leaveRequest.status === 'APPROVED');
+        const display = calendarDisplayStatus({
+          log,
+          holiday: !!holiday,
+          weeklyOff,
+          leave,
+          halfDayLeave:
+            leave && exception
+              ? exceptionLeaveFractionForDate(exception, date) === 0.5
+              : false,
+          onDuty: exception?.exceptionType === 'ON_DUTY',
+          notApplicable: beforeJoining || afterExit,
+          isToday,
+          isFuture,
+        });
+        return {
+          date,
+          status: display.status,
+          attendanceStatus: log?.attendanceStatus ?? null,
+          source: display.source,
+          isWorkingDay: display.isWorkingDay,
+          isToday,
+          isFuture,
+          isLocked: !!log?.lockedAt || payrollLock?.status === 'LOCKED',
+          canOpenDetails:
+            !isFuture &&
+            !beforeJoining &&
+            !afterExit &&
+            !['HOLIDAY', 'WEEKLY_OFF'].includes(display.status),
+          label:
+            holiday?.holidayName ??
+            (leave
+              ? (exception?.leaveRequest?.policy.name ?? 'Approved leave')
+              : null),
+          firstCheckin: log?.firstCheckin ?? null,
+          lastCheckout: log?.lastCheckout ?? null,
+          totalWorkMinutes: log?.totalWorkMinutes ?? 0,
+          lateMinutes: log?.lateMinutes ?? 0,
+          overtimeMinutes: log?.overtimeMinutes ?? 0,
+          breakMinutes: log?.breakMinutes ?? 0,
+        };
       });
       return {
         data: logs.map((log) => ({
           ...log,
           attendanceDate: log.attendanceDate.toISOString().slice(0, 10),
         })),
-        summary: summarizeLogs(logs),
+        calendar: {
+          month,
+          timezone,
+          days: calendarDays,
+        },
+        summary: summarizeCalendar(calendarDays),
       };
     });
   }
@@ -614,24 +751,115 @@ function monthRange(month: string) {
   };
 }
 
-function summarizeLogs(
-  logs: Array<{
-    attendanceStatus: string;
-    totalWorkMinutes: number;
-    lateMinutes: number;
-    overtimeMinutes: number;
-  }>,
+export type CalendarLog = {
+  attendanceStatus: string;
+  lateMinutes: number;
+};
+
+export type CalendarDay = {
+  status: string;
+  totalWorkMinutes: number;
+  overtimeMinutes: number;
+};
+
+function monthDates(month: string) {
+  const start = DateTime.fromFormat(month, 'yyyy-MM', { zone: 'utc' });
+  return Array.from({ length: start.daysInMonth ?? 0 }, (_, index) =>
+    start.plus({ days: index }).toISODate()!,
+  );
+}
+
+function databaseDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+export function calendarDisplayStatus(input: {
+  log?: CalendarLog;
+  holiday: boolean;
+  weeklyOff: boolean;
+  leave: boolean;
+  halfDayLeave: boolean;
+  onDuty: boolean;
+  notApplicable: boolean;
+  isToday: boolean;
+  isFuture: boolean;
+}) {
+  if (input.notApplicable) {
+    return {
+      status: 'NOT_APPLICABLE',
+      source: 'EMPLOYMENT',
+      isWorkingDay: false,
+    };
+  }
+  if (input.log) {
+    const status =
+      input.log.lateMinutes > 0 &&
+      ['PRESENT', 'PRESENT_OPEN', 'ON_DUTY'].includes(
+        input.log.attendanceStatus,
+      )
+        ? 'LATE'
+        : input.log.attendanceStatus;
+    return {
+      status,
+      source: 'ATTENDANCE_LOG',
+      isWorkingDay: !['HOLIDAY', 'WEEKLY_OFF'].includes(status),
+    };
+  }
+  if (input.holiday) {
+    return { status: 'HOLIDAY', source: 'HOLIDAY', isWorkingDay: false };
+  }
+  if (input.weeklyOff) {
+    return { status: 'WEEKLY_OFF', source: 'POLICY', isWorkingDay: false };
+  }
+  if (input.leave) {
+    return {
+      status: input.halfDayLeave ? 'HALF_DAY' : 'ON_LEAVE',
+      source: 'APPROVED_LEAVE',
+      isWorkingDay: true,
+    };
+  }
+  if (input.onDuty) {
+    return { status: 'ON_DUTY', source: 'EXCEPTION', isWorkingDay: true };
+  }
+  if (input.isFuture) {
+    return { status: 'UPCOMING', source: 'SCHEDULE', isWorkingDay: true };
+  }
+  if (input.isToday) {
+    return { status: 'WORKING_DAY', source: 'SCHEDULE', isWorkingDay: true };
+  }
+  return { status: 'ABSENT', source: 'DERIVED', isWorkingDay: true };
+}
+
+function exceptionLeaveFractionForDate(
+  exception: {
+    startDate: Date;
+    endDate: Date;
+    halfDayStart: boolean;
+    halfDayEnd: boolean;
+  },
+  date: string,
 ) {
+  const isStart = databaseDate(exception.startDate) === date;
+  const isEnd = databaseDate(exception.endDate) === date;
+  return (isStart && exception.halfDayStart) || (isEnd && exception.halfDayEnd)
+    ? 0.5
+    : 1;
+}
+
+export function summarizeCalendar(days: CalendarDay[]) {
+  const count = (...statuses: string[]) =>
+    days.filter((day) => statuses.includes(day.status)).length;
   return {
-    days: logs.length,
-    present: logs.filter((log) =>
-      ['PRESENT', 'PRESENT_OPEN', 'ON_DUTY'].includes(log.attendanceStatus),
-    ).length,
-    absent: logs.filter((log) => log.attendanceStatus === 'ABSENT').length,
-    halfDays: logs.filter((log) => log.attendanceStatus === 'HALF_DAY').length,
-    lateDays: logs.filter((log) => log.lateMinutes > 0).length,
-    workMinutes: logs.reduce((sum, log) => sum + log.totalWorkMinutes, 0),
-    overtimeMinutes: logs.reduce((sum, log) => sum + log.overtimeMinutes, 0),
+    days: days.filter((day) => day.status !== 'NOT_APPLICABLE').length,
+    present: count('PRESENT', 'PRESENT_OPEN', 'ON_DUTY'),
+    absent: count('ABSENT'),
+    halfDays: count('HALF_DAY'),
+    lateDays: count('LATE'),
+    leaveDays: count('ON_LEAVE'),
+    holidays: count('HOLIDAY'),
+    weeklyOffs: count('WEEKLY_OFF'),
+    workMinutes: days.reduce((sum, day) => sum + day.totalWorkMinutes, 0),
+    overtimeMinutes: days.reduce((sum, day) => sum + day.overtimeMinutes, 0),
   };
 }
 

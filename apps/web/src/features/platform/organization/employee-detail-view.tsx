@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Clock3,
   Download,
+  Eye,
   FileText,
   Fingerprint,
   KeyRound,
@@ -219,6 +220,13 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
   const [error, setError] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
 
+  function changeTab(tab: EmployeeTab) {
+    setActiveTab(tab);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
   async function load() {
     setLoading(true);
     setError("");
@@ -303,7 +311,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       {employee && workspace && (
         <EmployeeWorkspaceTabs
           active={activeTab}
-          onChange={setActiveTab}
+          onChange={changeTab}
           permissions={permissions}
         />
       )}
@@ -313,7 +321,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
             <EmploymentProfile employee={employee} />
             <ReadinessPanel
               readiness={workspace.readiness}
-              onSelect={setActiveTab}
+              onSelect={changeTab}
             />
             <EmployeeLifecyclePanel
               employee={workspace.employee}
@@ -1845,7 +1853,13 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   const [title, setTitle] = useState("");
   const [documentType, setDocumentType] = useState("EMPLOYMENT");
   const [expiresAt, setExpiresAt] = useState("");
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{
+    document: EmployeeDocument;
+    url: string;
+  } | null>(null);
   const [uploadStage, setUploadStage] =
     useState<DocumentUploadStage>("idle");
   const [error, setError] = useState("");
@@ -1915,6 +1929,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       setFile(null);
       setTitle("");
       setExpiresAt("");
+      setUploadOpen(false);
       currentStage = "refreshing";
       setUploadStage(currentStage);
       await load();
@@ -1948,6 +1963,21 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
     }
   }
 
+  async function view(document: EmployeeDocument) {
+    setPreviewLoadingId(document.id);
+    setError("");
+    try {
+      const { data } = await apiClient.get<{ data: { url: string } }>(
+        `/employees/${employeeId}/documents/${document.id}/download`,
+      );
+      setPreview({ document, url: data.data.url });
+    } catch {
+      setError("A private preview link could not be created.");
+    } finally {
+      setPreviewLoadingId(null);
+    }
+  }
+
   async function remove(document: EmployeeDocument) {
     if (!window.confirm(`Permanently delete ${document.title}?`)) return;
     await apiClient
@@ -1957,21 +1987,40 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-      {canManage && (
-        <Panel className="h-fit p-6">
-          <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
-            <Upload className="size-5" />
+    <div className="grid gap-5">
+      <Panel className="overflow-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-4 p-6">
+          <div>
+            <h2 className="text-lg font-bold">Employee documents</h2>
+            <p className="mt-1 max-w-2xl text-sm text-outline">
+              Store private employee files and issue short-lived download
+              links. Uploads and deletions are recorded in the audit history.
+            </p>
           </div>
-          <h2 className="mt-4 text-lg font-bold">Add document</h2>
-          <p className="mt-1 text-sm leading-6 text-outline">
-            Files are private. Only authorized HR users receive short-lived
-            download links, and every upload or deletion is audited.
-          </p>
-          <div className="mt-5 grid gap-4">
+          {canManage && (
+            <PrimaryButton
+              className="shrink-0"
+              onClick={() => {
+                setError("");
+                setUploadOpen((open) => !open);
+              }}
+            >
+              {uploadOpen ? (
+                <X className="size-4" />
+              ) : (
+                <Upload className="size-4" />
+              )}
+              {uploadOpen ? "Close" : "Add document"}
+            </PrimaryButton>
+          )}
+        </div>
+        {canManage && uploadOpen && (
+          <div className="border-t border-surface-variant bg-zinc-50/70 p-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Field label="Document title">
               <input
                 className={inputClass}
+                placeholder="e.g. Employment contract"
                 onChange={(event) => setTitle(event.target.value)}
                 value={title}
               />
@@ -2000,13 +2049,14 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             <Field label="Private file">
               <input
                 accept="application/pdf,image/jpeg,image/png,image/webp"
-                className="block w-full text-sm"
+                className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-primary"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                 type="file"
               />
             </Field>
+            </div>
             {file && (
-              <div className="rounded-xl border border-surface-variant bg-zinc-50 p-3 text-xs text-on-surface-variant">
+              <div className="mt-4 rounded-xl border border-surface-variant bg-white p-3 text-xs text-on-surface-variant">
                 <strong className="block truncate text-sm text-on-surface">
                   {file.name}
                 </strong>
@@ -2015,36 +2065,37 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               </div>
             )}
             {!file && (
-              <p className="text-xs text-outline">
+              <p className="mt-3 text-xs text-outline">
                 Select a PDF, PNG, JPEG, or WebP file under 10 MB.
               </p>
             )}
-            {error && <ErrorState message={error} />}
-            <PrimaryButton
-              disabled={busy || !file || title.trim().length < 2}
-              onClick={upload}
-            >
-              {busy
-                ? documentUploadStageLabel(uploadStage)
-                : "Upload document"}
-            </PrimaryButton>
-            {!busy && title.trim().length < 2 && (
-              <p className="text-xs text-outline">
-                Enter a document title with at least two characters to enable
-                upload.
-              </p>
+            {error && (
+              <div className="mt-4">
+                <ErrorState message={error} />
+              </div>
             )}
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+              <span className="mr-auto text-xs text-outline">
+                A title and a file are required.
+              </span>
+              <button
+                className="h-11 rounded-xl border border-zinc-300 bg-white px-5 text-sm font-semibold"
+                onClick={() => setUploadOpen(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <PrimaryButton
+                disabled={busy || !file || title.trim().length < 2}
+                onClick={upload}
+              >
+                {busy
+                  ? documentUploadStageLabel(uploadStage)
+                  : "Upload document"}
+              </PrimaryButton>
+            </div>
           </div>
-        </Panel>
-      )}
-      <Panel className="overflow-hidden">
-        <div className="p-6">
-          <h2 className="text-lg font-bold">Employee documents</h2>
-          <p className="mt-1 text-sm text-outline">
-            Review metadata before opening a private file. Delete only according
-            to your company retention policy.
-          </p>
-        </div>
+        )}
         {error && !canManage && (
           <div className="px-6 pb-4">
             <ErrorState message={error} />
@@ -2083,6 +2134,19 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               </div>
               <div className="flex gap-2">
                 <button
+                  aria-label={`View ${document.title}`}
+                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-primary disabled:opacity-50"
+                  disabled={previewLoadingId === document.id}
+                  onClick={() => view(document)}
+                  type="button"
+                >
+                  {previewLoadingId === document.id ? (
+                    <RotateCcw className="size-4 animate-spin" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+                <button
                   aria-label={`Download ${document.title}`}
                   className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-primary"
                   onClick={() => download(document)}
@@ -2109,6 +2173,59 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
           </p>
         )}
       </Panel>
+      {preview && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/60 p-4"
+          onClick={() => setPreview(null)}
+          role="dialog"
+        >
+          <section
+            className="my-6 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="flex flex-wrap items-center gap-4 border-b border-surface-variant p-5">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+                <FileText className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="truncate text-lg font-bold">
+                  {preview.document.title}
+                </h2>
+                <p className="truncate text-xs text-outline">
+                  {preview.document.filename} ·{" "}
+                  {formatFileSize(preview.document.fileSize)}
+                </p>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-4 text-sm font-semibold text-primary"
+                  onClick={() => window.location.assign(preview.url)}
+                  type="button"
+                >
+                  <Download className="size-4" />
+                  Download
+                </button>
+                <button
+                  aria-label="Close document viewer"
+                  className="grid size-10 place-items-center rounded-lg text-outline hover:bg-zinc-100"
+                  onClick={() => setPreview(null)}
+                  type="button"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+            </header>
+            <div className="min-h-[55vh] flex-1 bg-zinc-100 p-3">
+              <iframe
+                className="h-[70vh] w-full rounded-lg border-0 bg-white"
+                src={preview.url}
+                title={`Preview ${preview.document.title}`}
+              />
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

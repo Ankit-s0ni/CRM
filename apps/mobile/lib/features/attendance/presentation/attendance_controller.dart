@@ -14,6 +14,7 @@ import '../data/attendance_api_repository.dart';
 import '../data/local_attendance_repository.dart';
 import '../domain/attendance_models.dart';
 import '../domain/attendance_repository.dart';
+import '../domain/monthly_attendance_history.dart';
 
 final attendanceRepositoryProvider = Provider<AttendanceRepository>(
   (ref) => AppConfig.localMode
@@ -27,7 +28,7 @@ final attendanceControllerProvider =
     );
 
 final attendanceHistoryProvider = FutureProvider.autoDispose
-    .family<List<Map<String, dynamic>>, String>(
+    .family<MonthlyAttendanceHistory, String>(
       (ref, month) =>
           ref.read(attendanceRepositoryProvider).history(month: month),
     );

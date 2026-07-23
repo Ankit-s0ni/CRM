@@ -12,6 +12,10 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
+import {
+  createS3ClientConfig,
+  requireStorageBucket,
+} from '../../../shared/storage/s3-storage-config';
 import type {
   EmployeeDocumentDownload,
   EmployeeDocumentStorage,
@@ -37,7 +41,6 @@ export class S3EmployeeDocumentStorage implements EmployeeDocumentStorage {
       fileSize: number;
     }
   >();
-  private readonly bucket = process.env.S3_PRIVATE_BUCKET ?? 'hrms-private';
   private readonly internalClient = this.client(process.env.S3_ENDPOINT);
   private readonly publicClient = this.client(
     process.env.S3_PUBLIC_ENDPOINT ?? process.env.S3_ENDPOINT,
@@ -140,15 +143,11 @@ export class S3EmployeeDocumentStorage implements EmployeeDocumentStorage {
   }
 
   private client(endpoint?: string) {
-    return new S3Client({
-      endpoint: endpoint || undefined,
-      region: process.env.S3_REGION ?? 'eu-north-1',
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY ?? 'minioadmin',
-        secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',
-      },
-    });
+    return new S3Client(createS3ClientConfig(endpoint));
+  }
+
+  private get bucket() {
+    return requireStorageBucket('S3_PRIVATE_BUCKET');
   }
 
   private validate(contentType: string, fileSize: number) {

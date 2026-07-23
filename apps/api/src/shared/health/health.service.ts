@@ -6,6 +6,10 @@ import {
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import Redis from 'ioredis';
 import { PrismaService } from '../database/prisma.service';
+import {
+  createS3ClientConfig,
+  requireStorageBucket,
+} from '../storage/s3-storage-config';
 
 type DependencyStatus = { status: 'up' | 'down'; latencyMs: number };
 
@@ -19,17 +23,9 @@ export class HealthService implements OnModuleDestroy {
       connectTimeout: 2000,
     },
   );
-  private readonly storage = new S3Client({
-    endpoint: process.env.S3_ENDPOINT || undefined,
-    region: process.env.S3_REGION ?? 'eu-north-1',
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY ?? 'minioadmin',
-      secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',
-    },
-  });
-  private readonly privateBucket =
-    process.env.S3_PRIVATE_BUCKET ?? 'hrms-private';
+  private readonly storage = new S3Client(
+    createS3ClientConfig(process.env.S3_ENDPOINT),
+  );
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -65,7 +61,9 @@ export class HealthService implements OnModuleDestroy {
       }),
       this.check('objectStorage', () =>
         this.storage.send(
-          new HeadBucketCommand({ Bucket: this.privateBucket }),
+          new HeadBucketCommand({
+            Bucket: requireStorageBucket('S3_PRIVATE_BUCKET'),
+          }),
         ),
       ),
     ]);

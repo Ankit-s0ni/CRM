@@ -16,6 +16,7 @@ import {
 import * as argon2 from 'argon2';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../shared/database/prisma.service';
+import { PlatformDatabaseService } from '../../shared/database/platform-database.service';
 import { VerificationTokensService } from './verification-tokens.service';
 import { TenantContextService } from '../tenancy/public';
 import {
@@ -33,6 +34,7 @@ import {
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly platformDatabase: PlatformDatabaseService,
     private readonly jwtService: JwtService,
     private readonly verificationTokensService: VerificationTokensService,
     private readonly tenantAssets: TenantAssetStorageService,
@@ -389,7 +391,7 @@ export class AuthService {
     deviceUuid?: string,
   ) {
     const normalizedEmail = email.trim().toLowerCase();
-    const candidates = await this.prisma.forAdmin((tx) =>
+    const candidates = await this.platformDatabase.transaction((tx) =>
       tx.user.findMany({
         where: {
           email: normalizedEmail,

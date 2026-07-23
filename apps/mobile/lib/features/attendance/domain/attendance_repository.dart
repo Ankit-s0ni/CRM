@@ -1,3 +1,5 @@
+import 'monthly_attendance_history.dart';
+
 abstract interface class AttendanceRepository {
   Future<PunchResult> punch({
     required String type,
@@ -10,7 +12,7 @@ abstract interface class AttendanceRepository {
     required String attestationToken,
   });
   Future<void> toggleBreak(String action);
-  Future<List<Map<String, dynamic>>> history({String? month});
+  Future<MonthlyAttendanceHistory> history({required String month});
   Future<Map<String, dynamic>> day(String date);
 }
 

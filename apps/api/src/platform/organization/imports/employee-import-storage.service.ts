@@ -8,20 +8,21 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
+import {
+  createS3ClientConfig,
+  requireStorageBucket,
+} from '../../../shared/storage/s3-storage-config';
 
 @Injectable()
 export class EmployeeImportStorageService {
   private readonly memory = new Map<string, string>();
-  private readonly bucket = process.env.S3_BUCKET ?? 'hrms-uploads';
-  private readonly client = new S3Client({
-    endpoint: process.env.S3_ENDPOINT || undefined,
-    region: process.env.S3_REGION ?? 'eu-north-1',
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY ?? 'minioadmin',
-      secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',
-    },
-  });
+  private readonly client = new S3Client(
+    createS3ClientConfig(process.env.S3_ENDPOINT),
+  );
+
+  private get bucket() {
+    return requireStorageBucket('S3_BUCKET');
+  }
 
   async presign(tenantId: string, filename: string, contentType: string) {
     return this.presignFor(tenantId, 'employee-imports', filename, contentType);

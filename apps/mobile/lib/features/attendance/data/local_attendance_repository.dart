@@ -1,4 +1,5 @@
 import '../domain/attendance_repository.dart';
+import '../domain/monthly_attendance_history.dart';
 
 class LocalAttendanceRepository implements AttendanceRepository {
   const LocalAttendanceRepository();
@@ -27,7 +28,8 @@ class LocalAttendanceRepository implements AttendanceRepository {
       Future<void>.delayed(const Duration(milliseconds: 250));
 
   @override
-  Future<List<Map<String, dynamic>>> history({String? month}) async => const [];
+  Future<MonthlyAttendanceHistory> history({required String month}) async =>
+      MonthlyAttendanceHistory.empty(month);
 
   @override
   Future<Map<String, dynamic>> day(String date) async => const {};

@@ -205,10 +205,23 @@ describe('Sprint 4 attendance runtime (e2e)', () => {
     const history = await api(employeeA)
       .get(`/attendance/me/history?month=${month}`)
       .expect(200);
-    expect((history.body as { data: unknown[] }).data).toEqual(
+    const historyBody = history.body as {
+      data: unknown[];
+      calendar: {
+        month: string;
+        timezone: string;
+        days: Array<{ date: string; status: string }>;
+      };
+    };
+    expect(historyBody.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ attendanceDate: today }),
       ]),
+    );
+    expect(historyBody.calendar.month).toBe(month);
+    expect(historyBody.calendar.timezone).toBe('Asia/Kolkata');
+    expect(historyBody.calendar.days.some((day) => day.date === today)).toBe(
+      true,
     );
     await api(adminA)
       .get(

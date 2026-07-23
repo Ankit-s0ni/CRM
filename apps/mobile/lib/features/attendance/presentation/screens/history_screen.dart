@@ -5,10 +5,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
+import '../../domain/monthly_attendance_history.dart';
+import '../attendance_controller.dart';
 import '../widgets/attendance_calendar.dart';
 import '../widgets/attendance_day_tile.dart';
 import '../widgets/month_summary_card.dart';
-import '../attendance_controller.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key, required this.onDay});
@@ -25,7 +26,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final key = DateFormat('yyyy-MM').format(_month);
     final history = ref.watch(attendanceHistoryProvider(key));
-    final records = history.asData?.value ?? const <Map<String, dynamic>>[];
+    final attendance =
+        history.asData?.value ?? MonthlyAttendanceHistory.empty(key);
+    final recentDays =
+        attendance.days
+            .where(
+              (day) =>
+                  !day.isFuture &&
+                  day.isApplicable &&
+                  !const ['WORKING_DAY', 'UPCOMING'].contains(day.status),
+            )
+            .toList()
+          ..sort((left, right) => right.date.compareTo(left.date));
     return AppPage(
       title: context.l10n.attendanceHistory,
       child: Column(
@@ -65,11 +77,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          MonthSummaryCard(records: records),
+          MonthSummaryCard(summary: attendance.summary),
           const SizedBox(height: 14),
           AttendanceCalendar(
             month: _month,
-            records: records,
+            days: attendance.days,
             onDay: widget.onDay,
           ),
           const SizedBox(height: 20),
@@ -78,21 +90,28 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
-          for (final row in records.take(10)) ...[
+          if (!history.isLoading && recentDays.isEmpty)
+            const AppCard(
+              child: Text(
+                'No completed attendance days are available for this month.',
+                style: TextStyle(color: AppTheme.slate),
+              ),
+            ),
+          for (final day in recentDays.take(10)) ...[
             AttendanceDayTile(
-              label: _rowLabel(row),
-              onTap: () => widget.onDay(row['attendanceDate'] as String),
+              day: day,
+              onTap: day.canOpenDetails ? () => widget.onDay(day.date) : null,
             ),
             const SizedBox(height: 10),
           ],
-          const Row(
+          Row(
             children: [
-              Icon(Icons.info_outline, size: 15, color: AppTheme.slate),
-              SizedBox(width: 7),
+              const Icon(Icons.info_outline, size: 15, color: AppTheme.slate),
+              const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  'Times are shown in Asia/Muscat. Locked payroll days cannot be corrected.',
-                  style: TextStyle(color: AppTheme.slate, fontSize: 11),
+                  'Times are shown in ${attendance.timezone}. Locked payroll days cannot be corrected.',
+                  style: const TextStyle(color: AppTheme.slate, fontSize: 11),
                 ),
               ),
             ],
@@ -104,12 +123,5 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ],
       ),
     );
-  }
-
-  String _rowLabel(Map<String, dynamic> row) {
-    final date = DateTime.tryParse(row['attendanceDate'] as String? ?? '');
-    final minutes = (row['totalWorkMinutes'] as num?)?.round() ?? 0;
-    return '${date == null ? row['attendanceDate'] : DateFormat.MMMd().format(date)} · '
-        '${row['attendanceStatus']} · ${minutes ~/ 60}h ${minutes % 60}m';
   }
 }

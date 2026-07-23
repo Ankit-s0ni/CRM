@@ -4,6 +4,7 @@ import '../../../core/media/evidence_image_processor.dart';
 import '../../../core/network/api_routes.dart';
 import '../../../core/network/api_service.dart';
 import '../domain/attendance_repository.dart';
+import '../domain/monthly_attendance_history.dart';
 
 class AttendanceApiRepository implements AttendanceRepository {
   AttendanceApiRepository(this._api, {EvidenceImageProcessor? imageProcessor})
@@ -104,15 +105,17 @@ class AttendanceApiRepository implements AttendanceRepository {
     data: {'requestId': _requestId()},
   );
   @override
-  Future<List<Map<String, dynamic>>> history({String? month}) async =>
-      ((await _api.get<Map<String, dynamic>>(
-                    ApiRoutes.attendanceHistory,
-                    query: {'month': month},
-                  )).data?['data']
-                  as List<dynamic>? ??
-              const [])
-          .whereType<Map<String, dynamic>>()
-          .toList(growable: false);
+  Future<MonthlyAttendanceHistory> history({required String month}) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiRoutes.attendanceHistory,
+      query: {'month': month},
+    );
+    return MonthlyAttendanceHistory.fromJson(
+      response.data ?? const {},
+      requestedMonth: month,
+    );
+  }
+
   @override
   Future<Map<String, dynamic>> day(String date) async =>
       (await _api.get<Map<String, dynamic>>(

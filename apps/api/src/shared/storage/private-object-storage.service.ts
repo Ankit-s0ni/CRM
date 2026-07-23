@@ -13,6 +13,10 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
+import {
+  createS3ClientConfig,
+  requireStorageBucket,
+} from './s3-storage-config';
 
 const ATTACHMENT_TYPES = new Set([
   'image/jpeg',
@@ -24,16 +28,13 @@ const ATTACHMENT_TYPES = new Set([
 @Injectable()
 export class PrivateObjectStorageService {
   private readonly testObjects = new Map<string, Buffer>();
-  private readonly bucket = process.env.S3_PRIVATE_BUCKET ?? 'hrms-private';
-  private readonly client = new S3Client({
-    endpoint: process.env.S3_ENDPOINT || undefined,
-    region: process.env.S3_REGION ?? 'eu-north-1',
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY ?? 'minioadmin',
-      secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',
-    },
-  });
+  private readonly client = new S3Client(
+    createS3ClientConfig(process.env.S3_ENDPOINT),
+  );
+
+  private get bucket() {
+    return requireStorageBucket('S3_PRIVATE_BUCKET');
+  }
 
   async presignRegularizationAttachment(
     tenantId: string,
