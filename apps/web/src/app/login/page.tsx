@@ -1,5 +1,6 @@
 import { LoginForm } from "@/features/platform/identity/login-form";
 import { publicLinks } from "@/lib/public-links";
+import { APP_DOMAIN } from "@/lib/app-domain";
 import { Suspense } from "react";
 
 export default function LoginPage() {
@@ -20,7 +21,7 @@ export default function LoginPage() {
             <span className="material-symbols-outlined text-on-primary text-[32px]">corporate_fare</span>
           </div>
           <h1 className="font-headline-md text-headline-md text-on-surface mb-1">DELTCRM</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">app.{process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud'}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">app.{APP_DOMAIN}</p>
         </div>
 
         {/* Modular LoginForm Component */}

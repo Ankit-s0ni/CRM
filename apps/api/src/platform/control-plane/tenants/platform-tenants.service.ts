@@ -12,6 +12,7 @@ import {
   TokenPurpose,
 } from '@prisma/client';
 import { createHash, randomBytes } from 'crypto';
+import * as argon2 from 'argon2';
 import {
   DEFAULT_ROLE_PERMISSIONS,
   PERMISSIONS,
@@ -293,6 +294,23 @@ export class PlatformTenantsService {
             },
           },
         });
+
+        // If adminPassword is provided, create the user account immediately
+        // so the admin can log in right away (invitation email still verifies ownership)
+        if (normalized.adminPassword) {
+          const passwordHash = await argon2.hash(normalized.adminPassword);
+          const adminUser = await tx.user.create({
+            data: {
+              tenantId: tenant.id,
+              email: normalized.adminEmail,
+              passwordHash,
+              status: 'ACTIVE',
+            },
+          });
+          await tx.userRole.create({
+            data: { userId: adminUser.id, roleId: adminRole.id },
+          });
+        }
         await this.outbox.append(tx, {
           tenantId: tenant.id,
           eventKey: 'platform.tenant.created',

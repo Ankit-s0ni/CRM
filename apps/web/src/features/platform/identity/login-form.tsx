@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { APP_DOMAIN } from "@/lib/app-domain";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -132,7 +133,7 @@ export function LoginForm() {
           <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor="email">Email Address</label>
           {workspace ? (
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Workspace: <span className="font-medium text-on-surface">{workspace}.hrmsapp.com</span>
+              Workspace: <span className="font-medium text-on-surface">{workspace}.{APP_DOMAIN}</span>
             </p>
           ) : (
             <p className="font-body-sm text-body-sm text-on-surface-variant">

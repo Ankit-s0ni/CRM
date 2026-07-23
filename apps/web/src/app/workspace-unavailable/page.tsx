@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { APP_DOMAIN } from "@/lib/app-domain";
 
 function messageForCode(code: string | undefined, workspace?: string) {
   switch (code) {
@@ -6,7 +7,7 @@ function messageForCode(code: string | undefined, workspace?: string) {
       return {
         title: "This workspace is unavailable",
         body: workspace
-          ? `We couldn't find ${workspace}.hrmsapp.com. The subdomain might be incorrect, or the account has been temporarily suspended due to a billing issue.`
+          ? `We couldn't find ${workspace}.${APP_DOMAIN}. The subdomain might be incorrect, or the account has been temporarily suspended due to a billing issue.`
           : "We couldn't find the workspace you're looking for. The subdomain might be incorrect, or the account has been temporarily suspended due to a billing issue.",
         errorCode: "WORKSPACE_NOT_FOUND",
       };
@@ -15,7 +16,7 @@ function messageForCode(code: string | undefined, workspace?: string) {
       return {
         title: "This workspace is unavailable",
         body: workspace
-          ? `We couldn't find the workspace you're looking for. ${workspace}.hrmsapp.com might be temporarily unavailable due to a billing issue.`
+          ? `We couldn't find the workspace you're looking for. ${workspace}.${APP_DOMAIN} might be temporarily unavailable due to a billing issue.`
           : "We couldn't find the workspace you're looking for. The subdomain might be incorrect, or the account has been temporarily suspended due to a billing issue.",
         errorCode: "TENANT_SUSPENDED",
       };
@@ -100,7 +101,7 @@ export default async function WorkspaceUnavailablePage({
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
           <Link
             className="group relative flex items-center gap-2 rounded-[12px] bg-primary px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary-container active:scale-95"
-            href={`mailto:support@${process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud'}`}
+            href={`mailto:support@${APP_DOMAIN}`}
           >
             <span className="material-symbols-outlined">support_agent</span>
             Contact support

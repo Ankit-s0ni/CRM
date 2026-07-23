@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api-client";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 import { publicLinks } from "@/lib/public-links";
+import { APP_DOMAIN } from "@/lib/app-domain";
 
 const employeeBands = [
   { label: "Select range", value: "" },
@@ -39,7 +40,7 @@ export function SignupForm() {
   const [subdomainEdited, setSubdomainEdited] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud';
+  const appDomain = APP_DOMAIN;
   const subdomainPreview = useMemo(() => {
     const slug = subdomain || slugifyWorkspace(companyName) || "yourcompany";
     return `${slug}.${appDomain}`;

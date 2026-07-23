@@ -22,6 +22,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { platformApiClient } from "@/lib/platform-api-client";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
 import type { TenantDetail, TenantEntitlements } from "@/lib/platform-types";
+import { APP_DOMAIN } from "@/lib/app-domain";
 
 type TenantDeletionJob = {
   id: string;
@@ -359,7 +360,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </div>
               <div className="mt-1 flex flex-wrap gap-4 text-xs text-on-surface-variant">
                 <span className="text-primary">
-                  {tenant.subdomain}.{process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud'}
+                  {tenant.subdomain}.{APP_DOMAIN}
                 </span>
                 <span>
                   Created{" "}

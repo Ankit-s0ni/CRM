@@ -17,6 +17,7 @@ import { CreateTenantDialog } from "@/features/platform/create-tenant-dialog";
 import { platformApiClient } from "@/lib/platform-api-client";
 import type { SubscriptionPlan, TenantListItem } from "@/lib/platform-types";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
+import { APP_DOMAIN } from "@/lib/app-domain";
 
 type DirectoryResponse = {
   data: TenantListItem[];
@@ -247,7 +248,7 @@ export function TenantDirectory() {
                     </div>
                   </div>
                   <div className="text-xs text-on-surface-variant">
-                    {tenant.subdomain}.hrmsapp.com
+                    {tenant.subdomain}.{APP_DOMAIN}
                   </div>
                   <div>
                     <span className="rounded-full bg-surface-variant px-2 py-1 text-[10px] font-semibold text-primary">
