@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { TenantContextService } from '../tenancy/public';
 
-type AuditInput = {
+export type AuditInput = {
   tenantId: string;
   actorUserId?: string;
   action: string;
@@ -12,6 +12,10 @@ type AuditInput = {
   entityId?: string;
   oldValue?: unknown;
   newValue?: unknown;
+};
+
+export type EmployeeActivityAuditInput = AuditInput & {
+  employeeId: string;
 };
 
 const SENSITIVE_KEY = /password|token|secret|hash|credential|embedding/i;
@@ -41,6 +45,21 @@ export class AuditService {
     });
   }
 
+  appendEmployeeActivity(
+    tx: PrismaTransaction,
+    input: EmployeeActivityAuditInput,
+  ) {
+    const { employeeId, ...audit } = input;
+    return this.append(tx, {
+      ...audit,
+      oldValue:
+        audit.oldValue === undefined
+          ? undefined
+          : this.withEmployeeId(employeeId, audit.oldValue),
+      newValue: this.withEmployeeId(employeeId, audit.newValue),
+    });
+  }
+
   sanitize(value: unknown): unknown {
     if (value instanceof Date) return value.toISOString();
     if (Prisma.Decimal.isDecimal(value)) return value.toString();
@@ -56,5 +75,12 @@ export class AuditService {
   private json(value: unknown) {
     if (value === undefined) return undefined;
     return this.sanitize(value) as Prisma.InputJsonValue;
+  }
+
+  private withEmployeeId(employeeId: string, value: unknown) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return { ...(value as Record<string, unknown>), employeeId };
+    }
+    return value === undefined ? { employeeId } : { employeeId, value };
   }
 }

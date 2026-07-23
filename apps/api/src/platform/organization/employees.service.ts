@@ -29,7 +29,7 @@ import {
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeAssignmentsDto } from './dto/update-employee-assignments.dto';
 import { EmployeeQuotaService } from './employee-quota.service';
-import { collectReportingEmployeeIds } from './employee-access';
+import { resolveAccessibleEmployeeIds } from './employee-access';
 import {
   assertCanReactivate,
   assertCanTerminate,
@@ -974,24 +974,6 @@ export class EmployeesService {
     });
   }
 
-  async history(id: string, userId: string) {
-    return this.prisma.forTenant(async (tx) => {
-      const accessibleIds = await this.accessibleEmployeeIds(tx, userId);
-      if (accessibleIds && !accessibleIds.includes(id)) this.throwNotFound();
-      const employee = await tx.employee.findUnique({
-        where: { id },
-        select: { id: true },
-      });
-      if (!employee) this.throwNotFound();
-
-      const data = await tx.employmentEvent.findMany({
-        where: { employeeId: id },
-        orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
-      });
-      return { data };
-    });
-  }
-
   async validateRelationships(
     tx: PrismaTransaction,
     deptId: string,
@@ -1034,41 +1016,7 @@ export class EmployeesService {
     tx: PrismaTransaction,
     userId: string,
   ): Promise<string[] | null> {
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      include: {
-        employee: { select: { id: true } },
-        roles: {
-          include: {
-            role: {
-              include: {
-                permissions: { include: { permission: true } },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (!user) return [];
-
-    const permissions = new Set(
-      user.roles.flatMap(({ role }) =>
-        role.permissions.map(({ permission }) => permission.key),
-      ),
-    );
-    if (permissions.has(PERMISSIONS.EMPLOYEES_READ)) return null;
-    if (!user.employee) return [];
-
-    if (permissions.has(PERMISSIONS.EMPLOYEES_REPORTS_READ)) {
-      const employees = await tx.employee.findMany({
-        select: { id: true, managerId: true },
-      });
-      return collectReportingEmployeeIds(user.employee.id, employees);
-    }
-    if (permissions.has(PERMISSIONS.EMPLOYEES_SELF_READ)) {
-      return [user.employee.id];
-    }
-    return [];
+    return resolveAccessibleEmployeeIds(tx, userId);
   }
 
   async ensureUniqueIdentity(

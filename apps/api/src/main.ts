@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { configureOpenApi } from './openapi';
@@ -30,7 +31,8 @@ async function bootstrap() {
   configureTrustedProxies(app);
   app.enableCors({
     origin: (origin, callback) => {
-      const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((v) => v.trim()) ?? [];
+      const allowedOrigins =
+        process.env.CORS_ORIGIN?.split(',').map((v) => v.trim()) ?? [];
       if (
         !origin ||
         allowedOrigins.includes('*') ||

@@ -9,6 +9,7 @@ const productionEnvironment = {
   JWT_SECRET: 'access-secret-from-secret-manager',
   JWT_REFRESH_SECRET: 'refresh-secret-from-secret-manager',
   S3_ENDPOINT: 'https://objects.example.com',
+  S3_PUBLIC_ENDPOINT: 'https://objects.example.com',
   S3_PRIVATE_BUCKET: 'hrms-private-gulf-1',
   S3_ACCESS_KEY: 'storage-access-key',
   S3_SECRET_KEY: 'storage-secret-key',

@@ -264,8 +264,9 @@ export class AttendanceJobProcessor {
             status: calculation.attendanceStatus,
           },
         }),
-        this.audit.append(tx, {
+        this.audit.appendEmployeeActivity(tx, {
           tenantId,
+          employeeId,
           action: 'attendance.day-finalized',
           module: 'attendance',
           entityType: 'AttendanceLog',

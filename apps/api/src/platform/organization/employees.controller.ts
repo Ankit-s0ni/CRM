@@ -31,6 +31,8 @@ import { UpdateEmployeeAssignmentsDto } from './dto/update-employee-assignments.
 import { EmployeesService } from './employees.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateEmployeeCommand } from './application/commands/create-employee.command';
+import { EmployeeHistoryService } from './employee-history.service';
+import { EmployeeHistoryQueryDto } from './dto/employee-history-query.dto';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -39,6 +41,7 @@ import { CreateEmployeeCommand } from './application/commands/create-employee.co
 export class EmployeesController {
   constructor(
     private readonly employeesService: EmployeesService,
+    private readonly employeeHistory: EmployeeHistoryService,
     private readonly commandBus: CommandBus,
   ) {}
 
@@ -83,12 +86,15 @@ export class EmployeesController {
     PERMISSIONS.EMPLOYEES_REPORTS_READ,
     PERMISSIONS.EMPLOYEES_SELF_READ,
   )
-  @ApiOperation({ summary: 'Get an employee employment-event timeline' })
+  @ApiOperation({
+    summary: 'Get the paginated audit and employment history for an employee',
+  })
   history(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: EmployeeHistoryQueryDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.employeesService.history(id, user.userId);
+    return this.employeeHistory.list(id, user.userId, query);
   }
 
   @Get(':id/workspace')

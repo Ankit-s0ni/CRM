@@ -167,8 +167,9 @@ export class AttendanceRuntimeService {
       },
     });
     await Promise.all([
-      this.audit.append(tx, {
+      this.audit.appendEmployeeActivity(tx, {
         tenantId,
+        employeeId: employee.id,
         action: `attendance.${eventKey(eventType)}`,
         module: 'attendance',
         entityType: 'AttendanceLog',

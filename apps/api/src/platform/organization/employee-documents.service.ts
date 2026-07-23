@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/public';
 import { PrismaService } from '../../shared/database/prisma.service';
-import { PrivateObjectStorageService } from '../../shared/storage/private-object-storage.service';
 import { TenantContextService } from '../tenancy/public';
+import {
+  EMPLOYEE_DOCUMENT_STORAGE,
+  type EmployeeDocumentStorage,
+} from './domain/employee-document-storage.interface';
 import {
   PresignEmployeeDocumentDto,
   RegisterEmployeeDocumentDto,
@@ -13,14 +16,15 @@ export class EmployeeDocumentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly context: TenantContextService,
-    private readonly storage: PrivateObjectStorageService,
+    @Inject(EMPLOYEE_DOCUMENT_STORAGE)
+    private readonly storage: EmployeeDocumentStorage,
     private readonly audit: AuditService,
   ) {}
 
   async presign(employeeId: string, dto: PresignEmployeeDocumentDto) {
     await this.assertEmployee(employeeId);
     return {
-      data: await this.storage.presignEmployeeDocument(
+      data: await this.storage.createUpload(
         this.tenantId(),
         employeeId,
         dto.filename,
@@ -37,10 +41,12 @@ export class EmployeeDocumentsService {
   ) {
     const tenantId = this.tenantId();
     await this.assertEmployee(employeeId);
-    await this.storage.verifyEmployeeDocument(
+    await this.storage.verifyUpload(
       tenantId,
       employeeId,
       dto.objectKey,
+      dto.contentType,
+      dto.fileSize,
     );
     return this.prisma.forTenant(async (tx) => {
       const document = await tx.employeeDocument.create({
@@ -57,8 +63,9 @@ export class EmployeeDocumentsService {
           expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
         },
       });
-      await this.audit.append(tx, {
+      await this.audit.appendEmployeeActivity(tx, {
         tenantId,
+        employeeId,
         actorUserId: userId,
         action: 'organization.employee-document.created',
         module: 'organization',
@@ -89,29 +96,43 @@ export class EmployeeDocumentsService {
     return { data: documents.map((document) => this.serialize(document)) };
   }
 
-  async download(employeeId: string, documentId: string) {
+  async download(employeeId: string, documentId: string, userId: string) {
+    const tenantId = this.tenantId();
     const document = await this.get(employeeId, documentId);
-    return {
-      data: await this.storage.signedEmployeeDocumentDownload(
-        this.tenantId(),
+    const download = await this.storage.createDownload(
+      tenantId,
+      employeeId,
+      document.objectKey,
+    );
+    await this.prisma.forTenant((tx) =>
+      this.audit.appendEmployeeActivity(tx, {
+        tenantId,
         employeeId,
-        document.objectKey,
-      ),
-    };
+        actorUserId: userId,
+        action: 'organization.employee-document.downloaded',
+        module: 'organization',
+        entityType: 'Employee',
+        entityId: employeeId,
+        newValue: {
+          documentId: document.id,
+          documentType: document.documentType,
+          title: document.title,
+          filename: document.filename,
+        },
+      }),
+    );
+    return { data: download };
   }
 
   async remove(employeeId: string, documentId: string, userId: string) {
     const tenantId = this.tenantId();
     const document = await this.get(employeeId, documentId);
-    await this.storage.deleteEmployeeDocument(
-      tenantId,
-      employeeId,
-      document.objectKey,
-    );
+    await this.storage.delete(tenantId, employeeId, document.objectKey);
     await this.prisma.forTenant(async (tx) => {
       await tx.employeeDocument.delete({ where: { id: documentId } });
-      await this.audit.append(tx, {
+      await this.audit.appendEmployeeActivity(tx, {
         tenantId,
+        employeeId,
         actorUserId: userId,
         action: 'organization.employee-document.deleted',
         module: 'organization',

@@ -180,6 +180,7 @@ export class LeaveService {
         },
       });
       await this.record(tx, 'balance.adjusted', id, {
+        employeeId: current.employeeId,
         balanceId: id,
         days: dto.days,
         balanceAfter,

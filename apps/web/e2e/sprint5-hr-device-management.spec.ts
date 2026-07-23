@@ -245,6 +245,105 @@ test("employee profile remains available when biometrics is not entitled", async
   ).toBeVisible();
 });
 
+test("HR uploads a private employee document and sees it in history", async ({
+  page,
+}) => {
+  const objectKey = `private/${tenantId}/employee-documents/${employeeId}/contract.pdf`;
+  let documents: Array<Record<string, unknown>> = [];
+  let uploadedContentType = "";
+
+  await page.route(
+    `http://localhost:4001/employees/${employeeId}/documents`,
+    async (route) => {
+      if (route.request().method() === "POST") {
+        const payload = route.request().postDataJSON();
+        documents = [
+          {
+            id: "document-1",
+            employeeId,
+            ...payload,
+            expiresAt: null,
+            createdAt: "2026-07-23T17:00:00.000Z",
+            updatedAt: "2026-07-23T17:00:00.000Z",
+          },
+        ];
+        await route.fulfill({ status: 201, json: { data: documents[0] } });
+        return;
+      }
+      await route.fulfill({ json: { data: documents } });
+    },
+  );
+  await page.route(
+    `http://localhost:4001/employees/${employeeId}/documents/presign`,
+    (route) =>
+      route.fulfill({
+        status: 201,
+        json: {
+          data: {
+            objectKey,
+            uploadUrl: "http://localhost:9000/hrms-private/test-upload",
+            headers: { "Content-Type": "application/pdf" },
+            expiresIn: 300,
+          },
+        },
+      }),
+  );
+  await page.route("http://localhost:9000/**", async (route) => {
+    uploadedContentType =
+      (await route.request().allHeaders())["content-type"] ?? "";
+    await route.fulfill({ status: 200, body: "" });
+  });
+  await page.route(
+    `http://localhost:4001/employees/${employeeId}/history?*`,
+    (route) =>
+      route.fulfill({
+        json: {
+          data: [
+            {
+              id: "audit-document-1",
+              source: "AUDIT",
+              action: "organization.employee-document.created",
+              eventType: null,
+              category: "DOCUMENT",
+              title: "Employee document uploaded",
+              occurredAt: "2026-07-23T17:00:00.000Z",
+              effectiveAt: null,
+              actor: {
+                id: "admin-user",
+                email: "admin@acme.com",
+                displayName: "admin@acme.com",
+              },
+              requestId: "request-document-1",
+              impersonated: false,
+              changes: [],
+              metadata: {},
+            },
+          ],
+          pagination: { limit: 25, nextCursor: null },
+        },
+      }),
+  );
+
+  await page.goto(`/app/employees/${employeeId}?tab=documents`);
+  await page.getByLabel("Document title").fill("Employment contract");
+  await page.getByLabel("Private file").setInputFiles({
+    name: "contract.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 browser regression"),
+  });
+  await page.getByRole("button", { name: "Upload document" }).click();
+
+  await expect(page.getByText("Employment contract")).toBeVisible();
+  expect(uploadedContentType).toBe("application/pdf");
+
+  await page.getByRole("button", { name: "History" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Employee history" }),
+  ).toBeVisible();
+  await expect(page.getByText("Employee document uploaded")).toBeVisible();
+  await expect(page.getByText("Request: request-document-1")).toBeVisible();
+});
+
 test("employment update omits an unchanged legacy phone", async ({ page }) => {
   let workspace = employeeWorkspaceFixture();
   workspace.employee.phone = "7367904370";
@@ -476,6 +575,8 @@ function permissions() {
     "attendance.devices.manage",
     "attendance.biometrics.read",
     "attendance.biometrics.manage",
+    "organization.employee-documents.read",
+    "organization.employee-documents.manage",
   ];
 }
 

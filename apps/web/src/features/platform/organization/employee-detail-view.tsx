@@ -25,6 +25,7 @@ import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 import { EmployeeDevicePanel } from "@/features/platform/workspace-settings/device-management-view";
 import { InternationalPhoneInput } from "@/shared/components/international-phone-input";
@@ -341,7 +342,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         />
       )}
       {employee && workspace && activeTab === "history" && (
-        <HistoryPanel workspace={workspace} />
+        <HistoryPanel employeeId={employeeId} />
       )}
       {employee && workspace && activeTab === "documents" && (
         <EmployeeDocumentsPanel employeeId={employeeId} />
@@ -1572,54 +1573,246 @@ function CreateEmployeeAccountDialog({
   );
 }
 
-function HistoryPanel({ workspace }: { workspace: EmployeeWorkspace }) {
-  const entries = [
-    ...workspace.history.employmentEvents.map((event) => ({
-      id: event.id,
-      title: event.eventType.replaceAll("_", " "),
-      detail: "Employment event",
-      date: event.effectiveDate,
-    })),
-    ...workspace.history.audit.map((event) => ({
-      id: event.id,
-      title: event.action.replaceAll(".", " "),
-      detail: `${event.module} audit${event.requestId ? ` · ${event.requestId}` : ""}`,
-      date: event.createdAt,
-    })),
-  ].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+type EmployeeHistoryCategory =
+  | "LIFECYCLE"
+  | "PROFILE"
+  | "ACCESS"
+  | "ASSIGNMENT"
+  | "ATTENDANCE"
+  | "LEAVE"
+  | "TRUST"
+  | "DOCUMENT"
+  | "SECURITY";
+
+type EmployeeHistoryItem = {
+  id: string;
+  occurredAt: string;
+  effectiveAt: string | null;
+  category: EmployeeHistoryCategory;
+  action: string;
+  title: string;
+  actor: {
+    userId: string;
+    displayName: string | null;
+    email: string;
+  } | null;
+  changes: Array<{ field: string; from: unknown; to: unknown }>;
+  requestId: string | null;
+  impersonated: boolean;
+};
+
+type EmployeeHistoryResponse = {
+  data: EmployeeHistoryItem[];
+  pagination: {
+    limit: number;
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
+};
+
+const HISTORY_CATEGORIES: Array<{
+  value: "ALL" | EmployeeHistoryCategory;
+  label: string;
+}> = [
+  { value: "ALL", label: "All activity" },
+  { value: "PROFILE", label: "Profile" },
+  { value: "ASSIGNMENT", label: "Assignments" },
+  { value: "ACCESS", label: "Access" },
+  { value: "ATTENDANCE", label: "Attendance" },
+  { value: "LEAVE", label: "Leave" },
+  { value: "TRUST", label: "Devices & biometrics" },
+  { value: "DOCUMENT", label: "Documents" },
+  { value: "LIFECYCLE", label: "Lifecycle" },
+  { value: "SECURITY", label: "Security" },
+];
+
+function HistoryPanel({ employeeId }: { employeeId: string }) {
+  const [category, setCategory] = useState<
+    "ALL" | EmployeeHistoryCategory
+  >("ALL");
+  const [entries, setEntries] = useState<EmployeeHistoryItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const params = new URLSearchParams({ limit: "25" });
+    if (category !== "ALL") params.set("category", category);
+    apiClient
+      .get<EmployeeHistoryResponse>(
+        `/employees/${employeeId}/history?${params.toString()}`,
+      )
+      .then(({ data }) => {
+        if (!active) return;
+        setEntries(data.data);
+        setNextCursor(data.pagination.nextCursor);
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setEntries([]);
+        setNextCursor(null);
+        setError(
+          getApiErrorMessage(
+            requestError,
+            "Employee history could not be loaded.",
+          ),
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [category, employeeId]);
+
+  async function loadMore() {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    setError("");
+    try {
+      const params = new URLSearchParams({
+        limit: "25",
+        cursor: nextCursor,
+      });
+      if (category !== "ALL") params.set("category", category);
+      const { data } = await apiClient.get<EmployeeHistoryResponse>(
+        `/employees/${employeeId}/history?${params.toString()}`,
+      );
+      setEntries((current) => [
+        ...current,
+        ...data.data.filter(
+          (item) => !current.some((entry) => entry.id === item.id),
+        ),
+      ]);
+      setNextCursor(data.pagination.nextCursor);
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(
+          requestError,
+          "More employee history could not be loaded.",
+        ),
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   return (
     <Panel className="p-6">
-      <div className="flex items-center gap-3">
-        <ListChecks className="size-5 text-primary" />
-        <div>
-          <h2 className="text-lg font-bold">Employee history</h2>
-          <p className="text-sm text-outline">
-            Employment changes and auditable administrative actions.
-          </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <ListChecks className="size-5 text-primary" />
+          <div>
+            <h2 className="text-lg font-bold">Employee history</h2>
+            <p className="text-sm text-outline">
+              A chronological audit trail of changes related to this employee.
+            </p>
+          </div>
         </div>
+        <Field label="Activity type">
+          <select
+            className={`${inputClass} min-w-52`}
+            onChange={(event) => {
+              setLoading(true);
+              setError("");
+              setCategory(
+                event.target.value as "ALL" | EmployeeHistoryCategory,
+              );
+            }}
+            value={category}
+          >
+            {HISTORY_CATEGORIES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
+      {error && <div className="mt-5"><ErrorState message={error} /></div>}
       <div className="mt-5 grid gap-3">
-        {entries.length ? (
+        {loading ? (
+          <LoadingState />
+        ) : entries.length ? (
           entries.map((entry) => (
             <div
-              className="flex gap-4 rounded-xl border border-surface-variant p-4"
-              key={`${entry.detail}-${entry.id}`}
+              className="rounded-xl border border-surface-variant p-4"
+              key={entry.id}
             >
-              <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
-              <div>
-                <p className="text-sm font-semibold capitalize">
-                  {entry.title}
-                </p>
-                <p className="mt-1 text-xs text-outline">
-                  {entry.detail} · {formatDate(entry.date)}
-                </p>
+              <div className="flex items-start gap-4">
+                <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold">{entry.title}</p>
+                    <span className="rounded-full bg-zinc-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-outline">
+                      {historyCategoryLabel(entry.category)}
+                    </span>
+                    {entry.impersonated && (
+                      <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase text-amber-900">
+                        Impersonated
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-outline">
+                    {entry.actor
+                      ? `By ${entry.actor.displayName || entry.actor.email}`
+                      : "System activity"}{" "}
+                    · {formatDateTime(entry.occurredAt)}
+                    {entry.effectiveAt
+                      ? ` · Effective ${formatDate(entry.effectiveAt)}`
+                      : ""}
+                  </p>
+                  {entry.changes.length > 0 && (
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {entry.changes.slice(0, 6).map((change) => (
+                        <div
+                          className="rounded-lg bg-zinc-50 px-3 py-2 text-xs"
+                          key={change.field}
+                        >
+                          <strong className="block capitalize">
+                            {change.field.replaceAll("_", " ")}
+                          </strong>
+                          <span className="mt-1 block break-words text-outline">
+                            {formatHistoryValue(change.from)} →{" "}
+                            {formatHistoryValue(change.to)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {entry.requestId && (
+                    <p className="mt-2 break-all text-[10px] text-outline">
+                      Request: {entry.requestId}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-outline">No history is available.</p>
+          <div className="rounded-xl border border-dashed border-surface-variant p-8 text-center">
+            <p className="text-sm font-semibold">No matching activity</p>
+            <p className="mt-1 text-xs text-outline">
+              New employee actions will appear here automatically.
+            </p>
+          </div>
         )}
       </div>
+      {nextCursor && !loading && (
+        <button
+          className="mt-5 w-full rounded-xl border border-surface-variant px-4 py-3 text-sm font-semibold text-primary disabled:opacity-50"
+          disabled={loadingMore}
+          onClick={loadMore}
+          type="button"
+        >
+          {loadingMore ? "Loading more..." : "Load more activity"}
+        </button>
+      )}
     </Panel>
   );
 }
@@ -1635,6 +1828,13 @@ type EmployeeDocument = {
   createdAt: string;
 };
 
+type DocumentUploadStage =
+  | "idle"
+  | "preparing"
+  | "uploading"
+  | "registering"
+  | "refreshing";
+
 function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canManage = permissions.includes(
@@ -1646,6 +1846,8 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   const [documentType, setDocumentType] = useState("EMPLOYMENT");
   const [expiresAt, setExpiresAt] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploadStage, setUploadStage] =
+    useState<DocumentUploadStage>("idle");
   const [error, setError] = useState("");
 
   const load = () =>
@@ -1662,24 +1864,45 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
 
   async function upload() {
     if (!file || title.trim().length < 2) return;
+    let currentStage: DocumentUploadStage = "preparing";
     setBusy(true);
     setError("");
     try {
+      setUploadStage(currentStage);
       const { data: presignResponse } = await apiClient.post<{
-        data: { objectKey: string; uploadUrl: string };
+        data: {
+          objectKey: string;
+          uploadUrl: string;
+          headers: Record<string, string>;
+        };
       }>(`/employees/${employeeId}/documents/presign`, {
         filename: file.name,
         contentType: file.type,
         fileSize: file.size,
       });
       if (!presignResponse.data.uploadUrl.startsWith("memory:")) {
-        const uploadResponse = await fetch(presignResponse.data.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        if (!uploadResponse.ok) throw new Error("Upload failed");
+        currentStage = "uploading";
+        setUploadStage(currentStage);
+        let uploadResponse: Response;
+        try {
+          uploadResponse = await fetch(presignResponse.data.uploadUrl, {
+            method: "PUT",
+            headers: presignResponse.data.headers,
+            body: file,
+          });
+        } catch {
+          throw new Error(
+            "The private file store could not be reached. Check its browser URL and CORS configuration.",
+          );
+        }
+        if (!uploadResponse.ok) {
+          throw new Error(
+            `The private file store rejected the upload (HTTP ${uploadResponse.status}).`,
+          );
+        }
       }
+      currentStage = "registering";
+      setUploadStage(currentStage);
       await apiClient.post(`/employees/${employeeId}/documents`, {
         objectKey: presignResponse.data.objectKey,
         filename: file.name,
@@ -1692,13 +1915,25 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       setFile(null);
       setTitle("");
       setExpiresAt("");
+      currentStage = "refreshing";
+      setUploadStage(currentStage);
       await load();
-    } catch {
-      setError(
-        "The document could not be uploaded. Use PDF, PNG, JPEG, or WebP under 10 MB.",
-      );
+    } catch (cause) {
+      const fallbackByStage: Record<DocumentUploadStage, string> = {
+        idle: "The document could not be uploaded.",
+        preparing:
+          "The upload could not be prepared. Check the file type, size, and your permission.",
+        uploading:
+          "The private file store could not receive the document. Please retry.",
+        registering:
+          "The file was transferred but could not be registered. Please retry the upload.",
+        refreshing:
+          "The document was saved, but the list could not be refreshed.",
+      };
+      setError(getApiErrorMessage(cause, fallbackByStage[currentStage]));
     } finally {
       setBusy(false);
+      setUploadStage("idle");
     }
   }
 
@@ -1770,12 +2005,35 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 type="file"
               />
             </Field>
+            {file && (
+              <div className="rounded-xl border border-surface-variant bg-zinc-50 p-3 text-xs text-on-surface-variant">
+                <strong className="block truncate text-sm text-on-surface">
+                  {file.name}
+                </strong>
+                {file.type || "Unknown file type"} ·{" "}
+                {formatFileSize(file.size)}
+              </div>
+            )}
+            {!file && (
+              <p className="text-xs text-outline">
+                Select a PDF, PNG, JPEG, or WebP file under 10 MB.
+              </p>
+            )}
+            {error && <ErrorState message={error} />}
             <PrimaryButton
               disabled={busy || !file || title.trim().length < 2}
               onClick={upload}
             >
-              {busy ? "Uploading..." : "Upload document"}
+              {busy
+                ? documentUploadStageLabel(uploadStage)
+                : "Upload document"}
             </PrimaryButton>
+            {!busy && title.trim().length < 2 && (
+              <p className="text-xs text-outline">
+                Enter a document title with at least two characters to enable
+                upload.
+              </p>
+            )}
           </div>
         </Panel>
       )}
@@ -1787,7 +2045,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             to your company retention policy.
           </p>
         </div>
-        {error && (
+        {error && !canManage && (
           <div className="px-6 pb-4">
             <ErrorState message={error} />
           </div>
@@ -1853,6 +2111,17 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       </Panel>
     </div>
   );
+}
+
+function documentUploadStageLabel(stage: DocumentUploadStage) {
+  const labels: Record<DocumentUploadStage, string> = {
+    idle: "Uploading...",
+    preparing: "Preparing secure upload...",
+    uploading: "Uploading private file...",
+    registering: "Saving document record...",
+    refreshing: "Refreshing documents...",
+  };
+  return labels[stage];
 }
 
 function formatFileSize(bytes: number) {
@@ -2122,6 +2391,33 @@ function formatDate(value: string) {
     new Date(value),
   );
 }
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function historyCategoryLabel(category: EmployeeHistoryCategory) {
+  return (
+    HISTORY_CATEGORIES.find((option) => option.value === category)?.label ??
+    category
+  );
+}
+
+function formatHistoryValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return "Not set";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "Updated";
+  }
+}
 function EditAssignmentsModal({
   employeeId,
   currentPrimaryOfficeId,
@@ -2135,8 +2431,10 @@ function EditAssignmentsModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [offices, setOffices] = useState<any[]>([]);
-  const [shifts, setShifts] = useState<any[]>([]);
+  const [offices, setOffices] = useState<
+    Array<{ id: string; officeName: string }>
+  >([]);
+  const [shifts, setShifts] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({

@@ -3,7 +3,7 @@ import {
   OnModuleDestroy,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ListBucketsCommand, S3Client } from '@aws-sdk/client-s3';
+import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import Redis from 'ioredis';
 import { PrismaService } from '../database/prisma.service';
 
@@ -28,6 +28,8 @@ export class HealthService implements OnModuleDestroy {
       secretAccessKey: process.env.S3_SECRET_KEY ?? 'minioadmin',
     },
   });
+  private readonly privateBucket =
+    process.env.S3_PRIVATE_BUCKET ?? 'hrms-private';
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -62,7 +64,9 @@ export class HealthService implements OnModuleDestroy {
         await this.redis.ping();
       }),
       this.check('objectStorage', () =>
-        this.storage.send(new ListBucketsCommand({})),
+        this.storage.send(
+          new HeadBucketCommand({ Bucket: this.privateBucket }),
+        ),
       ),
     ]);
     return Object.fromEntries(checks) as Record<string, DependencyStatus>;

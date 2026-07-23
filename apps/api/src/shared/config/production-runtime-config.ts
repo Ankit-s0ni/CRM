@@ -17,6 +17,7 @@ export function validateProductionRuntimeConfiguration(
   requireSecret(errors, environment, 'JWT_SECRET');
   requireSecret(errors, environment, 'JWT_REFRESH_SECRET');
   requireHttpsUrl(errors, environment, 'S3_ENDPOINT');
+  requireHttpsUrl(errors, environment, 'S3_PUBLIC_ENDPOINT');
   requireValue(errors, environment, 'S3_PRIVATE_BUCKET');
   requireSecret(errors, environment, 'S3_ACCESS_KEY');
   requireSecret(errors, environment, 'S3_SECRET_KEY');

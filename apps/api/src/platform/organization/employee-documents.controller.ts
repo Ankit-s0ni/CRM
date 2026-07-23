@@ -62,8 +62,9 @@ export class EmployeeDocumentsController {
   download(
     @Param('employeeId', ParseUUIDPipe) employeeId: string,
     @Param('documentId', ParseUUIDPipe) documentId: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.documents.download(employeeId, documentId);
+    return this.documents.download(employeeId, documentId, user.userId);
   }
 
   @Delete(':documentId')

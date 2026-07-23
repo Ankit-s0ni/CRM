@@ -359,9 +359,17 @@ describe('Employees API (e2e)', () => {
       })
       .expect(201);
     const presignBody = presign.body as {
-      data: { objectKey: string; uploadUrl: string; expiresIn: number };
+      data: {
+        objectKey: string;
+        uploadUrl: string;
+        headers: Record<string, string>;
+        expiresIn: number;
+      };
     };
     expect(presignBody.data).toMatchObject({ expiresIn: 300 });
+    expect(presignBody.data.headers).toMatchObject({
+      'Content-Type': 'application/pdf',
+    });
     expect(presignBody.data.objectKey).toContain(
       `/employee-documents/${employee.data.id}/`,
     );
@@ -436,9 +444,77 @@ describe('Employees API (e2e)', () => {
     expect(auditActions.map(({ action }) => action)).toEqual(
       expect.arrayContaining([
         'organization.employee-document.created',
+        'organization.employee-document.downloaded',
         'organization.employee-document.deleted',
       ]),
     );
+
+    const firstHistoryPage = await api(workspace)
+      .get(`/employees/${employee.data.id}/history`)
+      .query({ category: 'DOCUMENT', limit: 2 })
+      .expect(200);
+    const firstHistoryBody = firstHistoryPage.body as {
+      data: Array<{
+        action: string;
+        category: string;
+        actor: { email: string } | null;
+        requestId: string | null;
+      }>;
+      pagination: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+      };
+    };
+    expect(firstHistoryBody.data).toHaveLength(2);
+    expect(
+      firstHistoryBody.data.every(({ category }) => category === 'DOCUMENT'),
+    ).toBe(true);
+    expect(
+      firstHistoryBody.data.every(({ actor }) => Boolean(actor?.email)),
+    ).toBe(true);
+    expect(
+      firstHistoryBody.data.every(({ requestId }) => Boolean(requestId)),
+    ).toBe(true);
+    expect(firstHistoryBody.pagination).toMatchObject({
+      limit: 2,
+      hasMore: true,
+    });
+    expect(firstHistoryBody.pagination.nextCursor).toEqual(expect.any(String));
+
+    const secondHistoryPage = await api(workspace)
+      .get(`/employees/${employee.data.id}/history`)
+      .query({
+        category: 'DOCUMENT',
+        limit: 2,
+        cursor: firstHistoryBody.pagination.nextCursor,
+      })
+      .expect(200);
+    const secondHistoryBody = secondHistoryPage.body as {
+      data: Array<{ action: string; category: string }>;
+      pagination: { nextCursor: string | null; hasMore: boolean };
+    };
+    expect(secondHistoryBody.data).toHaveLength(1);
+    expect(secondHistoryBody.pagination).toEqual({
+      limit: 2,
+      nextCursor: null,
+      hasMore: false,
+    });
+    expect(
+      [...firstHistoryBody.data, ...secondHistoryBody.data].map(
+        ({ action }) => action,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        'organization.employee-document.created',
+        'organization.employee-document.downloaded',
+        'organization.employee-document.deleted',
+      ]),
+    );
+
+    await api(foreignWorkspace)
+      .get(`/employees/${employee.data.id}/history`)
+      .expect(404);
 
     const tenantAudit = await api(workspace)
       .get('/audit-logs')
@@ -456,7 +532,7 @@ describe('Employees API (e2e)', () => {
       }>;
       pagination: { total: number };
     };
-    expect(tenantAuditBody.pagination.total).toBe(2);
+    expect(tenantAuditBody.pagination.total).toBe(3);
     const documentCreatedAudit = tenantAuditBody.data.find(
       ({ action }) => action === 'organization.employee-document.created',
     );
@@ -701,7 +777,9 @@ async function cleanupTenant(prisma: PrismaClient, tenantId: string) {
   await prisma.user.deleteMany({ where: { tenantId } });
   await prisma.role.deleteMany({ where: { tenantId } });
   await prisma.tenantSettings.deleteMany({ where: { tenantId } });
-  await prisma.tenantSubscriptionHistory.deleteMany({ where: { subscription: { tenantId } } });
+  await prisma.tenantSubscriptionHistory.deleteMany({
+    where: { subscription: { tenantId } },
+  });
   await prisma.tenantSubscription.deleteMany({ where: { tenantId } });
   await prisma.tenant.deleteMany({ where: { id: tenantId } });
 }

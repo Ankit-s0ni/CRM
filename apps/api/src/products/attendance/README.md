@@ -17,10 +17,11 @@ modules.
 - Leave, OD/WFH exceptions, and attendance corrections
 - Attendance reports and payroll-period locking
 
-The capability code is currently split across legacy sibling folders while Sprint 9
-migrates it incrementally. New Attendance code must not create another top-level
-top-level product sibling. Put it under the Attendance product or extend an existing
-capability.
+All Attendance capabilities are physically consolidated under this product boundary.
+New Attendance code must not create another top-level product sibling. Put it under
+the Attendance product or extend an existing capability. The remaining Sprint 9 work
+splits oversized services into focused use cases and removes the final approved
+cross-boundary import exceptions.
 
 ## Public Contract
 
