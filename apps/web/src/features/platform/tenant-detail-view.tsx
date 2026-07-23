@@ -359,7 +359,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </div>
               <div className="mt-1 flex flex-wrap gap-4 text-xs text-on-surface-variant">
                 <span className="text-primary">
-                  {tenant.subdomain}.deltcrm.com
+                  {tenant.subdomain}.{process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud'}
                 </span>
                 <span>
                   Created{" "}

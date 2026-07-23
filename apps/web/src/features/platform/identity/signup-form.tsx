@@ -39,10 +39,11 @@ export function SignupForm() {
   const [subdomainEdited, setSubdomainEdited] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud';
   const subdomainPreview = useMemo(() => {
     const slug = subdomain || slugifyWorkspace(companyName) || "yourcompany";
-    return `${slug}.deltcrm.com`;
-  }, [companyName, subdomain]);
+    return `${slug}.${appDomain}`;
+  }, [companyName, subdomain, appDomain]);
 
   const completedFields = useMemo(() => {
     let count = 0;
@@ -230,7 +231,7 @@ export function SignupForm() {
                 required
               />
             </div>
-            <span className="ml-4 text-[16px] leading-6 text-on-surface-variant">.deltcrm.com</span>
+            <span className="ml-4 text-[16px] leading-6 text-on-surface-variant">.{appDomain}</span>
           </div>
           <p className="mt-[2px] flex items-center gap-1 text-[12px] font-semibold leading-4 tracking-[0.02em] text-primary">
             <span className="material-symbols-outlined text-[14px]">link</span>

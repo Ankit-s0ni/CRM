@@ -100,7 +100,7 @@ export default async function WorkspaceUnavailablePage({
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
           <Link
             className="group relative flex items-center gap-2 rounded-[12px] bg-primary px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary-container active:scale-95"
-            href="mailto:support@deltcrm.com"
+            href={`mailto:support@${process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'blufield.cloud'}`}
           >
             <span className="material-symbols-outlined">support_agent</span>
             Contact support
