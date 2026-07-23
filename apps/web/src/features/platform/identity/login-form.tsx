@@ -14,7 +14,24 @@ export function LoginForm() {
   const setPendingAuth = useAuthStore((state) => state.setPendingAuth);
   const clearPendingAuth = useAuthStore((state) => state.clearPendingAuth);
   const workspaceParam = searchParams.get("workspace");
-  const workspace = workspaceParam ?? pendingAuth.workspace ?? "";
+
+  // Auto-detect workspace from subdomain (e.g. delttech.blufield.cloud → "delttech")
+  const [hostnameWorkspace, setHostnameWorkspace] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
+      // Extract subdomain: host = "delttech.blufield.cloud", appDomain = "blufield.cloud"
+      if (appDomain && host !== appDomain && host !== `www.${appDomain}` && host.endsWith(`.${appDomain}`)) {
+        const sub = host.slice(0, host.length - appDomain.length - 1);
+        if (sub && sub !== "api" && sub !== "www") {
+          setHostnameWorkspace(sub);
+        }
+      }
+    }
+  }, []);
+
+  const workspace = workspaceParam ?? hostnameWorkspace ?? pendingAuth.workspace ?? "";
   const suppliedTenantId = searchParams.get("tenantId") ??
     (workspaceParam && workspaceParam !== pendingAuth.workspace ? "" : pendingAuth.tenantId) ?? "";
   const initialEmail = searchParams.get("email") ?? pendingAuth.email ?? "";

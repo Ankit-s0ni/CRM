@@ -58,11 +58,14 @@ export function CreateTenantDialog({
   const [adminEmail, setAdminEmail] = useState("");
   const [employeeCount, setEmployeeCount] = useState("");
   const [planId, setPlanId] = useState(plans[0]?.id || "");
-  const [seatCount, setSeatCount] = useState(50);
   const [timezone, setTimezone] = useState("Asia/Muscat");
   const [setPasswordNow, setSetPasswordNow] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Derive seatCount from the selected plan automatically
+  const selectedPlan = plans.find((p) => p.id === planId);
+  const seatCount = selectedPlan?.maxEmployees ?? 100;
 
   const subdomainPreview = useMemo(() => {
     const slug = subdomain || slugify(companyName) || "yourcompany";
@@ -205,19 +208,6 @@ export function CreateTenantDialog({
               </div>
             </label>
 
-            {/* Seat limit */}
-            <label className="text-sm font-semibold">
-              Seat limit
-              <Input
-                className="mt-2 h-11 border-outline-variant"
-                type="number"
-                min={1}
-                max={plans.find((p) => p.id === planId)?.maxEmployees || 100000}
-                value={seatCount}
-                onChange={(e) => setSeatCount(Number(e.target.value))}
-                required
-              />
-            </label>
 
             {/* Subscription plan */}
             <label className="text-sm font-semibold">
