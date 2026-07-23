@@ -855,7 +855,7 @@ export class EmployeesService {
         }
       }
 
-      await this.audit.record(tx, {
+      await this.auditService.record(tx, {
         tenantId,
         action: 'employee_assignments.updated',
         resourceType: 'EMPLOYEE',
