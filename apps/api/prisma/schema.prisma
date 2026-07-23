@@ -438,6 +438,7 @@ model Tenant {
   users          User[]
   employees      Employee[]
   productCategories ProductCategory[]
+  productInventories ProductInventory[]
 
   @@index([status, createdAt])
   @@map("tenants")
@@ -2089,6 +2090,7 @@ model ProductCategory {
   parentId    String?   @db.Uuid
   parent      ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    ProductCategory[] @relation("CategoryHierarchy")
+  productInventories ProductInventory[]
 
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -2099,4 +2101,31 @@ model ProductCategory {
   @@unique([tenantId, parentId, name])
   @@index([tenantId, isActive, deletedAt])
   @@map("product_categories")
+}
+
+model ProductInventory {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String          @db.Uuid
+  name           String
+  sku            String
+  barcode        String?
+  categoryId     String?         @db.Uuid
+  sellingPrice   Decimal         @db.Decimal(10, 2)
+  costPrice      Decimal         @db.Decimal(10, 2)
+  taxPercentage  Decimal         @default(0) @db.Decimal(5, 2)
+  stockQuantity  Int             @default(0)
+  unit           String          @default("pcs")
+  imageUrl       String?
+  isActive       Boolean         @default(true)
+  deletedAt      DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  category       ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, sku])
+  @@unique([tenantId, barcode])
+  @@index([tenantId, isActive, deletedAt])
+  @@map("product_inventory")
 }

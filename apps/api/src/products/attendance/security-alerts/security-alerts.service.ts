@@ -245,7 +245,7 @@ export class SecurityAlertsService {
     return this.prisma.forTenant(async (tx) => {
       const alert = await tx.securityAlert.findUnique({ where: { id } });
       if (!alert?.verificationLogId) this.notFound('Alert evidence');
-      const verification = await tx.attendanceVerificationLog.findUnique({
+      const verification = await tx.attendanceVerificationLog.findFirst({
         where: { id: alert.verificationLogId },
       });
       if (!verification) this.notFound('Alert evidence');

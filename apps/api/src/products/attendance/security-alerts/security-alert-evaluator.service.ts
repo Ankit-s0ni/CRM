@@ -114,7 +114,7 @@ export class SecurityAlertEvaluatorService {
         where: { id: input.employeeId },
         select: { deptId: true },
       }),
-      tx.attendanceVerificationLog.findUnique({
+      tx.attendanceVerificationLog.findFirst({
         where: { id: input.verificationLogId },
       }),
     ]);

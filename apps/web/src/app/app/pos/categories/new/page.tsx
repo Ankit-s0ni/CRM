@@ -2,13 +2,27 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
+
+type Category = {
+  id: string;
+  name: string;
+};
 
 export default function NewCategoryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/pos/categories')
+      .then((res) => {
+        setCategories(res.data?.data || res.data || []);
+      })
+      .catch(console.error);
+  }, []);
   
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -72,13 +86,16 @@ export default function NewCategoryPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category ID</label>
-          <input 
-            type="text" 
+          <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+          <select 
             name="parentId"
-            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none" 
-            placeholder="Leave empty for root category"
-          />
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+          >
+            <option value="">None (Root Category)</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center gap-2">
