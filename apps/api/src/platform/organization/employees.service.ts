@@ -857,11 +857,12 @@ export class EmployeesService {
 
       await this.auditService.append(tx, {
         tenantId,
-        action: 'employee_assignments.updated',
-        resourceType: 'EMPLOYEE',
-        resourceId: id,
         actorUserId: createdBy,
-        metadata: {
+        module: 'organization',
+        action: 'employee_assignments.updated',
+        entityType: 'EMPLOYEE',
+        entityId: id,
+        newValue: {
           employeeCode: employee.employeeCode,
           defaultShiftId: dto.defaultShiftId,
           primaryOfficeId: dto.primaryOfficeId,
