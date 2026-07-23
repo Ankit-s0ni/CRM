@@ -48,6 +48,15 @@ const EMPLOYEE_RELATIONS = {
   department: { select: { id: true, name: true } },
   designation: { select: { id: true, name: true } },
   manager: { select: { id: true, employeeCode: true, fullName: true } },
+  defaultShift: {
+    select: {
+      id: true,
+      name: true,
+      startTime: true,
+      endTime: true,
+      isOvernight: true,
+    },
+  },
 } satisfies Prisma.EmployeeInclude;
 
 @Injectable()

@@ -323,81 +323,95 @@ export class AttendanceRuntimeService {
     return this.prisma.forTenant(async (tx) => {
       const employee = await this.resolver.employeeForUser(tx, userId);
       const office = employee.officeAssignments[0]?.office;
-      const [settings, assignments, logs, holidays, exceptions, payrollLock] =
-        await Promise.all([
-          tx.tenantSettings.findUniqueOrThrow({
-            where: { tenantId: employee.tenantId },
-          }),
-          tx.policyAssignment.findMany({
-            where: {
-              OR: [
-                { scope: 'EMPLOYEE', employeeId: employee.id },
-                { scope: 'DEPARTMENT', deptId: employee.deptId },
-                { scope: 'TENANT_DEFAULT' },
-              ],
-            },
-            include: { policy: true },
-          }),
-          tx.attendanceLog.findMany({
-            where: {
-              employeeId: employee.id,
-              attendanceDate: { gte: range.start, lte: range.end },
-            },
-            orderBy: { attendanceDate: 'desc' },
-            select: {
-              id: true,
-              attendanceDate: true,
-              attendanceStatus: true,
-              firstCheckin: true,
-              lastCheckout: true,
-              totalWorkMinutes: true,
-              lateMinutes: true,
-              overtimeMinutes: true,
-              breakMinutes: true,
-              finalizedAt: true,
-              lockedAt: true,
-            },
-          }),
-          tx.tenantHoliday.findMany({
-            where: {
-              holidayDate: { gte: range.start, lte: range.end },
-              OR: [
-                { officeLocationId: null },
-                ...(office ? [{ officeLocationId: office.id }] : []),
-              ],
-            },
-            select: {
-              holidayDate: true,
-              holidayName: true,
-              officeLocationId: true,
-            },
-          }),
-          tx.attendanceException.findMany({
-            where: {
-              employeeId: employee.id,
-              startDate: { lte: range.end },
-              endDate: { gte: range.start },
-            },
-            include: {
-              leaveRequest: {
-                select: {
-                  status: true,
-                  policy: { select: { name: true } },
-                },
+      const [
+        settings,
+        assignments,
+        logs,
+        holidays,
+        exceptions,
+        payrollLock,
+        rosters,
+      ] = await Promise.all([
+        tx.tenantSettings.findUniqueOrThrow({
+          where: { tenantId: employee.tenantId },
+        }),
+        tx.policyAssignment.findMany({
+          where: {
+            OR: [
+              { scope: 'EMPLOYEE', employeeId: employee.id },
+              { scope: 'DEPARTMENT', deptId: employee.deptId },
+              { scope: 'TENANT_DEFAULT' },
+            ],
+          },
+          include: { policy: true },
+        }),
+        tx.attendanceLog.findMany({
+          where: {
+            employeeId: employee.id,
+            attendanceDate: { gte: range.start, lte: range.end },
+          },
+          orderBy: { attendanceDate: 'desc' },
+          select: {
+            id: true,
+            attendanceDate: true,
+            attendanceStatus: true,
+            firstCheckin: true,
+            lastCheckout: true,
+            totalWorkMinutes: true,
+            lateMinutes: true,
+            overtimeMinutes: true,
+            breakMinutes: true,
+            finalizedAt: true,
+            lockedAt: true,
+          },
+        }),
+        tx.tenantHoliday.findMany({
+          where: {
+            holidayDate: { gte: range.start, lte: range.end },
+            OR: [
+              { officeLocationId: null },
+              ...(office ? [{ officeLocationId: office.id }] : []),
+            ],
+          },
+          select: {
+            holidayDate: true,
+            holidayName: true,
+            officeLocationId: true,
+          },
+        }),
+        tx.attendanceException.findMany({
+          where: {
+            employeeId: employee.id,
+            startDate: { lte: range.end },
+            endDate: { gte: range.start },
+          },
+          include: {
+            leaveRequest: {
+              select: {
+                status: true,
+                policy: { select: { name: true } },
               },
             },
-            orderBy: { createdAt: 'desc' },
-          }),
-          tx.payrollLockPeriod.findUnique({
-            where: {
-              tenantId_period: {
-                tenantId: employee.tenantId,
-                period: month,
-              },
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        tx.payrollLockPeriod.findUnique({
+          where: {
+            tenantId_period: {
+              tenantId: employee.tenantId,
+              period: month,
             },
-            select: { status: true },
-          }),
-        ]);
+          },
+          select: { status: true },
+        }),
+        tx.employeeShiftRoster.findMany({
+          where: {
+            employeeId: employee.id,
+            rosterDate: { gte: range.start, lte: range.end },
+          },
+          include: { shift: true },
+        }),
+      ]);
       const assignment =
         assignments.find(({ scope }) => scope === 'EMPLOYEE') ??
         assignments.find(({ scope }) => scope === 'DEPARTMENT') ??
@@ -414,9 +428,16 @@ export class AttendanceRuntimeService {
           holiday,
         ]),
       );
+      const rostersByDate = new Map(
+        rosters.map((roster) => [
+          roster.rosterDate.toISOString().slice(0, 10),
+          roster,
+        ]),
+      );
       const calendarDays = monthDates(month).map((date) => {
         const log = logsByDate.get(date);
         const holiday = holidaysByDate.get(date);
+        const roster = rostersByDate.get(date);
         const exception = exceptions.find(
           (item) =>
             databaseDate(item.startDate) <= date &&
@@ -428,7 +449,10 @@ export class AttendanceRuntimeService {
           date > databaseDate(employee.dateOfExit);
         const isToday = date === today;
         const isFuture = date > today;
-        const weeklyOff = isConfiguredWeeklyOff(weeklyOffs, date, timezone);
+        // A dated roster is an explicit instruction to work, even when the
+        // inherited weekly-off pattern would normally make the date non-working.
+        const weeklyOff =
+          !roster && isConfiguredWeeklyOff(weeklyOffs, date, timezone);
         const leave =
           exception?.exceptionType === 'LEAVE' &&
           (!exception.leaveRequest ||
@@ -472,6 +496,24 @@ export class AttendanceRuntimeService {
           lateMinutes: log?.lateMinutes ?? 0,
           overtimeMinutes: log?.overtimeMinutes ?? 0,
           breakMinutes: log?.breakMinutes ?? 0,
+          schedule: {
+            source: roster
+              ? 'ROSTER'
+              : employee.defaultShift
+                ? 'EMPLOYEE_DEFAULT'
+                : 'TENANT_DEFAULT',
+            shiftId: roster?.shift.id ?? employee.defaultShift?.id ?? null,
+            shiftName:
+              roster?.shift.name ?? employee.defaultShift?.name ?? null,
+            startTime:
+              roster?.shift.startTime ??
+              employee.defaultShift?.startTime ??
+              settings.workingDayStart,
+            endTime:
+              roster?.shift.endTime ??
+              employee.defaultShift?.endTime ??
+              settings.workingDayEnd,
+          },
         };
       });
       return {

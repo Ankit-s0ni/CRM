@@ -17,7 +17,10 @@ import timezoneLookup from "tz-lookup";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
-import { FieldMap, type MapCoordinate } from "@/features/products/attendance/field/field-map";
+import {
+  FieldMap,
+  type MapCoordinate,
+} from "@/features/products/attendance/field/field-map";
 import { TimezoneSelect } from "@/shared/components/timezone-select";
 import {
   AdminPage,
@@ -85,6 +88,16 @@ type Employee = {
   fullName: string;
   employeeCode: string;
   deptId?: string;
+  defaultShift?: Shift | null;
+};
+type TenantScheduleSettings = {
+  weeklyOffs: unknown;
+  workingDayStart: string;
+  workingDayEnd: string;
+};
+type ResolvedPolicy = {
+  employeeId: string;
+  policy: { weeklyOffs?: unknown };
 };
 type Department = { id: string; name: string };
 type Holiday = {
@@ -212,8 +225,7 @@ export function OfficesView() {
       ...current,
       latitude: latitude.toFixed(6),
       longitude: longitude.toFixed(6),
-      timezone:
-        timezoneForCoordinate(latitude, longitude) ?? current.timezone,
+      timezone: timezoneForCoordinate(latitude, longitude) ?? current.timezone,
     }));
   }
   function detectTimezoneFromInputs() {
@@ -290,7 +302,9 @@ export function OfficesView() {
           <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-primary">
             <span className="rounded-full bg-zinc-100 px-3 py-2">Employee</span>
             <span>overrides</span>
-            <span className="rounded-full bg-zinc-100 px-3 py-2">Department</span>
+            <span className="rounded-full bg-zinc-100 px-3 py-2">
+              Department
+            </span>
             <span>overrides</span>
             <span className="rounded-full bg-zinc-100 px-3 py-2">Tenant</span>
           </div>
@@ -300,12 +314,10 @@ export function OfficesView() {
         <p>
           <strong>Important:</strong> Saving an office does not enforce its
           geofence by itself. Assign employees to the office and give them an
-          attendance policy whose location rule is <strong>Office geofence</strong>.
+          attendance policy whose location rule is{" "}
+          <strong>Office geofence</strong>.
         </p>
-        <a
-          className="font-bold text-primary"
-          href="/app/attendance/policies"
-        >
+        <a className="font-bold text-primary" href="/app/attendance/policies">
           Review attendance policies
         </a>
       </div>
@@ -333,7 +345,8 @@ export function OfficesView() {
                       {(office.egressIps as string[]).length} trusted networks
                     </div>
                     <div className="mt-1 text-xs text-outline">
-                      {Number(office.latitude).toFixed(6)}, {Number(office.longitude).toFixed(6)}
+                      {Number(office.latitude).toFixed(6)},{" "}
+                      {Number(office.longitude).toFixed(6)}
                     </div>
                   </div>
                   <span className="text-sm">
@@ -537,12 +550,11 @@ export function PoliciesView() {
   const searchParams = useSearchParams();
   const focusedEmployeeId = searchParams.get("employeeId");
   const requestedReturnTo = searchParams.get("returnTo");
-  const returnTo =
-    requestedReturnTo?.startsWith("/app/employees/")
-      ? requestedReturnTo
-      : focusedEmployeeId
-        ? `/app/employees/${focusedEmployeeId}?tab=assignments`
-        : "/app/employees";
+  const returnTo = requestedReturnTo?.startsWith("/app/employees/")
+    ? requestedReturnTo
+    : focusedEmployeeId
+      ? `/app/employees/${focusedEmployeeId}?tab=assignments`
+      : "/app/employees";
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const [data, setData] = useState<Policy[] | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -743,10 +755,7 @@ export function PoliciesView() {
         );
         setCapabilities(capabilityResponse.data.data);
       }
-      await apiClient.patch(
-        `/attendance-policies/${ruleEditing.id}`,
-        ruleForm,
-      );
+      await apiClient.patch(`/attendance-policies/${ruleEditing.id}`, ruleForm);
       setRuleEditing(null);
       await load();
     } catch (requestError: unknown) {
@@ -888,8 +897,8 @@ export function PoliciesView() {
             Assign the broad tenant default first, use department assignments
             for team-specific rules, and use employee assignments only for
             approved exceptions. This policy currently resolves directly for
-            approximately {policyCoverage(assignments, employees)} employees;
-            a higher-priority assignment on another policy may override it.
+            approximately {policyCoverage(assignments, employees)} employees; a
+            higher-priority assignment on another policy may override it.
           </div>
           <div className="grid gap-3">
             {assignments.map((assignment) => (
@@ -995,14 +1004,15 @@ export function PoliciesView() {
           {focusedError && <ErrorState message={focusedError} />}
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
             Choose one predefined policy for this employee. An employee policy
-            overrides department and tenant defaults. Choose inherited policy
-            to remove the employee-specific exception.
+            overrides department and tenant defaults. Choose inherited policy to
+            remove the employee-specific exception.
           </div>
           {focusedResolution && (
             <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-50 p-4 text-sm">
               <span className="text-zinc-500">Currently effective</span>
               <strong>
-                {focusedResolution.policyName} · {sentenceCase(focusedResolution.source)}
+                {focusedResolution.policyName} ·{" "}
+                {sentenceCase(focusedResolution.source)}
               </strong>
             </div>
           )}
@@ -1021,7 +1031,8 @@ export function PoliciesView() {
               <span>
                 <strong className="block text-sm">Use inherited policy</strong>
                 <span className="mt-1 block text-xs leading-5 text-outline">
-                  Use the employee&apos;s department policy, then tenant default.
+                  Use the employee&apos;s department policy, then tenant
+                  default.
                 </span>
               </span>
             </label>
@@ -1040,7 +1051,9 @@ export function PoliciesView() {
                 <span>
                   <strong className="block text-sm">{policy.name}</strong>
                   <span className="mt-1 block text-xs leading-5 text-outline">
-                    {policy.locationMode.replaceAll("_", " ")} · Selfie {policy.selfieMode.toLowerCase()} · Device {policy.requireRegisteredDevice ? "required" : "optional"}
+                    {policy.locationMode.replaceAll("_", " ")} · Selfie{" "}
+                    {policy.selfieMode.toLowerCase()} · Device{" "}
+                    {policy.requireRegisteredDevice ? "required" : "optional"}
                   </span>
                 </span>
               </label>
@@ -1074,7 +1087,8 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Attendance calculation</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                Set when a workday becomes late, half-day, complete, or overtime.
+                Set when a workday becomes late, half-day, complete, or
+                overtime.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {(
@@ -1105,7 +1119,8 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Punch verification</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                Choose what the employee must verify during check-in and check-out.
+                Choose what the employee must verify during check-in and
+                check-out.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Field
@@ -1189,7 +1204,8 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">Offline attendance</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                Allow a stored punch to sync when the employee regains connectivity.
+                Allow a stored punch to sync when the employee regains
+                connectivity.
               </p>
               <div className="mt-4 max-w-xs">
                 <Field label="Maximum offline sync delay (hours)">
@@ -1213,7 +1229,8 @@ export function PoliciesView() {
               <div className="rounded-xl border border-surface-variant p-4">
                 <h3 className="font-bold">Field workforce tracking</h3>
                 <p className="mt-1 text-xs leading-5 text-outline">
-                  Optional continuous route tracking for eligible field employees.
+                  Optional continuous route tracking for eligible field
+                  employees.
                 </p>
                 <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                   <label className="flex min-h-10 flex-1 items-center gap-3">
@@ -1285,7 +1302,9 @@ export function PoliciesView() {
                   <li>- Every affected employee needs an assigned office.</li>
                 )}
                 {ruleForm.locationMode === "FIELD_GPS" && (
-                  <li>- Employee devices must grant precise location access.</li>
+                  <li>
+                    - Employee devices must grant precise location access.
+                  </li>
                 )}
                 {ruleForm.selfieMode === "REQUIRED" && (
                   <li>- Employees need active consent and face enrollment.</li>
@@ -1497,6 +1516,10 @@ export function RostersView() {
   const [data, setData] = useState<Roster[] | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [settings, setSettings] = useState<TenantScheduleSettings | null>(null);
+  const [policyByEmployee, setPolicyByEmployee] = useState<
+    Record<string, ResolvedPolicy["policy"]>
+  >({});
   const [error, setError] = useState("");
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkForm, setBulkForm] = useState({
@@ -1511,11 +1534,38 @@ export function RostersView() {
       apiClient.get(`/rosters?startDate=${iso(today)}&endDate=${iso(end)}`),
       apiClient.get("/employees?limit=100"),
       apiClient.get("/shifts"),
+      apiClient.get("/tenant-settings"),
     ])
-      .then(([rosters, employeeResult, shiftResult]) => {
+      .then(async ([rosters, employeeResult, shiftResult, settingsResult]) => {
+        const loadedEmployees = employeeResult.data.data as Employee[];
         setData(rosters.data.data);
-        setEmployees(employeeResult.data.data);
+        setEmployees(loadedEmployees);
         setShifts(shiftResult.data.data);
+        setSettings(settingsResult.data.data);
+        if (!loadedEmployees.length) {
+          setPolicyByEmployee({});
+          return;
+        }
+        try {
+          const result = await apiClient.post(
+            "/attendance-policies/resolve/bulk",
+            {
+              employeeIds: loadedEmployees.map(({ id }) => id),
+              date: iso(today),
+            },
+          );
+          setPolicyByEmployee(
+            Object.fromEntries(
+              (result.data.data as ResolvedPolicy[]).map((item) => [
+                item.employeeId,
+                item.policy,
+              ]),
+            ),
+          );
+        } catch {
+          // Tenant working-week settings remain the safe inherited fallback.
+          setPolicyByEmployee({});
+        }
       })
       .catch(() => setError("Roster planner could not be loaded."));
   const loadRosters = useEffectEvent(load);
@@ -1571,11 +1621,18 @@ export function RostersView() {
               }
             />
           </label>
-          <PrimaryButton onClick={() => {
-            setBulkForm({ employeeIds: [], shiftId: "", startDate: iso(today), endDate: iso(end) });
-            setBulkResult("");
-            setBulkOpen(true);
-          }}>
+          <PrimaryButton
+            onClick={() => {
+              setBulkForm({
+                employeeIds: [],
+                shiftId: "",
+                startDate: iso(today),
+                endDate: iso(end),
+              });
+              setBulkResult("");
+              setBulkOpen(true);
+            }}
+          >
             <Plus className="size-4" />
             Assign shift
           </PrimaryButton>
@@ -1621,6 +1678,15 @@ export function RostersView() {
                       row.employee.employeeCode === employee.employeeCode &&
                       row.rosterDate.slice(0, 10) === iso(date),
                   );
+                  const weeklyOffs =
+                    policyByEmployee[employee.id]?.weeklyOffs ??
+                    settings?.weeklyOffs;
+                  const weeklyOff =
+                    !roster && isWeeklyOffDate(weeklyOffs, date);
+                  const inheritedShift = employee.defaultShift;
+                  const inheritedHours =
+                    settings &&
+                    `${settings.workingDayStart}-${settings.workingDayEnd}`;
                   return (
                     <div
                       key={date.toISOString()}
@@ -1629,21 +1695,46 @@ export function RostersView() {
                       {roster ? (
                         <button
                           title="Remove roster"
-                          className="rounded-lg bg-zinc-100 px-2 py-1 text-center text-xs font-semibold text-zinc-500"
+                          className="rounded-lg bg-blue-50 px-2 py-1 text-center text-xs font-semibold text-blue-700"
                           onClick={() => removeRoster(roster)}
                         >
-                          {roster.shift.name}
+                          <span className="block">{roster.shift.name}</span>
+                          <span className="block text-[10px] font-medium text-blue-500">
+                            Roster
+                          </span>
                         </button>
                       ) : (
                         <button
-                          className="flex h-full w-full items-center justify-center rounded-lg hover:bg-zinc-100/50"
+                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${
+                            weeklyOff ? "bg-slate-50" : "bg-emerald-50/50"
+                          }`}
                           onClick={() => {
-                            setBulkForm({ employeeIds: [employee.id], shiftId: "", startDate: iso(date), endDate: iso(date) });
+                            setBulkForm({
+                              employeeIds: [employee.id],
+                              shiftId: "",
+                              startDate: iso(date),
+                              endDate: iso(date),
+                            });
                             setBulkResult("");
                             setBulkOpen(true);
                           }}
                         >
-                          <span className="text-zinc-300">—</span>
+                          {weeklyOff ? (
+                            <span className="text-xs font-semibold text-slate-500">
+                              Weekly off
+                            </span>
+                          ) : (
+                            <span className="text-xs font-semibold text-emerald-700">
+                              <span className="block">
+                                {inheritedShift?.name ??
+                                  inheritedHours ??
+                                  "Working day"}
+                              </span>
+                              <span className="block text-[10px] font-medium text-emerald-500">
+                                Inherited
+                              </span>
+                            </span>
+                          )}
                         </button>
                       )}
                     </div>
@@ -1971,14 +2062,12 @@ function OfficeMap({ offices }: { offices: Office[] }) {
     <FieldMap
       className="min-h-[420px]"
       geofences={locations}
-      markers={locations.map(
-        ({ id, label, latitude, longitude }) => ({
-          id,
-          label,
-          latitude,
-          longitude,
-        }),
-      )}
+      markers={locations.map(({ id, label, latitude, longitude }) => ({
+        id,
+        label,
+        latitude,
+        longitude,
+      }))}
     />
   );
 }
@@ -2017,10 +2106,15 @@ function OfficeLocationPicker({
     if (!searchQuery.trim()) return;
     setSearching(true);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`,
+      );
       const data = await res.json();
       if (data && data.length > 0) {
-        onChange({ latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) });
+        onChange({
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon),
+        });
         setSearchQuery("");
       } else {
         alert("Location not found");
@@ -2052,8 +2146,8 @@ function OfficeLocationPicker({
         <div>
           <div className="font-semibold">Pin the office entrance</div>
           <div className="text-xs text-outline">
-            Search for a location, click the map, or use your current location. The circle is the valid
-            attendance area.
+            Search for a location, click the map, or use your current location.
+            The circle is the valid attendance area.
           </div>
         </div>
         <button
@@ -2066,7 +2160,7 @@ function OfficeLocationPicker({
           {locating ? "Locating…" : "Use current location"}
         </button>
       </div>
-      
+
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -2171,7 +2265,11 @@ function Dialog({
             Close
           </button>
         </div>
-        {error && <div className="mb-5"><ErrorState message={error} /></div>}
+        {error && (
+          <div className="mb-5">
+            <ErrorState message={error} />
+          </div>
+        )}
         {children}
       </div>
     </div>,
@@ -2218,7 +2316,9 @@ function requestErrorMessage(error: unknown, fallback: string) {
       response?: {
         data?: {
           message?: unknown;
-          details?: Array<{ field?: string; messages?: string[] }> | Record<string, unknown>;
+          details?:
+            | Array<{ field?: string; messages?: string[] }>
+            | Record<string, unknown>;
         };
       };
     }
@@ -2265,6 +2365,25 @@ function dateRange(start: Date, end: Date) {
   )
     result.push(cursor);
   return result;
+}
+function isWeeklyOffDate(value: unknown, date: Date) {
+  if (!Array.isArray(value)) return false;
+  const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
+    date.getDay()
+  ];
+  const occurrence = Math.ceil(date.getDate() / 7);
+  return value.some((entry) => {
+    if (entry === weekday) return true;
+    if (!entry || typeof entry !== "object" || Array.isArray(entry))
+      return false;
+    const rule = entry as { weekday?: unknown; occurrences?: unknown };
+    return (
+      rule.weekday === weekday &&
+      (rule.occurrences === undefined ||
+        (Array.isArray(rule.occurrences) &&
+          rule.occurrences.includes(occurrence)))
+    );
+  });
 }
 async function uploadRoster(
   file: File,

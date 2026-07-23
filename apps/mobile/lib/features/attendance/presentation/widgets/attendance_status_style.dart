@@ -11,7 +11,7 @@ Color attendanceStatusColor(String status) => switch (status) {
   'WEEKLY_OFF' => const Color(0xFF64748B),
   'ON_DUTY' => const Color(0xFF0F766E),
   'WORKING_DAY' => const Color(0xFF2563EB),
-  'UPCOMING' => const Color(0xFF94A3B8),
+  'UPCOMING' => const Color(0xFF2563EB),
   _ => const Color(0xFFCBD5E1),
 };
 
@@ -26,7 +26,7 @@ String attendanceStatusLabel(String status) => switch (status) {
   'WEEKLY_OFF' => 'Weekly off',
   'ON_DUTY' => 'On duty',
   'WORKING_DAY' => 'Working day',
-  'UPCOMING' => 'Upcoming',
+  'UPCOMING' => 'Scheduled working day',
   'NOT_APPLICABLE' => 'Not applicable',
   _ => status.replaceAll('_', ' ').toLowerCase(),
 };

@@ -79,7 +79,7 @@ class AttendanceCalendar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         border: calendarDay?.isToday ?? false
                             ? Border.all(color: AppTheme.charcoal, width: 1.5)
-                            : status == 'WORKING_DAY'
+                            : const ['WORKING_DAY', 'UPCOMING'].contains(status)
                             ? Border.all(color: color.withValues(alpha: .28))
                             : null,
                       ),
