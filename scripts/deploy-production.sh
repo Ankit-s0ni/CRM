@@ -20,6 +20,11 @@ cd "${ROOT_DIR}"
 
 # Build before restarting so a failed build leaves the current release online.
 pnpm install --frozen-lockfile
+
+cd "${ROOT_DIR}/apps/api"
+pnpm exec prisma generate
+
+cd "${ROOT_DIR}"
 pnpm --filter api build
 pnpm --filter web build
 
