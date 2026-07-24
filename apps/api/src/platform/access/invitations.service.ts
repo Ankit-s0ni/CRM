@@ -360,7 +360,7 @@ export class InvitationsService {
     return {
       message: 'Invitation sent if an eligible pending invitation exists',
       debugInvitationToken:
-        process.env.NODE_ENV === 'production' ? undefined : token,
+        isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -385,4 +385,10 @@ export class InvitationsService {
       message: 'Invitation is invalid, expired, or already used',
     });
   }
+}
+
+function isDebugTokenExposureEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+  );
 }

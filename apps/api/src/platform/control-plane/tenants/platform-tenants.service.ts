@@ -349,7 +349,7 @@ export class PlatformTenantsService {
             ? tenant.administratorInvitation?.expiresAt
             : invitationExpiresAt,
           debugInvitationToken:
-            result.replayed || process.env.NODE_ENV === 'production'
+            result.replayed || !isDebugTokenExposureEnabled()
               ? undefined
               : invitationToken,
         },
@@ -758,4 +758,10 @@ export class PlatformTenantsService {
       message: `${resource} was not found`,
     });
   }
+}
+
+function isDebugTokenExposureEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+  );
 }

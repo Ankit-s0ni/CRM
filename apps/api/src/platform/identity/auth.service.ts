@@ -207,7 +207,7 @@ export class AuthService {
       subdomain: tenant.tenant.subdomain,
       emailDelivery,
       debugVerificationToken:
-        process.env.NODE_ENV === 'production' ? undefined : verificationToken,
+        isDebugTokenExposureEnabled() ? verificationToken : undefined,
     };
   }
 
@@ -275,7 +275,7 @@ export class AuthService {
           : 'The code was created, but email delivery is temporarily unavailable',
       emailDelivery,
       debugVerificationToken:
-        process.env.NODE_ENV === 'production' ? undefined : token,
+        isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -623,7 +623,7 @@ export class AuthService {
     return {
       message: 'Password reset link sent if account exists',
       debugResetToken:
-        process.env.NODE_ENV === 'production' ? undefined : token,
+        isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -895,6 +895,12 @@ export class AuthService {
     const requestedSeats = counts.length ? Math.max(...counts) : 25;
     return Math.max(1, Math.min(requestedSeats, 500));
   }
+}
+
+function isDebugTokenExposureEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+  );
 }
 
 function safeLogoUrl(value: string | null) {
