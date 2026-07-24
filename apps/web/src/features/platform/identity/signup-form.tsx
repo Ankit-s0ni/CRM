@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
@@ -26,7 +25,6 @@ function slugifyWorkspace(value: string) {
 }
 
 export function SignupForm() {
-  const router = useRouter();
   const setPendingAuth = useAuthStore((state) => state.setPendingAuth);
   const [companyName, setCompanyName] = useState("");
   const [workEmail, setWorkEmail] = useState("");
@@ -95,7 +93,9 @@ export function SignupForm() {
         workspace: payload.subdomain,
         email: payload.email,
       });
-      router.push(`/login?${params.toString()}`);
+      window.location.assign(
+        `${window.location.protocol}//${payload.subdomain}.${appDomain}/login?${params.toString()}`,
+      );
     } catch (error: unknown) {
       setError(getApiErrorMessage(error, "We couldn't create your workspace right now."));
     } finally {
