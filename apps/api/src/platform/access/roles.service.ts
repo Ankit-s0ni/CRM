@@ -152,6 +152,7 @@ export class RolesService {
   ) {
     return this.prisma.forTenant(async (tx) => {
       const existingRole = await this.findTenantRole(tx, id);
+      this.assertCustomRole(existingRole);
       const previous = await tx.rolePermission.findMany({
         where: { roleId: id },
         include: { permission: true },

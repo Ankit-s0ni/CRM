@@ -12,7 +12,10 @@ import {
   Fingerprint,
   KeyRound,
   ListChecks,
+  Mail,
+  MapPin,
   Pencil,
+  Phone,
   RotateCcw,
   ShieldCheck,
   Trash2,
@@ -54,6 +57,11 @@ type EmployeeDetail = {
   department: { id: string; name: string };
   designation: { id: string; name: string } | null;
   manager: { id: string; employeeCode: string; fullName: string } | null;
+  officeAssignments?: Array<{
+    id: string;
+    isPrimary: boolean;
+    office: { id: string; officeName: string; timezone: string | null };
+  }>;
   _count?: { reports: number };
 };
 
@@ -130,6 +138,23 @@ type EmployeeWorkspace = {
       overtimeMinutes: number;
     }>;
     resolvedExceptionCount: number;
+    today: {
+      date: string;
+      status: string;
+      timezone: string;
+      record: {
+        firstCheckin: string | null;
+        lastCheckout: string | null;
+        totalWorkMinutes: number;
+        lateMinutes: number;
+      } | null;
+      leave: {
+        halfDayStart: boolean;
+        halfDayEnd: boolean;
+        policy: { name: string; leaveType: string };
+      } | null;
+      holiday: { holidayName: string } | null;
+    };
   };
   leave: {
     balances: Array<{
@@ -320,7 +345,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       {employee && workspace && activeTab === "overview" && (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.7fr)]">
           <div className="grid gap-6">
-            <EmploymentProfile employee={employee} />
+            <EmploymentProfile employee={workspace.employee} />
             <ReadinessPanel
               readiness={workspace.readiness}
               onSelect={changeTab}
@@ -331,7 +356,10 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
               permissions={permissions}
             />
           </div>
-          <AccountSummary employee={workspace.employee} />
+          <div className="grid h-fit gap-6">
+            <TodaySummary attendance={workspace.attendance.today} />
+            <AccountSummary employee={workspace.employee} />
+          </div>
         </div>
       )}
       {employee && workspace && activeTab === "assignments" && (
@@ -342,7 +370,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         />
       )}
       {employee && workspace && activeTab === "attendance" && (
-        <AttendancePanel employeeId={employeeId} workspace={workspace} />
+        <AttendancePanel employeeId={employeeId} />
       )}
       {employee && workspace && activeTab === "leave" && (
         <LeavePanel employeeId={employeeId} workspace={workspace} />
@@ -519,7 +547,14 @@ function EmployeeWorkspaceTabs({
   );
 }
 
-function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
+function EmploymentProfile({
+  employee,
+}: {
+  employee: EmployeeWorkspace["employee"];
+}) {
+  const primaryOffice =
+    employee.officeAssignments?.find(({ isPrimary }) => isPrimary) ??
+    employee.officeAssignments?.[0];
   return (
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -547,6 +582,21 @@ function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
         </span>
       </div>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Detail
+          icon={Phone}
+          label="Phone"
+          value={employee.phone || "Not recorded"}
+        />
+        <Detail
+          icon={Mail}
+          label="Work email"
+          value={employee.user?.email || "No account linked"}
+        />
+        <Detail
+          icon={MapPin}
+          label="Primary office"
+          value={primaryOffice?.office.officeName || "Not assigned"}
+        />
         <Detail
           icon={Building2}
           label="Department"
@@ -578,6 +628,95 @@ function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
         />
       </div>
     </Panel>
+  );
+}
+
+function TodaySummary({
+  attendance,
+}: {
+  attendance: EmployeeWorkspace["attendance"]["today"];
+}) {
+  const labels: Record<string, string> = {
+    PRESENT_OPEN: "Checked in",
+    PRESENT: "Present",
+    HALF_DAY: "Half day",
+    ABSENT: "Absent",
+    ON_LEAVE: "On leave",
+    HOLIDAY: "Holiday",
+    WEEKLY_OFF: "Weekly off",
+    ON_DUTY: "On duty",
+    NOT_RECORDED: "Not checked in",
+  };
+  const positive = ["PRESENT_OPEN", "PRESENT", "ON_DUTY"].includes(
+    attendance.status,
+  );
+  const context =
+    attendance.holiday?.holidayName ??
+    attendance.leave?.policy.name ??
+    `Office timezone: ${attendance.timezone}`;
+
+  return (
+    <Panel className="overflow-hidden">
+      <div className={`p-6 ${positive ? "bg-emerald-50" : "bg-zinc-50"}`}>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-outline">
+              Today
+            </p>
+            <h2 className="mt-2 text-2xl font-bold">
+              {labels[attendance.status] ?? attendance.status}
+            </h2>
+          </div>
+          <span
+            className={`grid size-12 place-items-center rounded-2xl ${
+              positive
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-white text-primary"
+            }`}
+          >
+            <Clock3 className="size-6" />
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-outline">{context}</p>
+      </div>
+      <div className="grid grid-cols-2 gap-px bg-surface-variant">
+        <TodayValue
+          label="Check-in"
+          value={
+            attendance.record?.firstCheckin
+              ? formatTime(attendance.record.firstCheckin, attendance.timezone)
+              : "—"
+          }
+        />
+        <TodayValue
+          label="Check-out"
+          value={
+            attendance.record?.lastCheckout
+              ? formatTime(attendance.record.lastCheckout, attendance.timezone)
+              : "—"
+          }
+        />
+        <TodayValue
+          label="Worked"
+          value={formatMinutes(attendance.record?.totalWorkMinutes ?? 0)}
+        />
+        <TodayValue
+          label="Late"
+          value={formatMinutes(attendance.record?.lateMinutes ?? 0)}
+        />
+      </div>
+    </Panel>
+  );
+}
+
+function TodayValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-white p-4">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-outline">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-bold">{value}</p>
+    </div>
   );
 }
 
@@ -1319,10 +1458,8 @@ function AssignmentsPanel({
 
 function AttendancePanel({
   employeeId,
-  workspace,
 }: {
   employeeId: string;
-  workspace: EmployeeWorkspace;
 }) {
   return (
     <AttendanceDetailView
@@ -2522,6 +2659,21 @@ function formatDateTime(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatTime(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(value));
+}
+
+function formatMinutes(value: number) {
+  const hours = Math.floor(value / 60);
+  const minutes = value % 60;
+  if (!hours) return `${minutes}m`;
+  return `${hours}h ${minutes}m`;
 }
 
 function historyCategoryLabel(category: EmployeeHistoryCategory) {

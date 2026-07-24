@@ -34,14 +34,28 @@ export class InvitationsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async create(dto: CreateInvitationDto, inviterId: string) {
+  async create(
+    dto: CreateInvitationDto,
+    inviterId: string,
+    canAssignElevatedRoles: boolean,
+  ) {
     const tenantId = this.requireTenantId();
     const email = dto.email.trim().toLowerCase();
     const token = randomBytes(32).toString('hex');
 
     await this.prisma.forTenant(async (tx) => {
       await this.assertEmailAvailable(tx, email);
-      await this.assertRoles(tx, dto.roleIds);
+      const roles = await this.assertRoles(tx, dto.roleIds);
+      if (
+        !canAssignElevatedRoles &&
+        roles.some(({ name }) => name !== 'EMPLOYEE')
+      ) {
+        throw new ForbiddenException({
+          code: 'ROLE_ASSIGNMENT_FORBIDDEN',
+          message:
+            'Role management permission is required to invite an administrator',
+        });
+      }
       if (dto.employeeId) {
         await this.assertEmployeeAvailable(tx, dto.employeeId);
       }
@@ -296,6 +310,7 @@ export class InvitationsService {
         message: 'One or more roles do not exist in this workspace',
       });
     }
+    return roles;
   }
 
   private async assertEmployeeAvailable(

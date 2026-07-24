@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { InvitationsService } from './invitations.service';
 
 describe('InvitationsService employee account linking', () => {
@@ -22,6 +22,7 @@ describe('InvitationsService employee account linking', () => {
     await service.create(
       { email: 'employee@example.com', roleIds: [roleId], employeeId },
       inviterId,
+      false,
     );
 
     expect(tx.employee.findFirst).toHaveBeenCalledWith({
@@ -54,10 +55,39 @@ describe('InvitationsService employee account linking', () => {
     const promise = service.create(
       { email: 'employee@example.com', roleIds: [roleId], employeeId },
       inviterId,
+      false,
     );
     await expect(promise).rejects.toBeInstanceOf(ConflictException);
     await expect(promise).rejects.toMatchObject({
       response: { code: 'EMPLOYEE_ACCOUNT_EXISTS' },
+    });
+    expect(tx.verificationToken.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects elevated-role invitations without role assignment access', async () => {
+    const tx = transaction();
+    tx.role.findMany.mockResolvedValue([
+      { id: roleId, name: 'BUSINESS_ADMIN' },
+    ]);
+    const service = new InvitationsService(
+      {
+        forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
+          callback(tx),
+        ),
+      } as never,
+      { tenantId } as never,
+      { append: jest.fn() } as never,
+    );
+
+    const promise = service.create(
+      { email: 'admin@example.com', roleIds: [roleId] },
+      inviterId,
+      false,
+    );
+
+    await expect(promise).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(promise).rejects.toMatchObject({
+      response: { code: 'ROLE_ASSIGNMENT_FORBIDDEN' },
     });
     expect(tx.verificationToken.create).not.toHaveBeenCalled();
   });
@@ -66,7 +96,9 @@ describe('InvitationsService employee account linking', () => {
 function transaction() {
   return {
     user: { findFirst: jest.fn().mockResolvedValue(null) },
-    role: { findMany: jest.fn().mockResolvedValue([{ id: 'role' }]) },
+    role: {
+      findMany: jest.fn().mockResolvedValue([{ id: 'role', name: 'EMPLOYEE' }]),
+    },
     employee: {
       findFirst: jest.fn().mockResolvedValue({ id: 'employee' }),
     },

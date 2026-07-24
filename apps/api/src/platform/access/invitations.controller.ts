@@ -34,7 +34,11 @@ export class InvitationsController {
     @Body() dto: CreateInvitationDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.invitationsService.create(dto, user.userId);
+    return this.invitationsService.create(
+      dto,
+      user.userId,
+      user.permissions?.includes(PERMISSIONS.USERS_ROLES_UPDATE) ?? false,
+    );
   }
 
   @Post('resend')

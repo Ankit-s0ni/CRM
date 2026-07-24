@@ -49,6 +49,14 @@ const EMPLOYEE_RELATIONS = {
   department: { select: { id: true, name: true } },
   designation: { select: { id: true, name: true } },
   manager: { select: { id: true, employeeCode: true, fullName: true } },
+  user: { select: { id: true, email: true, status: true } },
+  officeAssignments: {
+    where: { isPrimary: true },
+    take: 1,
+    include: {
+      office: { select: { id: true, officeName: true, timezone: true } },
+    },
+  },
   defaultShift: {
     select: {
       id: true,
@@ -100,6 +108,30 @@ export class EmployeesService {
               { fullName: { contains: search, mode: 'insensitive' } },
               { employeeCode: { contains: search, mode: 'insensitive' } },
               { phone: { contains: search } },
+              {
+                user: {
+                  is: { email: { contains: search, mode: 'insensitive' } },
+                },
+              },
+              {
+                department: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
+              },
+              {
+                designation: {
+                  is: { name: { contains: search, mode: 'insensitive' } },
+                },
+              },
+              {
+                officeAssignments: {
+                  some: {
+                    office: {
+                      officeName: { contains: search, mode: 'insensitive' },
+                    },
+                  },
+                },
+              },
             ],
           }
         : {}),
@@ -241,6 +273,7 @@ export class EmployeesService {
                     requireRegisteredDevice: true,
                     requireGeofence: true,
                     fieldTrackingEnabled: true,
+                    weeklyOffs: true,
                   },
                 },
               },
@@ -365,6 +398,64 @@ export class EmployeesService {
         ) ??
         policyAssignments.find(({ scope }) => scope === 'TENANT_DEFAULT') ??
         null;
+      const primaryOffice =
+        employee.officeAssignments.find(({ isPrimary }) => isPrimary) ??
+        employee.officeAssignments[0] ??
+        null;
+      const todayDate = dateInTimezone(primaryOffice?.office.timezone ?? 'UTC');
+      const [todayAttendance, todayLeave, todayHoliday] = await Promise.all([
+        canReadAttendance
+          ? tx.attendanceLog.findUnique({
+              where: {
+                tenantId_employeeId_attendanceDate: {
+                  tenantId,
+                  employeeId: id,
+                  attendanceDate: todayDate,
+                },
+              },
+              select: {
+                id: true,
+                attendanceDate: true,
+                attendanceStatus: true,
+                firstCheckin: true,
+                lastCheckout: true,
+                totalWorkMinutes: true,
+                lateMinutes: true,
+                overtimeMinutes: true,
+              },
+            })
+          : Promise.resolve(null),
+        canReadLeave
+          ? tx.leaveRequest.findFirst({
+              where: {
+                employeeId: id,
+                status: 'APPROVED',
+                startDate: { lte: todayDate },
+                endDate: { gte: todayDate },
+              },
+              select: {
+                id: true,
+                halfDayStart: true,
+                halfDayEnd: true,
+                policy: { select: { name: true, leaveType: true } },
+              },
+            })
+          : Promise.resolve(null),
+        canReadAttendance
+          ? tx.tenantHoliday.findFirst({
+              where: {
+                holidayDate: todayDate,
+                OR: [
+                  { officeLocationId: null },
+                  ...(primaryOffice
+                    ? [{ officeLocationId: primaryOffice.office.id }]
+                    : []),
+                ],
+              },
+              select: { id: true, holidayName: true },
+            })
+          : Promise.resolve(null),
+      ]);
 
       return {
         employee,
@@ -380,6 +471,20 @@ export class EmployeesService {
           resolvedExceptionCount: attendance.filter(
             ({ resolvedExceptionId }) => resolvedExceptionId,
           ).length,
+          today: {
+            date: todayDate,
+            status:
+              todayAttendance?.attendanceStatus ??
+              (todayLeave
+                ? 'ON_LEAVE'
+                : todayHoliday
+                  ? 'HOLIDAY'
+                  : 'NOT_RECORDED'),
+            record: todayAttendance,
+            leave: todayLeave,
+            holiday: todayHoliday,
+            timezone: primaryOffice?.office.timezone ?? 'UTC',
+          },
         },
         leave: { balances: leaveBalances, recentRequests: leaveRequests },
         devices,
@@ -1116,4 +1221,28 @@ export class EmployeesService {
   private throwNotFound(message = 'Employee not found'): never {
     throw new NotFoundException({ code: 'EMPLOYEE_NOT_FOUND', message });
   }
+}
+
+function dateInTimezone(timeZone: string) {
+  let parts: Intl.DateTimeFormatPart[];
+  try {
+    parts = dateParts(timeZone);
+  } catch {
+    parts = dateParts('UTC');
+  }
+  const values = Object.fromEntries(
+    parts
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, value]),
+  );
+  return new Date(`${values.year}-${values.month}-${values.day}T00:00:00.000Z`);
+}
+
+function dateParts(timeZone: string) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
 }

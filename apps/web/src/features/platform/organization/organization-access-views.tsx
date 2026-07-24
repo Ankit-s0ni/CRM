@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useAuthStore } from "@/lib/auth-store";
 import { InternationalPhoneInput } from "@/shared/components/international-phone-input";
 import {
   AdminPage,
@@ -46,6 +47,20 @@ type Employee = {
   status: string;
   department?: Department;
   designation?: Designation;
+  manager?: { id: string; fullName: string };
+  user?: { id: string; email: string; status: string } | null;
+  officeAssignments?: Array<{
+    office: { id: string; officeName: string; timezone?: string | null };
+  }>;
+};
+type EmployeePage = {
+  data: Employee[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 };
 type Role = {
   id: string;
@@ -54,7 +69,21 @@ type Role = {
   permissionKeys?: string[];
   assignedUsers?: number;
 };
-type User = { id: string; email: string; status: string; roles: Role[] };
+type User = {
+  id: string;
+  email: string;
+  status: string;
+  roles: Role[];
+  employee?: { id: string; employeeCode: string; fullName: string } | null;
+};
+
+const SYSTEM_ROLE_SUMMARIES: Record<string, string> = {
+  BUSINESS_ADMIN:
+    "Full workspace, access, billing, settings and module administration.",
+  HR_ADMIN:
+    "Employee, organization, attendance, leave, device and report operations.",
+  MANAGER: "Reporting-team visibility, attendance reviews and leave approvals.",
+};
 
 function apiErrorMessage(error: unknown, fallback: string) {
   const response = error as {
@@ -654,19 +683,37 @@ function DesignationRow({
 }
 
 export function EmployeesView() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.toString();
-  const [data, setData] = useState<Employee[] | null>(null);
+  const [result, setResult] = useState<EmployeePage | null>(null);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
   useEffect(() => {
     apiClient
-      .get(`/employees?limit=100${query ? `&${query}` : ""}`)
+      .get(`/employees?${query || "page=1&limit=25"}`)
       .then(({ data }) => {
-        setData(data.data);
+        setResult({
+          data: data.data,
+          pagination: data.pagination,
+        });
         setError("");
       })
       .catch(() => setError("Employees could not be loaded."));
   }, [query]);
+  function updateQuery(updates: Record<string, string | null>) {
+    const next = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    }
+    router.push(`/app/employees?${next.toString()}`);
+  }
+  function submitSearch(event: React.FormEvent) {
+    event.preventDefault();
+    updateQuery({ search: search.trim() || null, page: "1" });
+  }
+  const data = result?.data ?? null;
   return (
     <AdminPage
       title="Employees"
@@ -712,22 +759,44 @@ export function EmployeesView() {
             </div>
             <ol className="mt-5 grid gap-3 md:grid-cols-3">
               {[
-                [
-                  "1",
-                  "Create profile",
-                  "Add employment and organization details.",
-                ],
-                ["2", "Set attendance", "Assign workplace, shift and policy."],
-                [
-                  "3",
-                  "Enable access",
-                  "Invite the employee and approve their device.",
-                ],
-              ].map(([number, title, body]) => (
-                <li className="rounded-xl bg-zinc-50 p-4" key={number}>
-                  <span className="text-xs font-bold text-primary">
-                    STEP {number}
-                  </span>
+                {
+                  number: "1",
+                  title: "Create profile",
+                  body: "Add employment and organization details.",
+                  help: "Required: identity, joining details, department and designation. This creates the employee record.",
+                },
+                {
+                  number: "2",
+                  title: "Set attendance",
+                  body: "Assign workplace, shift and policy.",
+                  help: "Required for attendance: a primary office, working shift and effective attendance policy.",
+                },
+                {
+                  number: "3",
+                  title: "Enable access",
+                  body: "Invite the employee and approve their device.",
+                  help: "Creates mobile access. Device approval is required only when the assigned policy requires a registered device.",
+                },
+              ].map(({ number, title, body, help }) => (
+                <li className="relative rounded-xl bg-zinc-50 p-4" key={number}>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-xs font-bold text-primary">
+                      STEP {number}
+                    </span>
+                    <span className="group relative">
+                      <button
+                        aria-label={`About ${title}`}
+                        className="grid size-7 place-items-center rounded-full text-zinc-500 hover:bg-white hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                        title={help}
+                        type="button"
+                      >
+                        <Info className="size-4" />
+                      </button>
+                      <span className="pointer-events-none absolute right-0 top-9 z-20 hidden w-64 rounded-xl bg-zinc-900 p-3 text-xs font-normal leading-5 text-white shadow-xl group-hover:block group-focus-within:block">
+                        {help}
+                      </span>
+                    </span>
+                  </div>
                   <strong className="mt-2 block text-sm">{title}</strong>
                   <span className="mt-1 block text-xs leading-5 text-outline">
                     {body}
@@ -737,12 +806,56 @@ export function EmployeesView() {
             </ol>
           </Panel>
           <Panel className="overflow-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <div className="flex flex-wrap items-center gap-3 border-b border-surface-variant p-4">
+              <form
+                className="flex min-w-[280px] flex-1 gap-2"
+                onSubmit={submitSearch}
+              >
+                <input
+                  aria-label="Search employees"
+                  className={inputClass}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search name, code, email, office or department"
+                  value={search}
+                />
+                <PrimaryButton type="submit">Search</PrimaryButton>
+              </form>
+              <select
+                aria-label="Filter employee status"
+                className={`${inputClass} w-auto`}
+                onChange={(event) =>
+                  updateQuery({ status: event.target.value || null, page: "1" })
+                }
+                value={searchParams.get("status") ?? ""}
+              >
+                <option value="">All statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="ON_NOTICE">On notice</option>
+                <option value="TERMINATED">Terminated</option>
+              </select>
+              <select
+                aria-label="Rows per page"
+                className={`${inputClass} w-auto`}
+                onChange={(event) =>
+                  updateQuery({ limit: event.target.value, page: "1" })
+                }
+                value={searchParams.get("limit") ?? "25"}
+              >
+                <option value="25">25 rows</option>
+                <option value="50">50 rows</option>
+                <option value="100">100 rows</option>
+              </select>
+            </div>
+            <table className="w-full min-w-[1180px] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
                 <tr>
                   <th className="px-6 py-4">Employee</th>
                   <th>Code</th>
+                  <th>Email</th>
+                  <th>Office</th>
                   <th>Department</th>
+                  <th>Designation</th>
+                  <th>Manager</th>
                   <th>Work type</th>
                   <th>Status</th>
                 </tr>
@@ -765,7 +878,14 @@ export function EmployeesView() {
                       </div>
                     </td>
                     <td>{employee.employeeCode}</td>
+                    <td>{employee.user?.email || "—"}</td>
+                    <td>
+                      {employee.officeAssignments?.[0]?.office.officeName ||
+                        "—"}
+                    </td>
                     <td>{employee.department?.name || "—"}</td>
+                    <td>{employee.designation?.name || "—"}</td>
+                    <td>{employee.manager?.fullName || "—"}</td>
                     <td>{employee.workType}</td>
                     <td>
                       <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
@@ -781,6 +901,51 @@ export function EmployeesView() {
                 title="No employees"
                 body="Add employees individually or use the bulk import wizard."
               />
+            )}
+            {result && result.pagination.total > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-surface-variant px-5 py-4">
+                <p className="text-sm text-outline">
+                  Showing{" "}
+                  {(result.pagination.page - 1) * result.pagination.limit + 1}–
+                  {Math.min(
+                    result.pagination.page * result.pagination.limit,
+                    result.pagination.total,
+                  )}{" "}
+                  of {result.pagination.total} employees
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
+                    disabled={result.pagination.page <= 1}
+                    onClick={() =>
+                      updateQuery({
+                        page: String(result.pagination.page - 1),
+                      })
+                    }
+                    type="button"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-2 text-sm font-semibold">
+                    Page {result.pagination.page} of{" "}
+                    {result.pagination.totalPages}
+                  </span>
+                  <button
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
+                    disabled={
+                      result.pagination.page >= result.pagination.totalPages
+                    }
+                    onClick={() =>
+                      updateQuery({
+                        page: String(result.pagination.page + 1),
+                      })
+                    }
+                    type="button"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </Panel>
         </div>
@@ -1357,6 +1522,8 @@ export function EmployeeImportView() {
 }
 
 export function UsersRolesView() {
+  const router = useRouter();
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const [users, setUsers] = useState<User[] | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState("");
@@ -1364,6 +1531,13 @@ export function UsersRolesView() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRoleIds, setInviteRoleIds] = useState<string[]>([]);
   const [sent, setSent] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingRoleIds, setEditingRoleIds] = useState<string[]>([]);
+  const [editingStatus, setEditingStatus] = useState("");
+  const [createRoleOpen, setCreateRoleOpen] = useState(false);
+  const [customRoleName, setCustomRoleName] = useState("");
+  const [customRolePreset, setCustomRolePreset] = useState("manager");
+  const [busy, setBusy] = useState(false);
   const load = () =>
     Promise.all([apiClient.get("/users?limit=100"), apiClient.get("/roles")])
       .then(([userResult, roleResult]) => {
@@ -1391,21 +1565,85 @@ export function UsersRolesView() {
       );
     }
   }
+  function openUserAccess(user: User) {
+    setEditingUser(user);
+    setEditingRoleIds(user.roles.map(({ id }) => id));
+    setEditingStatus(user.status);
+  }
+  async function saveUserAccess() {
+    if (!editingUser) return;
+    setBusy(true);
+    setError("");
+    try {
+      const employeeRoleIds = editingUser.roles
+        .filter(({ name }) => name === "EMPLOYEE")
+        .map(({ id }) => id);
+      await apiClient.patch(`/users/${editingUser.id}/roles`, {
+        roleIds: [...new Set([...employeeRoleIds, ...editingRoleIds])],
+      });
+      if (editingStatus !== editingUser.status) {
+        await apiClient.patch(`/users/${editingUser.id}/status`, {
+          status: editingStatus,
+        });
+      }
+      setEditingUser(null);
+      await load();
+    } catch (caught) {
+      setError(apiErrorMessage(caught, "Account access could not be updated."));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function createCustomRole() {
+    const preset = ROLE_PRESETS.find(({ id }) => id === customRolePreset);
+    setBusy(true);
+    setError("");
+    try {
+      const response = await apiClient.post("/roles", {
+        name: customRoleName,
+        permissionKeys: preset?.keys ?? [],
+      });
+      setCreateRoleOpen(false);
+      setCustomRoleName("");
+      await load();
+      router.push(`/app/access/roles/${response.data.data.id}`);
+    } catch (caught) {
+      setError(apiErrorMessage(caught, "Custom role could not be created."));
+    } finally {
+      setBusy(false);
+    }
+  }
   const elevatedRoles = roles.filter((role) => role.name !== "EMPLOYEE");
+  const canManageUsers = permissions.includes("identity.users.roles.update");
+  const canCreateRoles = permissions.includes("identity.roles.create");
   return (
     <AdminPage
       title="Administrators & access"
       description="Manage Business Admin, HR and Manager access. Employee login access is managed from each employee profile."
       action={
-        <PrimaryButton
-          onClick={() => {
-            setInviteOpen(true);
-            setSent(false);
-          }}
-        >
-          <Plus className="size-4" />
-          Invite administrator
-        </PrimaryButton>
+        <div className="flex flex-wrap gap-2">
+          {canCreateRoles && (
+            <button
+              className="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
+              onClick={() => setCreateRoleOpen(true)}
+              type="button"
+            >
+              <ShieldCheck className="mr-2 size-4" />
+              Create custom role
+            </button>
+          )}
+          {canManageUsers && (
+            <PrimaryButton
+              onClick={() => {
+                setInviteOpen(true);
+                setSent(false);
+              }}
+            >
+              <Plus className="size-4" />
+              Invite administrator
+            </PrimaryButton>
+          )}
+        </div>
       }
     >
       {error && <ErrorState message={error} />}
@@ -1434,12 +1672,20 @@ export function UsersRolesView() {
                 Workspace login accounts
               </div>
               {users.map((user) => (
-                <div
+                <button
                   key={user.id}
-                  className="flex items-center justify-between border-b border-surface-variant px-6 py-4 last:border-0"
+                  className="flex w-full items-center justify-between gap-4 border-b border-surface-variant px-6 py-4 text-left last:border-0 hover:bg-zinc-50 disabled:cursor-default"
+                  disabled={!canManageUsers}
+                  onClick={() => openUserAccess(user)}
+                  type="button"
                 >
                   <div>
-                    <div className="font-semibold">{user.email}</div>
+                    <div className="font-semibold">
+                      {user.employee?.fullName || user.email}
+                    </div>
+                    {user.employee && (
+                      <div className="text-xs text-zinc-500">{user.email}</div>
+                    )}
                     <div className="text-xs text-outline">
                       {user.roles.map((role) => role.name).join(", ") ||
                         "No role"}
@@ -1448,7 +1694,7 @@ export function UsersRolesView() {
                   <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
                     {user.status}
                   </span>
-                </div>
+                </button>
               ))}
             </Panel>
             <Panel className="p-6">
@@ -1471,6 +1717,10 @@ export function UsersRolesView() {
                         {role.isSystem ? "System role" : "Custom role"} ·{" "}
                         {role.assignedUsers ?? 0} users
                       </div>
+                      <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">
+                        {SYSTEM_ROLE_SUMMARIES[role.name] ??
+                          `${role.permissionKeys?.length ?? 0} configured capabilities.`}
+                      </p>
                     </div>
                     <ShieldCheck className="size-5 text-primary" />
                   </Link>
@@ -1530,6 +1780,103 @@ export function UsersRolesView() {
               </PrimaryButton>
             </div>
           )}
+        </AccessDialog>
+      )}
+      {editingUser && (
+        <AccessDialog
+          title={`Manage ${editingUser.employee?.fullName || editingUser.email}`}
+          onClose={() => setEditingUser(null)}
+        >
+          <div className="grid gap-5">
+            <div>
+              <p className="text-sm font-semibold">Elevated roles</p>
+              <p className="mt-1 text-xs leading-5 text-outline">
+                Employee self-service access is retained automatically.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {elevatedRoles.map((role) => (
+                <label
+                  className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4"
+                  key={role.id}
+                >
+                  <input
+                    checked={editingRoleIds.includes(role.id)}
+                    className="mt-1 accent-primary"
+                    onChange={(event) =>
+                      setEditingRoleIds((current) =>
+                        event.target.checked
+                          ? [...current, role.id]
+                          : current.filter((id) => id !== role.id),
+                      )
+                    }
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong className="text-sm">{role.name}</strong>
+                    <span className="mt-1 block text-xs leading-5 text-outline">
+                      {SYSTEM_ROLE_SUMMARIES[role.name] ??
+                        `${role.permissionKeys?.length ?? 0} configured capabilities.`}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <Field label="Account status">
+              <select
+                className={inputClass}
+                onChange={(event) => setEditingStatus(event.target.value)}
+                value={editingStatus}
+              >
+                <option value="ACTIVE">Active</option>
+                <option value="DISABLED">Disabled</option>
+                <option value="LOCKED">Locked</option>
+              </select>
+            </Field>
+            <PrimaryButton disabled={busy} onClick={saveUserAccess}>
+              {busy ? "Saving..." : "Save access"}
+            </PrimaryButton>
+          </div>
+        </AccessDialog>
+      )}
+      {createRoleOpen && (
+        <AccessDialog
+          title="Create custom role"
+          onClose={() => setCreateRoleOpen(false)}
+        >
+          <div className="grid gap-5">
+            <Field label="Role name">
+              <input
+                className={inputClass}
+                onChange={(event) => setCustomRoleName(event.target.value)}
+                placeholder="For example: Attendance coordinator"
+                value={customRoleName}
+              />
+            </Field>
+            <Field label="Start with">
+              <select
+                className={inputClass}
+                onChange={(event) => setCustomRolePreset(event.target.value)}
+                value={customRolePreset}
+              >
+                {ROLE_PRESETS.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <p className="text-xs leading-5 text-outline">
+              The role opens in the permission editor after creation so its
+              access can be reviewed before assignment.
+            </p>
+            <PrimaryButton
+              disabled={busy || customRoleName.trim().length < 2}
+              onClick={createCustomRole}
+            >
+              {busy ? "Creating..." : "Create and configure"}
+            </PrimaryButton>
+          </div>
         </AccessDialog>
       )}
     </AdminPage>
