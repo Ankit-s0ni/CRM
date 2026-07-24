@@ -39,6 +39,12 @@ export class CreateEmployeeDto {
   @IsEnum(WorkType)
   workType!: WorkType;
 
+  @ApiProperty({ example: '1994-03-18', format: 'date' })
+  @Matches(DATE_ONLY_PATTERN, {
+    message: 'dateOfBirth must use YYYY-MM-DD',
+  })
+  dateOfBirth!: string;
+
   @ApiProperty({ example: '2026-07-16', format: 'date' })
   @Matches(DATE_ONLY_PATTERN, {
     message: 'dateOfJoining must use YYYY-MM-DD',

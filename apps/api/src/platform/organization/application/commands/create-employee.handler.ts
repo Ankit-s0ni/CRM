@@ -1,11 +1,16 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { ConflictException } from '@nestjs/common';
-import { EmployeeStatus, EmploymentEventType, UserStatus } from '@prisma/client';
+import {
+  EmployeeStatus,
+  EmploymentEventType,
+  UserStatus,
+} from '@prisma/client';
 import * as argon2 from 'argon2';
 import { CreateEmployeeCommand } from './create-employee.command';
 import { PrismaService } from '../../../../shared/database/prisma.service';
 import { EmployeeQuotaService } from '../../employee-quota.service';
 import {
+  assertDateOfBirth,
   normalizeEmployeeCode,
   normalizeEmployeeName,
   parseDateOnly,
@@ -26,8 +31,10 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     private readonly quotaService: EmployeeQuotaService,
     private readonly auditService: AuditService,
     private readonly eventBus: EventBus,
-    @Inject(IEmployeeRepository) private readonly employeeRepository: IEmployeeRepository,
-    @Inject(forwardRef(() => EmployeesService)) private readonly employeesService: EmployeesService,
+    @Inject(IEmployeeRepository)
+    private readonly employeeRepository: IEmployeeRepository,
+    @Inject(forwardRef(() => EmployeesService))
+    private readonly employeesService: EmployeesService,
   ) {}
 
   async execute(command: CreateEmployeeCommand) {
@@ -35,15 +42,26 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
     const employeeCode = normalizeEmployeeCode(dto.employeeCode);
     const fullName = normalizeEmployeeName(dto.fullName);
     const email = dto.email.trim().toLowerCase();
+    const dateOfBirth = parseDateOnly(dto.dateOfBirth);
+    assertDateOfBirth(dateOfBirth);
     const dateOfJoining = parseDateOnly(dto.dateOfJoining);
     const temporaryPassword = temporaryEmployeePassword(fullName, dto.phone);
     const passwordHash = await argon2.hash(temporaryPassword);
 
     return this.prisma.forTenant(async (tx) => {
       const quota = await this.quotaService.lockAndAssertCapacity(tx, tenantId);
-      
-      await this.employeesService.validateRelationships(tx, dto.deptId, dto.designationId, dto.managerId);
-      await this.employeesService.ensureUniqueIdentity(tx, employeeCode, dto.phone);
+
+      await this.employeesService.validateRelationships(
+        tx,
+        dto.deptId,
+        dto.designationId,
+        dto.managerId,
+      );
+      await this.employeesService.ensureUniqueIdentity(
+        tx,
+        employeeCode,
+        dto.phone,
+      );
 
       const existingUser = await tx.user.findFirst({
         where: { email: { equals: email, mode: 'insensitive' } },
@@ -65,7 +83,7 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
           message: 'The workspace Employee role is not configured',
         });
       }
-      
+
       const user = await tx.user.create({
         data: {
           tenantId,
@@ -78,19 +96,23 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
         },
       });
 
-      const employee = await this.employeeRepository.create({
-        tenantId,
-        employeeCode,
-        fullName,
-        phone: dto.phone,
-        userId: user.id,
-        workType: dto.workType,
-        status: EmployeeStatus.ACTIVE,
-        dateOfJoining,
-        deptId: dto.deptId,
-        designationId: dto.designationId ?? null,
-        managerId: dto.managerId ?? null,
-      }, tx);
+      const employee = await this.employeeRepository.create(
+        {
+          tenantId,
+          employeeCode,
+          fullName,
+          phone: dto.phone,
+          userId: user.id,
+          workType: dto.workType,
+          status: EmployeeStatus.ACTIVE,
+          dateOfBirth,
+          dateOfJoining,
+          deptId: dto.deptId,
+          designationId: dto.designationId ?? null,
+          managerId: dto.managerId ?? null,
+        },
+        tx,
+      );
 
       await tx.employmentEvent.create({
         data: {
@@ -107,7 +129,12 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
         },
       });
 
-      await provisionEmployeeLeaveBalances(tx, tenantId, employee.id, createdBy);
+      await provisionEmployeeLeaveBalances(
+        tx,
+        tenantId,
+        employee.id,
+        createdBy,
+      );
       await this.quotaService.emitThresholdEvents(tx, tenantId, quota);
       await this.auditService.append(tx, {
         tenantId,
@@ -128,7 +155,10 @@ export class CreateEmployeeHandler implements ICommandHandler<CreateEmployeeComm
       await bumpRuntimeConfigVersion(tx, tenantId);
 
       this.eventBus.publish(
-        new EmployeeCreatedEvent(tenantId, employee.id, createdBy, { employee, quota })
+        new EmployeeCreatedEvent(tenantId, employee.id, createdBy, {
+          employee,
+          quota,
+        }),
       );
 
       return {

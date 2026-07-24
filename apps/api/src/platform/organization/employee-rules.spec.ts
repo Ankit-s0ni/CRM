@@ -2,6 +2,7 @@ import { HttpException } from '@nestjs/common';
 import {
   assertCanReactivate,
   assertCanTerminate,
+  assertDateOfBirth,
   assertEmploymentDates,
   assertNoManagerCycle,
   normalizeEmployeeCode,
@@ -20,6 +21,12 @@ describe('employee rules', () => {
       assertEmploymentDates(
         parseDateOnly('2026-07-16'),
         parseDateOnly('2026-07-15'),
+      ),
+    ).toThrow(HttpException);
+    expect(() =>
+      assertDateOfBirth(
+        parseDateOnly('2026-07-25'),
+        parseDateOnly('2026-07-24'),
       ),
     ).toThrow(HttpException);
   });

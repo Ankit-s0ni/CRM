@@ -11,7 +11,9 @@ import '../../../device/presentation/device_controller.dart';
 import '../widgets/preference_switches.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, required this.onChangePassword});
+
+  final VoidCallback onChangePassword;
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -57,6 +59,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 12),
           const PreferenceSwitches(),
           const SizedBox(height: 18),
+          AppCard(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.password_rounded),
+              title: const Text('Change password'),
+              subtitle: const Text(
+                'Update your account password and secure all sessions.',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: widget.onChangePassword,
+            ),
+          ),
+          const SizedBox(height: 12),
           AppCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,

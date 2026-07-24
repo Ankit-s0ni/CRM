@@ -33,6 +33,7 @@ import { resolveAccessibleEmployeeIds } from './employee-access';
 import {
   assertCanReactivate,
   assertCanTerminate,
+  assertDateOfBirth,
   assertEmploymentDates,
   assertNoManagerCycle,
   normalizeEmployeeCode,
@@ -447,6 +448,8 @@ export class EmployeesService {
     const employeeCode = normalizeEmployeeCode(dto.employeeCode);
     const fullName = normalizeEmployeeName(dto.fullName);
     const email = dto.email.trim().toLowerCase();
+    const dateOfBirth = parseDateOnly(dto.dateOfBirth);
+    assertDateOfBirth(dateOfBirth);
     const dateOfJoining = parseDateOnly(dto.dateOfJoining);
     const temporaryPassword = temporaryEmployeePassword(fullName, dto.phone);
     const passwordHash = await argon2.hash(temporaryPassword);
@@ -501,6 +504,7 @@ export class EmployeesService {
           userId: user.id,
           workType: dto.workType,
           status: EmployeeStatus.ACTIVE,
+          dateOfBirth,
           dateOfJoining,
           deptId: dto.deptId,
           designationId: dto.designationId ?? null,
@@ -636,6 +640,14 @@ export class EmployeesService {
         assertNoManagerCycle(id, managerId, graph);
       }
 
+      const dateOfBirth =
+        dto.dateOfBirth === undefined
+          ? employee.dateOfBirth
+          : dto.dateOfBirth
+            ? parseDateOnly(dto.dateOfBirth)
+            : null;
+      if (dateOfBirth) assertDateOfBirth(dateOfBirth);
+
       const updated = await tx.employee.update({
         where: { id },
         data: {
@@ -645,6 +657,7 @@ export class EmployeesService {
             : employee.fullName,
           phone: dto.phone === undefined ? employee.phone : dto.phone,
           workType: dto.workType ?? employee.workType,
+          dateOfBirth,
           dateOfJoining,
           deptId,
           designationId,

@@ -23,4 +23,5 @@ class AppRoutes {
   static const notifications = '/notifications';
   static const profile = '/profile';
   static const settings = '/settings';
+  static const changePassword = '/settings/change-password';
 }

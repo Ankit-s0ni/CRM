@@ -44,6 +44,15 @@ export function assertEmploymentDates(
   }
 }
 
+export function assertDateOfBirth(dateOfBirth: Date, now = new Date()) {
+  if (dateOfBirth > now) {
+    throw new UnprocessableEntityException({
+      code: 'INVALID_DATE_OF_BIRTH',
+      message: 'Date of birth cannot be in the future',
+    });
+  }
+}
+
 export function assertCanTerminate(status: EmployeeStatus) {
   if (status === EmployeeStatus.TERMINATED) {
     throw new ConflictException({

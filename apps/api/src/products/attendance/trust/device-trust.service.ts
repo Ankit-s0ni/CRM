@@ -31,6 +31,22 @@ export class DeviceTrustService {
           tenantId_deviceUuid: { tenantId, deviceUuid: dto.deviceUuid },
         },
       });
+      const previous =
+        !existing &&
+        dto.previousDeviceUuid &&
+        dto.previousDeviceUuid !== dto.deviceUuid
+          ? await tx.registeredDevice.findUnique({
+              where: {
+                tenantId_deviceUuid: {
+                  tenantId,
+                  deviceUuid: dto.previousDeviceUuid,
+                },
+              },
+            })
+          : null;
+      const recoverApproval =
+        previous?.employeeId === employee.id &&
+        previous.status === DeviceStatus.ACTIVE;
       if (existing && existing.employeeId !== employee.id) {
         throw new ConflictException({
           code: 'DEVICE_ALREADY_REGISTERED',
@@ -69,10 +85,27 @@ export class DeviceTrustService {
               pushToken: dto.pushToken,
               lastIp: ipAddress,
               lastSeenAt: new Date(),
+              status: recoverApproval
+                ? DeviceStatus.ACTIVE
+                : DeviceStatus.PENDING_APPROVAL,
+              approvedBy: recoverApproval ? previous.approvedBy : null,
             },
           });
 
       if (!existing) {
+        if (recoverApproval && previous) {
+          await Promise.all([
+            tx.registeredDevice.update({
+              where: { id: previous.id },
+              data: {
+                status: DeviceStatus.REPLACED,
+                isPrimary: false,
+                replacedByDeviceId: device.id,
+              },
+            }),
+            this.revokeDeviceSessions(tx, previous.id),
+          ]);
+        }
         await Promise.all([
           this.audit.append(tx, {
             tenantId,

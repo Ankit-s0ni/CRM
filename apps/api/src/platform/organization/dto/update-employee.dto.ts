@@ -44,6 +44,17 @@ export class UpdateEmployeeDto {
   @IsEnum(WorkType)
   workType?: WorkType;
 
+  @ApiPropertyOptional({
+    example: '1994-03-18',
+    format: 'date',
+    nullable: true,
+  })
+  @IsOptional()
+  @Matches(DATE_ONLY_PATTERN, {
+    message: 'dateOfBirth must use YYYY-MM-DD',
+  })
+  dateOfBirth?: string | null;
+
   @ApiPropertyOptional({ example: '2026-07-16', format: 'date' })
   @IsOptional()
   @Matches(DATE_ONLY_PATTERN, {

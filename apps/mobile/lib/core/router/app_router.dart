@@ -32,6 +32,7 @@ import '../../features/requests/presentation/screens/regularization_screen.dart'
 import '../../features/security/presentation/screens/punch_failure_screen.dart';
 import '../../features/security/presentation/screens/verification_progress_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/change_password_screen.dart';
 import '../../features/sync/presentation/screens/sync_screen.dart';
 import '../../features/tracking/presentation/screens/tracking_screen.dart';
 import 'app_routes.dart';
@@ -101,6 +102,18 @@ final appRouterProvider = Provider<GoRouter>(
                 .asData
                 ?.value?['status'];
             if (status == 'ACTIVE') {
+              final rebound = await ref
+                  .read(apiServiceProvider)
+                  .refreshSession();
+              if (!rebound || !context.mounted) {
+                if (context.mounted) {
+                  AppFeedback.error(
+                    context,
+                    'The recovered device could not be linked to this session. Sign in again and retry.',
+                  );
+                }
+                return;
+              }
               await ref
                   .read(tenantControllerProvider.notifier)
                   .refreshRuntime();
@@ -522,7 +535,23 @@ final appRouterProvider = Provider<GoRouter>(
       GoRoute(
         path: AppRoutes.settings,
         name: 'settings',
-        builder: (_, _) => const SettingsScreen(),
+        builder: (context, _) => SettingsScreen(
+          onChangePassword: () => context.push(AppRoutes.changePassword),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.changePassword,
+        name: 'changePassword',
+        builder: (context, _) => ChangePasswordScreen(
+          onChanged: () async {
+            try {
+              await ref.read(authControllerProvider.notifier).logout();
+            } catch (_) {
+              // Password change already revoked the server session.
+            }
+            if (context.mounted) context.go(AppRoutes.login);
+          },
+        ),
       ),
     ],
   ),

@@ -670,6 +670,49 @@ export class AuthService {
     return { message: 'Password updated successfully' };
   }
 
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.forTenant((tx) =>
+      tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true, passwordHash: true },
+      }),
+    );
+    if (
+      !user ||
+      !(await this.verifyPassword(user.passwordHash, currentPassword))
+    ) {
+      throw new UnauthorizedException({
+        code: 'CURRENT_PASSWORD_INCORRECT',
+        message: 'The current password is incorrect',
+      });
+    }
+    if (await this.verifyPassword(user.passwordHash, newPassword)) {
+      throw new ConflictException({
+        code: 'PASSWORD_UNCHANGED',
+        message: 'The new password must be different from the current password',
+      });
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+    await this.prisma.forTenant((tx) =>
+      tx.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          passwordChangedAt: new Date(),
+          failedLoginCount: 0,
+          lockedUntil: null,
+        },
+      }),
+    );
+    await this.revokeUserRefreshTokens(userId, RevokeReason.PASSWORD_CHANGE);
+    return { message: 'Password updated successfully' };
+  }
+
   private async buildSession(
     user: {
       id: string;

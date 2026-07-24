@@ -1117,6 +1117,7 @@ model Employee {
   phone             String?
   workType          WorkType
   status            EmployeeStatus             @default(ACTIVE)
+  dateOfBirth       DateTime?                  @db.Date
   dateOfJoining     DateTime                   @db.Date
   dateOfExit        DateTime?                  @db.Date
   managerId         String?                    @db.Uuid

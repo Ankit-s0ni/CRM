@@ -23,6 +23,7 @@ import { JwtTenantGuard } from './jwt-tenant.guard';
 import { CurrentUser } from '../../shared/http/current-user.decorator';
 import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 import {
+  ChangePasswordDto,
   EmailDto,
   LoginDto,
   RefreshTokenDto,
@@ -124,6 +125,22 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.authService.logout(user.userId, body.refreshToken);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtTenantGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change the authenticated user password' })
+  async changePassword(
+    @Body() body: ChangePasswordDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.authService.changePassword(
+      user.userId,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 
   @Get('me')

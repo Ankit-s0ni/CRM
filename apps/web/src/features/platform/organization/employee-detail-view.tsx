@@ -48,6 +48,7 @@ type EmployeeDetail = {
   phone: string | null;
   workType: string;
   status: string;
+  dateOfBirth: string | null;
   dateOfJoining: string;
   dateOfExit: string | null;
   department: { id: string; name: string };
@@ -334,7 +335,11 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         </div>
       )}
       {employee && workspace && activeTab === "assignments" && (
-        <AssignmentsPanel employeeId={employeeId} workspace={workspace} onUpdate={load} />
+        <AssignmentsPanel
+          employeeId={employeeId}
+          workspace={workspace}
+          onUpdate={load}
+        />
       )}
       {employee && workspace && activeTab === "attendance" && (
         <AttendancePanel employeeId={employeeId} workspace={workspace} />
@@ -559,6 +564,15 @@ function EmploymentProfile({ employee }: { employee: EmployeeDetail }) {
         />
         <Detail
           icon={CalendarDays}
+          label="Date of birth"
+          value={
+            employee.dateOfBirth
+              ? formatDate(employee.dateOfBirth)
+              : "Not recorded"
+          }
+        />
+        <Detail
+          icon={CalendarDays}
           label="Joined"
           value={formatDate(employee.dateOfJoining)}
         />
@@ -668,6 +682,7 @@ function EditEmployeeDialog({
     fullName: employee.fullName,
     email: employee.user?.email ?? "",
     phone: employee.phone ?? "",
+    dateOfBirth: employee.dateOfBirth?.slice(0, 10) ?? "",
     workType: employee.workType,
     deptId: employee.department.id,
     designationId: employee.designation?.id ?? "",
@@ -731,6 +746,9 @@ function EditEmployeeDialog({
     }
     if (form.workType !== employee.workType) {
       payload.workType = form.workType;
+    }
+    if (form.dateOfBirth !== (employee.dateOfBirth?.slice(0, 10) ?? "")) {
+      payload.dateOfBirth = form.dateOfBirth || null;
     }
     if (!Object.keys(payload).length) {
       setError("No employment changes to save.");
@@ -805,6 +823,17 @@ function EditEmployeeDialog({
               </option>
             ))}
           </select>
+        </Field>
+        <Field label="Date of birth">
+          <input
+            className={inputClass}
+            max={today()}
+            onChange={(event) =>
+              setForm({ ...form, dateOfBirth: event.target.value })
+            }
+            type="date"
+            value={form.dateOfBirth}
+          />
         </Field>
         <Field label="Designation">
           <select
@@ -1373,7 +1402,9 @@ function AccountPanel({
   onAccountCreated: () => Promise<void>;
   permissions: string[];
 }) {
-  const canCreateAccount = permissions.includes("organization.employees.update");
+  const canCreateAccount = permissions.includes(
+    "organization.employees.update",
+  );
   const [accountOpen, setAccountOpen] = useState(false);
   const elevatedRoles =
     employee.user?.roles.filter(({ role }) => role.name !== "EMPLOYEE") ?? [];

@@ -84,6 +84,20 @@ export class ResetPasswordDto {
   password!: string;
 }
 
+export class ChangePasswordDto {
+  @ApiProperty()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  currentPassword!: string;
+
+  @ApiProperty({ minLength: 8 })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  newPassword!: string;
+}
+
 export class VerifyTokenDto {
   @ApiProperty()
   @IsString()

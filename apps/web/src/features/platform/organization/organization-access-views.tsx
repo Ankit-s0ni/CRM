@@ -220,9 +220,7 @@ export function OrganizationView() {
         return load();
       })
       .catch((caught) =>
-        setError(
-          apiErrorMessage(caught, "Designation could not be created."),
-        ),
+        setError(apiErrorMessage(caught, "Designation could not be created.")),
       );
   }
   async function renameDepartment(id: string, name: string) {
@@ -301,9 +299,12 @@ export function OrganizationView() {
               <Info className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="font-bold">Organization comes before workplace setup</h2>
+              <h2 className="font-bold">
+                Organization comes before workplace setup
+              </h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.
+                Departments and designations describe employee structure. The
+                next step defines the physical office and attendance geofence.
               </p>
             </div>
             <Link
@@ -314,93 +315,96 @@ export function OrganizationView() {
             </Link>
           </Panel>
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
-          <Panel className="p-7">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Departments</h2>
-              <Building2 className="text-primary" />
-            </div>
-            <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
-              <input
-                className={inputClass}
-                placeholder="New department"
-                value={departmentName}
-                onChange={(e) => setDepartmentName(e.target.value)}
-              />
-              <select
-                aria-label="Parent department"
-                className={inputClass}
-                onChange={(event) => setDepartmentParentId(event.target.value)}
-                value={departmentParentId}
-              >
-                <option value="">Top-level department</option>
-                {departmentOptions.map((department) => (
-                  <option key={department.id} value={department.id}>
-                    {"— ".repeat(department.depth)}{department.name}
-                  </option>
+            <Panel className="p-7">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Departments</h2>
+                <Building2 className="text-primary" />
+              </div>
+              <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
+                <input
+                  className={inputClass}
+                  placeholder="New department"
+                  value={departmentName}
+                  onChange={(e) => setDepartmentName(e.target.value)}
+                />
+                <select
+                  aria-label="Parent department"
+                  className={inputClass}
+                  onChange={(event) =>
+                    setDepartmentParentId(event.target.value)
+                  }
+                  value={departmentParentId}
+                >
+                  <option value="">Top-level department</option>
+                  {departmentOptions.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {"— ".repeat(department.depth)}
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+                <PrimaryButton
+                  disabled={departmentName.trim().length < 2}
+                  onClick={addDepartment}
+                >
+                  <Plus className="size-4" />
+                  Add
+                </PrimaryButton>
+              </div>
+              <div className="grid gap-3">
+                {departments.map((department) => (
+                  <DepartmentNode
+                    allDepartments={departmentOptions}
+                    department={department}
+                    key={department.id}
+                    onAddChild={addChildDepartment}
+                    onDelete={deleteDepartment}
+                    onMove={moveDepartment}
+                    onRename={renameDepartment}
+                  />
                 ))}
-              </select>
-              <PrimaryButton
-                disabled={departmentName.trim().length < 2}
-                onClick={addDepartment}
-              >
-                <Plus className="size-4" />
-                Add
-              </PrimaryButton>
-            </div>
-            <div className="grid gap-3">
-              {departments.map((department) => (
-                <DepartmentNode
-                  allDepartments={departmentOptions}
-                  department={department}
-                  key={department.id}
-                  onAddChild={addChildDepartment}
-                  onDelete={deleteDepartment}
-                  onMove={moveDepartment}
-                  onRename={renameDepartment}
+                {!departments.length && (
+                  <EmptyState
+                    title="No departments"
+                    body="Create your first department to start organizing employees."
+                  />
+                )}
+              </div>
+            </Panel>
+            <Panel className="p-7">
+              <h2 className="mb-6 text-xl font-semibold">Designations</h2>
+              <div className="mb-5 flex gap-3">
+                <input
+                  className={inputClass}
+                  placeholder="New designation"
+                  value={designationName}
+                  onChange={(e) => setDesignationName(e.target.value)}
                 />
-              ))}
-              {!departments.length && (
-                <EmptyState
-                  title="No departments"
-                  body="Create your first department to start organizing employees."
-                />
-              )}
-            </div>
-          </Panel>
-          <Panel className="p-7">
-            <h2 className="mb-6 text-xl font-semibold">Designations</h2>
-            <div className="mb-5 flex gap-3">
-              <input
-                className={inputClass}
-                placeholder="New designation"
-                value={designationName}
-                onChange={(e) => setDesignationName(e.target.value)}
-              />
-              <PrimaryButton
-                disabled={designationName.trim().length < 2}
-                onClick={addDesignation}
-              >
-                <Plus className="size-4" />
-                Add
-              </PrimaryButton>
-            </div>
-            <div className="grid gap-2">
-              {designations.map((designation) => (
-                <DesignationRow
-                  designation={designation}
-                  key={designation.id}
-                  onDelete={deleteDesignation}
-                  onRename={renameDesignation}
-                />
-              ))}
-              {!designations.length && (
-                <EmptyState
-                  body="Create job titles that can be assigned to employees."
-                  title="No designations"
-                />
-              )}
-            </div>
-          </Panel>
+                <PrimaryButton
+                  disabled={designationName.trim().length < 2}
+                  onClick={addDesignation}
+                >
+                  <Plus className="size-4" />
+                  Add
+                </PrimaryButton>
+              </div>
+              <div className="grid gap-2">
+                {designations.map((designation) => (
+                  <DesignationRow
+                    designation={designation}
+                    key={designation.id}
+                    onDelete={deleteDesignation}
+                    onRename={renameDesignation}
+                  />
+                ))}
+                {!designations.length && (
+                  <EmptyState
+                    body="Create job titles that can be assigned to employees."
+                    title="No designations"
+                  />
+                )}
+              </div>
+            </Panel>
           </div>
         </div>
       )}
@@ -469,7 +473,8 @@ function DepartmentNode({
                 )
                 .map((option) => (
                   <option key={option.id} value={option.id}>
-                    {"— ".repeat(option.depth)}{option.name}
+                    {"— ".repeat(option.depth)}
+                    {option.name}
                   </option>
                 ))}
             </select>
@@ -707,9 +712,17 @@ export function EmployeesView() {
             </div>
             <ol className="mt-5 grid gap-3 md:grid-cols-3">
               {[
-                ["1", "Create profile", "Add employment and organization details."],
+                [
+                  "1",
+                  "Create profile",
+                  "Add employment and organization details.",
+                ],
                 ["2", "Set attendance", "Assign workplace, shift and policy."],
-                ["3", "Enable access", "Invite the employee and approve their device."],
+                [
+                  "3",
+                  "Enable access",
+                  "Invite the employee and approve their device.",
+                ],
               ].map(([number, title, body]) => (
                 <li className="rounded-xl bg-zinc-50 p-4" key={number}>
                   <span className="text-xs font-bold text-primary">
@@ -724,51 +737,51 @@ export function EmployeesView() {
             </ol>
           </Panel>
           <Panel className="overflow-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
-              <tr>
-                <th className="px-6 py-4">Employee</th>
-                <th>Code</th>
-                <th>Department</th>
-                <th>Work type</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((employee) => (
-                <tr
-                  key={employee.id}
-                  className="border-t border-surface-variant transition hover:bg-zinc-50"
-                >
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/app/employees/${employee.id}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      {employee.fullName}
-                    </Link>
-                    <div className="text-xs text-outline">
-                      {employee.phone || "No phone"}
-                    </div>
-                  </td>
-                  <td>{employee.employeeCode}</td>
-                  <td>{employee.department?.name || "—"}</td>
-                  <td>{employee.workType}</td>
-                  <td>
-                    <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
-                      {employee.status}
-                    </span>
-                  </td>
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
+                <tr>
+                  <th className="px-6 py-4">Employee</th>
+                  <th>Code</th>
+                  <th>Department</th>
+                  <th>Work type</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {!data.length && (
-            <EmptyState
-              title="No employees"
-              body="Add employees individually or use the bulk import wizard."
-            />
-          )}
+              </thead>
+              <tbody>
+                {data.map((employee) => (
+                  <tr
+                    key={employee.id}
+                    className="border-t border-surface-variant transition hover:bg-zinc-50"
+                  >
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/app/employees/${employee.id}`}
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        {employee.fullName}
+                      </Link>
+                      <div className="text-xs text-outline">
+                        {employee.phone || "No phone"}
+                      </div>
+                    </td>
+                    <td>{employee.employeeCode}</td>
+                    <td>{employee.department?.name || "—"}</td>
+                    <td>{employee.workType}</td>
+                    <td>
+                      <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                        {employee.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!data.length && (
+              <EmptyState
+                title="No employees"
+                body="Add employees individually or use the bulk import wizard."
+              />
+            )}
           </Panel>
         </div>
       )}
@@ -793,6 +806,7 @@ export function EmployeeEditorView() {
     email: "",
     phone: "",
     workType: "OFFICE",
+    dateOfBirth: "",
     dateOfJoining: new Date().toISOString().slice(0, 10),
     deptId: "",
     designationId: "",
@@ -823,10 +837,11 @@ export function EmployeeEditorView() {
       !form.fullName.trim() ||
       !form.email.trim() ||
       !form.phone.trim() ||
+      !form.dateOfBirth ||
       !form.deptId
     ) {
       setError(
-        "Employee code, full name, work email, phone and department are required.",
+        "Employee code, full name, work email, phone, date of birth and department are required.",
       );
       return;
     }
@@ -843,7 +858,11 @@ export function EmployeeEditorView() {
           setCreatedAccount({ employeeId, ...credentials });
           return;
         }
-        router.push(employeeId ? `/app/employees/${employeeId}?setup=1` : "/app/employees");
+        router.push(
+          employeeId
+            ? `/app/employees/${employeeId}?setup=1`
+            : "/app/employees",
+        );
       })
       .catch(() =>
         setError(
@@ -907,6 +926,18 @@ export function EmployeeEditorView() {
                 value={form.dateOfJoining}
                 onChange={(e) =>
                   setForm({ ...form, dateOfJoining: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Date of birth">
+              <input
+                type="date"
+                className={inputClass}
+                required
+                max={new Date().toISOString().slice(0, 10)}
+                value={form.dateOfBirth}
+                onChange={(e) =>
+                  setForm({ ...form, dateOfBirth: e.target.value })
                 }
               />
             </Field>
@@ -992,8 +1023,8 @@ export function EmployeeEditorView() {
           title="Employee login created"
         >
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-            The Employee self-service role is already assigned. No role setup
-            is required.
+            The Employee self-service role is already assigned. No role setup is
+            required.
           </div>
           <div className="mt-4 grid gap-4 rounded-xl border border-zinc-200 p-5">
             <div>
@@ -1020,7 +1051,8 @@ export function EmployeeEditorView() {
               }}
               type="button"
             >
-              <Copy className="size-4" /> {copied ? "Copied" : "Copy login details"}
+              <Copy className="size-4" />{" "}
+              {copied ? "Copied" : "Copy login details"}
             </button>
           </div>
           <PrimaryButton
@@ -1185,12 +1217,13 @@ export function EmployeeImportView() {
               </thead>
               <tbody>
                 {schema.fields.map((field) => (
-                  <tr className="border-t border-surface-variant" key={field.key}>
+                  <tr
+                    className="border-t border-surface-variant"
+                    key={field.key}
+                  >
                     <td className="px-5 py-3">
                       <div className="font-semibold">{field.label}</div>
-                      <code className="text-xs text-zinc-500">
-                        {field.key}
-                      </code>
+                      <code className="text-xs text-zinc-500">{field.key}</code>
                     </td>
                     <td className="px-5 py-3">
                       {field.required ? "Yes" : "No"}
@@ -1255,8 +1288,7 @@ export function EmployeeImportView() {
                   <span className="text-emerald-800">
                     {job.successRows} imported
                   </span>{" "}
-                  ·{" "}
-                  <span className="text-error">{job.errorRows} errors</span>
+                  · <span className="text-error">{job.errorRows} errors</span>
                 </div>
                 {job.errorRows > 0 && (
                   <button
@@ -1306,7 +1338,9 @@ export function EmployeeImportView() {
                 >
                   <strong>Row {row.rowNumber}</strong>
                   <span>{row.employeeCode ?? "No employee code"}</span>
-                  <span className="text-on-error-container">{row.errorMessage}</span>
+                  <span className="text-on-error-container">
+                    {row.errorMessage}
+                  </span>
                 </div>
               ))}
             </div>
@@ -1396,51 +1430,52 @@ export function UsersRolesView() {
           </div>
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="overflow-hidden">
-            <div className="border-b border-surface-variant bg-zinc-50 px-6 py-4 font-semibold">
-              Workspace login accounts
-            </div>
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between border-b border-surface-variant px-6 py-4 last:border-0"
-              >
-                <div>
-                  <div className="font-semibold">{user.email}</div>
-                  <div className="text-xs text-outline">
-                    {user.roles.map((role) => role.name).join(", ") ||
-                      "No role"}
-                  </div>
-                </div>
-                <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
-                  {user.status}
-                </span>
+              <div className="border-b border-surface-variant bg-zinc-50 px-6 py-4 font-semibold">
+                Workspace login accounts
               </div>
-            ))}
-            </Panel>
-            <Panel className="p-6">
-            <h2 className="mb-1 font-semibold">Elevated roles</h2>
-            <p className="mb-4 text-xs leading-5 text-outline">
-              These roles are for people who manage the workspace or approve
-              work. Employee self-service is intentionally not configured here.
-            </p>
-            <div className="grid gap-3">
-              {elevatedRoles.map((role) => (
-                <Link
-                  key={role.id}
-                  href={`/app/access/roles/${role.id}`}
-                  className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-primary"
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between border-b border-surface-variant px-6 py-4 last:border-0"
                 >
                   <div>
-                    <div className="font-semibold">{role.name}</div>
+                    <div className="font-semibold">{user.email}</div>
                     <div className="text-xs text-outline">
-                      {role.isSystem ? "System role" : "Custom role"} ·{" "}
-                      {role.assignedUsers ?? 0} users
+                      {user.roles.map((role) => role.name).join(", ") ||
+                        "No role"}
                     </div>
                   </div>
-                  <ShieldCheck className="size-5 text-primary" />
-                </Link>
+                  <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                    {user.status}
+                  </span>
+                </div>
               ))}
-            </div>
+            </Panel>
+            <Panel className="p-6">
+              <h2 className="mb-1 font-semibold">Elevated roles</h2>
+              <p className="mb-4 text-xs leading-5 text-outline">
+                These roles are for people who manage the workspace or approve
+                work. Employee self-service is intentionally not configured
+                here.
+              </p>
+              <div className="grid gap-3">
+                {elevatedRoles.map((role) => (
+                  <Link
+                    key={role.id}
+                    href={`/app/access/roles/${role.id}`}
+                    className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-primary"
+                  >
+                    <div>
+                      <div className="font-semibold">{role.name}</div>
+                      <div className="text-xs text-outline">
+                        {role.isSystem ? "System role" : "Custom role"} ·{" "}
+                        {role.assignedUsers ?? 0} users
+                      </div>
+                    </div>
+                    <ShieldCheck className="size-5 text-primary" />
+                  </Link>
+                ))}
+              </div>
             </Panel>
           </div>
         </div>
@@ -1559,9 +1594,9 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             <div>
               <strong className="text-zinc-800">Built-in role</strong>
               <p className="mt-1 leading-6">
-                DeltCRM assigns and maintains this role automatically. It
-                cannot be edited because changing its technical permissions
-                could break essential product flows.
+                DeltCRM assigns and maintains this role automatically. It cannot
+                be edited because changing its technical permissions could break
+                essential product flows.
               </p>
             </div>
           </div>
@@ -1592,26 +1627,26 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
       ) : (
         <div className="grid gap-6">
           <Panel className="p-6">
-              <h2 className="text-lg font-bold">Start with a common role</h2>
-              <p className="mt-1 text-sm text-outline">
-                A preset replaces the current selection. You can adjust it
-                before saving.
-              </p>
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {ROLE_PRESETS.map((preset) => (
-                  <button
-                    className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-primary hover:bg-zinc-50"
-                    key={preset.id}
-                    onClick={() => applyPreset(preset.keys)}
-                    type="button"
-                  >
-                    <strong className="text-sm">Use {preset.name}</strong>
-                    <p className="mt-1 text-xs leading-5 text-outline">
-                      {preset.description}
-                    </p>
-                  </button>
-                ))}
-              </div>
+            <h2 className="text-lg font-bold">Start with a common role</h2>
+            <p className="mt-1 text-sm text-outline">
+              A preset replaces the current selection. You can adjust it before
+              saving.
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {ROLE_PRESETS.map((preset) => (
+                <button
+                  className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-primary hover:bg-zinc-50"
+                  key={preset.id}
+                  onClick={() => applyPreset(preset.keys)}
+                  type="button"
+                >
+                  <strong className="text-sm">Use {preset.name}</strong>
+                  <p className="mt-1 text-xs leading-5 text-outline">
+                    {preset.description}
+                  </p>
+                </button>
+              ))}
+            </div>
           </Panel>
 
           <div className="flex flex-wrap items-center justify-between gap-3">

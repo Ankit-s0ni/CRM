@@ -18,8 +18,8 @@ class DeviceIdentity {
   static const _installationKey = 'installation_id';
 
   Future<Map<String, String>> payload() async {
-    final installationId = await _installationId();
     if (kIsWeb) {
+      final installationId = await _installationId();
       final info = await _deviceInfo.webBrowserInfo;
       return {
         'deviceUuid': installationId,
@@ -32,14 +32,20 @@ class DeviceIdentity {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         final info = await _deviceInfo.androidInfo;
+        final previousDeviceUuid = await _installationId();
+        final stableDeviceUuid =
+            _androidDeviceUuid(info.id) ?? previousDeviceUuid;
         return {
-          'deviceUuid': installationId,
+          'deviceUuid': stableDeviceUuid,
+          if (previousDeviceUuid != stableDeviceUuid)
+            'previousDeviceUuid': previousDeviceUuid,
           'platform': 'ANDROID',
           'deviceModel': info.model,
           'osVersion': info.version.release,
           'appVersion': '1.0.0',
         };
       case TargetPlatform.iOS:
+        final installationId = await _installationId();
         final info = await _deviceInfo.iosInfo;
         return {
           'deviceUuid': installationId,
@@ -49,6 +55,7 @@ class DeviceIdentity {
           'appVersion': '1.0.0',
         };
       default:
+        final installationId = await _installationId();
         return {
           'deviceUuid': installationId,
           'platform': defaultTargetPlatform.name.toUpperCase(),
@@ -57,6 +64,22 @@ class DeviceIdentity {
           'appVersion': '1.0.0',
         };
     }
+  }
+
+  String? _androidDeviceUuid(String androidId) {
+    final normalized = androidId.toLowerCase().replaceAll(
+      RegExp('[^0-9a-f]'),
+      '',
+    );
+    if (normalized.length < 8) return null;
+    final padded = normalized.padLeft(32, '0');
+    final hex = padded.substring(padded.length - 32).split('');
+    hex[12] = '5';
+    hex[16] = '8';
+    final value = hex.join();
+    return '${value.substring(0, 8)}-${value.substring(8, 12)}-'
+        '${value.substring(12, 16)}-${value.substring(16, 20)}-'
+        '${value.substring(20)}';
   }
 
   Future<String> _installationId() async {

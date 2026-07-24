@@ -77,6 +77,75 @@ describe('DeviceTrustService', () => {
     expect(outboxAppend).toHaveBeenCalledTimes(1);
   });
 
+  it('transfers approval from the same employee previous installation', async () => {
+    const stableUuid = '60000000-0000-5000-8000-000000000001';
+    const approvedDevice = {
+      ...pendingDevice,
+      status: DeviceStatus.ACTIVE,
+      isPrimary: true,
+      approvedBy: context.userId,
+    };
+    const recoveredDevice = {
+      ...approvedDevice,
+      id: '70000000-0000-4000-8000-000000000001',
+      deviceUuid: stableUuid,
+      isPrimary: false,
+    };
+    const create = jest.fn().mockResolvedValue(recoveredDevice);
+    const update = jest.fn().mockResolvedValue({
+      ...approvedDevice,
+      status: DeviceStatus.REPLACED,
+      isPrimary: false,
+      replacedByDeviceId: recoveredDevice.id,
+    });
+    const revoke = jest.fn().mockResolvedValue({ count: 1 });
+    const tx = {
+      employee: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: pendingDevice.employeeId }),
+      },
+      registeredDevice: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce(approvedDevice),
+        create,
+        update,
+      },
+      refreshToken: { updateMany: revoke },
+    } as unknown as PrismaTransaction;
+    const service = createService(tx);
+
+    const result = await service.register({
+      deviceUuid: stableUuid,
+      previousDeviceUuid: pendingDevice.deviceUuid,
+      platform: DevicePlatform.ANDROID,
+      deviceModel: 'Pixel',
+      osVersion: '16',
+      appVersion: '1.0.0',
+    });
+
+    expect(result.data.status).toBe(DeviceStatus.ACTIVE);
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: DeviceStatus.ACTIVE,
+          approvedBy: context.userId,
+        }),
+      }),
+    );
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: DeviceStatus.REPLACED,
+          replacedByDeviceId: recoveredDevice.id,
+        }),
+      }),
+    );
+    expect(revoke).toHaveBeenCalledTimes(1);
+  });
+
   it('blocks a device and revokes every bound refresh session atomically', async () => {
     const blocked = {
       ...pendingDevice,

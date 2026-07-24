@@ -18,6 +18,11 @@ export class RegisterDeviceDto {
   @IsUUID()
   deviceUuid!: string;
 
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  previousDeviceUuid?: string;
+
   @ApiProperty({ enum: DevicePlatform })
   @IsEnum(DevicePlatform)
   platform!: DevicePlatform;
