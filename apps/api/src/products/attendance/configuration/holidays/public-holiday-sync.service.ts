@@ -9,6 +9,11 @@ type PublicHoliday = {
   name: string;
 };
 
+type OfficeRegion = {
+  countryCode: string;
+  subdivisionCode: string | null;
+};
+
 type ProviderResult = {
   holidays: PublicHoliday[];
   provider: 'Oman Ministry of Labour' | 'date-holidays' | 'Tallyfy';
@@ -57,28 +62,45 @@ export class PublicHolidaySyncService {
     const results: HolidaySyncResult[] = [];
 
     for (const office of offices) {
-      if (!office.countryCode) {
+      let countryCode = office.countryCode?.trim().toUpperCase() ?? null;
+      let subdivisionCode = office.subdivisionCode;
+
+      if (!countryCode) {
+        const detectedRegion = await this.detectOfficeRegion(
+          office.latitude.toString(),
+          office.longitude.toString(),
+        );
+        if (detectedRegion) {
+          countryCode = detectedRegion.countryCode;
+          subdivisionCode = detectedRegion.subdivisionCode;
+          await this.prisma.forTenant((tx) =>
+            tx.officeLocation.update({
+              where: { id: office.id },
+              data: { countryCode, subdivisionCode },
+            }),
+          );
+        }
+      }
+
+      if (!countryCode) {
         results.push({
           officeId: office.id,
           officeName: office.officeName,
           countryCode: null,
-          subdivisionCode: office.subdivisionCode,
+          subdivisionCode,
           imported: 0,
           skipped: 0,
           provider: null,
           status: 'REGION_REQUIRED',
-          message: 'Select the office country before syncing public holidays.',
+          message:
+            'The country could not be detected from the saved office pin. Check the office location and retry.',
         });
         continue;
       }
 
       const providerResults = await Promise.all(
         years.map((year) =>
-          this.loadProviderHolidays(
-            office.countryCode!,
-            office.subdivisionCode,
-            year,
-          ),
+          this.loadProviderHolidays(countryCode, subdivisionCode, year),
         ),
       );
       const available = providerResults.filter(
@@ -88,8 +110,8 @@ export class PublicHolidaySyncService {
         results.push({
           officeId: office.id,
           officeName: office.officeName,
-          countryCode: office.countryCode,
-          subdivisionCode: office.subdivisionCode,
+          countryCode,
+          subdivisionCode,
           imported: 0,
           skipped: 0,
           provider: null,
@@ -149,8 +171,8 @@ export class PublicHolidaySyncService {
           entityType: 'OfficeLocation',
           entityId: office.id,
           newValue: {
-            countryCode: office.countryCode,
-            subdivisionCode: office.subdivisionCode,
+            countryCode,
+            subdivisionCode,
             years,
             provider,
             imported: missing.length,
@@ -163,8 +185,8 @@ export class PublicHolidaySyncService {
       results.push({
         officeId: office.id,
         officeName: office.officeName,
-        countryCode: office.countryCode,
-        subdivisionCode: office.subdivisionCode,
+        countryCode,
+        subdivisionCode,
         imported,
         skipped: byDate.size - imported,
         provider,
@@ -179,6 +201,50 @@ export class PublicHolidaySyncService {
         attribution: availableAttribution(results),
       },
     };
+  }
+
+  private async detectOfficeRegion(
+    latitude: string,
+    longitude: string,
+  ): Promise<OfficeRegion | null> {
+    try {
+      const url = new URL('https://nominatim.openstreetmap.org/reverse');
+      url.searchParams.set('format', 'jsonv2');
+      url.searchParams.set('lat', latitude);
+      url.searchParams.set('lon', longitude);
+      url.searchParams.set('zoom', '5');
+      url.searchParams.set('addressdetails', '1');
+      const response = await fetch(url, {
+        headers: {
+          accept: 'application/json',
+          'accept-language': 'en',
+          'user-agent': 'DeltCRM/1.0 (office holiday region detection)',
+        },
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!response.ok) return null;
+
+      const payload = (await response.json()) as {
+        address?: Record<string, unknown> & { country_code?: string };
+      };
+      const countryCode = payload.address?.country_code?.toUpperCase();
+      if (!countryCode) return null;
+      const subdivisionCode =
+        Object.entries(payload.address ?? {}).find(
+          ([key, value]) =>
+            key.startsWith('ISO3166-2') &&
+            typeof value === 'string' &&
+            value.startsWith(`${countryCode}-`),
+        )?.[1] ?? null;
+
+      return {
+        countryCode,
+        subdivisionCode:
+          typeof subdivisionCode === 'string' ? subdivisionCode : null,
+      };
+    } catch {
+      return null;
+    }
   }
 
   private async loadProviderHolidays(

@@ -49,30 +49,46 @@ describe('PublicHolidaySyncService', () => {
     expect(append).toHaveBeenCalledTimes(1);
   });
 
-  it('imports Oman holidays from the official Ministry of Labour feed', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          items: [
-            {
-              date: '2026-11-25T00:00:00.000Z',
-              name_i18n: { en_US: 'National Day Holiday' },
+  it('detects a legacy office country and imports its official holidays', async () => {
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            address: {
+              country_code: 'om',
+              'ISO3166-2-lvl4': 'OM-MA',
             },
-          ],
-        }),
-    } as Response);
+          }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            items: [
+              {
+                date: '2026-11-25T00:00:00.000Z',
+                name_i18n: { en_US: 'National Day Holiday' },
+              },
+            ],
+          }),
+      } as Response);
     const createMany = jest.fn().mockResolvedValue({ count: 1 });
+    const update = jest.fn().mockResolvedValue(undefined);
     const tx = {
       officeLocation: {
         findMany: jest.fn().mockResolvedValue([
           {
             id: 'office-2',
             officeName: 'Muscat',
-            countryCode: 'OM',
+            latitude: '23.588',
+            longitude: '58.382',
+            countryCode: null,
             subdivisionCode: null,
           },
         ]),
+        update,
       },
       tenantHoliday: {
         findMany: jest.fn().mockResolvedValue([]),
@@ -99,6 +115,10 @@ describe('PublicHolidaySyncService', () => {
       provider: 'Oman Ministry of Labour',
       countryCode: 'OM',
       imported: 1,
+    });
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'office-2' },
+      data: { countryCode: 'OM', subdivisionCode: 'OM-MA' },
     });
     expect(createMany).toHaveBeenCalledWith(
       expect.objectContaining({

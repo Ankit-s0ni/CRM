@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import timezoneLookup from "tz-lookup";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
@@ -1955,16 +1955,63 @@ export function HolidaysView() {
     holidayDate: "",
     officeLocationId: "",
   });
+  const initialMonthSelected = useRef(false);
   const load = () =>
     Promise.all([apiClient.get("/holidays"), apiClient.get("/offices")])
       .then(([holidays, officeResult]) => {
-        setData(holidays.data.data);
+        const loadedHolidays = holidays.data.data as Holiday[];
+        setData(loadedHolidays);
         setOffices(officeResult.data.data);
         setError("");
+        if (!initialMonthSelected.current && loadedHolidays.length) {
+          const today = new Date().toISOString().slice(0, 10);
+          const ordered = [...loadedHolidays].sort((left, right) =>
+            left.holidayDate.localeCompare(right.holidayDate),
+          );
+          const nearest =
+            ordered.find(
+              ({ holidayDate }) => holidayDate.slice(0, 10) >= today,
+            ) ?? ordered[ordered.length - 1];
+          if (nearest) {
+            setVisibleMonth(monthStart(nearest.holidayDate));
+            initialMonthSelected.current = true;
+          }
+        }
+        return {
+          holidays: loadedHolidays,
+          offices: officeResult.data.data as Office[],
+        };
       })
       .catch(() => setError("Holiday calendar could not be loaded."));
   useEffect(() => {
-    void load();
+    let active = true;
+    void load().then(async (result) => {
+      if (
+        !active ||
+        !result ||
+        !result.offices.some(({ countryCode }) => !countryCode)
+      ) {
+        return;
+      }
+      setSyncing(true);
+      try {
+        await apiClient.post("/holidays/sync", {
+          year: new Date().getUTCFullYear(),
+        });
+        if (active) await load();
+      } catch {
+        if (active) {
+          setError(
+            "Office regions and public holidays could not be detected. Please retry.",
+          );
+        }
+      } finally {
+        if (active) setSyncing(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, []);
   async function saveHoliday() {
     const payload = {
@@ -2054,9 +2101,25 @@ export function HolidaysView() {
     year: "numeric",
     timeZone: "UTC",
   });
+  const visibleMonthKey = visibleMonth.toISOString().slice(0, 7);
+  const visibleMonthHolidays = (data ?? []).filter(({ holidayDate }) =>
+    holidayDate.startsWith(visibleMonthKey),
+  );
+  const importedThisMonth = visibleMonthHolidays.filter(
+    ({ source }) => source === "PUBLIC_DATA",
+  ).length;
+  const manuallyAddedThisMonth =
+    visibleMonthHolidays.length - importedThisMonth;
+  const nextOutsideVisibleMonth = upcoming.find(
+    ({ holidayDate }) => !holidayDate.startsWith(visibleMonthKey),
+  );
   const missingRegionOffices = offices.filter(
     ({ countryCode }) => !countryCode,
   );
+  function showHoliday(holiday: Holiday) {
+    setVisibleMonth(monthStart(holiday.holidayDate));
+    openEdit(holiday);
+  }
   return (
     <AdminPage
       title="Holiday Calendar"
@@ -2085,143 +2148,248 @@ export function HolidaysView() {
           {syncMessage}
         </div>
       )}
-      {missingRegionOffices.length > 0 && (
+      {missingRegionOffices.length > 0 && syncing && (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
+          <RefreshCw className="size-5 shrink-0 animate-spin" />
+          Detecting each office country from its saved location and importing
+          public holidays…
+        </div>
+      )}
+      {missingRegionOffices.length > 0 && !syncing && (
         <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <Globe2 className="size-5 shrink-0" />
           <p>
-            Set the holiday country for{" "}
+            We could not detect the country from the saved location for{" "}
             {missingRegionOffices
               .map(({ officeName }) => officeName)
               .join(", ")}
-            . Existing office pins will be detected automatically when edited.
+            . Check that each office pin is in the correct place, then retry.
           </p>
           <Link
             className="ml-auto font-semibold text-amber-950 underline underline-offset-4"
             href="/app/attendance/offices"
           >
-            Update offices
+            Check office pins
           </Link>
         </div>
       )}
       {!data ? (
         <LoadingState />
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-          <Panel className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-surface-variant px-5 py-4">
-              <button
-                aria-label="Previous month"
-                className="grid size-9 place-items-center rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
-                onClick={() =>
-                  setVisibleMonth(
-                    new Date(
-                      Date.UTC(
-                        visibleMonth.getUTCFullYear(),
-                        visibleMonth.getUTCMonth() - 1,
-                        1,
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <Panel className="overflow-hidden border-zinc-200 shadow-sm">
+            <div className="border-b border-surface-variant bg-gradient-to-r from-blue-50 via-white to-cyan-50 px-5 py-5">
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  aria-label="Previous month"
+                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:-translate-x-0.5 hover:border-blue-300 hover:text-primary"
+                  onClick={() =>
+                    setVisibleMonth(
+                      new Date(
+                        Date.UTC(
+                          visibleMonth.getUTCFullYear(),
+                          visibleMonth.getUTCMonth() - 1,
+                          1,
+                        ),
                       ),
-                    ),
-                  )
-                }
-                type="button"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <div className="text-center">
-                <h2 className="font-semibold text-zinc-900">{monthLabel}</h2>
-                <p className="text-xs text-outline">
-                  {offices.length} {offices.length === 1 ? "office" : "offices"}
-                </p>
+                    )
+                  }
+                  type="button"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <div className="text-center">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                    Holiday schedule
+                  </p>
+                  <h2 className="mt-1 text-xl font-bold text-zinc-950">
+                    {monthLabel}
+                  </h2>
+                  <p className="mt-1 text-xs text-outline">
+                    {visibleMonthHolidays.length}{" "}
+                    {visibleMonthHolidays.length === 1 ? "holiday" : "holidays"}{" "}
+                    across {offices.length}{" "}
+                    {offices.length === 1 ? "office" : "offices"}
+                  </p>
+                </div>
+                <button
+                  aria-label="Next month"
+                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:translate-x-0.5 hover:border-blue-300 hover:text-primary"
+                  onClick={() =>
+                    setVisibleMonth(
+                      new Date(
+                        Date.UTC(
+                          visibleMonth.getUTCFullYear(),
+                          visibleMonth.getUTCMonth() + 1,
+                          1,
+                        ),
+                      ),
+                    )
+                  }
+                  type="button"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
               </div>
-              <button
-                aria-label="Next month"
-                className="grid size-9 place-items-center rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
-                onClick={() =>
-                  setVisibleMonth(
-                    new Date(
-                      Date.UTC(
-                        visibleMonth.getUTCFullYear(),
-                        visibleMonth.getUTCMonth() + 1,
-                        1,
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
+                  {importedThisMonth} public
+                </span>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                  {manuallyAddedThisMonth} HR added
+                </span>
+                <button
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-blue-300 hover:text-primary"
+                  onClick={() =>
+                    setVisibleMonth(
+                      new Date(
+                        Date.UTC(
+                          new Date().getUTCFullYear(),
+                          new Date().getUTCMonth(),
+                          1,
+                        ),
                       ),
-                    ),
-                  )
-                }
-                type="button"
-              >
-                <ChevronRight className="size-4" />
-              </button>
+                    )
+                  }
+                  type="button"
+                >
+                  Today
+                </button>
+              </div>
             </div>
-            <div className="p-5">
-              <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-outline">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                  (day) => (
-                    <div key={day} className="p-2">
-                      {day}
-                    </div>
-                  ),
-                )}
-              </div>
-              <div className="mt-2 grid grid-cols-7 gap-2">
-                {days.map(({ date, day, inMonth }) => {
-                  const holidays = holidaysByDate.get(date) ?? [];
-                  return (
-                    <div
-                      key={date}
-                      className={`min-h-24 rounded-lg border p-2 ${
-                        !inMonth
-                          ? "border-transparent bg-zinc-50/60 text-zinc-400"
-                          : holidays.length
-                            ? "border-blue-200 bg-blue-50"
-                            : "border-surface-variant bg-white"
-                      }`}
-                    >
-                      <span className="text-xs font-semibold">{day}</span>
-                      {holidays.slice(0, 2).map((holiday) => (
-                        <button
-                          key={holiday.id}
-                          className="mt-2 block text-left text-xs font-semibold text-zinc-500"
-                          onClick={() => openEdit(holiday)}
+            <div className="overflow-x-auto p-4 sm:p-5">
+              <div className="min-w-[760px]">
+                <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-wider text-outline">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                    (day) => (
+                      <div key={day} className="py-2">
+                        {day}
+                      </div>
+                    ),
+                  )}
+                </div>
+                <div className="mt-2 grid grid-cols-7 gap-2">
+                  {days.map(({ date, day, inMonth, isWeekend }) => {
+                    const holidays = holidaysByDate.get(date) ?? [];
+                    const isToday = date === today;
+                    return (
+                      <div
+                        key={date}
+                        className={`group relative min-h-28 overflow-hidden rounded-xl border p-2.5 transition ${
+                          !inMonth
+                            ? "border-transparent bg-zinc-50/50 text-zinc-400"
+                            : holidays.length
+                              ? "border-blue-300 bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-[0_8px_24px_-18px_rgba(37,99,235,0.8)] ring-1 ring-blue-100"
+                              : isWeekend
+                                ? "border-zinc-200 bg-zinc-50/70"
+                                : "border-surface-variant bg-white hover:border-zinc-300 hover:shadow-sm"
+                        }`}
+                      >
+                        {holidays.length > 0 && (
+                          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
+                        )}
+                        <span
+                          className={`grid size-7 place-items-center rounded-full text-xs font-bold ${
+                            isToday
+                              ? "bg-zinc-950 text-white"
+                              : holidays.length
+                                ? "bg-blue-600 text-white"
+                                : "text-zinc-700"
+                          }`}
                         >
-                          {holiday.holidayName}
-                        </button>
-                      ))}
-                      {holidays.length > 2 && (
-                        <span className="mt-1 block text-[10px] font-semibold text-primary">
-                          +{holidays.length - 2} more
+                          {day}
                         </span>
-                      )}
-                    </div>
-                  );
-                })}
+                        {holidays.slice(0, 2).map((holiday) => (
+                          <button
+                            key={holiday.id}
+                            className={`mt-2 block w-full rounded-lg px-2 py-1.5 text-left text-[11px] font-bold leading-4 transition hover:-translate-y-0.5 ${
+                              holiday.source === "PUBLIC_DATA"
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : "bg-amber-100 text-amber-950 ring-1 ring-amber-200"
+                            }`}
+                            onClick={() => showHoliday(holiday)}
+                            title={`${holiday.holidayName} · ${holiday.office?.officeName ?? "All offices"}`}
+                            type="button"
+                          >
+                            {holiday.holidayName}
+                          </button>
+                        ))}
+                        {holidays.length > 2 && (
+                          <span className="mt-1 block text-[10px] font-semibold text-primary">
+                            +{holidays.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {!visibleMonthHolidays.length && (
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                    <span>No holidays are scheduled in {monthLabel}.</span>
+                    {nextOutsideVisibleMonth && (
+                      <button
+                        className="font-semibold text-primary hover:underline"
+                        onClick={() =>
+                          setVisibleMonth(
+                            monthStart(nextOutsideVisibleMonth.holidayDate),
+                          )
+                        }
+                        type="button"
+                      >
+                        Go to {nextOutsideVisibleMonth.holidayName}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </Panel>
-          <Panel className="p-6">
-            <div className="flex items-center gap-2">
-              <Globe2 className="size-5 text-primary" />
-              <h2 className="font-semibold">Upcoming holidays</h2>
+          <Panel className="h-fit overflow-hidden border-zinc-200 p-0 shadow-sm xl:sticky xl:top-6">
+            <div className="bg-zinc-950 px-5 py-5 text-white">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="size-5 text-cyan-300" />
+                <h2 className="font-semibold">Upcoming holidays</h2>
+              </div>
+              <p className="mt-1 text-xs text-zinc-400">
+                Select a holiday to open its month and details.
+              </p>
             </div>
-            <div className="mt-4 grid gap-3">
+            <div className="grid gap-2 p-4">
               {upcoming.map((holiday) => (
                 <button
                   key={holiday.id}
-                  className="flex gap-3 rounded-lg bg-zinc-50 p-3 text-left"
-                  onClick={() => openEdit(holiday)}
+                  className="group flex items-center gap-3 rounded-xl border border-transparent bg-zinc-50 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50"
+                  onClick={() => showHoliday(holiday)}
+                  type="button"
                 >
-                  <CalendarDays className="size-5 text-primary" />
-                  <span>
+                  <span className="grid w-12 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white text-center shadow-sm">
+                    <span className="bg-blue-600 py-0.5 text-[9px] font-bold uppercase text-white">
+                      {new Date(holiday.holidayDate).toLocaleDateString(
+                        undefined,
+                        { month: "short", timeZone: "UTC" },
+                      )}
+                    </span>
+                    <span className="py-1 text-lg font-black text-zinc-900">
+                      {new Date(holiday.holidayDate).getUTCDate()}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
                     <span className="block text-sm font-semibold">
                       {holiday.holidayName}
                     </span>
-                    <span className="text-xs text-outline">
-                      {new Date(holiday.holidayDate).toLocaleDateString()} ·{" "}
+                    <span className="mt-0.5 block text-xs text-outline">
                       {holiday.office?.officeName ?? "All offices"}
                     </span>
-                    <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+                    <span
+                      className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                        holiday.source === "PUBLIC_DATA"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
                       {holiday.source === "PUBLIC_DATA"
-                        ? `Imported${holiday.sourceProvider ? ` · ${holiday.sourceProvider}` : ""}`
-                        : "Added by HR"}
+                        ? "Public holiday"
+                        : "HR added"}
                     </span>
                   </span>
                 </button>
@@ -2233,7 +2401,7 @@ export function HolidaysView() {
                 </p>
               )}
             </div>
-            <p className="mt-5 border-t border-surface-variant pt-4 text-[11px] leading-5 text-outline">
+            <p className="border-t border-surface-variant px-5 py-4 text-[10px] leading-5 text-outline">
               Public data comes from the{" "}
               <a
                 className="underline"
@@ -2345,8 +2513,14 @@ function holidayCalendarDays(month: Date) {
       date: date.toISOString().slice(0, 10),
       day: date.getUTCDate(),
       inMonth: date.getUTCMonth() === monthIndex,
+      isWeekend: date.getUTCDay() === 0 || date.getUTCDay() === 6,
     };
   });
+}
+
+function monthStart(date: string) {
+  const [year, month] = date.slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, 1));
 }
 
 function OfficeMap({ offices }: { offices: Office[] }) {
