@@ -23,7 +23,6 @@ describe('Auth flow integration', () => {
   const newPassword = 'Updated123!';
 
   let tenantId = '';
-  let verifyToken = '';
   let resetToken = '';
 
   beforeAll(async () => {
@@ -98,7 +97,7 @@ describe('Auth flow integration', () => {
     await pool.end();
   });
 
-  it('completes signup, verify, login, reset, and suspended-workspace flow', async () => {
+  it('completes signup, login, reset, and suspended-workspace flow', async () => {
     const signupResponse = await authService.signup({
       companyName,
       workEmail: email,
@@ -108,10 +107,8 @@ describe('Auth flow integration', () => {
     });
 
     tenantId = signupResponse.tenantId;
-    verifyToken = signupResponse.debugVerificationToken as string;
 
     expect(tenantId).toBeTruthy();
-    expect(verifyToken).toMatch(/^\d{6}$/);
 
     const provisionedTenant = await adminPrisma.tenant.findUnique({
       where: { id: tenantId },
@@ -155,20 +152,10 @@ describe('Auth flow integration', () => {
         ?.permissions.length,
     ).toBeGreaterThan(0);
 
-    await TenantContextService.run({ tenantId }, () =>
-      authService.verifyToken(verifyToken, 'EMAIL_VERIFY'),
-    );
-
     const verifiedUser = await adminPrisma.user.findFirst({
       where: { tenantId, email },
     });
     expect(verifiedUser?.emailVerifiedAt).toBeTruthy();
-
-    await expect(
-      TenantContextService.run({ tenantId }, () =>
-        authService.verifyToken(verifyToken, 'EMAIL_VERIFY'),
-      ),
-    ).rejects.toThrow();
 
     const loginResponse = await TenantContextService.run({ tenantId }, () =>
       authService.login(email, password, '127.0.0.1', 'jest'),

@@ -36,7 +36,6 @@ export function SignupForm() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
   const [subdomainEdited, setSubdomainEdited] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -57,12 +56,11 @@ export function SignupForm() {
     return count;
   }, [companyName, workEmail, password, subdomain, employeeCount, acceptedTerms]);
 
-  const progressPercentage = Math.round((completedFields / 6) * 50);
+  const progressPercentage = Math.round((completedFields / 6) * 100);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
-    setSuccess(null);
 
     if (!acceptedTerms) {
       setError("Accept the terms to create your workspace.");
@@ -83,28 +81,21 @@ export function SignupForm() {
       const payload = response.data as {
         email: string;
         subdomain: string;
-        emailDelivery: "SENT" | "FAILED";
-        debugVerificationToken?: string;
+        tenantId: string;
       };
 
       const params = new URLSearchParams({
         email: payload.email,
         workspace: payload.subdomain,
-        tenantId: response.data.tenantId,
-        delivery: payload.emailDelivery,
+        tenantId: payload.tenantId,
       });
 
-      if (payload.debugVerificationToken) {
-        params.set("token", payload.debugVerificationToken);
-      }
-
       setPendingAuth({
-        tenantId: response.data.tenantId,
+        tenantId: payload.tenantId,
         workspace: payload.subdomain,
         email: payload.email,
       });
-      setSuccess("Workspace created. Continue to email verification.");
-      router.push(`/verify-email?${params.toString()}`);
+      router.push(`/login?${params.toString()}`);
     } catch (error: unknown) {
       setError(getApiErrorMessage(error, "We couldn't create your workspace right now."));
     } finally {
@@ -116,7 +107,7 @@ export function SignupForm() {
     <div className="w-full max-w-[392px] pt-[2px]">
       <div className="mb-16">
         <div className="mb-[10px] flex items-center justify-between">
-          <span className="text-[14px] font-bold leading-5 text-primary">1 of 2 — Verify email next</span>
+          <span className="text-[14px] font-bold leading-5 text-primary">Workspace setup</span>
           <span className="text-[12px] font-semibold leading-4 tracking-[0.05em] text-on-surface-variant">{progressPercentage}% Complete</span>
         </div>
         <div className="h-[6px] w-full overflow-hidden rounded-full bg-zinc-200">
@@ -139,12 +130,6 @@ export function SignupForm() {
       {error ? (
         <div className="mb-6 rounded-[12px] border border-error/15 bg-error-container px-4 py-4 text-sm text-on-error-container">
           {error}
-        </div>
-      ) : null}
-
-      {success ? (
-        <div className="mb-6 rounded-[12px] border border-emerald-800/15 bg-emerald-300/20 px-4 py-4 text-sm text-emerald-900">
-          {success}
         </div>
       ) : null}
 

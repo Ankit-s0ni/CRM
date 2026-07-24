@@ -148,6 +148,7 @@ export class AuthService {
           email: normalizedEmail,
           passwordHash,
           status: 'ACTIVE',
+          emailVerifiedAt: new Date(),
         },
       });
 
@@ -180,34 +181,12 @@ export class AuthService {
       };
     });
 
-    const verificationToken = await TenantContextService.run(
-      { tenantId: tenant.tenant.id },
-      () =>
-        this.verificationTokensService.createToken(
-          tenant.tenant.id,
-          tenant.user.email,
-          TokenPurpose.EMAIL_VERIFY,
-          {
-            userId: tenant.user.id,
-            employeeCount: input.employeeCount ?? null,
-          },
-          tenant.user.id,
-        ),
-    );
-    const emailDelivery = await this.transactionalEmail.sendVerificationCode(
-      tenant.user.email,
-      verificationToken,
-    );
-
     return {
-      message: 'Workspace created. Verify your email to continue.',
-      nextStep: 'EMAIL_VERIFY',
+      message: 'Workspace created. Sign in to continue.',
+      nextStep: 'LOGIN',
       tenantId: tenant.tenant.id,
       email: tenant.user.email,
       subdomain: tenant.tenant.subdomain,
-      emailDelivery,
-      debugVerificationToken:
-        isDebugTokenExposureEnabled() ? verificationToken : undefined,
     };
   }
 

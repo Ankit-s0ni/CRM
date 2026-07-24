@@ -55,9 +55,6 @@ describe('Employee import infrastructure (e2e)', () => {
     tenantId = signup.tenantId;
     await prisma.department.create({ data: { tenantId, name: 'Engineering' } });
     await prisma.designation.create({ data: { tenantId, name: 'Engineer' } });
-    await TenantContextService.run({ tenantId }, () =>
-      auth.verifyToken(String(signup.debugVerificationToken), 'EMAIL_VERIFY'),
-    );
     const session = await TenantContextService.run({ tenantId }, () =>
       auth.login(email, 'Start123!', '127.0.0.1', 'jest-infrastructure'),
     );

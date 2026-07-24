@@ -395,13 +395,6 @@ describe('Departments API (e2e)', () => {
 
     tenantIds.add(signup.tenantId);
 
-    await TenantContextService.run({ tenantId: signup.tenantId }, () =>
-      authService.verifyToken(
-        String(signup.debugVerificationToken),
-        'EMAIL_VERIFY',
-      ),
-    );
-
     const session = await TenantContextService.run(
       { tenantId: signup.tenantId },
       () =>

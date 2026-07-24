@@ -433,12 +433,6 @@ describe('Tenant access control (e2e)', () => {
       employeeCount: '1-25 employees',
     });
     tenantIds.add(signup.tenantId);
-    await TenantContextService.run({ tenantId: signup.tenantId }, () =>
-      authService.verifyToken(
-        String(signup.debugVerificationToken),
-        'EMAIL_VERIFY',
-      ),
-    );
     const session = await login(signup.tenantId, email, 'Start123!');
     const admin = await adminPrisma.user.findFirstOrThrow({
       where: { tenantId: signup.tenantId, email },

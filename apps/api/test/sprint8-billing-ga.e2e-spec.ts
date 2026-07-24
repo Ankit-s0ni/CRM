@@ -268,16 +268,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
       employeeCount: '1 employee',
     });
     journeyTenantId = signup.tenantId;
-    expect(signup.debugVerificationToken).toMatch(/^\d{6}$/);
-
-    await request(app.getHttpServer())
-      .post('/auth/verify')
-      .set('x-tenant-id', journeyTenantId)
-      .send({
-        token: signup.debugVerificationToken,
-        type: 'EMAIL_VERIFY',
-      })
-      .expect(200);
 
     const login = await request(app.getHttpServer())
       .post('/auth/login')

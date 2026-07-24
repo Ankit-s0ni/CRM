@@ -301,12 +301,6 @@ describe('Employee imports (e2e)', () => {
       where: { tenantId: signup.tenantId },
       data: { seatCount, planId: plan.id },
     });
-    await TenantContextService.run({ tenantId: signup.tenantId }, () =>
-      authService.verifyToken(
-        String(signup.debugVerificationToken),
-        'EMAIL_VERIFY',
-      ),
-    );
     const session = await TenantContextService.run(
       { tenantId: signup.tenantId },
       () => authService.login(email, 'Start123!', '127.0.0.1', 'jest'),
