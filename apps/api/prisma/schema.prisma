@@ -1300,19 +1300,21 @@ model TenantSettings {
 }
 
 model OfficeLocation {
-  id           String                     @id @default(uuid(7)) @db.Uuid
-  tenantId     String                     @db.Uuid
-  officeName   String
-  latitude     Decimal                    @db.Decimal(9, 6)
-  longitude    Decimal                    @db.Decimal(9, 6)
-  radiusMeters Int
-  timezone     String?
-  egressIps    Json                       @default("[]")
-  wifiSsids    Json                       @default("[]")
-  createdAt    DateTime                   @default(now())
-  updatedAt    DateTime                   @updatedAt
-  assignments  EmployeeOfficeAssignment[]
-  holidays     TenantHoliday[]
+  id              String                     @id @default(uuid(7)) @db.Uuid
+  tenantId        String                     @db.Uuid
+  officeName      String
+  latitude        Decimal                    @db.Decimal(9, 6)
+  longitude       Decimal                    @db.Decimal(9, 6)
+  radiusMeters    Int
+  timezone        String?
+  countryCode     String?                    @db.Char(2)
+  subdivisionCode String?                    @db.VarChar(16)
+  egressIps       Json                       @default("[]")
+  wifiSsids       Json                       @default("[]")
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  assignments     EmployeeOfficeAssignment[]
+  holidays        TenantHoliday[]
 
   @@unique([tenantId, officeName])
   @@map("office_locations")
@@ -1413,11 +1415,18 @@ model TenantHoliday {
   holidayName      String
   holidayDate      DateTime        @db.Date
   officeLocationId String?         @db.Uuid
+  source           HolidaySource   @default(MANUAL)
+  sourceProvider   String?
   office           OfficeLocation? @relation(fields: [officeLocationId], references: [id])
 
   @@unique([tenantId, holidayDate, officeLocationId])
   @@index([tenantId, holidayDate])
   @@map("tenant_holidays")
+}
+
+enum HolidaySource {
+  MANUAL
+  PUBLIC_DATA
 }
 
 // ---------------- ATTENDANCE: RUNTIME ----------------

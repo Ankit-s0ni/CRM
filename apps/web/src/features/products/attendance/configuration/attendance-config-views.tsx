@@ -3,13 +3,18 @@
 import {
   CalendarDays,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Crosshair,
+  Globe2,
   Plus,
+  RefreshCw,
   Search,
   ShieldCheck,
   Upload,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
 import { createPortal } from "react-dom";
@@ -40,6 +45,8 @@ type Office = {
   longitude: string;
   radiusMeters: number;
   timezone?: string;
+  countryCode?: string;
+  subdivisionCode?: string;
   egressIps: string[];
   wifiSsids: string[];
   _count?: { assignments: number; holidays: number };
@@ -106,6 +113,23 @@ type Holiday = {
   holidayDate: string;
   officeLocationId?: string;
   office?: Office;
+  source: "MANUAL" | "PUBLIC_DATA";
+  sourceProvider?: string;
+};
+type HolidaySyncResult = {
+  officeId: string;
+  officeName: string;
+  countryCode: string | null;
+  imported: number;
+  skipped: number;
+  provider: string | null;
+  status: "SYNCED" | "REGION_REQUIRED" | "PROVIDER_UNAVAILABLE";
+  message?: string;
+};
+
+type OfficeRegion = {
+  countryCode: string;
+  subdivisionCode?: string;
 };
 
 export function OfficesView() {
@@ -123,6 +147,8 @@ export function OfficesView() {
     longitude: "",
     radiusMeters: "150",
     timezone: "",
+    countryCode: "",
+    subdivisionCode: "",
     egressIps: "",
     wifiSsids: "",
   });
@@ -170,6 +196,12 @@ export function OfficesView() {
       longitude,
       radiusMeters,
       timezone: form.timezone,
+      ...(form.countryCode
+        ? { countryCode: form.countryCode.toUpperCase() }
+        : {}),
+      ...(form.subdivisionCode
+        ? { subdivisionCode: form.subdivisionCode.toUpperCase() }
+        : {}),
       egressIps: form.egressIps.split(",").map(trim).filter(Boolean),
       wifiSsids: form.wifiSsids.split(",").map(trim).filter(Boolean),
     };
@@ -198,6 +230,8 @@ export function OfficesView() {
       longitude: "",
       radiusMeters: "150",
       timezone: "",
+      countryCode: "",
+      subdivisionCode: "",
       egressIps: "",
       wifiSsids: "",
     });
@@ -215,17 +249,38 @@ export function OfficesView() {
         timezoneForCoordinate(office.latitude, office.longitude) ??
         office.timezone ??
         "",
+      countryCode: office.countryCode ?? "",
+      subdivisionCode: office.subdivisionCode ?? "",
       egressIps: office.egressIps.join(", "),
       wifiSsids: office.wifiSsids.join(", "),
     });
+    if (!office.countryCode) {
+      const coordinate = validCoordinate(office.latitude, office.longitude);
+      if (coordinate) {
+        void reverseGeocodeRegion(coordinate).then((region) => {
+          if (!region) return;
+          setForm((current) => ({
+            ...current,
+            countryCode: region.countryCode,
+            subdivisionCode: region.subdivisionCode ?? "",
+          }));
+        });
+      }
+    }
     setOpen(true);
   }
-  function updateOfficeCoordinate(latitude: number, longitude: number) {
+  function updateOfficeCoordinate(
+    latitude: number,
+    longitude: number,
+    region?: OfficeRegion,
+  ) {
     setForm((current) => ({
       ...current,
       latitude: latitude.toFixed(6),
       longitude: longitude.toFixed(6),
       timezone: timezoneForCoordinate(latitude, longitude) ?? current.timezone,
+      countryCode: region?.countryCode ?? current.countryCode,
+      subdivisionCode: region?.subdivisionCode ?? current.subdivisionCode,
     }));
   }
   function detectTimezoneFromInputs() {
@@ -341,7 +396,10 @@ export function OfficesView() {
                   <div>
                     <div className="font-semibold">{office.officeName}</div>
                     <div className="mt-1 text-xs text-outline">
-                      {office.timezone || "Tenant timezone"} ·{" "}
+                      {office.countryCode
+                        ? `${office.countryCode}${office.subdivisionCode ? ` · ${office.subdivisionCode}` : ""}`
+                        : "Holiday region not set"}{" "}
+                      · {office.timezone || "Tenant timezone"} ·{" "}
                       {(office.egressIps as string[]).length} trusted networks
                     </div>
                     <div className="mt-1 text-xs text-outline">
@@ -394,8 +452,8 @@ export function OfficesView() {
               latitude={form.latitude}
               longitude={form.longitude}
               radiusMeters={form.radiusMeters}
-              onChange={({ latitude, longitude }) =>
-                updateOfficeCoordinate(latitude, longitude)
+              onChange={({ latitude, longitude }, region) =>
+                updateOfficeCoordinate(latitude, longitude, region)
               }
             />
             <Field label="Office name">
@@ -448,6 +506,45 @@ export function OfficesView() {
                 showDetect={false}
               />
             </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Holiday country">
+                <input
+                  className={inputClass}
+                  maxLength={2}
+                  placeholder="IN"
+                  value={form.countryCode}
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      countryCode: event.target.value
+                        .replace(/[^a-z]/gi, "")
+                        .slice(0, 2)
+                        .toUpperCase(),
+                    })
+                  }
+                />
+                <p className="mt-1 text-xs text-outline">
+                  ISO country code detected from the office pin.
+                </p>
+              </Field>
+              <Field label="State or region">
+                <input
+                  className={inputClass}
+                  maxLength={16}
+                  placeholder="IN-KA"
+                  value={form.subdivisionCode}
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      subdivisionCode: event.target.value.toUpperCase(),
+                    })
+                  }
+                />
+                <p className="mt-1 text-xs text-outline">
+                  Optional ISO 3166-2 subdivision code.
+                </p>
+              </Field>
+            </div>
             <Field label="Egress IPs or CIDRs">
               <input
                 className={inputClass}
@@ -1843,6 +1940,14 @@ export function HolidaysView() {
   const [data, setData] = useState<Holiday[] | null>(null);
   const [offices, setOffices] = useState<Office[]>([]);
   const [error, setError] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
+  const [visibleMonth, setVisibleMonth] = useState(
+    () =>
+      new Date(
+        Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1),
+      ),
+  );
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Holiday | null>(null);
   const [form, setForm] = useState({
@@ -1855,6 +1960,7 @@ export function HolidaysView() {
       .then(([holidays, officeResult]) => {
         setData(holidays.data.data);
         setOffices(officeResult.data.data);
+        setError("");
       })
       .catch(() => setError("Holiday calendar could not be loaded."));
   useEffect(() => {
@@ -1905,59 +2011,199 @@ export function HolidaysView() {
       })
       .catch(() => setError("Holiday could not be deleted."));
   }
+  async function syncPublicHolidays() {
+    setSyncing(true);
+    setError("");
+    setSyncMessage("");
+    try {
+      const { data: response } = await apiClient.post<{
+        data: { results: HolidaySyncResult[] };
+      }>("/holidays/sync", { year: visibleMonth.getUTCFullYear() });
+      const imported = response.data.results.reduce(
+        (total, result) => total + result.imported,
+        0,
+      );
+      const unavailable = response.data.results.filter(
+        ({ status }) => status !== "SYNCED",
+      );
+      setSyncMessage(
+        unavailable.length
+          ? `${imported} holidays imported. ${unavailable.map(({ officeName, message }) => `${officeName}: ${message}`).join(" ")}`
+          : `${imported} new holidays imported. Existing HR changes were kept.`,
+      );
+      await load();
+    } catch {
+      setError("Public holidays could not be synchronized. Please retry.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+  const days = holidayCalendarDays(visibleMonth);
+  const holidaysByDate = new Map<string, Holiday[]>();
+  for (const holiday of data ?? []) {
+    const date = holiday.holidayDate.slice(0, 10);
+    holidaysByDate.set(date, [...(holidaysByDate.get(date) ?? []), holiday]);
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = (data ?? [])
+    .filter(({ holidayDate }) => holidayDate.slice(0, 10) >= today)
+    .sort((left, right) => left.holidayDate.localeCompare(right.holidayDate))
+    .slice(0, 12);
+  const monthLabel = visibleMonth.toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const missingRegionOffices = offices.filter(
+    ({ countryCode }) => !countryCode,
+  );
   return (
     <AdminPage
       title="Holiday Calendar"
-      description="Publish tenant-wide and office-specific holidays."
+      description="Public holidays follow each office region. HR can add or override tenant-wide and office-specific dates."
       action={
-        <PrimaryButton onClick={openCreate}>
-          <Plus className="size-4" />
-          Add holiday
-        </PrimaryButton>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary disabled:opacity-50"
+            disabled={syncing}
+            onClick={syncPublicHolidays}
+            type="button"
+          >
+            <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing…" : "Sync public holidays"}
+          </button>
+          <PrimaryButton onClick={openCreate}>
+            <Plus className="size-4" />
+            Add holiday
+          </PrimaryButton>
+        </div>
       }
     >
       {error && <ErrorState message={error} />}
+      {syncMessage && (
+        <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm font-medium text-blue-950">
+          {syncMessage}
+        </div>
+      )}
+      {missingRegionOffices.length > 0 && (
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          <Globe2 className="size-5 shrink-0" />
+          <p>
+            Set the holiday country for{" "}
+            {missingRegionOffices
+              .map(({ officeName }) => officeName)
+              .join(", ")}
+            . Existing office pins will be detected automatically when edited.
+          </p>
+          <Link
+            className="ml-auto font-semibold text-amber-950 underline underline-offset-4"
+            href="/app/attendance/offices"
+          >
+            Update offices
+          </Link>
+        </div>
+      )}
       {!data ? (
         <LoadingState />
       ) : (
         <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-          <Panel className="p-6">
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-outline">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                <div key={day} className="p-2">
-                  {day}
-                </div>
-              ))}
+          <Panel className="overflow-hidden">
+            <div className="flex items-center justify-between border-b border-surface-variant px-5 py-4">
+              <button
+                aria-label="Previous month"
+                className="grid size-9 place-items-center rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+                onClick={() =>
+                  setVisibleMonth(
+                    new Date(
+                      Date.UTC(
+                        visibleMonth.getUTCFullYear(),
+                        visibleMonth.getUTCMonth() - 1,
+                        1,
+                      ),
+                    ),
+                  )
+                }
+                type="button"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <div className="text-center">
+                <h2 className="font-semibold text-zinc-900">{monthLabel}</h2>
+                <p className="text-xs text-outline">
+                  {offices.length} {offices.length === 1 ? "office" : "offices"}
+                </p>
+              </div>
+              <button
+                aria-label="Next month"
+                className="grid size-9 place-items-center rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+                onClick={() =>
+                  setVisibleMonth(
+                    new Date(
+                      Date.UTC(
+                        visibleMonth.getUTCFullYear(),
+                        visibleMonth.getUTCMonth() + 1,
+                        1,
+                      ),
+                    ),
+                  )
+                }
+                type="button"
+              >
+                <ChevronRight className="size-4" />
+              </button>
             </div>
-            <div className="mt-2 grid grid-cols-7 gap-2">
-              {Array.from({ length: 35 }, (_, index) => {
-                const day = index + 1;
-                const holiday = data.find(
-                  (item) => new Date(item.holidayDate).getUTCDate() === day,
-                );
-                return (
-                  <div
-                    key={day}
-                    className={`min-h-24 rounded-lg border p-2 ${holiday ? "border-zinc-200 bg-zinc-100" : "border-surface-variant bg-white"}`}
-                  >
-                    <span className="text-xs font-semibold">{day}</span>
-                    {holiday && (
-                      <button
-                        className="mt-2 block text-left text-xs font-semibold text-zinc-500"
-                        onClick={() => openEdit(holiday)}
-                      >
-                        {holiday.holidayName}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="p-5">
+              <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase text-outline">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                  (day) => (
+                    <div key={day} className="p-2">
+                      {day}
+                    </div>
+                  ),
+                )}
+              </div>
+              <div className="mt-2 grid grid-cols-7 gap-2">
+                {days.map(({ date, day, inMonth }) => {
+                  const holidays = holidaysByDate.get(date) ?? [];
+                  return (
+                    <div
+                      key={date}
+                      className={`min-h-24 rounded-lg border p-2 ${
+                        !inMonth
+                          ? "border-transparent bg-zinc-50/60 text-zinc-400"
+                          : holidays.length
+                            ? "border-blue-200 bg-blue-50"
+                            : "border-surface-variant bg-white"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold">{day}</span>
+                      {holidays.slice(0, 2).map((holiday) => (
+                        <button
+                          key={holiday.id}
+                          className="mt-2 block text-left text-xs font-semibold text-zinc-500"
+                          onClick={() => openEdit(holiday)}
+                        >
+                          {holiday.holidayName}
+                        </button>
+                      ))}
+                      {holidays.length > 2 && (
+                        <span className="mt-1 block text-[10px] font-semibold text-primary">
+                          +{holidays.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </Panel>
           <Panel className="p-6">
-            <h2 className="font-semibold">Upcoming holidays</h2>
+            <div className="flex items-center gap-2">
+              <Globe2 className="size-5 text-primary" />
+              <h2 className="font-semibold">Upcoming holidays</h2>
+            </div>
             <div className="mt-4 grid gap-3">
-              {data.map((holiday) => (
+              {upcoming.map((holiday) => (
                 <button
                   key={holiday.id}
                   className="flex gap-3 rounded-lg bg-zinc-50 p-3 text-left"
@@ -1972,10 +2218,51 @@ export function HolidaysView() {
                       {new Date(holiday.holidayDate).toLocaleDateString()} ·{" "}
                       {holiday.office?.officeName ?? "All offices"}
                     </span>
+                    <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+                      {holiday.source === "PUBLIC_DATA"
+                        ? `Imported${holiday.sourceProvider ? ` · ${holiday.sourceProvider}` : ""}`
+                        : "Added by HR"}
+                    </span>
                   </span>
                 </button>
               ))}
+              {!upcoming.length && (
+                <p className="rounded-lg bg-zinc-50 p-4 text-sm text-outline">
+                  No upcoming holidays. Sync a public calendar or add one
+                  manually.
+                </p>
+              )}
             </div>
+            <p className="mt-5 border-t border-surface-variant pt-4 text-[11px] leading-5 text-outline">
+              Public data comes from the{" "}
+              <a
+                className="underline"
+                href="https://gov.om/en/important-dates-and-holidays?entity=400196"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Oman Ministry of Labour
+              </a>{" "}
+              for Oman, the{" "}
+              <a
+                className="underline"
+                href="https://github.com/commenthol/date-holidays"
+                rel="noreferrer"
+                target="_blank"
+              >
+                date-holidays open dataset
+              </a>{" "}
+              where supported, or the keyless{" "}
+              <a
+                className="underline"
+                href="https://tallyfy.com/national-holidays/"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Tallyfy fallback
+              </a>
+              . HR edits always take precedence.
+            </p>
           </Panel>
         </div>
       )}
@@ -2044,6 +2331,24 @@ export function HolidaysView() {
   );
 }
 
+function holidayCalendarDays(month: Date) {
+  const year = month.getUTCFullYear();
+  const monthIndex = month.getUTCMonth();
+  const firstDay = new Date(Date.UTC(year, monthIndex, 1));
+  const mondayOffset = (firstDay.getUTCDay() + 6) % 7;
+  const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  const cellCount = Math.ceil((mondayOffset + daysInMonth) / 7) * 7;
+
+  return Array.from({ length: cellCount }, (_, index) => {
+    const date = new Date(Date.UTC(year, monthIndex, index - mondayOffset + 1));
+    return {
+      date: date.toISOString().slice(0, 10),
+      day: date.getUTCDate(),
+      inMonth: date.getUTCMonth() === monthIndex,
+    };
+  });
+}
+
 function OfficeMap({ offices }: { offices: Office[] }) {
   const locations = offices.flatMap((office) => {
     const coordinate = validCoordinate(office.latitude, office.longitude);
@@ -2081,19 +2386,32 @@ function OfficeLocationPicker({
   latitude: string;
   longitude: string;
   radiusMeters: string;
-  onChange: (coordinate: MapCoordinate) => void;
+  onChange: (coordinate: MapCoordinate, region?: OfficeRegion) => void;
 }) {
   const [locating, setLocating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [detectingRegion, setDetectingRegion] = useState(false);
   const coordinate = validCoordinate(latitude, longitude);
+
+  async function selectCoordinate(nextCoordinate: MapCoordinate) {
+    setDetectingRegion(true);
+    const region = await reverseGeocodeRegion(nextCoordinate).catch(
+      () => undefined,
+    );
+    onChange(nextCoordinate, region);
+    setDetectingRegion(false);
+  }
 
   function useCurrentLocation() {
     if (!navigator.geolocation) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        onChange({ latitude: coords.latitude, longitude: coords.longitude });
+        void selectCoordinate({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
         setLocating(false);
       },
       () => setLocating(false),
@@ -2107,14 +2425,18 @@ function OfficeLocationPicker({
     setSearching(true);
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`,
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=${encodeURIComponent(searchQuery)}`,
       );
-      const data = await res.json();
+      const data = (await res.json()) as NominatimPlace[];
       if (data && data.length > 0) {
-        onChange({
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon),
-        });
+        const place = data[0];
+        onChange(
+          {
+            latitude: parseFloat(place.lat),
+            longitude: parseFloat(place.lon),
+          },
+          regionFromPlace(place),
+        );
         setSearchQuery("");
       } else {
         alert("Location not found");
@@ -2157,7 +2479,7 @@ function OfficeLocationPicker({
           type="button"
         >
           <Crosshair className="size-4" />
-          {locating ? "Locating…" : "Use current location"}
+          {locating || detectingRegion ? "Locating…" : "Use current location"}
         </button>
       </div>
 
@@ -2187,7 +2509,7 @@ function OfficeLocationPicker({
         className="min-h-[280px]"
         geofences={geofence}
         markers={marker}
-        onMapClick={onChange}
+        onMapClick={(nextCoordinate) => void selectCoordinate(nextCoordinate)}
       />
       {!coordinate && (
         <p className="text-xs font-semibold text-amber-700">
@@ -2196,6 +2518,38 @@ function OfficeLocationPicker({
       )}
     </div>
   );
+}
+
+type NominatimPlace = {
+  lat: string;
+  lon: string;
+  address?: Record<string, string | undefined>;
+};
+
+async function reverseGeocodeRegion(coordinate: MapCoordinate) {
+  const params = new URLSearchParams({
+    format: "jsonv2",
+    addressdetails: "1",
+    lat: String(coordinate.latitude),
+    lon: String(coordinate.longitude),
+  });
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?${params}`,
+  );
+  if (!response.ok) return undefined;
+  return regionFromPlace((await response.json()) as NominatimPlace);
+}
+
+function regionFromPlace(place: NominatimPlace): OfficeRegion | undefined {
+  const countryCode = place.address?.country_code?.toUpperCase();
+  if (!countryCode) return undefined;
+  const subdivisionCode = Object.entries(place.address ?? {}).find(
+    ([key, value]) =>
+      key.startsWith("ISO3166-2") &&
+      typeof value === "string" &&
+      value.startsWith(`${countryCode}-`),
+  )?.[1];
+  return { countryCode, subdivisionCode };
 }
 
 function validCoordinate(

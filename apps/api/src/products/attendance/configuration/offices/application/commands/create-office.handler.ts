@@ -1,4 +1,4 @@
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException, Inject } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CreateOfficeCommand } from './create-office.command';
@@ -12,13 +12,16 @@ import {
 import { assertTimezone } from '../../../../../../platform/workspace/public';
 import { AuditService } from '../../../../../../platform/audit/public';
 import { bumpRuntimeConfigVersion } from '../../../../../../shared/runtime-config/runtime-config-version';
+import { PublicHolidaySyncService } from '../../../holidays/public-holiday-sync.service';
 
 @CommandHandler(CreateOfficeCommand)
 export class CreateOfficeHandler implements ICommandHandler<CreateOfficeCommand> {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    @Inject(IOfficeRepository) private readonly officeRepository: IOfficeRepository,
+    private readonly publicHolidaySync: PublicHolidaySyncService,
+    @Inject(IOfficeRepository)
+    private readonly officeRepository: IOfficeRepository,
   ) {}
 
   async execute(command: CreateOfficeCommand) {
@@ -34,12 +37,23 @@ export class CreateOfficeHandler implements ICommandHandler<CreateOfficeCommand>
       longitude: new Prisma.Decimal(dto.longitude),
       radiusMeters: dto.radiusMeters,
       timezone: dto.timezone ?? null,
-      egressIps: normalizeNetworkEntries(dto.egressIps) as Prisma.InputJsonValue,
-      wifiSsids: Array.from(new Set(((dto.wifiSsids ?? []) as string[]).map((ssid) => ssid.trim()).filter(Boolean))),
+      countryCode: dto.countryCode ?? null,
+      subdivisionCode: dto.subdivisionCode ?? null,
+      egressIps: normalizeNetworkEntries(dto.egressIps),
+      wifiSsids: Array.from(
+        new Set(
+          (dto.wifiSsids ?? []).map((ssid) => ssid.trim()).filter(Boolean),
+        ),
+      ),
     };
 
-    return this.prisma.forTenant(async (tx) => {
-      const existing = await this.officeRepository.findByName(data.officeName, tenantId, undefined, tx);
+    const result = await this.prisma.forTenant(async (tx) => {
+      const existing = await this.officeRepository.findByName(
+        data.officeName,
+        tenantId,
+        undefined,
+        tx,
+      );
       if (existing) {
         throw new ConflictException({
           code: 'OFFICE_NAME_EXISTS',
@@ -63,5 +77,14 @@ export class CreateOfficeHandler implements ICommandHandler<CreateOfficeCommand>
 
       return { data: office };
     });
+
+    const holidaySync = dto.countryCode
+      ? await this.publicHolidaySync
+          .sync(tenantId, createdBy, {
+            officeLocationId: result.data.id,
+          })
+          .catch(() => null)
+      : null;
+    return { ...result, holidaySync: holidaySync?.data ?? null };
   }
 }

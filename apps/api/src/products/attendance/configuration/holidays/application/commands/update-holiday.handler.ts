@@ -1,13 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
+import { HolidaySource } from '@prisma/client';
 import { UpdateHolidayCommand } from './update-holiday.command';
 import { PrismaService } from '../../../../../../shared/database/prisma.service';
 import { IHolidayRepository } from '../../domain/holiday.repository.interface';
 import { IOfficeRepository } from '../../../offices/domain/office.repository.interface';
-import {
-  dateOnly,
-  normalizeName,
-} from '../../../attendance-config.rules';
+import { dateOnly, normalizeName } from '../../../attendance-config.rules';
 import { AuditService } from '../../../../../../platform/audit/public';
 
 @CommandHandler(UpdateHolidayCommand)
@@ -15,8 +13,10 @@ export class UpdateHolidayHandler implements ICommandHandler<UpdateHolidayComman
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    @Inject(IHolidayRepository) private readonly holidayRepository: IHolidayRepository,
-    @Inject(IOfficeRepository) private readonly officeRepository: IOfficeRepository,
+    @Inject(IHolidayRepository)
+    private readonly holidayRepository: IHolidayRepository,
+    @Inject(IOfficeRepository)
+    private readonly officeRepository: IOfficeRepository,
   ) {}
 
   async execute(command: UpdateHolidayCommand) {
@@ -32,14 +32,24 @@ export class UpdateHolidayHandler implements ICommandHandler<UpdateHolidayComman
           : dto.officeLocationId;
 
       if (officeLocationId) {
-        const office = await this.officeRepository.findById(officeLocationId, tenantId, tx);
+        const office = await this.officeRepository.findById(
+          officeLocationId,
+          tenantId,
+          tx,
+        );
         if (!office) throw new NotFoundException('Office not found');
       }
 
       const holidayDate =
         dto.holidayDate ?? current.holidayDate.toISOString().slice(0, 10);
 
-      const existing = await this.holidayRepository.findUniqueHoliday(tenantId, holidayDate, officeLocationId, id, tx);
+      const existing = await this.holidayRepository.findUniqueHoliday(
+        tenantId,
+        holidayDate,
+        officeLocationId,
+        id,
+        tx,
+      );
       if (existing) {
         throw new ConflictException({
           code: 'HOLIDAY_EXISTS',
@@ -47,13 +57,19 @@ export class UpdateHolidayHandler implements ICommandHandler<UpdateHolidayComman
         });
       }
 
-      const holiday = await this.holidayRepository.update(id, {
-        holidayName: dto.holidayName
-          ? normalizeName(dto.holidayName)
-          : current.holidayName,
-        holidayDate: dateOnly(holidayDate),
-        officeLocationId: officeLocationId ?? null,
-      }, tx);
+      const holiday = await this.holidayRepository.update(
+        id,
+        {
+          holidayName: dto.holidayName
+            ? normalizeName(dto.holidayName)
+            : current.holidayName,
+          holidayDate: dateOnly(holidayDate),
+          officeLocationId: officeLocationId ?? null,
+          source: HolidaySource.MANUAL,
+          sourceProvider: null,
+        },
+        tx,
+      );
 
       await this.audit.append(tx, {
         tenantId,

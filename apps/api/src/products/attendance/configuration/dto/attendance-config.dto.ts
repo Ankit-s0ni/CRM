@@ -28,6 +28,8 @@ export class CreateOfficeDto {
   @Type(() => Number) @Min(-180) @Max(180) longitude!: number;
   @IsInt() @Min(25) @Max(10_000) radiusMeters!: number;
   @IsOptional() @IsString() @MaxLength(100) timezone?: string;
+  @IsOptional() @Matches(/^[A-Z]{2}$/) countryCode?: string;
+  @IsOptional() @Matches(/^[A-Z]{2}-[A-Z0-9]{1,12}$/) subdivisionCode?: string;
   @IsOptional()
   @IsArray()
   @ArrayUnique()
@@ -159,6 +161,11 @@ export class CreateHolidayDto {
   @IsOptional() @IsUUID() officeLocationId?: string;
 }
 export class UpdateHolidayDto extends PartialType(CreateHolidayDto) {}
+
+export class SyncPublicHolidaysDto {
+  @IsOptional() @IsUUID() officeLocationId?: string;
+  @IsOptional() @IsInt() @Min(2020) @Max(2100) year?: number;
+}
 
 export class RosterImportPresignDto {
   @ApiProperty({ example: 'rosters.csv' })

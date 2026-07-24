@@ -31,6 +31,7 @@ import {
   CreateShiftDto,
   ReplacePolicyAssignmentsDto,
   RosterQueryDto,
+  SyncPublicHolidaysDto,
   UpdateHolidayDto,
   UpdateOfficeDto,
   UpdatePolicyDto,
@@ -62,6 +63,7 @@ import { CreateHolidayCommand } from './holidays/application/commands/create-hol
 import { UpdateHolidayCommand } from './holidays/application/commands/update-holiday.command';
 import { RemoveHolidayCommand } from './holidays/application/commands/remove-holiday.command';
 import { ListHolidaysQuery } from './holidays/application/queries/list-holidays.query';
+import { PublicHolidaySyncService } from './holidays/public-holiday-sync.service';
 
 // Roster Commands & Queries
 import { CreateRosterCommand } from './rosters/application/commands/create-roster.command';
@@ -92,6 +94,7 @@ export class AttendanceConfigController {
     private readonly service: AttendanceConfigService,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly publicHolidaySync: PublicHolidaySyncService,
   ) {}
 
   @Get('offices')
@@ -110,7 +113,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateOfficeDto,
   ) {
-    return this.commandBus.execute(new CreateOfficeCommand(user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new CreateOfficeCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Get('offices/:id')
@@ -131,7 +136,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOfficeDto,
   ) {
-    return this.commandBus.execute(new UpdateOfficeCommand(id, user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new UpdateOfficeCommand(id, user.tenantId, dto, user.userId),
+    );
   }
 
   @Delete('offices/:id')
@@ -141,7 +148,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.commandBus.execute(new RemoveOfficeCommand(id, user.tenantId, user.userId));
+    return this.commandBus.execute(
+      new RemoveOfficeCommand(id, user.tenantId, user.userId),
+    );
   }
 
   @Get('offices/:id/employees')
@@ -151,7 +160,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.queryBus.execute(new ListOfficeEmployeesQuery(id, user.tenantId));
+    return this.queryBus.execute(
+      new ListOfficeEmployeesQuery(id, user.tenantId),
+    );
   }
 
   @Put('offices/:id/employees')
@@ -162,7 +173,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AssignOfficeEmployeesDto,
   ) {
-    return this.commandBus.execute(new ReplaceOfficeEmployeesCommand(id, user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new ReplaceOfficeEmployeesCommand(id, user.tenantId, dto, user.userId),
+    );
   }
 
   @Get('attendance-policies')
@@ -193,7 +206,9 @@ export class AttendanceConfigController {
     @Query('employeeId', ParseUUIDPipe) employeeId: string,
     @Query('date') date: string,
   ) {
-    return this.queryBus.execute(new ResolvePolicyQuery(employeeId, user.tenantId, date));
+    return this.queryBus.execute(
+      new ResolvePolicyQuery(employeeId, user.tenantId, date),
+    );
   }
 
   @Post('attendance-policies/resolve/bulk')
@@ -205,7 +220,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: BulkResolveDto,
   ) {
-    return this.queryBus.execute(new BulkResolvePoliciesQuery(dto.employeeIds, user.tenantId, dto.date));
+    return this.queryBus.execute(
+      new BulkResolvePoliciesQuery(dto.employeeIds, user.tenantId, dto.date),
+    );
   }
 
   @Get('attendance-policies/:id')
@@ -226,7 +243,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePolicyDto,
   ) {
-    return this.commandBus.execute(new UpdatePolicyCommand(id, user.tenantId, dto));
+    return this.commandBus.execute(
+      new UpdatePolicyCommand(id, user.tenantId, dto),
+    );
   }
 
   @Delete('attendance-policies/:id')
@@ -247,7 +266,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ReplacePolicyAssignmentsDto,
   ) {
-    return this.commandBus.execute(new ReplacePolicyAssignmentsCommand(id, user.tenantId, dto));
+    return this.commandBus.execute(
+      new ReplacePolicyAssignmentsCommand(id, user.tenantId, dto),
+    );
   }
 
   @Put('attendance-policies/employees/:employeeId')
@@ -260,7 +281,9 @@ export class AttendanceConfigController {
     @Param('employeeId', ParseUUIDPipe) employeeId: string,
     @Body() dto: AssignEmployeePolicyDto,
   ) {
-    return this.commandBus.execute(new AssignEmployeePolicyCommand(employeeId, user.tenantId, dto.policyId));
+    return this.commandBus.execute(
+      new AssignEmployeePolicyCommand(employeeId, user.tenantId, dto.policyId),
+    );
   }
 
   @Get('shifts')
@@ -277,7 +300,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateShiftDto,
   ) {
-    return this.commandBus.execute(new CreateShiftCommand(user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new CreateShiftCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Get('shifts/resolve')
@@ -288,7 +313,9 @@ export class AttendanceConfigController {
     @Query('employeeId', ParseUUIDPipe) employeeId: string,
     @Query('date') date: string,
   ) {
-    return this.queryBus.execute(new ResolveShiftQuery(user.tenantId, employeeId, date));
+    return this.queryBus.execute(
+      new ResolveShiftQuery(user.tenantId, employeeId, date),
+    );
   }
 
   @Post('shifts/resolve/bulk')
@@ -300,7 +327,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: BulkResolveDto,
   ) {
-    return this.queryBus.execute(new BulkResolveShiftsQuery(user.tenantId, dto.employeeIds, dto.date));
+    return this.queryBus.execute(
+      new BulkResolveShiftsQuery(user.tenantId, dto.employeeIds, dto.date),
+    );
   }
 
   @Get('shifts/:id')
@@ -321,7 +350,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateShiftDto,
   ) {
-    return this.commandBus.execute(new UpdateShiftCommand(id, user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new UpdateShiftCommand(id, user.tenantId, dto, user.userId),
+    );
   }
 
   @Delete('shifts/:id')
@@ -331,7 +362,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.commandBus.execute(new RemoveShiftCommand(id, user.tenantId, user.userId));
+    return this.commandBus.execute(
+      new RemoveShiftCommand(id, user.tenantId, user.userId),
+    );
   }
 
   @Get('rosters')
@@ -351,7 +384,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateRosterDto,
   ) {
-    return this.commandBus.execute(new CreateRosterCommand(user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new CreateRosterCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Post('rosters/bulk')
@@ -361,7 +396,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: BulkRosterDto,
   ) {
-    return this.commandBus.execute(new BulkRostersCommand(user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new BulkRostersCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Delete('rosters/:id')
@@ -371,7 +408,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.commandBus.execute(new RemoveRosterCommand(id, user.tenantId, user.userId));
+    return this.commandBus.execute(
+      new RemoveRosterCommand(id, user.tenantId, user.userId),
+    );
   }
 
   @Get('holidays')
@@ -381,6 +420,18 @@ export class AttendanceConfigController {
     return this.queryBus.execute(new ListHolidaysQuery(user.tenantId));
   }
 
+  @Post('holidays/sync')
+  @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_MANAGE)
+  @ApiOperation({
+    summary: 'Import public holidays for configured office regions',
+  })
+  syncPublicHolidays(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SyncPublicHolidaysDto,
+  ) {
+    return this.publicHolidaySync.sync(user.tenantId, user.userId, dto);
+  }
+
   @Post('holidays')
   @RequirePermissions(PERMISSIONS.ATTENDANCE_HOLIDAYS_MANAGE)
   @ApiOperation({ summary: 'Create a tenant-wide or office holiday' })
@@ -388,7 +439,9 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateHolidayDto,
   ) {
-    return this.commandBus.execute(new CreateHolidayCommand(user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new CreateHolidayCommand(user.tenantId, dto, user.userId),
+    );
   }
 
   @Patch('holidays/:id')
@@ -399,7 +452,9 @@ export class AttendanceConfigController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateHolidayDto,
   ) {
-    return this.commandBus.execute(new UpdateHolidayCommand(id, user.tenantId, dto, user.userId));
+    return this.commandBus.execute(
+      new UpdateHolidayCommand(id, user.tenantId, dto, user.userId),
+    );
   }
 
   @Delete('holidays/:id')
@@ -409,6 +464,8 @@ export class AttendanceConfigController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.commandBus.execute(new RemoveHolidayCommand(id, user.tenantId, user.userId));
+    return this.commandBus.execute(
+      new RemoveHolidayCommand(id, user.tenantId, user.userId),
+    );
   }
 }
