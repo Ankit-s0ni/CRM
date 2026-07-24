@@ -489,6 +489,7 @@ function WorkspaceLaunchChecklist({
   health: Record<string, SettingsHealthCategory>;
 }) {
   const attendance = health.ATTENDANCE?.configuration ?? {};
+  const organization = health.ORGANIZATION?.configuration ?? {};
   const steps = [
     {
       title: "Company profile",
@@ -502,7 +503,9 @@ function WorkspaceLaunchChecklist({
       description: "Create departments and reusable designations.",
       href: "/app/settings/organization",
       icon: Network,
-      complete: health.ORGANIZATION?.status === "READY",
+      complete:
+        (organization.departments ?? 0) > 0 &&
+        (organization.designations ?? 0) > 0,
     },
     {
       title: "Office and geofence",
