@@ -32,6 +32,7 @@ type MatrixCase = {
   workType?: WorkType;
   device?: null | { status: DeviceStatus; employeeId?: string };
   integrity?: IntegrityVerdict | null;
+  integrityRequired?: boolean;
   clientTime?: string;
   accuracyMeters?: number;
   requireRegisteredDevice?: boolean;
@@ -80,6 +81,13 @@ describe('AttendanceVerificationService check matrix', () => {
       name: 'fails when the integrity provider is unavailable',
       integrity: null,
       expectedCode: 'VERIFICATION_PROVIDER_UNAVAILABLE',
+    },
+    {
+      name: 'skips integrity when enforcement is disabled',
+      integrityRequired: false,
+      workType: WorkType.FIELD,
+      expectedChecks: ['device', 'integrity', 'clock', 'location'],
+      expectedSkippedChecks: ['integrity'],
     },
     {
       name: 'fails a rooted integrity verdict',
@@ -201,6 +209,8 @@ describe('AttendanceVerificationService check matrix', () => {
 });
 
 function createFixture(matrix: MatrixCase) {
+  process.env.DEVICE_INTEGRITY_ENFORCEMENT_ENABLED =
+    matrix.integrityRequired === false ? 'false' : 'true';
   const createdLogs: Array<{ verificationStatus: VerificationStatus }> = [];
   const activeDevice =
     matrix.device === null

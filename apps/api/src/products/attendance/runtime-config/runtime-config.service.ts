@@ -139,10 +139,13 @@ export class RuntimeConfigService {
         (policy?.requireRegisteredDevice ?? true);
       const biometricConsentRequired =
         faceRequired && policy?.allowBiometricOptOut !== true;
+      const integrityRequired =
+        attendanceEnabled &&
+        process.env.DEVICE_INTEGRITY_ENFORCEMENT_ENABLED === 'true';
       return {
         objectKey: settings.companyLogoKey,
         legacyLogoUrl: safeLegacyLogo(tenant.companyLogo),
-        etagSeed: `${settings.runtimeConfigVersion}:${employee.updatedAt.getTime()}:${policy?.updatedAt.getTime() ?? 0}:${release.minimumVersion}:${release.recommendedVersion}`,
+        etagSeed: `${settings.runtimeConfigVersion}:${employee.updatedAt.getTime()}:${policy?.updatedAt.getTime() ?? 0}:${release.minimumVersion}:${release.recommendedVersion}:${integrityRequired}`,
         data: {
           configVersion: settings.runtimeConfigVersion,
           product: { name: 'DeltCRM', logoUrl: null },
@@ -174,7 +177,7 @@ export class RuntimeConfigService {
             locationMode,
             selfieMode,
             registeredDeviceRequired,
-            integrityRequired: attendanceEnabled,
+            integrityRequired,
             maxOfflineSyncHours: policy?.maxOfflineSyncHours ?? 48,
             leave: {
               enabled: attendanceEnabled,

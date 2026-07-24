@@ -393,12 +393,16 @@ final appRouterProvider = Provider<GoRouter>(
               onRegularization: () => context.push(AppRoutes.regularization),
             );
           }
+          final policy = ref.read(tenantControllerProvider).attendancePolicy;
           return VerificationProgressScreen(
             verify: () => ref
                 .read(attendanceControllerProvider.notifier)
                 .verifyPunch(capture),
             onSuccess: () => context.pushReplacement(AppRoutes.punchSuccess),
             onFailure: () => context.pushReplacement(AppRoutes.punchFailure),
+            integrityRequired: policy.integrityRequired,
+            locationRequired: policy.requiresLocation,
+            faceRequired: policy.requiresFace,
           );
         },
       ),

@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 
 class VerificationChecklist extends StatelessWidget {
-  const VerificationChecklist({super.key});
+  const VerificationChecklist({
+    super.key,
+    required this.integrityRequired,
+    required this.locationRequired,
+    required this.faceRequired,
+  });
+
+  final bool integrityRequired;
+  final bool locationRequired;
+  final bool faceRequired;
 
   @override
-  Widget build(BuildContext context) => const Column(
-    children: [
-      _CheckRow(label: 'Device', complete: true),
-      _CheckRow(label: 'Security check', complete: true),
-      _CheckRow(label: 'Location', complete: true),
-      _CheckRow(label: 'Face match', complete: false),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final labels = [
+      'Device',
+      if (integrityRequired) 'Security check',
+      if (locationRequired) 'Location',
+      if (faceRequired) 'Face match',
+    ];
+    return Column(
+      children: [
+        for (var index = 0; index < labels.length; index++)
+          _CheckRow(label: labels[index], complete: index < labels.length - 1),
+      ],
+    );
+  }
 }
 
 class _CheckRow extends StatelessWidget {

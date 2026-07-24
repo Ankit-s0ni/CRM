@@ -70,9 +70,15 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
       }
       if (policy.requiresLocation) capturedPosition = await _position();
       capturedIdentity = await ref.read(deviceIdentityProvider).payload();
-      capturedIntegrity = await IntegrityTokenProvider(
-        ref.read(apiServiceProvider),
-      ).evidence(capturedIdentity['deviceUuid']!);
+      capturedIntegrity = policy.integrityRequired
+          ? await IntegrityTokenProvider(
+              ref.read(apiServiceProvider),
+            ).evidence(capturedIdentity['deviceUuid']!)
+          : IntegrityEvidence(
+              token: 'integrity-not-required',
+              issuedAt: clientTime,
+              expiresAt: clientTime.add(const Duration(hours: 48)),
+            );
       final result = await _repository.punch(
         type: capture.isCheckOut ? 'CHECKOUT' : 'CHECKIN',
         filePath: capture.filePath,

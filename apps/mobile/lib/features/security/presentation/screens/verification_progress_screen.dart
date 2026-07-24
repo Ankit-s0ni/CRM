@@ -11,10 +11,16 @@ class VerificationProgressScreen extends StatefulWidget {
     required this.verify,
     required this.onSuccess,
     required this.onFailure,
+    this.integrityRequired = true,
+    this.locationRequired = true,
+    this.faceRequired = false,
   });
   final Future<bool> Function() verify;
   final VoidCallback onSuccess;
   final VoidCallback onFailure;
+  final bool integrityRequired;
+  final bool locationRequired;
+  final bool faceRequired;
 
   @override
   State<VerificationProgressScreen> createState() =>
@@ -83,7 +89,11 @@ class _VerificationProgressScreenState
                   style: const TextStyle(color: AppTheme.slate),
                 ),
                 const SizedBox(height: 24),
-                const VerificationChecklist(),
+                VerificationChecklist(
+                  integrityRequired: widget.integrityRequired,
+                  locationRequired: widget.locationRequired,
+                  faceRequired: widget.faceRequired,
+                ),
                 const SizedBox(height: 24),
                 const LinearProgressIndicator(
                   color: AppTheme.charcoal,

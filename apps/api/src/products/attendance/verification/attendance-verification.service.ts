@@ -352,22 +352,35 @@ export class AttendanceVerificationService {
       evidence: { deviceId: device?.id },
     });
 
-    const integrity = await this.integrity.verify(dto.attestationToken, {
-      tx,
-      tenantId: this.requireTenantId(),
-      employeeId: employee.id,
-      deviceId: device?.id ?? '',
-      platform: device?.platform ?? 'ANDROID',
-    });
-    if (!integrity)
-      return fail('integrity', 'VERIFICATION_PROVIDER_UNAVAILABLE');
-    completed.integrity = integrity;
-    if (!integrity.genuineDevice) return fail('integrity', 'INTEGRITY_FAILED');
-    if (integrity.rooted) return fail('integrity', 'ROOTED_DEVICE');
-    if (integrity.mockLocation || dto.mockLocation) {
-      return fail('integrity', 'MOCK_LOCATION');
+    const integrityRequired =
+      process.env.DEVICE_INTEGRITY_ENFORCEMENT_ENABLED === 'true';
+    if (integrityRequired) {
+      const integrity = await this.integrity.verify(dto.attestationToken, {
+        tx,
+        tenantId: this.requireTenantId(),
+        employeeId: employee.id,
+        deviceId: device?.id ?? '',
+        platform: device?.platform ?? 'ANDROID',
+      });
+      if (!integrity)
+        return fail('integrity', 'VERIFICATION_PROVIDER_UNAVAILABLE');
+      completed.integrity = integrity;
+      if (!integrity.genuineDevice)
+        return fail('integrity', 'INTEGRITY_FAILED');
+      if (integrity.rooted) return fail('integrity', 'ROOTED_DEVICE');
+      if (integrity.mockLocation) {
+        return fail('integrity', 'MOCK_LOCATION');
+      }
     }
-    checks.push({ check: 'integrity', passed: true, evidence: {} });
+    if (dto.mockLocation) return fail('integrity', 'MOCK_LOCATION');
+    checks.push({
+      check: 'integrity',
+      passed: true,
+      skipped: !integrityRequired,
+      evidence: integrityRequired
+        ? {}
+        : { skipped: true, reason: 'ENFORCEMENT_DISABLED' },
+    });
 
     const skewSeconds = options.offline
       ? Math.abs(options.clockSkewSeconds ?? 0)
