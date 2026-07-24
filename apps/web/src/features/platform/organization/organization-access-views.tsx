@@ -9,6 +9,7 @@ import {
   Info,
   Pencil,
   Plus,
+  Search,
   ShieldCheck,
   Trash2,
   UserRoundPlus,
@@ -62,6 +63,24 @@ type EmployeePage = {
     totalPages: number;
   };
 };
+
+const EMPLOYEE_ONBOARDING_STEPS = [
+  {
+    number: "1",
+    title: "Create profile",
+    body: "Add identity, joining details, department and designation.",
+  },
+  {
+    number: "2",
+    title: "Set attendance",
+    body: "Assign a primary office, working shift and attendance policy.",
+  },
+  {
+    number: "3",
+    title: "Enable access",
+    body: "Invite the employee and approve a device when the policy requires it.",
+  },
+] as const;
 type Role = {
   id: string;
   name: string;
@@ -689,6 +708,7 @@ export function EmployeesView() {
   const [result, setResult] = useState<EmployeePage | null>(null);
   const [error, setError] = useState("");
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   useEffect(() => {
     apiClient
       .get(`/employees?${query || "page=1&limit=25"}`)
@@ -719,7 +739,16 @@ export function EmployeesView() {
       title="Employees"
       description="Manage workforce records, reporting relationships and lifecycle status."
       action={
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            aria-label="How employee onboarding works"
+            className="grid size-11 place-items-center rounded-xl border border-zinc-300 bg-white text-zinc-600 transition hover:border-primary hover:bg-zinc-50 hover:text-primary"
+            onClick={() => setOnboardingOpen(true)}
+            title="How employee onboarding works"
+            type="button"
+          >
+            <Info className="size-5" />
+          </button>
           <Link
             className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
             href="/app/imports/employees"
@@ -740,162 +769,143 @@ export function EmployeesView() {
       {!data ? (
         <LoadingState />
       ) : (
-        <div className="grid gap-6">
-          <Panel className="p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold">Onboard an employee</h2>
-                <p className="mt-1 text-sm text-outline">
-                  Follow these steps in order. Each employee profile shows what
-                  is still missing.
-                </p>
-              </div>
-              <Link
-                className="text-sm font-bold text-primary"
-                href="/app/employees/new"
-              >
-                Start setup →
-              </Link>
-            </div>
-            <ol className="mt-5 grid gap-3 md:grid-cols-3">
-              {[
-                {
-                  number: "1",
-                  title: "Create profile",
-                  body: "Add employment and organization details.",
-                  help: "Required: identity, joining details, department and designation. This creates the employee record.",
-                },
-                {
-                  number: "2",
-                  title: "Set attendance",
-                  body: "Assign workplace, shift and policy.",
-                  help: "Required for attendance: a primary office, working shift and effective attendance policy.",
-                },
-                {
-                  number: "3",
-                  title: "Enable access",
-                  body: "Invite the employee and approve their device.",
-                  help: "Creates mobile access. Device approval is required only when the assigned policy requires a registered device.",
-                },
-              ].map(({ number, title, body, help }) => (
-                <li className="relative rounded-xl bg-zinc-50 p-4" key={number}>
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="text-xs font-bold text-primary">
-                      STEP {number}
-                    </span>
-                    <span className="group relative">
-                      <button
-                        aria-label={`About ${title}`}
-                        className="grid size-7 place-items-center rounded-full text-zinc-500 hover:bg-white hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                        title={help}
-                        type="button"
-                      >
-                        <Info className="size-4" />
-                      </button>
-                      <span className="pointer-events-none absolute right-0 top-9 z-20 hidden w-64 rounded-xl bg-zinc-900 p-3 text-xs font-normal leading-5 text-white shadow-xl group-hover:block group-focus-within:block">
-                        {help}
-                      </span>
-                    </span>
-                  </div>
-                  <strong className="mt-2 block text-sm">{title}</strong>
-                  <span className="mt-1 block text-xs leading-5 text-outline">
-                    {body}
+        <div>
+          <Panel className="overflow-hidden">
+            <div className="border-b border-surface-variant bg-zinc-50/70 p-4">
+              <div className="grid items-end gap-3 lg:grid-cols-[minmax(360px,1fr)_180px_180px_132px]">
+                <form className="grid gap-1.5" onSubmit={submitSearch}>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                    Search employees
                   </span>
-                </li>
-              ))}
-            </ol>
-          </Panel>
-          <Panel className="overflow-auto">
-            <div className="flex flex-wrap items-center gap-3 border-b border-surface-variant p-4">
-              <form
-                className="flex min-w-[280px] flex-1 gap-2"
-                onSubmit={submitSearch}
-              >
-                <input
-                  aria-label="Search employees"
-                  className={inputClass}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search name, code, email, office or department"
-                  value={search}
-                />
-                <PrimaryButton type="submit">Search</PrimaryButton>
-              </form>
-              <select
-                aria-label="Filter employee status"
-                className={`${inputClass} w-auto`}
-                onChange={(event) =>
-                  updateQuery({ status: event.target.value || null, page: "1" })
-                }
-                value={searchParams.get("status") ?? ""}
-              >
-                <option value="">All statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="ON_NOTICE">On notice</option>
-                <option value="TERMINATED">Terminated</option>
-              </select>
-              <select
-                aria-label="Rows per page"
-                className={`${inputClass} w-auto`}
-                onChange={(event) =>
-                  updateQuery({ limit: event.target.value, page: "1" })
-                }
-                value={searchParams.get("limit") ?? "25"}
-              >
-                <option value="25">25 rows</option>
-                <option value="50">50 rows</option>
-                <option value="100">100 rows</option>
-              </select>
-            </div>
-            <table className="w-full min-w-[1180px] text-left text-sm">
-              <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
-                <tr>
-                  <th className="px-6 py-4">Employee</th>
-                  <th>Code</th>
-                  <th>Email</th>
-                  <th>Office</th>
-                  <th>Department</th>
-                  <th>Designation</th>
-                  <th>Manager</th>
-                  <th>Work type</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((employee) => (
-                  <tr
-                    key={employee.id}
-                    className="border-t border-surface-variant transition hover:bg-zinc-50"
+                  <div className="flex gap-2">
+                    <div className="relative min-w-0 flex-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+                      <input
+                        aria-label="Search employees"
+                        className="h-11 w-full rounded-xl border border-zinc-300 bg-white pl-10 pr-3 text-sm outline-none transition placeholder:text-zinc-400 focus:border-primary focus:ring-2 focus:ring-primary/15"
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Name, code, email, office or department"
+                        value={search}
+                      />
+                    </div>
+                    <button
+                      className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-95"
+                      type="submit"
+                    >
+                      Search
+                    </button>
+                  </div>
+                </form>
+                <label className="grid gap-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                    Status
+                  </span>
+                  <select
+                    aria-label="Filter employee status"
+                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    onChange={(event) =>
+                      updateQuery({
+                        status: event.target.value || null,
+                        page: "1",
+                      })
+                    }
+                    value={searchParams.get("status") ?? ""}
                   >
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/app/employees/${employee.id}`}
-                        className="font-semibold text-primary hover:underline"
-                      >
-                        {employee.fullName}
-                      </Link>
-                      <div className="text-xs text-outline">
-                        {employee.phone || "No phone"}
-                      </div>
-                    </td>
-                    <td>{employee.employeeCode}</td>
-                    <td>{employee.user?.email || "—"}</td>
-                    <td>
-                      {employee.officeAssignments?.[0]?.office.officeName ||
-                        "—"}
-                    </td>
-                    <td>{employee.department?.name || "—"}</td>
-                    <td>{employee.designation?.name || "—"}</td>
-                    <td>{employee.manager?.fullName || "—"}</td>
-                    <td>{employee.workType}</td>
-                    <td>
-                      <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
-                        {employee.status}
-                      </span>
-                    </td>
+                    <option value="">All statuses</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="ON_NOTICE">On notice</option>
+                    <option value="TERMINATED">Terminated</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                    Sort by
+                  </span>
+                  <select
+                    aria-label="Sort employees"
+                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    onChange={(event) =>
+                      updateQuery({ sort: event.target.value, page: "1" })
+                    }
+                    value={searchParams.get("sort") ?? "name_asc"}
+                  >
+                    <option value="name_asc">Name A–Z</option>
+                    <option value="name_desc">Name Z–A</option>
+                    <option value="code_asc">Code ascending</option>
+                    <option value="joined_desc">Newest joined</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                    Show
+                  </span>
+                  <select
+                    aria-label="Rows per page"
+                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    onChange={(event) =>
+                      updateQuery({ limit: event.target.value, page: "1" })
+                    }
+                    value={searchParams.get("limit") ?? "25"}
+                  >
+                    <option value="25">25 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="100">100 rows</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1180px] text-left text-sm">
+                <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
+                  <tr>
+                    <th className="px-6 py-4">Employee</th>
+                    <th>Code</th>
+                    <th>Email</th>
+                    <th>Office</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Manager</th>
+                    <th>Work type</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.map((employee) => (
+                    <tr
+                      key={employee.id}
+                      className="border-t border-surface-variant transition hover:bg-zinc-50"
+                    >
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/app/employees/${employee.id}`}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          {employee.fullName}
+                        </Link>
+                        <div className="text-xs text-outline">
+                          {employee.phone || "No phone"}
+                        </div>
+                      </td>
+                      <td>{employee.employeeCode}</td>
+                      <td>{employee.user?.email || "—"}</td>
+                      <td>
+                        {employee.officeAssignments?.[0]?.office.officeName ||
+                          "—"}
+                      </td>
+                      <td>{employee.department?.name || "—"}</td>
+                      <td>{employee.designation?.name || "—"}</td>
+                      <td>{employee.manager?.fullName || "—"}</td>
+                      <td>{employee.workType}</td>
+                      <td>
+                        <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                          {employee.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             {!data.length && (
               <EmptyState
                 title="No employees"
@@ -949,6 +959,37 @@ export function EmployeesView() {
             )}
           </Panel>
         </div>
+      )}
+      {onboardingOpen && (
+        <AccessDialog
+          title="How employee onboarding works"
+          onClose={() => setOnboardingOpen(false)}
+        >
+          <ol className="grid gap-3">
+            {EMPLOYEE_ONBOARDING_STEPS.map(({ number, title, body }) => (
+              <li
+                className="flex gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+                key={number}
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
+                  {number}
+                </span>
+                <span>
+                  <strong className="block text-sm">{title}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-outline">
+                    {body}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <Link
+            className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white"
+            href="/app/employees/new"
+          >
+            Add an employee
+          </Link>
+        </AccessDialog>
       )}
     </AdminPage>
   );
