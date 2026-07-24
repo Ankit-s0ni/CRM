@@ -29,6 +29,7 @@ import { apiClient } from "@/lib/api-client";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 import { EmployeeDevicePanel } from "@/features/platform/workspace-settings/device-management-view";
+import { AttendanceDetailView } from "@/features/products/attendance/core/attendance-detail-view";
 import { InternationalPhoneInput } from "@/shared/components/international-phone-input";
 import {
   AdminPage,
@@ -1007,7 +1008,8 @@ function ReadinessPanel({
   > = {
     accountLinked: {
       title: "Create employee login",
-      description: "Invite the employee so they can use the app and self-service.",
+      description:
+        "Invite the employee so they can use the app and self-service.",
       tab: "access",
       action: "Open account access",
     },
@@ -1031,13 +1033,15 @@ function ReadinessPanel({
     },
     attendancePolicyAssigned: {
       title: "Apply attendance policy",
-      description: "Controls location, selfie and registered-device requirements.",
+      description:
+        "Controls location, selfie and registered-device requirements.",
       tab: "assignments",
       action: "Open assignments",
     },
     approvedDevice: {
       title: "Approve employee device",
-      description: "Required only when the selected policy enforces device trust.",
+      description:
+        "Required only when the selected policy enforces device trust.",
       tab: "trust",
       action: "Open devices",
     },
@@ -1068,33 +1072,33 @@ function ReadinessPanel({
             action: "Review",
           };
           return (
-          <button
-            className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-left text-sm transition hover:bg-zinc-50"
-            key={key}
-            onClick={() => onSelect(step.tab)}
-            type="button"
-          >
-            <span
-              className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                ready
-                  ? "bg-emerald-100 text-emerald-900"
-                  : "bg-amber-100 text-amber-900"
-              }`}
+            <button
+              className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-left text-sm transition hover:bg-zinc-50"
+              key={key}
+              onClick={() => onSelect(step.tab)}
+              type="button"
             >
-              {ready ? "Y" : "!"}
-            </span>
-            <span>
-              <strong className="block text-zinc-800">{step.title}</strong>
-              <span className="mt-1 block text-xs leading-5 text-outline">
-                {ready ? "Complete" : step.description}
+              <span
+                className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
+                  ready
+                    ? "bg-emerald-100 text-emerald-900"
+                    : "bg-amber-100 text-amber-900"
+                }`}
+              >
+                {ready ? "Y" : "!"}
               </span>
-              {!ready && (
-                <span className="mt-2 block text-xs font-bold text-primary">
-                  {step.action} →
+              <span>
+                <strong className="block text-zinc-800">{step.title}</strong>
+                <span className="mt-1 block text-xs leading-5 text-outline">
+                  {ready ? "Complete" : step.description}
                 </span>
-              )}
-            </span>
-          </button>
+                {!ready && (
+                  <span className="mt-2 block text-xs font-bold text-primary">
+                    {step.action} →
+                  </span>
+                )}
+              </span>
+            </button>
           );
         })}
       </div>
@@ -1147,13 +1151,13 @@ function AssignmentsPanel({
 }) {
   const policy = workspace.assignments.effectiveAttendancePolicy;
   const [editing, setEditing] = useState(false);
-  
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Panel className="p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Work assignments</h2>
-          <button 
+          <button
             className="flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-200"
             onClick={() => setEditing(true)}
           >
@@ -1268,7 +1272,10 @@ function AssignmentsPanel({
       {editing && (
         <EditAssignmentsModal
           employeeId={employeeId}
-          currentPrimaryOfficeId={workspace.assignments.offices.find(o => o.isPrimary)?.office.id ?? null}
+          currentPrimaryOfficeId={
+            workspace.assignments.offices.find((o) => o.isPrimary)?.office.id ??
+            null
+          }
           currentDefaultShiftId={workspace.assignments.defaultShift?.id ?? null}
           onClose={() => setEditing(false)}
           onSuccess={() => {
@@ -1289,39 +1296,11 @@ function AttendancePanel({
   workspace: EmployeeWorkspace;
 }) {
   return (
-    <Panel className="overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-4 p-6">
-        <div>
-          <h2 className="text-lg font-bold">Recent Attendance</h2>
-          <p className="mt-1 text-sm text-outline">
-            Latest calculated days, late time, and overtime.
-          </p>
-        </div>
-        <Link
-          className="text-sm font-bold text-primary"
-          href={`/app/attendance/register/${employeeId}`}
-        >
-          Open full register
-        </Link>
-      </div>
-      {workspace.attendance.recentDays.length ? (
-        workspace.attendance.recentDays.map((day) => (
-          <div
-            className="grid gap-2 border-t border-surface-variant px-6 py-4 text-sm sm:grid-cols-[140px_1fr_120px_120px]"
-            key={day.id}
-          >
-            <span>{formatDate(day.attendanceDate)}</span>
-            <strong>{day.attendanceStatus.replaceAll("_", " ")}</strong>
-            <span>{day.totalWorkMinutes} min</span>
-            <span>{day.overtimeMinutes} min OT</span>
-          </div>
-        ))
-      ) : (
-        <p className="border-t border-surface-variant p-6 text-sm text-outline">
-          No calculated Attendance days are available yet.
-        </p>
-      )}
-    </Panel>
+    <AttendanceDetailView
+      employeeId={employeeId}
+      returnTo={`/app/employees/${employeeId}?tab=attendance`}
+      embedded
+    />
   );
 }
 
@@ -1428,8 +1407,8 @@ function AccountPanel({
                 Employee self-service active
               </p>
               <p className="mt-1 text-xs leading-5 text-emerald-900">
-                The Employee role was assigned automatically when this login
-                was created.
+                The Employee role was assigned automatically when this login was
+                created.
               </p>
             </div>
             {elevatedRoles.length > 0 && (
@@ -1565,8 +1544,8 @@ function CreateEmployeeAccountDialog({
             </span>
           </div>
           <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-            The temporary password is the employee name plus the first six
-            phone digits. It is shown after account creation.
+            The temporary password is the employee name plus the first six phone
+            digits. It is shown after account creation.
           </p>
           <DialogActions
             busy={saving}
@@ -1635,9 +1614,9 @@ const HISTORY_CATEGORIES: Array<{
 ];
 
 function HistoryPanel({ employeeId }: { employeeId: string }) {
-  const [category, setCategory] = useState<
-    "ALL" | EmployeeHistoryCategory
-  >("ALL");
+  const [category, setCategory] = useState<"ALL" | EmployeeHistoryCategory>(
+    "ALL",
+  );
   const [entries, setEntries] = useState<EmployeeHistoryItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1742,7 +1721,11 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
           </select>
         </Field>
       </div>
-      {error && <div className="mt-5"><ErrorState message={error} /></div>}
+      {error && (
+        <div className="mt-5">
+          <ErrorState message={error} />
+        </div>
+      )}
       <div className="mt-5 grid gap-3">
         {loading ? (
           <LoadingState />
@@ -1837,11 +1820,7 @@ type EmployeeDocument = {
 };
 
 type DocumentUploadStage =
-  | "idle"
-  | "preparing"
-  | "uploading"
-  | "registering"
-  | "refreshing";
+  "idle" | "preparing" | "uploading" | "registering" | "refreshing";
 
 function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
@@ -1860,8 +1839,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
     document: EmployeeDocument;
     url: string;
   } | null>(null);
-  const [uploadStage, setUploadStage] =
-    useState<DocumentUploadStage>("idle");
+  const [uploadStage, setUploadStage] = useState<DocumentUploadStage>("idle");
   const [error, setError] = useState("");
 
   const load = () =>
@@ -1993,8 +1971,8 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
           <div>
             <h2 className="text-lg font-bold">Employee documents</h2>
             <p className="mt-1 max-w-2xl text-sm text-outline">
-              Store private employee files and issue short-lived download
-              links. Uploads and deletions are recorded in the audit history.
+              Store private employee files and issue short-lived download links.
+              Uploads and deletions are recorded in the audit history.
             </p>
           </div>
           {canManage && (
@@ -2017,51 +1995,50 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
         {canManage && uploadOpen && (
           <div className="border-t border-surface-variant bg-zinc-50/70 p-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Field label="Document title">
-              <input
-                className={inputClass}
-                placeholder="e.g. Employment contract"
-                onChange={(event) => setTitle(event.target.value)}
-                value={title}
-              />
-            </Field>
-            <Field label="Document type">
-              <select
-                className={inputClass}
-                onChange={(event) => setDocumentType(event.target.value)}
-                value={documentType}
-              >
-                <option value="EMPLOYMENT">Employment</option>
-                <option value="IDENTITY">Identity</option>
-                <option value="CERTIFICATION">Certification</option>
-                <option value="POLICY">Policy acknowledgement</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </Field>
-            <Field label="Expiry date (optional)">
-              <input
-                className={inputClass}
-                onChange={(event) => setExpiresAt(event.target.value)}
-                type="date"
-                value={expiresAt}
-              />
-            </Field>
-            <Field label="Private file">
-              <input
-                accept="application/pdf,image/jpeg,image/png,image/webp"
-                className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-primary"
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                type="file"
-              />
-            </Field>
+              <Field label="Document title">
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Employment contract"
+                  onChange={(event) => setTitle(event.target.value)}
+                  value={title}
+                />
+              </Field>
+              <Field label="Document type">
+                <select
+                  className={inputClass}
+                  onChange={(event) => setDocumentType(event.target.value)}
+                  value={documentType}
+                >
+                  <option value="EMPLOYMENT">Employment</option>
+                  <option value="IDENTITY">Identity</option>
+                  <option value="CERTIFICATION">Certification</option>
+                  <option value="POLICY">Policy acknowledgement</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </Field>
+              <Field label="Expiry date (optional)">
+                <input
+                  className={inputClass}
+                  onChange={(event) => setExpiresAt(event.target.value)}
+                  type="date"
+                  value={expiresAt}
+                />
+              </Field>
+              <Field label="Private file">
+                <input
+                  accept="application/pdf,image/jpeg,image/png,image/webp"
+                  className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-primary"
+                  onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                  type="file"
+                />
+              </Field>
             </div>
             {file && (
               <div className="mt-4 rounded-xl border border-surface-variant bg-white p-3 text-xs text-on-surface-variant">
                 <strong className="block truncate text-sm text-on-surface">
                   {file.name}
                 </strong>
-                {file.type || "Unknown file type"} ·{" "}
-                {formatFileSize(file.size)}
+                {file.type || "Unknown file type"} · {formatFileSize(file.size)}
               </div>
             )}
             {!file && (
@@ -2627,7 +2604,9 @@ function EditAssignmentsModal({
                     ))}
                   </select>
                 </Field>
-                <PrimaryButton disabled={saving} onClick={save}>Save assignments</PrimaryButton>
+                <PrimaryButton disabled={saving} onClick={save}>
+                  Save assignments
+                </PrimaryButton>
               </>
             )}
           </div>

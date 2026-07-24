@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { RouteFeatureInfo } from "@/features/platform/help/feature-info";
@@ -73,10 +73,12 @@ export function AttendanceDetailView({
   employeeId,
   initialDate,
   returnTo,
+  embedded = false,
 }: {
   employeeId: string;
   initialDate?: string;
   returnTo: string;
+  embedded?: boolean;
 }) {
   const router = useRouter();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
@@ -107,7 +109,15 @@ export function AttendanceDetailView({
         if (active) {
           setMonthData(data.data);
           setError("");
-          const preferred = data.data.days.at(-1);
+          const today = localIsoDate();
+          const preferred =
+            data.data.days.find((day) => day.date === today) ??
+            data.data.days
+              .toReversed()
+              .find(
+                (day) => day.date <= today && day.status !== "NOT_APPLICABLE",
+              ) ??
+            data.data.days[0];
           if (preferred) setSelectedDate(preferred.date);
         }
       })
@@ -150,29 +160,40 @@ export function AttendanceDetailView({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
+    <div
+      className={cn(
+        "mx-auto w-full max-w-[1600px]",
+        embedded ? "py-1" : "p-4 lg:p-6",
+      )}
+    >
       <header className="mb-6 flex flex-wrap items-center gap-4">
-        <Link
-          aria-label="Back to attendance register"
-          href={returnTo}
-          className="grid size-10 place-items-center rounded-xl border border-zinc-300 bg-white"
-        >
-          <ArrowLeft className="size-4" />
-        </Link>
+        {!embedded && (
+          <Link
+            aria-label="Back to attendance register"
+            href={returnTo}
+            className="grid size-10 place-items-center rounded-xl border border-zinc-300 bg-white"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
+        )}
         <div className="min-w-56 flex-1">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
-            Attendance detail
+            {embedded ? "Employee attendance" : "Attendance detail"}
           </p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-2xl font-bold">
-              {monthData?.employee.fullName ?? "Employee attendance"}
+              {embedded
+                ? "Monthly attendance calendar"
+                : (monthData?.employee.fullName ?? "Employee attendance")}
             </h1>
             <RouteFeatureInfo />
           </div>
           <p className="mt-1 text-xs text-outline">
-            {monthData
-              ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? "Employee"} · ${monthData.employee.department.name}`
-              : "Monthly calendar and evidence timeline"}
+            {embedded
+              ? "Working days, weekly offs, approved leave, and attendance records."
+              : monthData
+                ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? "Employee"} · ${monthData.employee.department.name}`
+                : "Monthly calendar and evidence timeline"}
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-white p-1">
@@ -295,6 +316,15 @@ function MonthCalendar({
   ).getDate();
   const offset = (first.getDay() + 6) % 7;
   const byDate = new Map(days.map((day) => [day.date, day]));
+  const legend = [
+    "PRESENT",
+    "LATE",
+    "ABSENT",
+    "ON_LEAVE",
+    "HOLIDAY",
+    "WEEKLY_OFF",
+    "WORKING_DAY",
+  ] as const;
   return (
     <Panel className="overflow-hidden p-4 lg:p-6">
       <div className="mb-4 flex items-center gap-2">
@@ -320,8 +350,10 @@ function MonthCalendar({
         {Array.from({ length: count }, (_, index) => {
           const date = `${month}-${String(index + 1).padStart(2, "0")}`;
           const day = byDate.get(date);
-          const selectable = Boolean(day) || (allowMissing && date <= localIsoDate());
+          const selectable =
+            Boolean(day) || (allowMissing && date <= localIsoDate());
           const tone = day ? statusTone(day.status) : null;
+          const dayNumber = index + 1;
           return (
             <button
               key={date}
@@ -332,11 +364,32 @@ function MonthCalendar({
                 selectable
                   ? "border-surface-variant bg-white hover:border-zinc-400"
                   : "border-transparent bg-zinc-50 text-zinc-400",
+                day &&
+                  tone &&
+                  "border-current/10 bg-[color:var(--calendar-bg)] text-[color:var(--calendar-fg)]",
                 selectedDate === date &&
                   "border-primary ring-2 ring-primary/15",
               )}
+              style={
+                day && tone
+                  ? ({
+                      "--calendar-bg": tone.calendarBg,
+                      "--calendar-fg": tone.calendarFg,
+                    } as CSSProperties)
+                  : undefined
+              }
             >
-              <span className="text-xs font-bold">{index + 1}</span>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-xs font-bold">{dayNumber}</span>
+                {day && (
+                  <span
+                    className={cn(
+                      "mt-0.5 size-2 shrink-0 rounded-full",
+                      tone?.dot,
+                    )}
+                  />
+                )}
+              </div>
               {day && (
                 <>
                   <span
@@ -353,6 +406,17 @@ function MonthCalendar({
                 </>
               )}
             </button>
+          );
+        })}
+      </div>
+      <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-outline">
+        {legend.map((status) => {
+          const tone = statusTone(status);
+          return (
+            <span key={status} className="inline-flex items-center gap-2">
+              <span className={cn("size-2 rounded-full", tone.dot)} />
+              {tone.label}
+            </span>
           );
         })}
       </div>
@@ -426,7 +490,9 @@ function DayEvidence({
       {data.exception && (
         <div className="m-4 rounded-xl border border-zinc-200 bg-surface-variant p-3 text-xs">
           <strong>{data.exception.exceptionType.replaceAll("_", " ")}</strong>
-          <p className="mt-1 text-on-surface-variant">{data.exception.reason}</p>
+          <p className="mt-1 text-on-surface-variant">
+            {data.exception.reason}
+          </p>
         </div>
       )}
       <div className="p-5">
@@ -558,7 +624,11 @@ function CreateCorrectionDialog({
           Enter the correct check-in and checkout. Saving applies the correction
           immediately and records the reason in the audit history.
         </p>
-        {error && <div className="mt-4"><ErrorState message={error} /></div>}
+        {error && (
+          <div className="mt-4">
+            <ErrorState message={error} />
+          </div>
+        )}
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <Field label="Corrected check-in">
             <input
