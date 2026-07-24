@@ -762,6 +762,7 @@ export class PlatformTenantsService {
 
 function isDebugTokenExposureEnabled() {
   return (
-    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+    process.env.NODE_ENV !== 'production' &&
+    process.env.EXPOSE_DEBUG_AUTH_TOKENS === 'true'
   );
 }
