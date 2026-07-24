@@ -20,6 +20,11 @@ describe('Monthly attendance calendar', () => {
     ['weekly off', { weeklyOff: true }, 'WEEKLY_OFF'],
     ['approved leave', { leave: true }, 'ON_LEAVE'],
     [
+      'approved leave on a future scheduled working day',
+      { leave: true, isFuture: true },
+      'ON_LEAVE',
+    ],
+    [
       'approved half-day leave',
       { leave: true, halfDayLeave: true },
       'HALF_DAY',

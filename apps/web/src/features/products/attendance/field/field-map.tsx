@@ -12,7 +12,7 @@ export type MapCoordinate = {
 type MapMarker = MapCoordinate & {
   id: string;
   label?: string;
-  tone?: "live" | "stale" | "offline" | "stop" | "gap" | "punch";
+  tone?: "live" | "stale" | "offline" | "stop" | "gap" | "punch" | "alert";
 };
 
 type Geofence = MapCoordinate & {
@@ -164,6 +164,7 @@ function OpenStreetMapFieldMap({
         .field-map-marker__pin--offline { background:#a5a5a5; }
         .field-map-marker__pin--stop { background:#0d6e78; }
         .field-map-marker__pin--punch { background:#a23063; }
+        .field-map-marker__pin--alert { background:#dc2626; }
         .field-map-marker__pin--default { background:#27272a; }
         .field-map-marker__pin--selected { box-shadow:0 0 0 5px rgba(53,37,205,.24),0 4px 12px rgba(25,24,35,.28); }
       `}</style>
@@ -307,5 +308,6 @@ function markerTone(tone: MapMarker["tone"]) {
   if (tone === "offline") return "bg-outline";
   if (tone === "stop") return "bg-cyan-700";
   if (tone === "punch") return "bg-rose-700";
+  if (tone === "alert") return "bg-red-600";
   return "bg-primary";
 }

@@ -231,15 +231,29 @@ _RequestView _regularization(Map<String, dynamic> item) {
 
 _RequestView _leave(Map<String, dynamic> item) {
   final policy = item['policy'] as Map<String, dynamic>? ?? const {};
+  final startDate = DateTime.tryParse('${item['startDate']}');
+  final endDate = DateTime.tryParse('${item['endDate']}');
   return _RequestView(
     id: '${item['id']}',
     type: 'LEAVE',
-    title:
-        '${policy['name'] ?? 'Leave'} · ${item['startDate']} to ${item['endDate']}',
+    title: '${policy['name'] ?? 'Leave'} · ${_dateRange(startDate, endDate)}',
     status: '${item['status'] ?? 'PENDING'}',
     detail: '${item['totalDays'] ?? 0} day(s) · ${item['reason'] ?? ''}',
     createdAt: DateTime.tryParse('${item['createdAt']}') ?? DateTime(1970),
   );
+}
+
+String _dateRange(DateTime? start, DateTime? end) {
+  if (start == null || end == null) return 'Dates unavailable';
+  // Leave dates are date-only values. Keep their calendar date instead of
+  // applying the device timezone, which can move UTC midnight to another day.
+  if (DateUtils.isSameDay(start, end)) {
+    return DateFormat.yMMMd().format(start);
+  }
+  if (start.year == end.year && start.month == end.month) {
+    return '${DateFormat.MMMd().format(start)}–${end.day}, ${end.year}';
+  }
+  return '${DateFormat.yMMMd().format(start)}–${DateFormat.yMMMd().format(end)}';
 }
 
 String _titleCase(String value) =>

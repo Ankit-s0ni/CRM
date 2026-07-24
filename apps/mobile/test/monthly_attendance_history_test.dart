@@ -45,13 +45,25 @@ void main() {
               'lateMinutes': 0,
               'overtimeMinutes': 0,
             },
+            {
+              'date': '2026-07-28',
+              'status': 'ON_LEAVE',
+              'isWorkingDay': true,
+              'isToday': false,
+              'isFuture': true,
+              'isLocked': false,
+              'canOpenDetails': false,
+              'totalWorkMinutes': 0,
+              'lateMinutes': 0,
+              'overtimeMinutes': 0,
+            },
           ],
         },
         'summary': {
           'present': 1,
           'lateDays': 1,
           'absent': 0,
-          'leaveDays': 0,
+          'leaveDays': 1,
           'weeklyOffs': 1,
           'workMinutes': 930,
         },
@@ -59,12 +71,14 @@ void main() {
 
       expect(history.month, '2026-07');
       expect(history.timezone, 'Asia/Muscat');
-      expect(history.days, hasLength(3));
-      expect(history.days.last.status, 'WEEKLY_OFF');
+      expect(history.days, hasLength(4));
+      expect(history.days[2].status, 'WEEKLY_OFF');
+      expect(history.days.last.status, 'ON_LEAVE');
       expect(history.days.last.canOpenDetails, isFalse);
       expect(history.summary.present, 1);
       expect(history.summary.lateDays, 1);
       expect(history.summary.weeklyOffs, 1);
+      expect(history.summary.leaveDays, 1);
       expect(history.summary.workMinutes, 930);
     });
 

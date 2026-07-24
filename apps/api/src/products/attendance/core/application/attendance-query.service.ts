@@ -9,6 +9,14 @@ import { PrismaService } from '../../../../shared/database/prisma.service';
 import { TenantContextService } from '../../../../platform/tenancy/public';
 import { DateOnly } from '../domain/value-objects/date-only';
 import { AttendanceRegisterQueryDto } from '../presentation/dto/attendance-query.dto';
+import {
+  calendarDisplayStatus,
+  databaseDate,
+  exceptionLeaveFractionForDate,
+  isConfiguredWeeklyOff,
+  monthDates,
+  summarizeCalendar,
+} from './attendance-runtime.service';
 
 @Injectable()
 export class AttendanceQueryService {
@@ -157,23 +165,207 @@ export class AttendanceQueryService {
         include: {
           department: { select: { id: true, name: true } },
           designation: { select: { id: true, name: true } },
+          defaultShift: true,
+          officeAssignments: {
+            where: { isPrimary: true },
+            take: 1,
+            include: { office: true },
+          },
         },
       });
       if (!employee) this.notFound();
-      const logs = await tx.attendanceLog.findMany({
-        where: {
-          employeeId,
-          attendanceDate: { gte: range.start, lte: range.end },
-        },
-        include: { appliedShift: { select: { id: true, name: true } } },
-        orderBy: { attendanceDate: 'asc' },
+      const office = employee.officeAssignments[0]?.office;
+      const [
+        logs,
+        settings,
+        assignments,
+        holidays,
+        exceptions,
+        approvedLeaves,
+        payrollLock,
+        rosters,
+      ] = await Promise.all([
+        tx.attendanceLog.findMany({
+          where: {
+            employeeId,
+            attendanceDate: { gte: range.start, lte: range.end },
+          },
+          include: { appliedShift: { select: { id: true, name: true } } },
+          orderBy: { attendanceDate: 'asc' },
+        }),
+        tx.tenantSettings.findUniqueOrThrow({
+          where: { tenantId: employee.tenantId },
+        }),
+        tx.policyAssignment.findMany({
+          where: {
+            OR: [
+              { scope: 'EMPLOYEE', employeeId },
+              { scope: 'DEPARTMENT', deptId: employee.deptId },
+              { scope: 'TENANT_DEFAULT' },
+            ],
+          },
+          include: { policy: true },
+        }),
+        tx.tenantHoliday.findMany({
+          where: {
+            holidayDate: { gte: range.start, lte: range.end },
+            OR: [
+              { officeLocationId: null },
+              ...(office ? [{ officeLocationId: office.id }] : []),
+            ],
+          },
+        }),
+        tx.attendanceException.findMany({
+          where: {
+            employeeId,
+            startDate: { lte: range.end },
+            endDate: { gte: range.start },
+          },
+          include: {
+            leaveRequest: {
+              select: {
+                status: true,
+                policy: { select: { name: true } },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        tx.leaveRequest.findMany({
+          where: {
+            employeeId,
+            status: 'APPROVED',
+            startDate: { lte: range.end },
+            endDate: { gte: range.start },
+          },
+          include: { policy: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+        }),
+        tx.payrollLockPeriod.findUnique({
+          where: {
+            tenantId_period: { tenantId: employee.tenantId, period: month },
+          },
+          select: { status: true },
+        }),
+        tx.employeeShiftRoster.findMany({
+          where: {
+            employeeId,
+            rosterDate: { gte: range.start, lte: range.end },
+          },
+          include: { shift: true },
+        }),
+      ]);
+      const assignment =
+        assignments.find(({ scope }) => scope === 'EMPLOYEE') ??
+        assignments.find(({ scope }) => scope === 'DEPARTMENT') ??
+        assignments.find(({ scope }) => scope === 'TENANT_DEFAULT');
+      const weeklyOffs = assignment?.policy.weeklyOffs ?? settings.weeklyOffs;
+      const timezone = office?.timezone ?? settings.timezone;
+      const today = DateTime.now().setZone(timezone).toISODate()!;
+      const logsByDate = new Map(
+        logs.map((log) => [databaseDate(log.attendanceDate), log]),
+      );
+      const holidaysByDate = new Map(
+        holidays.map((holiday) => [databaseDate(holiday.holidayDate), holiday]),
+      );
+      const rostersByDate = new Map(
+        rosters.map((roster) => [databaseDate(roster.rosterDate), roster]),
+      );
+      const days = monthDates(month).map((date) => {
+        const log = logsByDate.get(date);
+        const holiday = holidaysByDate.get(date);
+        const roster = rostersByDate.get(date);
+        const exception = exceptions.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
+        const approvedLeave = approvedLeaves.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
+        const leave =
+          (exception?.exceptionType === 'LEAVE' &&
+            (!exception.leaveRequest ||
+              exception.leaveRequest.status === 'APPROVED')) ||
+          !!approvedLeave;
+        const leaveRange = exception ?? approvedLeave;
+        const beforeJoining = date < databaseDate(employee.dateOfJoining);
+        const afterExit =
+          employee.dateOfExit != null &&
+          date > databaseDate(employee.dateOfExit);
+        const isToday = date === today;
+        const isFuture = date > today;
+        const weeklyOff =
+          !roster && isConfiguredWeeklyOff(weeklyOffs, date, timezone);
+        const display = calendarDisplayStatus({
+          log,
+          holiday: !!holiday,
+          weeklyOff,
+          leave,
+          halfDayLeave:
+            leave && leaveRange
+              ? exceptionLeaveFractionForDate(leaveRange, date) === 0.5
+              : false,
+          onDuty: exception?.exceptionType === 'ON_DUTY',
+          notApplicable: beforeJoining || afterExit,
+          isToday,
+          isFuture,
+        });
+        return {
+          id: log?.id ?? `calendar-${date}`,
+          date,
+          status: display.status,
+          source: display.source,
+          isWorkingDay: display.isWorkingDay,
+          isToday,
+          isFuture,
+          isLocked: !!log?.lockedAt || payrollLock?.status === 'LOCKED',
+          canOpenDetails:
+            !isFuture &&
+            !beforeJoining &&
+            !afterExit &&
+            !['HOLIDAY', 'WEEKLY_OFF'].includes(display.status),
+          label:
+            holiday?.holidayName ??
+            (leave
+              ? (exception?.leaveRequest?.policy.name ??
+                approvedLeave?.policy.name ??
+                'Approved leave')
+              : null),
+          firstCheckin: log?.firstCheckin ?? null,
+          lastCheckout: log?.lastCheckout ?? null,
+          workMinutes: log?.totalWorkMinutes ?? 0,
+          breakMinutes: log?.breakMinutes ?? 0,
+          lateMinutes: log?.lateMinutes ?? 0,
+          overtimeMinutes: log?.overtimeMinutes ?? 0,
+          earlyLeaveMinutes: log?.earlyLeaveMinutes ?? 0,
+          shift: roster?.shift
+            ? { id: roster.shift.id, name: roster.shift.name }
+            : employee.defaultShift
+              ? {
+                  id: employee.defaultShift.id,
+                  name: employee.defaultShift.name,
+                }
+              : null,
+          finalizedAt: log?.finalizedAt ?? null,
+          lockedAt: log?.lockedAt ?? null,
+        };
       });
       return {
         data: {
           employee,
           month,
-          days: logs.map(monthDay),
-          summary: summarize(logs),
+          timezone,
+          days,
+          summary: summarizeCalendar(
+            days.map((day) => ({
+              status: day.status,
+              totalWorkMinutes: day.workMinutes,
+              overtimeMinutes: day.overtimeMinutes,
+            })),
+          ),
         },
       };
     });

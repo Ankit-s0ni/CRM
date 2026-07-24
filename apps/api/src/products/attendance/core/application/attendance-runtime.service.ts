@@ -329,6 +329,7 @@ export class AttendanceRuntimeService {
         logs,
         holidays,
         exceptions,
+        approvedLeaves,
         payrollLock,
         rosters,
       ] = await Promise.all([
@@ -395,6 +396,16 @@ export class AttendanceRuntimeService {
           },
           orderBy: { createdAt: 'desc' },
         }),
+        tx.leaveRequest.findMany({
+          where: {
+            employeeId: employee.id,
+            status: 'APPROVED',
+            startDate: { lte: range.end },
+            endDate: { gte: range.start },
+          },
+          include: { policy: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+        }),
         tx.payrollLockPeriod.findUnique({
           where: {
             tenantId_period: {
@@ -443,6 +454,11 @@ export class AttendanceRuntimeService {
             databaseDate(item.startDate) <= date &&
             databaseDate(item.endDate) >= date,
         );
+        const approvedLeave = approvedLeaves.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
         const beforeJoining = date < databaseDate(employee.dateOfJoining);
         const afterExit =
           employee.dateOfExit != null &&
@@ -454,17 +470,19 @@ export class AttendanceRuntimeService {
         const weeklyOff =
           !roster && isConfiguredWeeklyOff(weeklyOffs, date, timezone);
         const leave =
-          exception?.exceptionType === 'LEAVE' &&
-          (!exception.leaveRequest ||
-            exception.leaveRequest.status === 'APPROVED');
+          (exception?.exceptionType === 'LEAVE' &&
+            (!exception.leaveRequest ||
+              exception.leaveRequest.status === 'APPROVED')) ||
+          !!approvedLeave;
+        const leaveRange = exception ?? approvedLeave;
         const display = calendarDisplayStatus({
           log,
           holiday: !!holiday,
           weeklyOff,
           leave,
           halfDayLeave:
-            leave && exception
-              ? exceptionLeaveFractionForDate(exception, date) === 0.5
+            leave && leaveRange
+              ? exceptionLeaveFractionForDate(leaveRange, date) === 0.5
               : false,
           onDuty: exception?.exceptionType === 'ON_DUTY',
           notApplicable: beforeJoining || afterExit,
@@ -488,7 +506,9 @@ export class AttendanceRuntimeService {
           label:
             holiday?.holidayName ??
             (leave
-              ? (exception?.leaveRequest?.policy.name ?? 'Approved leave')
+              ? (exception?.leaveRequest?.policy.name ??
+                approvedLeave?.policy.name ??
+                'Approved leave')
               : null),
           firstCheckin: log?.firstCheckin ?? null,
           lastCheckout: log?.lastCheckout ?? null,
@@ -804,14 +824,14 @@ export type CalendarDay = {
   overtimeMinutes: number;
 };
 
-function monthDates(month: string) {
+export function monthDates(month: string) {
   const start = DateTime.fromFormat(month, 'yyyy-MM', { zone: 'utc' });
   return Array.from({ length: start.daysInMonth ?? 0 }, (_, index) =>
     start.plus({ days: index }).toISODate()!,
   );
 }
 
-function databaseDate(date: Date) {
+export function databaseDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
@@ -872,7 +892,7 @@ export function calendarDisplayStatus(input: {
   return { status: 'ABSENT', source: 'DERIVED', isWorkingDay: true };
 }
 
-function exceptionLeaveFractionForDate(
+export function exceptionLeaveFractionForDate(
   exception: {
     startDate: Date;
     endDate: Date;
@@ -905,7 +925,7 @@ export function summarizeCalendar(days: CalendarDay[]) {
   };
 }
 
-function isConfiguredWeeklyOff(
+export function isConfiguredWeeklyOff(
   value: Prisma.JsonValue,
   date: string,
   timezone: string,
