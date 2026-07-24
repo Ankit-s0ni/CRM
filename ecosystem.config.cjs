@@ -5,10 +5,6 @@ module.exports = {
       cwd: "/home/ubuntu/CRM",
       script: "./scripts/pm2-run-api.sh",
       interpreter: "/bin/bash",
-      env: {
-        NODE_ENV: "production",
-        PORT: "4001",
-      },
       time: true,
       autorestart: true,
       max_restarts: 10,
@@ -19,10 +15,6 @@ module.exports = {
       cwd: "/home/ubuntu/CRM",
       script: "./scripts/pm2-run-web.sh",
       interpreter: "/bin/bash",
-      env: {
-        NODE_ENV: "production",
-        PORT: "4002",
-      },
       time: true,
       autorestart: true,
       max_restarts: 10,
