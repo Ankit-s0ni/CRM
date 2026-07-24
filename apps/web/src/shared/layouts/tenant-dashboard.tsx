@@ -379,7 +379,9 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
               <ArrowRight className="size-4 text-zinc-400 transition group-hover:translate-x-0.5" />
             </div>
             <div className="mt-3 text-xl font-bold">{value}</div>
-            <div className="text-xs font-semibold text-on-surface-variant">{label}</div>
+            <div className="text-xs font-semibold text-on-surface-variant">
+              {label}
+            </div>
             <p className="mt-1 truncate text-[11px] text-outline">{detail}</p>
           </Link>
         ))}
@@ -429,10 +431,7 @@ function WorkforceOverview({
             Counts follow your employee reporting scope
           </p>
         </div>
-        <Link
-          className="text-xs font-bold text-primary"
-          href="/app/employees"
-        >
+        <Link className="text-xs font-bold text-primary" href="/app/employees">
           Open directory
         </Link>
       </div>
@@ -645,11 +644,13 @@ function EmployeeCard({
 }) {
   const status = statusPresentation(employee.status);
   return (
-    <article
+    <Link
+      aria-label={`Open ${employee.fullName}'s employee profile`}
       className={cn(
-        "rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-zinc-400",
+        "block cursor-pointer rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         compact && "flex flex-wrap items-center gap-4",
       )}
+      href={`/app/employees/${employee.id}`}
     >
       <div className="flex items-start gap-3">
         <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-sm font-bold text-primary">
@@ -700,7 +701,7 @@ function EmployeeCard({
           <span>{employee.shift?.name || "No shift"}</span>
         </div>
       )}
-    </article>
+    </Link>
   );
 }
 
