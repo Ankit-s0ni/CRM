@@ -24,6 +24,11 @@ class LocalAttendanceRepository implements AttendanceRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> today() async => const {
+    'data': {'openAction': 'CHECKIN', 'timeline': <dynamic>[]},
+  };
+
+  @override
   Future<void> toggleBreak(String action) async =>
       Future<void>.delayed(const Duration(milliseconds: 250));
 

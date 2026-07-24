@@ -50,7 +50,29 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
         (tenant) => '${tenant.tenantId}:${tenant.employeeId}',
       ),
     );
-    return const AttendanceState();
+    return _loadTodayState();
+  }
+
+  Future<AttendanceState> _loadTodayState() async {
+    final response = await _repository.today();
+    final data =
+        response['data'] as Map<String, dynamic>? ?? const <String, dynamic>{};
+    final openAction = data['openAction'] as String?;
+    final timeline = data['timeline'] as List<dynamic>? ?? const [];
+    DateTime? checkInTime;
+    for (final event in timeline.whereType<Map<String, dynamic>>()) {
+      if (event['eventType'] == 'CHECKIN') {
+        checkInTime = DateTime.tryParse(event['eventTime'] as String? ?? '');
+      }
+    }
+    return AttendanceState(
+      phase: switch (openAction) {
+        'CHECKOUT' => AttendancePhase.checkedIn,
+        'BREAK_END' => AttendancePhase.onBreak,
+        _ => AttendancePhase.checkedOut,
+      },
+      checkInTime: checkInTime?.toLocal(),
+    );
   }
 
   Future<bool> verifyPunch(PunchCapture capture) async {
@@ -150,6 +172,20 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
           return true;
         } catch (error, stack) {
           AppLogger.error('attendance_offline_save_failed', error, stack);
+        }
+      }
+      if (const {
+        'ATTENDANCE_ALREADY_OPEN',
+        'ATTENDANCE_NOT_OPEN',
+        'BREAK_ALREADY_OPEN',
+        'BREAK_NOT_OPEN',
+      }.contains(failure.code)) {
+        try {
+          final reconciled = await _loadTodayState();
+          state = AsyncData(reconciled.copyWith(failure: failure));
+          return false;
+        } catch (_) {
+          // Preserve the authoritative transition error if refresh also fails.
         }
       }
       state = AsyncData(current.copyWith(failure: failure));

@@ -22,6 +22,7 @@ import '../../features/device/presentation/screens/device_registration_screen.da
 import '../../features/enrollment/presentation/enrollment_controller.dart';
 import '../../features/enrollment/presentation/screens/enrollment_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/home_controller.dart';
 import '../../features/leave/presentation/screens/leave_apply_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/permissions/presentation/screens/permissions_onboarding_screen.dart';
@@ -261,14 +262,7 @@ final appRouterProvider = Provider<GoRouter>(
                       context.push(AppRoutes.punchCamera);
                       return;
                     }
-                    final phase = ref
-                        .read(attendanceControllerProvider)
-                        .asData
-                        ?.value
-                        .phase;
-                    final isCheckOut =
-                        phase == AttendancePhase.checkedIn ||
-                        phase == AttendancePhase.onBreak;
+                    final isCheckOut = _isCheckOut(ref);
                     if (policy.selfieMode == AttendanceSelfieMode.disabled) {
                       context.push(
                         AppRoutes.verifying,
@@ -359,14 +353,7 @@ final appRouterProvider = Provider<GoRouter>(
               onBack: () => context.go(AppRoutes.home),
             );
           }
-          final phase = ref
-              .read(attendanceControllerProvider)
-              .asData
-              ?.value
-              .phase;
-          final isCheckOut =
-              phase == AttendancePhase.checkedIn ||
-              phase == AttendancePhase.onBreak;
+          final isCheckOut = _isCheckOut(ref);
           return PunchCameraScreen(
             isCheckOut: isCheckOut,
             onCaptured: (file) async {
@@ -398,7 +385,10 @@ final appRouterProvider = Provider<GoRouter>(
             verify: () => ref
                 .read(attendanceControllerProvider.notifier)
                 .verifyPunch(capture),
-            onSuccess: () => context.pushReplacement(AppRoutes.punchSuccess),
+            onSuccess: () {
+              ref.invalidate(homeControllerProvider);
+              context.pushReplacement(AppRoutes.punchSuccess);
+            },
             onFailure: () => context.pushReplacement(AppRoutes.punchFailure),
             integrityRequired: policy.integrityRequired,
             locationRequired: policy.requiresLocation,
@@ -544,13 +534,17 @@ void _retryPunch(Ref ref, BuildContext context) {
     context.pushReplacement(AppRoutes.punchCamera);
     return;
   }
-  final phase = ref.read(attendanceControllerProvider).asData?.value.phase;
   context.pushReplacement(
     AppRoutes.verifying,
-    extra: PunchCapture(
-      isCheckOut:
-          phase == AttendancePhase.checkedIn ||
-          phase == AttendancePhase.onBreak,
-    ),
+    extra: PunchCapture(isCheckOut: _isCheckOut(ref)),
   );
+}
+
+bool _isCheckOut(Ref ref) {
+  final phase = ref.read(attendanceControllerProvider).asData?.value.phase;
+  if (phase == AttendancePhase.checkedIn || phase == AttendancePhase.onBreak) {
+    return true;
+  }
+  if (phase == AttendancePhase.checkedOut) return false;
+  return ref.read(homeControllerProvider).asData?.value.isCheckedIn ?? false;
 }

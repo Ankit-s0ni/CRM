@@ -100,6 +100,11 @@ class AttendanceApiRepository implements AttendanceRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> today() async =>
+      (await _api.get<Map<String, dynamic>>(ApiRoutes.attendanceToday)).data ??
+      const <String, dynamic>{};
+
+  @override
   Future<void> toggleBreak(String action) async => _api.post(
     action == 'START' ? ApiRoutes.breakStart : ApiRoutes.breakEnd,
     data: {'requestId': _requestId()},

@@ -11,6 +11,7 @@ abstract interface class AttendanceRepository {
     bool? mockLocation,
     required String attestationToken,
   });
+  Future<Map<String, dynamic>> today();
   Future<void> toggleBreak(String action);
   Future<MonthlyAttendanceHistory> history({required String month});
   Future<Map<String, dynamic>> day(String date);
