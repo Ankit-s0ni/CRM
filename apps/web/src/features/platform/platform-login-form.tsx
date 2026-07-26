@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
+import { platformApiClient } from "@/lib/platform-api-client";
 
 export function PlatformLoginForm() {
   const router = useRouter();
@@ -28,18 +30,10 @@ export function PlatformLoginForm() {
 
     try {
       if (!challengeToken) {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || ""}/platform/auth/login`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          },
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || "Unable to sign in to the platform.");
-        }
+        const { data } = await platformApiClient.post("/platform/auth/login", {
+          email,
+          password,
+        });
         if (data.mfaRequired && data.challengeToken) {
           setChallengeToken(data.challengeToken);
         } else {
@@ -47,23 +41,17 @@ export function PlatformLoginForm() {
           router.replace(returnTo);
         }
       } else {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || ""}/platform/auth/mfa/verify`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ challengeToken, code }),
-          },
+        const { data } = await platformApiClient.post(
+          "/platform/auth/mfa/verify",
+          { challengeToken, code },
         );
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || "Invalid authentication code.");
-        }
         setSession(data);
         router.replace(returnTo);
       }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (error: unknown) {
+      setError(
+        getApiErrorMessage(error, "Unable to sign in to the platform."),
+      );
     } finally {
       setBusy(false);
     }
@@ -72,7 +60,7 @@ export function PlatformLoginForm() {
   return (
     <form
       onSubmit={submit}
-      className="w-full max-w-[430px] rounded-2xl border border-outline-variant bg-white p-8 shadow-[0_24px_70px_rgba(0,0,0,.08)]"
+      className="w-full max-w-[430px] rounded-2xl border border-zinc-300 bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,.10)]"
     >
       <div className="mb-7 flex items-center gap-3">
         <img
