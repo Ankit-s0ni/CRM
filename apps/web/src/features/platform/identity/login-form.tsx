@@ -44,6 +44,31 @@ export function LoginForm() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
   const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+
+  useEffect(() => {
+    if (!workspace || APP_DOMAIN === "your-domain.com") return;
+
+    const currentUrl = new URL(window.location.href);
+    const sharedLoginHosts = new Set([
+      APP_DOMAIN,
+      `www.${APP_DOMAIN}`,
+      `app.${APP_DOMAIN}`,
+    ]);
+    if (!sharedLoginHosts.has(currentUrl.hostname)) return;
+
+    currentUrl.protocol = "https:";
+    currentUrl.hostname = `${workspace}.${APP_DOMAIN}`;
+    currentUrl.port = "";
+    currentUrl.searchParams.set("workspace", workspace);
+    if (suppliedTenantId)
+      currentUrl.searchParams.set("tenantId", suppliedTenantId);
+    if (initialEmail) currentUrl.searchParams.set("email", initialEmail);
+
+    // Cross-origin storage is isolated, so carry the pending auth context in
+    // the URL when moving from the shared login host to the tenant host.
+    window.location.replace(currentUrl.toString());
+  }, [initialEmail, suppliedTenantId, workspace]);
+
   const forgotPasswordHref = useMemo(() => {
     const params = new URLSearchParams();
     if (tenantId) params.set("tenantId", tenantId);
