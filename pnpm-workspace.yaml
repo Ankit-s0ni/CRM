@@ -7,8 +7,10 @@ overrides:
   "postcss": "^8.5.10"
 
 allowBuilds:
+  "@parcel/watcher": true
   "@prisma/engines": true
   "@scarf/scarf": true
+  "@swc/core": true
   "argon2": true
   "msgpackr-extract": true
   "prisma": true

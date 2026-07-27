@@ -5,9 +5,9 @@ import type { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { useTenantLocalization as useLocalization } from "@/lib/tenant-localization";
 import { cn } from "@/lib/utils";
 import {
-  formatMinutes,
   statusTone,
   type AttendanceStatus,
   type AttendanceTimelineEvent,
@@ -37,6 +37,7 @@ export function SelfAttendanceCard({
   onUnavailable?: () => void;
 }) {
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const { formatNumber, t } = useLocalization();
   const [today, setToday] = useState<Today | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -55,7 +56,13 @@ export function SelfAttendanceCard({
       const apiError = requestError as AxiosError;
       if ([403, 404].includes(apiError.response?.status ?? 0))
         onUnavailable?.();
-      else setError("Your attendance state could not be loaded.");
+      else
+        setError(
+          t(
+            "errors.attendance.selfLoadFailed",
+            "Your attendance state could not be loaded.",
+          ),
+        );
     } finally {
       setLoading(false);
     }
@@ -77,7 +84,13 @@ export function SelfAttendanceCard({
         if (!active) return;
         if ([403, 404].includes(apiError.response?.status ?? 0))
           onUnavailable?.();
-        else setError("Your attendance state could not be loaded.");
+        else
+          setError(
+            t(
+              "errors.attendance.selfLoadFailed",
+              "Your attendance state could not be loaded.",
+            ),
+          );
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -85,7 +98,7 @@ export function SelfAttendanceCard({
     return () => {
       active = false;
     };
-  }, [allowed, onUnavailable]);
+  }, [allowed, onUnavailable, t]);
 
   async function punch(
     action: "check-in" | "check-out" | "break-start" | "break-end",
@@ -102,7 +115,10 @@ export function SelfAttendanceCard({
       const apiError = requestError as AxiosError<{ message?: string }>;
       setError(
         apiError.response?.data?.message ??
-          "This attendance action could not be completed.",
+          t(
+            "errors.attendance.actionFailed",
+            "This attendance action could not be completed.",
+          ),
       );
       await load();
     } finally {
@@ -127,6 +143,10 @@ export function SelfAttendanceCard({
       </div>
     ) : null;
   const tone = statusTone(today.status);
+  const statusLabel = t(
+    attendanceStatusKey(today.status),
+    tone.label,
+  );
   const primaryAction =
     today.openAction === "CHECKIN"
       ? "check-in"
@@ -141,10 +161,22 @@ export function SelfAttendanceCard({
         : LogOut;
   const label =
     today.openAction === "CHECKIN"
-      ? "Check in"
+      ? t("attendance.self.checkIn", "Check in")
       : today.openAction === "BREAK_END"
-        ? "End break"
-        : "Check out";
+        ? t("attendance.self.endBreak", "End break")
+        : t("attendance.self.checkOut", "Check out");
+  const formatDuration = (value: number) => {
+    const hours = Math.floor(value / 60);
+    const minutes = value % 60;
+    return hours
+      ? t("attendance.self.durationHours", "{hours}h {minutes}m", {
+          hours: formatNumber(hours),
+          minutes: formatNumber(minutes),
+        })
+      : t("attendance.self.durationMinutes", "{minutes}m", {
+          minutes: formatNumber(minutes),
+        });
+  };
 
   return (
     <section
@@ -152,7 +184,7 @@ export function SelfAttendanceCard({
         "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm",
         compact ? "p-4" : "p-5",
       )}
-      aria-label="My attendance"
+      aria-label={t("attendance.self.title", "My attendance")}
     >
       <div className="flex flex-wrap items-center gap-4">
         <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
@@ -160,34 +192,40 @@ export function SelfAttendanceCard({
         </div>
         <div className="min-w-36 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-semibold">My attendance</h2>
+            <h2 className="font-semibold">
+              {t("attendance.self.title", "My attendance")}
+            </h2>
             <span
               className={cn(
                 "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
                 tone.className,
               )}
             >
-              {tone.label}
+              {statusLabel}
             </span>
           </div>
           <p className="mt-1 text-xs text-outline">
             {today.shift
-              ? `${today.shift.name ?? "Shift"} · ${today.shift.startTime}–${today.shift.endTime}`
+              ? `${today.shift.name ?? t("attendance.self.shift", "Shift")} · ${today.shift.startTime}–${today.shift.endTime}`
               : today.timezone}
           </p>
         </div>
         <div className="flex gap-5 text-center">
           <div>
             <strong className="block text-lg">
-              {formatMinutes(today.totals.workMinutes)}
+              {formatDuration(today.totals.workMinutes)}
             </strong>
-            <span className="text-[10px] uppercase text-outline">Worked</span>
+            <span className="text-[10px] uppercase text-outline">
+              {t("attendance.self.worked", "Worked")}
+            </span>
           </div>
           <div>
             <strong className="block text-lg">
-              {formatMinutes(today.totals.breakMinutes)}
+              {formatDuration(today.totals.breakMinutes)}
             </strong>
-            <span className="text-[10px] uppercase text-outline">Break</span>
+            <span className="text-[10px] uppercase text-outline">
+              {t("attendance.self.break", "Break")}
+            </span>
           </div>
         </div>
         <div className="flex gap-2">
@@ -197,7 +235,7 @@ export function SelfAttendanceCard({
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
           >
             <PrimaryIcon className="size-4" />
-            {busy ? "Saving…" : label}
+            {busy ? t("common.state.saving", "Saving...") : label}
           </button>
           {today.canStartBreak && (
             <button
@@ -206,7 +244,7 @@ export function SelfAttendanceCard({
               className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary"
             >
               <Coffee className="size-4" />
-              Break
+              {t("attendance.self.startBreak", "Start break")}
             </button>
           )}
         </div>
@@ -218,4 +256,22 @@ export function SelfAttendanceCard({
       )}
     </section>
   );
+}
+
+function attendanceStatusKey(status: AttendanceStatus) {
+  const keys: Record<AttendanceStatus, string> = {
+    PRESENT_OPEN: "attendance.status.working",
+    PRESENT: "attendance.status.present",
+    HALF_DAY: "attendance.status.halfDay",
+    ABSENT: "attendance.status.absent",
+    ON_LEAVE: "attendance.status.onLeave",
+    HOLIDAY: "attendance.status.holiday",
+    WEEKLY_OFF: "attendance.status.weeklyOff",
+    ON_DUTY: "attendance.status.onDuty",
+    LATE: "attendance.status.late",
+    WORKING_DAY: "attendance.status.workingDay",
+    UPCOMING: "attendance.status.scheduled",
+    NOT_APPLICABLE: "attendance.status.notApplicable",
+  };
+  return keys[status];
 }

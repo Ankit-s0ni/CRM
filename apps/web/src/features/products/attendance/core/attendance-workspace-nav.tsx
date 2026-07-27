@@ -1,8 +1,7 @@
 "use client";
 
 import { ChevronRight, LockKeyhole, Puzzle } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import {
   attendanceBreadcrumbs,

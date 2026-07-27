@@ -1,8 +1,7 @@
 "use client";
 
 import { CircleHelp, Info, ShieldCheck, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import type { MouseEvent } from "react";
 import {
   attendanceHelpEntry,

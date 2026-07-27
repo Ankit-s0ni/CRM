@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "start": "next start --port 4002",
     "lint": "eslint",
+    "check:localized-navigation": "node scripts/check-localized-navigation.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "libphonenumber-js": "^1.13.8",
     "lucide-react": "^1.24.0",
     "next": "16.2.10",
+    "next-intl": "^4.13.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.13.0",

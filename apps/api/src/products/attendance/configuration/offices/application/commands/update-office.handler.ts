@@ -13,6 +13,7 @@ import { assertTimezone } from '../../../../../../platform/workspace/public';
 import { AuditService } from '../../../../../../platform/audit/public';
 import { bumpRuntimeConfigVersion } from '../../../../../../shared/runtime-config/runtime-config-version';
 import { PublicHolidaySyncService } from '../../../holidays/public-holiday-sync.service';
+import { syncTenantRegionalLocale } from '../sync-tenant-regional-locale';
 
 @CommandHandler(UpdateOfficeCommand)
 export class UpdateOfficeHandler implements ICommandHandler<UpdateOfficeCommand> {
@@ -107,6 +108,7 @@ export class UpdateOfficeHandler implements ICommandHandler<UpdateOfficeCommand>
       });
 
       await bumpRuntimeConfigVersion(tx, tenantId);
+      if (regionChanged) await syncTenantRegionalLocale(tx, tenantId);
 
       return { data: office };
     });

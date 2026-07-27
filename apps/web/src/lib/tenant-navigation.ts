@@ -15,6 +15,7 @@ import {
 
 export type TenantNavItem = {
   label: string;
+  localizationKey: string;
   href: string;
   icon?: typeof LayoutDashboard;
   permission?: string;
@@ -26,9 +27,15 @@ export type TenantNavigationContext =
   "employees" | "modules" | "reports" | "settings";
 
 export const tenantPrimaryNavigation: TenantNavItem[] = [
-  { label: "Dashboard", href: "/app", icon: LayoutDashboard },
+  {
+    label: "Dashboard",
+    localizationKey: "tenant.navigation.dashboard",
+    href: "/app",
+    icon: LayoutDashboard,
+  },
   {
     label: "Employees",
+    localizationKey: "tenant.navigation.employees",
     href: "/app/employees",
     icon: UsersRound,
     anyPermissions: [
@@ -39,12 +46,14 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
   },
   {
     label: "Modules",
+    localizationKey: "tenant.navigation.modules",
     href: "/app/modules",
     icon: Blocks,
     permission: "workspace.modules.read",
   },
   {
     label: "Reports",
+    localizationKey: "tenant.navigation.reports",
     href: "/app/reports",
     icon: FileBarChart,
     anyPermissions: [
@@ -55,6 +64,7 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
   },
   {
     label: "Settings",
+    localizationKey: "tenant.navigation.settings",
     href: "/app/settings",
     icon: Settings2,
     anyPermissions: [
@@ -76,6 +86,7 @@ export const tenantContextNavigation: Record<
   employees: [
     {
       label: "Directory",
+      localizationKey: "tenant.navigation.directory",
       href: "/app/employees",
       anyPermissions: [
         "organization.employees.read",
@@ -85,12 +96,14 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Organization",
+      localizationKey: "tenant.navigation.organization",
       href: "/app/employees/organization",
       icon: Building2,
       permission: "organization.departments.read",
     },
     {
       label: "Bulk import",
+      localizationKey: "tenant.navigation.bulkImport",
       href: "/app/employees/import",
       icon: Upload,
       permission: "organization.imports.read",
@@ -99,11 +112,13 @@ export const tenantContextNavigation: Record<
   modules: [
     {
       label: "All modules",
+      localizationKey: "tenant.navigation.allModules",
       href: "/app/modules",
       permission: "workspace.modules.read",
     },
     {
       label: "Attendance",
+      localizationKey: "tenant.navigation.attendance",
       href: "/app/modules/attendance",
       icon: ClipboardCheck,
       moduleKey: "ATTENDANCE",
@@ -115,6 +130,7 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Payroll",
+      localizationKey: "tenant.navigation.payroll",
       href: "/app/modules/payroll",
       icon: WalletCards,
       moduleKey: "PAYROLL",
@@ -128,6 +144,7 @@ export const tenantContextNavigation: Record<
   reports: [
     {
       label: "Report center",
+      localizationKey: "tenant.navigation.reportCenter",
       href: "/app/reports",
       anyPermissions: [
         "attendance.reports.read",
@@ -137,6 +154,7 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Attendance reports",
+      localizationKey: "tenant.navigation.attendanceReports",
       href: "/app/reports/attendance",
       moduleKey: "ATTENDANCE",
       anyPermissions: [
@@ -146,6 +164,7 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Payroll reports",
+      localizationKey: "tenant.navigation.payrollReports",
       href: "/app/reports/payroll",
       icon: WalletCards,
       moduleKey: "PAYROLL",
@@ -158,6 +177,7 @@ export const tenantContextNavigation: Record<
   settings: [
     {
       label: "Settings home",
+      localizationKey: "tenant.navigation.settingsHome",
       href: "/app/settings",
       anyPermissions: [
         "workspace.settings.read",
@@ -169,18 +189,21 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Company",
+      localizationKey: "tenant.navigation.company",
       href: "/app/settings/company",
       icon: Building2,
       permission: "workspace.settings.read",
     },
     {
       label: "Admin access",
+      localizationKey: "tenant.navigation.adminAccess",
       href: "/app/settings/access",
       icon: ShieldCheck,
       permission: "identity.roles.read",
     },
     {
       label: "Security",
+      localizationKey: "tenant.navigation.security",
       href: "/app/settings/security",
       icon: ShieldCheck,
       moduleKey: "ATTENDANCE",
@@ -192,25 +215,35 @@ export const tenantContextNavigation: Record<
     },
     {
       label: "Notifications",
+      localizationKey: "tenant.navigation.notifications",
       href: "/app/settings/notifications",
       permission: "notifications.self",
     },
     {
       label: "Integrations",
+      localizationKey: "tenant.navigation.integrations",
       href: "/app/settings/integrations",
       permission: "workspace.settings.read",
     },
     {
       label: "Audit history",
+      localizationKey: "tenant.navigation.auditHistory",
       href: "/app/settings/audit",
       icon: ScrollText,
       permission: "workspace.audit.read",
     },
     {
       label: "Billing",
+      localizationKey: "tenant.navigation.billing",
       href: "/app/settings/billing",
       icon: Landmark,
       permission: "billing.subscription.read",
+    },
+    {
+      label: "Language & localization",
+      localizationKey: "tenant.navigation.localization",
+      href: "/app/settings/localization",
+      permission: "workspace.localization.read",
     },
   ],
 };

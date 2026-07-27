@@ -18,8 +18,7 @@ import {
   SlidersHorizontal,
   UsersRound,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import { Button } from "@/shared/ui/button";

@@ -4,14 +4,20 @@ import {
   Bell,
   Building2,
   ChevronDown,
+  Languages,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  Link,
+  usePathname,
+  useRouter,
+} from "@/i18n/navigation";
+import type { AppLanguage } from "@/i18n/routing";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import {
@@ -34,11 +40,20 @@ import {
   AttendanceWorkspaceChrome,
 } from "@/features/products/attendance/core/attendance-workspace-nav";
 import { PortalSearch } from "@/shared/components/portal-search";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { localizedTenantPath } from "@/lib/tenant-routes";
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, accessToken, clearAuth, hasHydrated, setUser } = useAuthStore();
+  const {
+    t,
+    direction,
+    locale,
+    enabledLanguages,
+  } = useTenantLocalization();
+  const searchParams = useSearchParams();
   const userId = user?.id;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<string>>(
@@ -59,9 +74,14 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (hasHydrated && !accessToken)
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [accessToken, hasHydrated, pathname, router]);
+    if (!hasHydrated || accessToken) return;
+    const query = searchParams.toString();
+    const tenantPath = localizedTenantPath(
+      `${pathname}${query ? `?${query}` : ""}`,
+      locale,
+    );
+    window.location.replace(`/login?next=${encodeURIComponent(tenantPath)}`);
+  }, [accessToken, hasHydrated, locale, pathname, searchParams]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -72,10 +92,12 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       )
       .catch((error) => {
         if (error.response?.data?.code === "TENANT_SUSPENDED")
-          router.replace("/workspace-unavailable?code=TENANT_SUSPENDED");
+          window.location.replace(
+            "/workspace-unavailable?code=TENANT_SUSPENDED",
+          );
       })
       .finally(() => setModulesLoaded(true));
-  }, [accessToken, router]);
+  }, [accessToken]);
 
   useEffect(() => {
     if (
@@ -121,6 +143,9 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           subdomain: string;
           logoUrl?: string | null;
         };
+        localization: NonNullable<
+          ReturnType<typeof useAuthStore.getState>["user"]
+        >["localization"];
       }>("/auth/me")
       .then(({ data }) => {
         setUser({
@@ -132,6 +157,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           roles: data.user.roles,
           permissions: data.user.permissions,
           logoUrl: data.workspace.logoUrl,
+          localization: data.localization,
         });
       })
       .catch(() => undefined);
@@ -166,15 +192,22 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-surface text-zinc-900">
       {mobileOpen && (
         <button
-          aria-label="Close navigation"
+          aria-label={t(
+            "tenant.shell.closeNavigation",
+            "Close navigation",
+          )}
           className="fixed inset-0 z-40 bg-black/35 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-zinc-700 text-surface-variant shadow-xl transition-transform lg:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col bg-zinc-700 text-surface-variant shadow-xl transition-transform lg:translate-x-0",
+          mobileOpen
+            ? "translate-x-0"
+            : direction === "rtl"
+              ? "translate-x-full"
+              : "-translate-x-full",
         )}
       >
         <div className="flex h-20 items-center gap-3 px-6">
@@ -197,11 +230,15 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               {user.companyName || "DeltCRM"}
             </div>
             <div className="max-w-40 truncate text-[10px] font-semibold uppercase tracking-[.16em] text-zinc-300">
-              DeltCRM workspace
+              {t("tenant.shell.workspace", "DeltCRM workspace")}
             </div>
           </div>
           <button
-            className="ml-auto lg:hidden"
+            aria-label={t(
+              "tenant.shell.closeNavigation",
+              "Close navigation",
+            )}
+            className="ms-auto lg:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <X />
@@ -217,14 +254,14 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex min-h-10 items-center gap-4 rounded-lg border-l-4 px-4 py-2 text-sm transition",
+                  "flex min-h-10 items-center gap-4 rounded-lg border-s-4 px-4 py-2 text-sm transition",
                   active
                     ? "border-zinc-200 bg-primary-container/25 text-zinc-200"
                     : "border-transparent text-zinc-300 hover:bg-white/5 hover:text-white",
                 )}
               >
                 <Icon className="size-[18px]" />
-                {item.label}
+                {t(item.localizationKey, item.label)}
               </Link>
             );
           })}
@@ -234,18 +271,22 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             className="flex h-10 w-full items-center gap-4 px-4 text-sm text-zinc-300"
             onClick={() => {
               clearAuth();
-              router.replace("/login");
+              window.location.replace("/login");
             }}
           >
             <LogOut className="size-4" />
-            Logout
+            {t("tenant.shell.logout", "Logout")}
           </button>
         </div>
       </aside>
-      <div className="lg:pl-[280px]">
+      <div className="lg:ps-[280px]">
         <header className="sticky top-0 z-30 flex h-16 items-center border-b border-surface-variant bg-surface/95 px-4 shadow-sm backdrop-blur lg:px-6">
           <button
-            className="mr-3 lg:hidden"
+            aria-label={t(
+              "tenant.shell.openNavigation",
+              "Open navigation",
+            )}
+            className="me-3 lg:hidden"
             onClick={() => setMobileOpen(true)}
           >
             <Menu />
@@ -253,8 +294,66 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           <div className="hidden w-full sm:block">
             <PortalSearch />
           </div>
-          <div className="ml-auto flex items-center gap-5 text-on-surface-variant">
-            <Link aria-label="Notifications" href="/app/notifications">
+          <div className="ms-auto flex items-center gap-3 text-on-surface-variant sm:gap-5">
+            {enabledLanguages.length > 1 && (
+              <button
+                aria-label={
+                  locale === "en"
+                    ? "Switch to Arabic"
+                    : "Switch to English"
+                }
+                className="group flex min-h-11 items-center gap-2 rounded-full border border-surface-variant bg-white px-2.5 text-xs font-bold shadow-sm transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                onClick={() => {
+                  const language: AppLanguage =
+                    locale === "en" ? "ar" : "en";
+                  const query = searchParams.toString();
+                  document.cookie = `deltcrm-language=${language}; Path=/; Max-Age=31536000; SameSite=Lax`;
+                  router.replace(
+                    `${pathname}${query ? `?${query}` : ""}`,
+                    { locale: language },
+                  );
+                }}
+                title={
+                  locale === "en"
+                    ? "Switch to Arabic"
+                    : "Switch to English"
+                }
+                type="button"
+              >
+                <Languages
+                  aria-hidden="true"
+                  className="size-4 text-primary"
+                />
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-1 transition-colors",
+                    locale === "en"
+                      ? "bg-primary text-white"
+                      : "text-on-surface-variant",
+                  )}
+                >
+                  EN
+                </span>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-1 transition-colors",
+                    locale === "ar"
+                      ? "bg-primary text-white"
+                      : "text-on-surface-variant",
+                  )}
+                  lang="ar"
+                >
+                  عربي
+                </span>
+              </button>
+            )}
+            <Link
+              aria-label={t(
+                "tenant.shell.notifications",
+                "Notifications",
+              )}
+              href="/app/notifications"
+            >
               <Bell className="size-[18px]" />
             </Link>
             <HeaderContextHelp />
@@ -262,12 +361,13 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             <div className="grid size-9 place-items-center rounded-full bg-primary-container text-xs font-bold text-white">
               {user.email.slice(0, 2).toUpperCase()}
             </div>
-            <div className="hidden text-right sm:block">
+            <div className="hidden text-end sm:block">
               <div className="max-w-44 truncate text-xs font-semibold">
                 {user.email}
               </div>
               <div className="text-[10px] text-outline">
-                {user.roles?.[0]?.replaceAll("_", " ") ?? "Workspace user"}
+                {user.roles?.[0]?.replaceAll("_", " ") ??
+                  t("tenant.shell.workspaceUser", "Workspace user")}
               </div>
             </div>
             <ChevronDown className="size-4" />
@@ -281,7 +381,11 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         ) : (
           contextItems.length > 0 && (
             <nav
-              aria-label={`${currentContext} navigation`}
+              aria-label={t(
+                "tenant.shell.contextNavigation",
+                "{context} navigation",
+                { context: currentContext ?? "" },
+              )}
               className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-surface-variant bg-white px-4 lg:px-6"
             >
               {contextItems.map((item) => {
@@ -297,7 +401,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     key={item.href}
                   >
-                    {item.label}
+                    {t(item.localizationKey, item.label)}
                   </Link>
                 );
               })}

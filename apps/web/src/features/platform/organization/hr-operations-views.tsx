@@ -11,13 +11,12 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
-  usePathname,
-  useRouter,
   useSearchParams,
   useParams,
 } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import { apiClient } from "@/lib/api-client";

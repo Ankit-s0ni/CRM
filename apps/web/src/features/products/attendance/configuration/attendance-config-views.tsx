@@ -14,8 +14,8 @@ import {
   ShieldCheck,
   Upload,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import timezoneLookup from "tz-lookup";
@@ -372,9 +372,9 @@ export function OfficesView() {
           attendance policy whose location rule is{" "}
           <strong>Office geofence</strong>.
         </p>
-        <a className="font-bold text-primary" href="/app/attendance/policies">
+        <Link className="font-bold text-primary" href="/app/attendance/policies">
           Review attendance policies
-        </a>
+        </Link>
       </div>
       {!data ? (
         <LoadingState />

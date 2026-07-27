@@ -10,6 +10,7 @@ import {
   ClipboardList,
   CreditCard,
   LayoutDashboard,
+  Languages,
   LogOut,
   Menu,
   Search,
@@ -34,6 +35,13 @@ const navigation = [
   { label: "Modules", href: "/platform/modules", icon: Blocks, enabled: true },
   { label: "Audit Logs", href: "/platform/audit", icon: ShieldCheck, enabled: true },
   { label: "Health", href: "/platform/health", icon: Activity, enabled: true },
+  {
+    label: "Localization",
+    href: "/platform/localization",
+    icon: Languages,
+    enabled: true,
+    permission: "platform.localization.read",
+  },
 ];
 
 export function PlatformShell({ children }: { children: React.ReactNode }) {
@@ -75,7 +83,14 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button>
         </div>
         <nav className="space-y-1 px-3 pt-5">
-          {navigation.map((item) => {
+          {navigation
+            .filter(
+              (item) =>
+                !("permission" in item) ||
+                !item.permission ||
+                user?.permissions.includes(item.permission),
+            )
+            .map((item) => {
             const active = item.enabled && (item.exact ? pathname === item.href : pathname.startsWith(item.href));
             const Icon = item.icon;
             return item.enabled ? (

@@ -7,6 +7,8 @@ import axios from "axios";
 import { APP_DOMAIN } from "@/lib/app-domain";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { isAppLanguage } from "@/i18n/routing";
+import { resolveTenantLoginDestination } from "@/lib/tenant-routes";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -135,7 +137,27 @@ export function LoginForm() {
       
       setAuth(user, accessToken, refreshToken);
       clearPendingAuth();
-      router.push("/app/onboarding");
+      if (workspace) {
+        document.cookie = `deltcrm-workspace=${workspace}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      }
+      const defaultLanguage = isAppLanguage(user.defaultLanguage)
+        ? user.defaultLanguage
+        : "en";
+      const enabledLanguages = Array.isArray(user.enabledLanguages)
+        ? user.enabledLanguages.filter(isAppLanguage)
+        : [defaultLanguage];
+      const savedLanguage = document.cookie
+        .split("; ")
+        .find((item) => item.startsWith("deltcrm-language="))
+        ?.split("=")[1];
+      router.push(
+        resolveTenantLoginDestination({
+          nextPath: searchParams.get("next"),
+          savedLanguage,
+          defaultLanguage,
+          enabledLanguages,
+        }),
+      );
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Invalid email or password");
 

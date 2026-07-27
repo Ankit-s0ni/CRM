@@ -248,6 +248,14 @@ export class PlatformTenantsService {
         await tx.tenantSettings.create({
           data: { tenantId: tenant.id, timezone: normalized.timezone },
         });
+        await tx.tenantLocalePolicy.create({
+          data: {
+            tenantId: tenant.id,
+            defaultLocale: 'en',
+            regionalLocale: 'ar',
+            enabledLocales: ['en', 'ar'],
+          },
+        });
         await provisionTenantAttendanceDefaults(tx, tenant.id);
         const periodStart = new Date();
         const periodEnd = new Date(periodStart);

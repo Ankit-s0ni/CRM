@@ -39,6 +39,9 @@ const permissions = [
   'identity.roles.delete',
   'workspace.settings.read',
   'workspace.settings.update',
+  'workspace.localization.read',
+  'workspace.localization.manage',
+  'workspace.localization.overrides.manage',
   'workspace.dashboard.admin.read',
   'workspace.modules.read',
   'workspace.audit.read',
@@ -91,9 +94,12 @@ const rolePermissions = {
   HR_ADMIN: permissions.filter(
     (permission) =>
       !permission.startsWith('billing.') &&
+      permission !== 'workspace.localization.manage' &&
+      permission !== 'workspace.localization.overrides.manage' &&
       permission !== 'workspace.dashboard.admin.read',
   ),
   MANAGER: [
+    'workspace.localization.read',
     'organization.employees.read',
     'organization.employees.self.read',
     'attendance.records.read',
@@ -109,6 +115,7 @@ const rolePermissions = {
     'leave.approve',
   ],
   EMPLOYEE: [
+    'workspace.localization.read',
     'organization.employees.self.read',
     'attendance.records.self.read',
     'mobile.runtime.read',
@@ -136,6 +143,11 @@ const platformPermissions = [
   'platform.billing.read',
   'platform.billing.manage',
   'platform.dunning.manage',
+  'platform.localization.read',
+  'platform.localization.translate',
+  'platform.localization.review',
+  'platform.localization.publish',
+  'platform.localization.tenants.manage',
 ];
 
 const supportPlatformPermissions = [
@@ -148,6 +160,7 @@ const supportPlatformPermissions = [
   'platform.health.read',
   'platform.plans.read',
   'platform.billing.read',
+  'platform.localization.read',
 ];
 
 const notificationEvents = [

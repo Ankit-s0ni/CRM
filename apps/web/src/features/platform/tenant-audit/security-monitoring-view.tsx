@@ -19,7 +19,8 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { apiClient } from "@/lib/api-client";

@@ -1,8 +1,8 @@
 "use client";
 
 import { Activity, BatteryMedium, CircleDot, LocateFixed, RefreshCw, Route, UsersRound } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";

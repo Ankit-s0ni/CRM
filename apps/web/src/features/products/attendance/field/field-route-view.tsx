@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, ArrowLeft, Clock3, Gauge, MapPin, Pause, Play, Route } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { AdminPage, ErrorState, LoadingState, Panel } from "@/shared/components/page-primitives";

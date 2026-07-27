@@ -9,8 +9,7 @@ import {
   ShieldCheck,
   UploadCloud,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
@@ -671,7 +670,7 @@ export function CompanySettingsView() {
   return (
     <AdminPage
       title="Company Settings"
-      description="Manage your workspace identity, language, timezone and working-week defaults."
+      description="Manage your workspace identity, timezone and working-week defaults."
       action={
         <PrimaryButton disabled={!dirty} onClick={save}>
           Save changes
@@ -691,18 +690,6 @@ export function CompanySettingsView() {
                     value={settings.timezone}
                     onChange={(timezone) => change({ timezone })}
                   />
-                </Field>
-                <Field label="Language and locale">
-                  <select
-                    className={inputClass}
-                    value={settings.locale}
-                    onChange={(e) => change({ locale: e.target.value })}
-                  >
-                    <option value="en">English</option>
-                    <option value="en-AE">English (UAE)</option>
-                    <option value="ar-AE">Arabic (UAE)</option>
-                    <option value="ar-SA">Arabic (Saudi Arabia)</option>
-                  </select>
                 </Field>
                 <Field label="Absentee alert time">
                   <input

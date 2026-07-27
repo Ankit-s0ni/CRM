@@ -23,6 +23,7 @@ import { platformApiClient } from "@/lib/platform-api-client";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
 import type { TenantDetail, TenantEntitlements } from "@/lib/platform-types";
 import { APP_DOMAIN } from "@/lib/app-domain";
+import { TenantLocalizationPanel } from "@/features/platform/localization/tenant-localization-panel";
 
 type TenantDeletionJob = {
   id: string;
@@ -414,6 +415,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             )}
           </div>
         </section>
+        <TenantLocalizationPanel tenantId={tenantId} />
         <div className="mt-5 grid gap-5 lg:grid-cols-3">
           <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-outline">
