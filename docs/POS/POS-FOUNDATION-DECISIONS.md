@@ -271,7 +271,20 @@ All money columns are `Decimal(12,3)`; tax rates are `Decimal(5,3)`; per-unit we
 
 ---
 
-## Deferred: scope
+## Scope: MVP defined
+
+**Resolved 2026-07-27.** An MVP subset has been selected from `POS-FEATURES-SPECIFICATION.md` and planned
+per feature area in [`mvp/`](./mvp/). Start at [`mvp/MVP-00-OVERVIEW.md`](./mvp/MVP-00-OVERVIEW.md), which
+carries the scope boundary, build order and the collisions the subset creates.
+
+Notably, the MVP **excludes the dynamic workflow engine** — `PosSale.workflowId` stays `NULL` throughout —
+which resolves the sequencing concern raised below in favour of shipping billing first.
+
+The full seven-sprint plan in `POS-IMPLEMENTATION-PLAN.md` §14 remains the post-MVP roadmap.
+
+---
+
+## Deferred: scope (superseded by the MVP plan above)
 
 The delivery plan remains as documented in `POS-IMPLEMENTATION-PLAN.md` §14 — seven sprints, ~28 weeks.
 

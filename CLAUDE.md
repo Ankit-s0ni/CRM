@@ -398,6 +398,7 @@ Key variables needed (see `apps/api/.env.example`):
 ### Point of Sale (planned product)
 
 - [POS Foundation Decisions](docs/POS/POS-FOUNDATION-DECISIONS.md) — **read first**; binding structural decisions
+- [POS MVP Overview](docs/POS/mvp/MVP-00-OVERVIEW.md) — **the active build plan**; MVP scope, build order, conventions
 - [POS Implementation Plan](docs/POS/POS-IMPLEMENTATION-PLAN.md)
 - [POS Features Specification](docs/POS/POS-FEATURES-SPECIFICATION.md)
 - [POS ERD](docs/POS/POS-ERD.md)
