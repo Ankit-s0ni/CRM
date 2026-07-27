@@ -127,12 +127,82 @@ describe('PayrollProcessingService calculation and self-service', () => {
       orderBy: { payslipNumber: 'asc' },
     });
   });
+
+  it('creates signed admin payslip downloads only through tenant-scoped private objects', async () => {
+    const tx = createProcessingTx();
+    const storage = createStorage();
+    tx.payrollPayslip.findFirst.mockResolvedValue({
+      id: 'payslip-1',
+      tenantId: actor().tenantId,
+      employeeId: employeeId(),
+      objectKey:
+        'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-payslips/0197a91c-7b32-7c65-8c6f-b89f92d4eb42/payslip-1.pdf',
+    });
+
+    await service(tx, storage).downloadPayslip(actor(), 'payslip-1');
+
+    expect(storage.signedPayrollPayslipDownload).toHaveBeenCalledWith(
+      actor().tenantId,
+      employeeId(),
+      'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-payslips/0197a91c-7b32-7c65-8c6f-b89f92d4eb42/payslip-1.pdf',
+    );
+  });
+
+  it('creates signed export downloads from stored payroll export object keys', async () => {
+    const tx = createProcessingTx();
+    const storage = createStorage();
+    tx.payrollOutputExport.findFirst.mockResolvedValue({
+      id: 'output-1',
+      tenantId: actor().tenantId,
+      payrollRunId: run().id,
+      payload: {
+        objectKey:
+          'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-exports/0197a91c-7b32-7c65-8c6f-b89f92d4eb43/output-1.json',
+      },
+    });
+
+    await service(tx, storage).downloadOutput(actor(), 'output-1');
+
+    expect(storage.signedPayrollExportDownload).toHaveBeenCalledWith(
+      actor().tenantId,
+      run().id,
+      'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-exports/0197a91c-7b32-7c65-8c6f-b89f92d4eb43/output-1.json',
+    );
+  });
 });
 
-function service(tx: ReturnType<typeof createProcessingTx>) {
-  return new PayrollProcessingService({
-    forTenant: (callback: (transaction: typeof tx) => unknown) => callback(tx),
-  } as never);
+function service(
+  tx: ReturnType<typeof createProcessingTx>,
+  storage = createStorage(),
+) {
+  return new PayrollProcessingService(
+    {
+      forTenant: (callback: (transaction: typeof tx) => unknown) =>
+        callback(tx),
+    } as never,
+    storage as never,
+  );
+}
+
+function createStorage() {
+  return {
+    putPayrollPayslip: jest
+      .fn()
+      .mockResolvedValue(
+        'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-payslips/0197a91c-7b32-7c65-8c6f-b89f92d4eb42/payslip-1.pdf',
+      ),
+    putPayrollExport: jest
+      .fn()
+      .mockResolvedValue(
+        'private/0197a91c-7b32-7c65-8c6f-b89f92d4eb40/payroll-exports/0197a91c-7b32-7c65-8c6f-b89f92d4eb43/output-1.json',
+      ),
+    signedPayrollPayslipDownload: jest
+      .fn()
+      .mockResolvedValue({ url: 'memory://payslip', expiresIn: 300 }),
+    signedPayrollExportDownload: jest
+      .fn()
+      .mockResolvedValue({ url: 'memory://export', expiresIn: 900 }),
+  };
 }
 
 function actor() {
@@ -211,12 +281,24 @@ function createProcessingTx() {
     employeeCompensationVersion: { findFirst: jest.fn() },
     payrollRunTimeline: { create: jest.fn().mockResolvedValue({}) },
     payrollValidationIssue: { findFirst: jest.fn().mockResolvedValue(null) },
+    payrollJobRun: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue({ id: 'job-1' }),
+      update: jest.fn().mockResolvedValue({ id: 'job-1', status: 'COMPLETED' }),
+      findMany: jest.fn(),
+    },
     payrollPayslip: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       upsert: jest.fn(),
+      update: jest.fn(),
       updateMany: jest.fn(),
     },
-    payrollOutputExport: { create: jest.fn() },
+    payrollOutputExport: {
+      create: jest.fn(),
+      update: jest.fn(),
+      findFirst: jest.fn(),
+    },
     payrollPaymentBatch: {
       create: jest.fn(),
       findFirst: jest.fn(),

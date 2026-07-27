@@ -106,6 +106,21 @@ describe('Payroll route security metadata', () => {
     ],
     [
       PayrollProcessingController,
+      'downloadMyPayslip',
+      PERMISSIONS.PAYROLL_PAYSLIPS_SELF,
+    ],
+    [
+      PayrollProcessingController,
+      'downloadPayslip',
+      PERMISSIONS.PAYROLL_PAYSLIPS_READ,
+    ],
+    [
+      PayrollProcessingController,
+      'downloadOutput',
+      PERMISSIONS.PAYROLL_REPORTS_GENERATE,
+    ],
+    [
+      PayrollProcessingController,
       'generateOutput',
       PERMISSIONS.PAYROLL_REPORTS_GENERATE,
     ],
@@ -114,6 +129,7 @@ describe('Payroll route security metadata', () => {
       'markPaid',
       PERMISSIONS.PAYROLL_PAYMENTS_MANAGE,
     ],
+    [PayrollProcessingController, 'listJobs', PERMISSIONS.PAYROLL_RUNS_READ],
   ])('requires %s on %s.%s', (controller, methodName, expectedPermission) => {
     expect(
       Reflect.getMetadata(

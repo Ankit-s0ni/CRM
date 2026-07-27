@@ -9,6 +9,7 @@ import {
   PrismaService,
   type PrismaTransaction,
 } from '../../../../shared/database/prisma.service';
+import { PrivateObjectStorageService } from '../../../../shared/storage/private-object-storage.service';
 import {
   GeneratePayrollOutputDto,
   MarkPayrollPaidDto,
@@ -40,7 +41,10 @@ const calculationVersion = 'deterministic-fixed-v1';
 
 @Injectable()
 export class PayrollProcessingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: PrivateObjectStorageService,
+  ) {}
 
   calculate(actor: Actor, runId: string) {
     return this.prisma.forTenant(async (tx) => {
@@ -48,6 +52,13 @@ export class PayrollProcessingService {
       if (!['INPUTS_READY', 'CALCULATED', 'REVIEWED'].includes(run.status)) {
         invalidState('Payroll run must be INPUTS_READY before calculation.');
       }
+      const job = await startJob(
+        tx,
+        actor,
+        run.id,
+        'CALCULATION',
+        `calculate:${run.id}`,
+      );
       await tx.payrollRun.update({
         where: { id: run.id },
         data: { status: 'CALCULATING', calculationVersion },
@@ -292,6 +303,10 @@ export class PayrollProcessingService {
         resultChecksum,
         employeeCount: updated.employeeResults.length,
       });
+      await completeJob(tx, job.id, {
+        employeeCount: updated.employeeResults.length,
+        resultChecksum,
+      });
       return { data: updated };
     });
   }
@@ -417,12 +432,40 @@ export class PayrollProcessingService {
         where: { tenantId: actor.tenantId, payrollRunId: run.id },
         include: { components: true },
       });
+      const job = await startJob(
+        tx,
+        actor,
+        run.id,
+        'OUTPUT_GENERATION',
+        `output:${run.id}:${dto.kind}:${dto.adapterKey}`,
+      );
       if (dto.kind === 'ACCOUNTING_EXPORT') {
         await assertAccountingMappings(tx, actor.tenantId, results);
       }
       if (dto.kind === 'PAYSLIP') {
         for (const result of results) {
-          await tx.payrollPayslip.upsert({
+          const existing = await tx.payrollPayslip.findFirst({
+            where: {
+              tenantId: actor.tenantId,
+              payrollRunId: run.id,
+              employeeId: result.employeeId,
+            },
+          });
+          const payslipId = existing?.id ?? undefined;
+          const pdfBody = renderPayslipPdfPlaceholder(
+            run.periodKey,
+            result,
+            result.components,
+          );
+          const objectKey = payslipId
+            ? await this.storage.putPayrollPayslip(
+                actor.tenantId,
+                result.employeeId,
+                payslipId,
+                pdfBody,
+              )
+            : undefined;
+          const payslip = await tx.payrollPayslip.upsert({
             where: {
               tenantId_payrollRunId_employeeId: {
                 tenantId: actor.tenantId,
@@ -439,13 +482,27 @@ export class PayrollProcessingService {
               netPayMinor: result.netPayMinor,
               currency: result.currency,
               payload: json({ result, components: result.components }),
+              objectKey,
             },
             update: {
               grossPayMinor: result.grossPayMinor,
               netPayMinor: result.netPayMinor,
               payload: json({ result, components: result.components }),
+              ...(objectKey ? { objectKey } : {}),
             },
           });
+          if (!objectKey) {
+            const createdObjectKey = await this.storage.putPayrollPayslip(
+              actor.tenantId,
+              result.employeeId,
+              payslip.id,
+              pdfBody,
+            );
+            await tx.payrollPayslip.update({
+              where: { id: payslip.id },
+              data: { objectKey: createdObjectKey },
+            });
+          }
         }
       }
       const payload = outputPayload(dto.kind, run.periodKey, results);
@@ -460,6 +517,20 @@ export class PayrollProcessingService {
           createdBy: actor.userId,
         },
       });
+      const exportObjectKey = await this.storage.putPayrollExport(
+        actor.tenantId,
+        run.id,
+        output.id,
+        'json',
+        'application/json',
+        Buffer.from(stableJson(payload)),
+      );
+      const storedOutput = await tx.payrollOutputExport.update({
+        where: { id: output.id },
+        data: {
+          payload: json({ ...payload, objectKey: exportObjectKey }),
+        },
+      });
       await tx.payrollRun.update({
         where: { id: run.id },
         data: {
@@ -472,7 +543,12 @@ export class PayrollProcessingService {
         kind: output.kind,
         outputId: output.id,
       });
-      return { data: output };
+      await completeJob(tx, job.id, {
+        outputId: output.id,
+        kind: output.kind,
+        checksum: output.checksum,
+      });
+      return { data: storedOutput };
     });
   }
 
@@ -517,6 +593,13 @@ export class PayrollProcessingService {
         });
         if (existing) return { data: { run, batch: existing } };
       }
+      const job = await startJob(
+        tx,
+        actor,
+        run.id,
+        'PAYMENT_RECORDING',
+        `payment:${run.id}:${dto.reference ?? dto.status}`,
+      );
       const batch = await tx.payrollPaymentBatch.create({
         data: {
           tenantId: actor.tenantId,
@@ -539,8 +622,22 @@ export class PayrollProcessingService {
         status: dto.status,
         reference: dto.reference,
       });
+      await completeJob(tx, job.id, {
+        batchId: batch.id,
+        status: dto.status,
+        reference: dto.reference,
+      });
       return { data: { run: updated, batch } };
     });
+  }
+
+  listJobs(tenantId: string, runId: string) {
+    return this.prisma.forTenant(async (tx) => ({
+      data: await tx.payrollJobRun.findMany({
+        where: { tenantId, payrollRunId: runId },
+        orderBy: { createdAt: 'desc' },
+      }),
+    }));
   }
 
   listPayslips(tenantId: string, runId: string) {
@@ -550,6 +647,73 @@ export class PayrollProcessingService {
         orderBy: { payslipNumber: 'asc' },
       }),
     }));
+  }
+
+  downloadPayslip(actor: Actor, payslipId: string) {
+    return this.prisma.forTenant(async (tx) => {
+      const payslip = await tx.payrollPayslip.findFirst({
+        where: { tenantId: actor.tenantId, id: payslipId },
+      });
+      if (!payslip) notFound('PAYROLL_PAYSLIP_NOT_FOUND', 'Payslip');
+      if (!payslip.objectKey) {
+        invalidState('Payslip document is not available yet.');
+      }
+      return {
+        data: await this.storage.signedPayrollPayslipDownload(
+          actor.tenantId,
+          payslip.employeeId,
+          payslip.objectKey,
+        ),
+      };
+    });
+  }
+
+  downloadMyPayslip(actor: Actor, payslipId: string) {
+    return this.prisma.forTenant(async (tx) => {
+      const employee = await tx.employee.findFirst({
+        where: { tenantId: actor.tenantId, userId: actor.userId },
+      });
+      if (!employee)
+        notFound('EMPLOYEE_SELF_PROFILE_NOT_FOUND', 'Employee profile');
+      const payslip = await tx.payrollPayslip.findFirst({
+        where: {
+          tenantId: actor.tenantId,
+          id: payslipId,
+          employeeId: employee.id,
+          status: 'PUBLISHED',
+        },
+      });
+      if (!payslip) notFound('PAYROLL_PAYSLIP_NOT_FOUND', 'Payslip');
+      if (!payslip.objectKey) {
+        invalidState('Payslip document is not available yet.');
+      }
+      return {
+        data: await this.storage.signedPayrollPayslipDownload(
+          actor.tenantId,
+          employee.id,
+          payslip.objectKey,
+        ),
+      };
+    });
+  }
+
+  downloadOutput(actor: Actor, outputId: string) {
+    return this.prisma.forTenant(async (tx) => {
+      const output = await tx.payrollOutputExport.findFirst({
+        where: { tenantId: actor.tenantId, id: outputId },
+      });
+      if (!output) notFound('PAYROLL_OUTPUT_NOT_FOUND', 'Payroll output');
+      const payload = objectValue(output.payload);
+      const objectKey = stringValue(payload.objectKey);
+      if (!objectKey) invalidState('Payroll output file is not available yet.');
+      return {
+        data: await this.storage.signedPayrollExportDownload(
+          actor.tenantId,
+          output.payrollRunId,
+          objectKey,
+        ),
+      };
+    });
   }
 
   listMyPayslips(actor: Actor) {
@@ -626,10 +790,15 @@ function outputPayload(
     deductionMinor: sum(results.map((item) => item.deductionMinor)).toString(),
     netPayMinor: sum(results.map((item) => item.netPayMinor)).toString(),
   };
+  const rowNetTotal = sum(results.map((item) => item.netPayMinor)).toString();
   return {
     kind,
     periodKey,
     totals,
+    reconciliation: {
+      rowNetTotalMinor: rowNetTotal,
+      matches: rowNetTotal === totals.netPayMinor,
+    },
     rows: results.map((item) => ({
       employeeId: item.employeeId,
       grossPayMinor: item.grossPayMinor.toString(),
@@ -638,6 +807,29 @@ function outputPayload(
       currency: item.currency,
     })),
   };
+}
+
+function renderPayslipPdfPlaceholder(
+  periodKey: string,
+  result: {
+    employeeId: string;
+    grossPayMinor: bigint;
+    deductionMinor: bigint;
+    netPayMinor: bigint;
+    currency: string;
+  },
+  components: Array<{ code: string; amountMinor: bigint }>,
+) {
+  const text = [
+    '%PDF-1.4',
+    '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
+    '2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj',
+    '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >> endobj',
+    `4 0 obj << /Length 120 >> stream\nBT /F1 12 Tf 72 720 Td (Payroll payslip ${periodKey}) Tj 0 -18 Td (Employee ${result.employeeId}) Tj 0 -18 Td (Net ${result.netPayMinor.toString()} ${result.currency}) Tj ET\nendstream endobj`,
+    'xref\n0 5\n0000000000 65535 f \ntrailer << /Root 1 0 R /Size 5 >>\nstartxref\n0\n%%EOF',
+    stableJson({ result, components }),
+  ].join('\n');
+  return Buffer.from(text);
 }
 
 async function requireRun(tx: PrismaTransaction, tenantId: string, id: string) {
@@ -716,6 +908,53 @@ async function timeline(
       payrollRunId,
       action,
       actorUserId: actor.userId,
+      payload: json(payload),
+    },
+  });
+}
+
+async function startJob(
+  tx: PrismaTransaction,
+  actor: Actor,
+  payrollRunId: string,
+  kind: 'CALCULATION' | 'OUTPUT_GENERATION' | 'PAYMENT_RECORDING',
+  idempotencyKey: string,
+) {
+  const existing = await tx.payrollJobRun.findFirst({
+    where: {
+      tenantId: actor.tenantId,
+      payrollRunId,
+      kind,
+      idempotencyKey,
+      status: { in: ['RUNNING', 'COMPLETED'] },
+    },
+  });
+  if (existing) return existing;
+  return tx.payrollJobRun.create({
+    data: {
+      tenantId: actor.tenantId,
+      payrollRunId,
+      kind,
+      status: 'RUNNING',
+      progress: 10,
+      idempotencyKey,
+      startedAt: new Date(),
+      createdBy: actor.userId,
+    },
+  });
+}
+
+async function completeJob(
+  tx: PrismaTransaction,
+  id: string,
+  payload: Record<string, unknown>,
+) {
+  return tx.payrollJobRun.update({
+    where: { id },
+    data: {
+      status: 'COMPLETED',
+      progress: 100,
+      completedAt: new Date(),
       payload: json(payload),
     },
   });

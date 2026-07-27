@@ -59,6 +59,19 @@ export class PayrollProcessingController {
     return this.service.listMyPayslips(actor(user));
   }
 
+  @Get('payslips/me/:id/download')
+  @RequirePermissions(PERMISSIONS.PAYROLL_PAYSLIPS_SELF)
+  @ApiOperation({
+    summary: 'Create a signed download URL for my published payslip',
+  })
+  @ApiOkResponse({ type: PayrollProcessingResponseDto })
+  downloadMyPayslip(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.downloadMyPayslip(actor(user), id);
+  }
+
   @Post('runs/:id/review')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_CALCULATE)
   @ApiOperation({ summary: 'Mark calculated payroll run as reviewed' })
@@ -154,6 +167,36 @@ export class PayrollProcessingController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.listPayslips(user.tenantId, id);
+  }
+
+  @Get('runs/:id/jobs')
+  @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOkResponse({ type: PayrollProcessingResponseDto })
+  listJobs(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.listJobs(user.tenantId, id);
+  }
+
+  @Get('payslips/:id/download')
+  @RequirePermissions(PERMISSIONS.PAYROLL_PAYSLIPS_READ)
+  @ApiOkResponse({ type: PayrollProcessingResponseDto })
+  downloadPayslip(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.downloadPayslip(actor(user), id);
+  }
+
+  @Get('outputs/:id/download')
+  @RequirePermissions(PERMISSIONS.PAYROLL_REPORTS_GENERATE)
+  @ApiOkResponse({ type: PayrollProcessingResponseDto })
+  downloadOutput(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.downloadOutput(actor(user), id);
   }
 }
 

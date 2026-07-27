@@ -4500,6 +4500,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payroll/payslips/me/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a signed download URL for my published payslip */
+        get: operations["PayrollProcessingController_downloadMyPayslip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payroll/runs/{id}/review": {
         parameters: {
             query?: never;
@@ -4627,6 +4644,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["PayrollProcessingController_listPayslips"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_listJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/payslips/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_downloadPayslip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/outputs/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_downloadOutput"];
         put?: never;
         post?: never;
         delete?: never;
@@ -13007,6 +13072,27 @@ export interface operations {
             };
         };
     };
+    PayrollProcessingController_downloadMyPayslip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
     PayrollProcessingController_review: {
         parameters: {
             query?: never;
@@ -13179,6 +13265,69 @@ export interface operations {
         };
     };
     PayrollProcessingController_listPayslips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_listJobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_downloadPayslip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_downloadOutput: {
         parameters: {
             query?: never;
             header?: never;

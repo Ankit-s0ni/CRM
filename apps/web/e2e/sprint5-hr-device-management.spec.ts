@@ -1,18 +1,4 @@
-, done.
-Delta compression using up to 12 threads
-Compressing objects: 100% (2502/2502), done.
-Writing objects: 100% (4941/4941), 232.86 MiB | 3.76 MiB/s, done.
-Total 4941 (delta 2157), reused 4941 (delta 2157), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (2157/2157), done.
-remote: error: Trace: 611801dfb09dcda8f9e7270e4242d3ed5dd02ee2c74ae46d621992fd10d5e7bf
-remote: error: See https://gh.io/lfs for more information.
-remote: error: File apps/web/.next-build/dev/cache/turbopack/v16.2.10/00001251.sst is 130.30 MB; this exceeds GitHub's file size limit of 100.00 MB
-remote: error: File apps/web/.next-build/dev/cache/turbopack/v16.2.10/00001250.sst is 243.11 MB; this exceeds GitHub's file size limit of 100.00 MB
-remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
-To https://github.com/Ankit-s0ni/CRM.git
- ! [remote rejected] feature-Vedant -> feature-Vedant (pre-receive hook declined)
-error: failed to push some refs to 'https://github.com/Ankit-s0ni/CRM.git'
-PS C:\Users\vedan\OneDrive\Desktop\Oman\CRM> kl import { expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const tenantId = "019f6987-3b0e-7010-955b-4c2f6b840702";
 const employeeId = "019f6987-3b0e-7010-955b-4c2f6b840703";

@@ -11305,6 +11305,42 @@
         ]
       }
     },
+    "/payroll/payslips/me/{id}/download": {
+      "get": {
+        "operationId": "PayrollProcessingController_downloadMyPayslip",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a signed download URL for my published payslip",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
     "/payroll/runs/{id}/review": {
       "post": {
         "operationId": "PayrollProcessingController_review",
@@ -11620,6 +11656,111 @@
     "/payroll/runs/{id}/payslips": {
       "get": {
         "operationId": "PayrollProcessingController_listPayslips",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/jobs": {
+      "get": {
+        "operationId": "PayrollProcessingController_listJobs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/payslips/{id}/download": {
+      "get": {
+        "operationId": "PayrollProcessingController_downloadPayslip",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/outputs/{id}/download": {
+      "get": {
+        "operationId": "PayrollProcessingController_downloadOutput",
         "parameters": [
           {
             "name": "id",

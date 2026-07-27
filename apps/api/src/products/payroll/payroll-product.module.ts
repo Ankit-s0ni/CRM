@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { PrivateObjectStorageModule } from '../../shared/storage/private-object-storage.module';
 import { PayrollAdministrationCommandHandlers } from './application/handlers/payroll-administration.command-handlers';
 import { PayrollAdministrationQueryHandlers } from './application/handlers/payroll-administration.query-handlers';
 import { PayrollFoundationCommandHandlers } from './application/handlers/payroll-foundation.command-handlers';
@@ -26,7 +27,7 @@ import { PayrollProcessingController } from './presentation/controllers/payroll-
 import { PayrollRunPreparationController } from './presentation/controllers/payroll-run-preparation.controller';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, PrivateObjectStorageModule],
   controllers: [
     PayrollFoundationController,
     PayrollAdministrationController,

@@ -199,6 +199,12 @@ enum PayrollCountryPackStatus {
   DISABLED
 }
 
+enum PayrollJobKind {
+  CALCULATION
+  OUTPUT_GENERATION
+  PAYMENT_RECORDING
+}
+
 enum PayrollRunBlockerSeverity {
   BLOCKER
   WARNING
@@ -2163,6 +2169,7 @@ model PayrollRun {
   payslips           PayrollPayslip[]
   outputs            PayrollOutputExport[]
   paymentBatches     PayrollPaymentBatch[]
+  jobRuns            PayrollJobRun[]
 
   @@unique([tenantId, payGroupId, periodKey])
   @@unique([tenantId, idempotencyKey])
@@ -2414,6 +2421,28 @@ model PayrollPaymentBatch {
 
   @@index([tenantId, payrollRunId, status])
   @@map("payroll_payment_batches")
+}
+
+model PayrollJobRun {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  tenantId       String         @db.Uuid
+  payrollRunId   String         @db.Uuid
+  kind           PayrollJobKind
+  status         JobStatus      @default(PENDING)
+  progress       Int            @default(0)
+  idempotencyKey String?
+  payload        Json           @default("{}")
+  error          Json?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdBy      String         @db.Uuid
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  run            PayrollRun     @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, payrollRunId, kind, idempotencyKey])
+  @@index([tenantId, payrollRunId, kind, status])
+  @@map("payroll_job_runs")
 }
 
 model PayrollCountryRulePack {
