@@ -72,6 +72,10 @@ export const PERMISSIONS = {
   LEAVE_SELF: 'leave.self',
   LEAVE_APPROVE: 'leave.approve',
   LEAVE_MANAGE: 'leave.manage',
+  POS_SETTINGS_READ: 'pos.settings.read',
+  POS_SETTINGS_MANAGE: 'pos.settings.manage',
+  POS_OUTLET_READ: 'pos.outlet.read',
+  POS_OUTLET_MANAGE: 'pos.outlet.manage',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

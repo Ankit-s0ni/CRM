@@ -2086,3 +2086,99 @@ model OutboxEvent {
   @@index([publishedAt, deadLetteredAt, availableAt, createdAt], map: "outbox_events_delivery_idx")
   @@map("outbox_events")
 }
+
+// ---------------- POS FOUNDATION ----------------
+// Owned by the POS product (architecture/TABLE-OWNERSHIP.md).
+// Money is Decimal(12,3) and tax rates Decimal(5,3) for Omani Rial (1 OMR = 1000 baisa).
+// This intentionally differs from platform billing's Decimal(12,2).
+enum PosTaxType {
+  VAT
+  EXEMPT
+  ZERO_RATED
+  OUT_OF_SCOPE
+}
+
+model PosSettings {
+  tenantId            String    @id @db.Uuid
+  vatNumber           String?
+  vatRegistrationType String?
+  taxInclusive        Boolean   @default(true)
+  allowNegativeStock  Boolean   @default(false)
+  autoPrintReceipt    Boolean   @default(true)
+  maxDiscountPercent  Decimal   @default(0) @db.Decimal(5, 3)
+  returnWindowDays    Int       @default(7)
+  invoicePrefix       String    @default("INV")
+  receiptHeader       String?
+  receiptFooter       String?
+  logoUrl             String?
+  initializedAt       DateTime?
+  updatedAt           DateTime  @updatedAt
+
+  @@map("pos_settings")
+}
+
+// Gapless per-tenant invoice numbering. Deliberately separate from PosSettings so a
+// settings write never contends with the SELECT ... FOR UPDATE taken on every checkout.
+model PosInvoiceSequence {
+  tenantId   String @id @db.Uuid
+  nextNumber Int    @default(1)
+
+  @@map("pos_invoice_sequences")
+}
+
+model PosOutlet {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  tenantId  String   @db.Uuid
+  name      String
+  address   String?
+  city      String?
+  phone     String?
+  email     String?
+  vatNumber String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+  @@map("pos_outlets")
+}
+
+model PosTaxRate {
+  id        String            @id @default(uuid(7)) @db.Uuid
+  tenantId  String            @db.Uuid
+  name      String
+  rate      Decimal           @db.Decimal(5, 3)
+  type      PosTaxType        @default(VAT)
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  groups    PosTaxGroupRate[]
+
+  @@unique([tenantId, name])
+  @@map("pos_tax_rates")
+}
+
+model PosTaxGroup {
+  id        String            @id @default(uuid(7)) @db.Uuid
+  tenantId  String            @db.Uuid
+  name      String
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  rates     PosTaxGroupRate[]
+
+  @@unique([tenantId, name])
+  @@map("pos_tax_groups")
+}
+
+model PosTaxGroupRate {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  tenantId   String      @db.Uuid
+  taxGroupId String      @db.Uuid
+  taxRateId  String      @db.Uuid
+  taxGroup   PosTaxGroup @relation(fields: [taxGroupId], references: [id], onDelete: Cascade)
+  taxRate    PosTaxRate  @relation(fields: [taxRateId], references: [id], onDelete: Cascade)
+
+  @@unique([taxGroupId, taxRateId])
+  @@index([tenantId])
+  @@map("pos_tax_group_rates")
+}

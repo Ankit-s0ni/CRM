@@ -302,6 +302,18 @@ if (process.argv.includes('--self-test')) {
       ),
       message: 'Attendance composition root must be registered',
     },
+    {
+      passes: !isDependencyAllowed('attendance', 'pos'),
+      message: 'Attendance must not import POS internals',
+    },
+    {
+      passes: !isDependencyAllowed('pos', 'platform'),
+      message: 'POS must not import the platform control plane',
+    },
+    {
+      passes: compositionRoots.has('src/products/pos/pos-product.module.ts'),
+      message: 'POS composition root must be registered',
+    },
   ];
   const failedAssertions = assertions.filter((assertion) => !assertion.passes);
   for (const assertion of failedAssertions) failures.push(assertion.message);
@@ -312,31 +324,24 @@ if (process.argv.includes('--self-test')) {
   }
 }
 
-const appModule = readFileSync(resolve(sourceRoot, 'app.module.ts'), 'utf8');
-const legacyAttendanceImports = [
-  'attendance-config',
-  'attendance-dashboard',
-  'attendance-sync',
-  'attendance-verification',
-  'biometrics',
-  'device-trust',
-  'field-tracking',
-  'leave',
-  'payroll-lock',
-  'regularization',
-  'reporting',
-  'runtime-config',
-  'security-alerts',
-];
-for (const capability of legacyAttendanceImports) {
-  if (appModule.includes(`./products/attendance/${capability}/`)) {
-    failures.push(`AppModule bypasses Attendance product: ${capability}`);
+// AppModule composes products; it must never reach past a public entry.
+// Any relative import that lands inside a registered physical root has to be
+// that root's declared public entry. Imports into unregistered areas (shared
+// infrastructure, local app files) are out of scope for this rule.
+const appModulePath = resolve(sourceRoot, 'app.module.ts');
+const appModuleSource = readFileSync(appModulePath, 'utf8');
+for (const match of appModuleSource.matchAll(importPattern)) {
+  const importPath = match[1];
+  if (!importPath.startsWith('.')) continue;
+  const target = resolve(dirname(appModulePath), importPath);
+  const targetModule = physicalModule(target);
+  if (!targetModule) continue;
+  const targetPublicEntries = publicEntries.get(targetModule);
+  if (!targetPublicEntries?.includes(`${target}.ts`)) {
+    failures.push(
+      `AppModule bypasses ${targetModule}/public.ts: ${importPath}`,
+    );
   }
-}
-if (!appModule.includes('./products/attendance/public')) {
-  failures.push(
-    'AppModule must import Attendance through attendance/public.ts.',
-  );
 }
 
 if (failures.length > 0) {

@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/mobile-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login an employee and automatically resolve their workspace */
+        post: operations["AuthController_mobileLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/refresh": {
         parameters: {
             query?: never;
@@ -83,6 +100,23 @@ export interface paths {
         put?: never;
         /** Revoke the current refresh token */
         post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change the authenticated user password */
+        post: operations["AuthController_changePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -363,6 +397,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspace/modules/{key}/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get entitlement, dependencies, and setup health for one module */
+        get: operations["WorkspaceController_getModuleHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspace/settings/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permission-filtered workspace setup readiness */
+        get: operations["WorkspaceController_getSettingsHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspace/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get safe server integration configuration diagnostics */
+        get: operations["WorkspaceController_getIntegrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/departments": {
         parameters: {
             query?: never;
@@ -513,8 +598,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get an employee employment-event timeline */
+        /** Get the paginated audit and employment history for an employee */
         get: operations["EmployeesController_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{id}/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a role-scoped employee workspace summary */
+        get: operations["EmployeesController_workspace"];
         put?: never;
         post?: never;
         delete?: never;
@@ -539,6 +641,40 @@ export interface paths {
         head?: never;
         /** Update an employee and their relationships */
         patch: operations["EmployeesController_updateEmployee"];
+        trace?: never;
+    };
+    "/employees/{id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create the employee login and return a temporary password */
+        post: operations["EmployeesController_createEmployeeAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an employee work assignments */
+        patch: operations["EmployeesController_updateAssignments"];
         trace?: never;
     };
     "/employees/{id}/terminate": {
@@ -569,6 +705,23 @@ export interface paths {
         put?: never;
         /** Reactivate a terminated employee under quota */
         post: operations["EmployeesController_reactivateEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employee-imports/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the supported employee CSV schema and template */
+        get: operations["EmployeeImportsController_schema"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -656,6 +809,75 @@ export interface paths {
         /** Idempotently retry failed valid rows */
         post: operations["EmployeeImportsController_retry"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List safe employee document metadata */
+        get: operations["EmployeeDocumentsController_list"];
+        put?: never;
+        /** Register uploaded employee document metadata */
+        post: operations["EmployeeDocumentsController_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a private employee document upload URL */
+        post: operations["EmployeeDocumentsController_presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/{documentId}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a short-lived private document URL */
+        get: operations["EmployeeDocumentsController_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Permanently delete an employee document */
+        delete: operations["EmployeeDocumentsController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1230,6 +1452,23 @@ export interface paths {
         patch: operations["PlatformModulesController_update"];
         trace?: never;
     };
+    "/platform/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List customer-facing products, add-ons, and capabilities */
+        get: operations["PlatformCatalogController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/tenants/{tenantId}/modules": {
         parameters: {
             query?: never;
@@ -1241,6 +1480,40 @@ export interface paths {
         get: operations["PlatformTenantModulesController_list"];
         /** Atomically replace active tenant modules */
         put: operations["PlatformTenantModulesController_replace"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/entitlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get plan, overrides, and effective tenant entitlements */
+        get: operations["PlatformTenantEntitlementsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/entitlements/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace audited tenant capability overrides */
+        put: operations["PlatformTenantEntitlementsController_replace"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1435,256 +1708,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/offices": {
+    "/platform/plans": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List tenant office locations and assignment counts */
-        get: operations["AttendanceConfigController_listOffices"];
+        /** List plans and module bundles */
+        get: operations["PlatformBillingController_plans"];
         put?: never;
-        /** Create an office and circular geofence */
-        post: operations["AttendanceConfigController_createOffice"];
+        /** Create a subscription plan with fresh MFA */
+        post: operations["PlatformBillingController_createPlan"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/offices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an office with employees and holidays */
-        get: operations["AttendanceConfigController_getOffice"];
-        put?: never;
-        post?: never;
-        /** Delete an unused office */
-        delete: operations["AttendanceConfigController_removeOffice"];
-        options?: never;
-        head?: never;
-        /** Update office geofence and network constraints */
-        patch: operations["AttendanceConfigController_updateOffice"];
-        trace?: never;
-    };
-    "/offices/{id}/employees": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List employees assigned to an office */
-        get: operations["AttendanceConfigController_officeEmployees"];
-        /** Atomically replace office employee assignments */
-        put: operations["AttendanceConfigController_replaceOfficeEmployees"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List attendance policies and assignments */
-        get: operations["AttendanceConfigController_listPolicies"];
-        put?: never;
-        /** Create an attendance policy */
-        post: operations["AttendanceConfigController_createPolicy"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Resolve employee policy by employee, department, then tenant default */
-        get: operations["AttendanceConfigController_resolvePolicy"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/resolve/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve policies for up to 500 employees without N+1 queries */
-        post: operations["AttendanceConfigController_resolvePolicies"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an attendance policy and assignments */
-        get: operations["AttendanceConfigController_getPolicy"];
-        put?: never;
-        post?: never;
-        /** Delete an unassigned attendance policy */
-        delete: operations["AttendanceConfigController_removePolicy"];
-        options?: never;
-        head?: never;
-        /** Update prospective attendance policy rules */
-        patch: operations["AttendanceConfigController_updatePolicy"];
-        trace?: never;
-    };
-    "/attendance-policies/{id}/assignments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Atomically replace policy scope assignments */
-        put: operations["AttendanceConfigController_replacePolicyAssignments"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List tenant shifts */
-        get: operations["AttendanceConfigController_listShifts"];
-        put?: never;
-        /** Create a day or overnight shift */
-        post: operations["AttendanceConfigController_createShift"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Resolve employee shift for a date */
-        get: operations["AttendanceConfigController_resolveShift"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/resolve/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve shifts for up to 500 employees without N+1 queries */
-        post: operations["AttendanceConfigController_resolveShifts"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a shift */
-        get: operations["AttendanceConfigController_getShift"];
-        put?: never;
-        post?: never;
-        /** Delete an unused shift */
-        delete: operations["AttendanceConfigController_removeShift"];
-        options?: never;
-        head?: never;
-        /** Update shift times and overnight derivation */
-        patch: operations["AttendanceConfigController_updateShift"];
-        trace?: never;
-    };
-    "/rosters": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List dated roster assignments */
-        get: operations["AttendanceConfigController_listRosters"];
-        put?: never;
-        /** Create an idempotent dated roster assignment */
-        post: operations["AttendanceConfigController_createRoster"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Bulk assign a shift with row-level conflicts */
-        post: operations["AttendanceConfigController_bulkRosters"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/{id}": {
+    "/platform/plans/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1694,32 +1736,271 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a roster assignment */
-        delete: operations["AttendanceConfigController_removeRoster"];
+        delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update plan pricing, limits, and module bundle */
+        patch: operations["PlatformBillingController_updatePlan"];
         trace?: never;
     };
-    "/holidays": {
+    "/platform/plans/{id}/impact": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List tenant-wide and office holidays */
-        get: operations["AttendanceConfigController_listHolidays"];
+        get?: never;
         put?: never;
-        /** Create a tenant-wide or office holiday */
-        post: operations["AttendanceConfigController_createHoliday"];
+        /** Preview tenants and features affected by a plan edit */
+        post: operations["PlatformBillingController_planImpact"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/holidays/{id}": {
+    "/platform/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search invoices across tenants */
+        get: operations["PlatformBillingController_invoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get invoice, tax snapshot and payment attempts */
+        get: operations["PlatformBillingController_invoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/payment-transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search provider payment attempts */
+        get: operations["PlatformBillingController_transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dunning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List subscriptions in dunning */
+        get: operations["PlatformBillingController_dunning"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dunning/{subscriptionId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry payment with permission and fresh MFA */
+        post: operations["PlatformBillingController_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dashboard/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authoritative revenue and billing KPIs */
+        get: operations["PlatformBillingController_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/health/payment-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get provider latency and webhook health */
+        get: operations["PlatformBillingController_providerHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get tenant legal and tax billing profile */
+        get: operations["BillingController_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update tenant legal and tax billing profile */
+        patch: operations["BillingController_updateProfile"];
+        trace?: never;
+    };
+    "/billing/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current subscription, bundle and seat usage */
+        get: operations["BillingController_subscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/subscription/change-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview or confirm a validated plan change */
+        post: operations["BillingController_changePlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant GST invoices */
+        get: operations["BillingController_invoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get immutable invoice and payment evidence */
+        get: operations["BillingController_invoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a short-lived private invoice download */
+        get: operations["BillingController_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/payment-methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List masked tokenized payment methods */
+        get: operations["BillingController_paymentMethods"];
+        put?: never;
+        /** Attach a provider-tokenized payment method */
+        post: operations["BillingController_addPaymentMethod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/payment-methods/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1729,15 +2010,14 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a holiday */
-        delete: operations["AttendanceConfigController_removeHoliday"];
+        /** Revoke a tokenized payment method */
+        delete: operations["BillingController_deletePaymentMethod"];
         options?: never;
         head?: never;
-        /** Update holiday name, date, or scope */
-        patch: operations["AttendanceConfigController_updateHoliday"];
+        patch?: never;
         trace?: never;
     };
-    "/rosters/imports/presign": {
+    "/billing/webhooks/{provider}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1746,57 +2026,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a private roster CSV upload URL */
-        post: operations["RosterImportsController_presign"];
+        /** Consume an authenticated payment provider event */
+        post: operations["BillingWebhookController_handle"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/rosters/imports": {
+    "/audit-logs": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Register and queue an idempotent roster import */
-        post: operations["RosterImportsController_register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/imports/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get roster import summary and safe row errors */
-        get: operations["RosterImportsController_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance/dashboard": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the shared Business Admin and HR Admin live board */
-        get: operations["AttendanceDashboardController_get"];
+        /** Search the current tenant audit history */
+        get: operations["TenantAuditController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2010,6 +2256,427 @@ export interface paths {
         head?: never;
         /** Update an unlocked attendance exception */
         patch: operations["AttendanceQueryController_updateException"];
+        trace?: never;
+    };
+    "/offices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant office locations and assignment counts */
+        get: operations["AttendanceConfigController_listOffices"];
+        put?: never;
+        /** Create an office and circular geofence */
+        post: operations["AttendanceConfigController_createOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/offices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an office with employees and holidays */
+        get: operations["AttendanceConfigController_getOffice"];
+        put?: never;
+        post?: never;
+        /** Delete an unused office */
+        delete: operations["AttendanceConfigController_removeOffice"];
+        options?: never;
+        head?: never;
+        /** Update office geofence and network constraints */
+        patch: operations["AttendanceConfigController_updateOffice"];
+        trace?: never;
+    };
+    "/offices/{id}/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List employees assigned to an office */
+        get: operations["AttendanceConfigController_officeEmployees"];
+        /** Atomically replace office employee assignments */
+        put: operations["AttendanceConfigController_replaceOfficeEmployees"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List attendance policies and assignments */
+        get: operations["AttendanceConfigController_listPolicies"];
+        put?: never;
+        /** Create an attendance policy */
+        post: operations["AttendanceConfigController_createPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve employee policy by employee, department, then tenant default */
+        get: operations["AttendanceConfigController_resolvePolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/resolve/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve policies for up to 500 employees without N+1 queries */
+        post: operations["AttendanceConfigController_resolvePolicies"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an attendance policy and assignments */
+        get: operations["AttendanceConfigController_getPolicy"];
+        put?: never;
+        post?: never;
+        /** Delete a policy and clear assignments */
+        delete: operations["AttendanceConfigController_removePolicy"];
+        options?: never;
+        head?: never;
+        /** Update prospective attendance policy rules */
+        patch: operations["AttendanceConfigController_updatePolicy"];
+        trace?: never;
+    };
+    "/attendance-policies/{id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atomically replace policy scope assignments */
+        put: operations["AttendanceConfigController_replacePolicyAssignments"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/employees/{employeeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or clear one employee-specific attendance policy override */
+        put: operations["AttendanceConfigController_assignEmployeePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant shifts */
+        get: operations["AttendanceConfigController_listShifts"];
+        put?: never;
+        /** Create a day or overnight shift */
+        post: operations["AttendanceConfigController_createShift"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve employee shift for a date */
+        get: operations["AttendanceConfigController_resolveShift"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/resolve/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve shifts for up to 500 employees without N+1 queries */
+        post: operations["AttendanceConfigController_resolveShifts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a shift */
+        get: operations["AttendanceConfigController_getShift"];
+        put?: never;
+        post?: never;
+        /** Delete an unused shift */
+        delete: operations["AttendanceConfigController_removeShift"];
+        options?: never;
+        head?: never;
+        /** Update shift times and overnight derivation */
+        patch: operations["AttendanceConfigController_updateShift"];
+        trace?: never;
+    };
+    "/rosters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List dated roster assignments */
+        get: operations["AttendanceConfigController_listRosters"];
+        put?: never;
+        /** Create an idempotent dated roster assignment */
+        post: operations["AttendanceConfigController_createRoster"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk assign a shift with row-level conflicts */
+        post: operations["AttendanceConfigController_bulkRosters"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a roster assignment */
+        delete: operations["AttendanceConfigController_removeRoster"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant-wide and office holidays */
+        get: operations["AttendanceConfigController_listHolidays"];
+        put?: never;
+        /** Create a tenant-wide or office holiday */
+        post: operations["AttendanceConfigController_createHoliday"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import public holidays for configured office regions */
+        post: operations["AttendanceConfigController_syncPublicHolidays"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a holiday */
+        delete: operations["AttendanceConfigController_removeHoliday"];
+        options?: never;
+        head?: never;
+        /** Update holiday name, date, or scope */
+        patch: operations["AttendanceConfigController_updateHoliday"];
+        trace?: never;
+    };
+    "/rosters/imports/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a private roster CSV upload URL */
+        post: operations["RosterImportsController_presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register and queue an idempotent roster import */
+        post: operations["RosterImportsController_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get roster import summary and safe row errors */
+        get: operations["RosterImportsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the shared Business Admin and HR Admin live board */
+        get: operations["AttendanceDashboardController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/hr-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permission-filtered, employee-scoped HR action counts */
+        get: operations["HrDashboardController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/devices/register": {
@@ -2544,6 +3211,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/regularizations/employees/{employeeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a correction request for an employee */
+        post: operations["RegularizationController_createForEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/regularizations/attachments/presign": {
         parameters: {
             query?: never;
@@ -2869,6 +3553,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leave-balances/{id}/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust an employee leave balance with an audit entry */
+        post: operations["LeaveController_adjustBalance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leave-requests": {
         parameters: {
             query?: never;
@@ -2955,42 +3656,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/billing/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get tenant legal and tax billing profile */
-        get: operations["BillingController_profile"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update tenant legal and tax billing profile */
-        patch: operations["BillingController_updateProfile"];
-        trace?: never;
-    };
-    "/billing/subscription": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get current subscription, bundle and seat usage */
-        get: operations["BillingController_subscription"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/subscription/change-plan": {
+    "/pos/setup": {
         parameters: {
             query?: never;
             header?: never;
@@ -2999,24 +3665,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Preview or confirm a validated plan change */
-        post: operations["BillingController_changePlan"];
+        /** Provision POS defaults for this workspace (idempotent: outlet, settings, invoice sequence, Oman VAT rates) */
+        post: operations["PosSettingsController_setup"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/billing/invoices": {
+    "/pos/settings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List tenant GST invoices */
-        get: operations["BillingController_invoices"];
-        put?: never;
+        /** Read POS settings for this workspace */
+        get: operations["PosSettingsController_getSettings"];
+        /** Update POS settings for this workspace */
+        put: operations["PosSettingsController_updateSettings"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3024,238 +3691,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/billing/invoices/{id}": {
+    "/pos/outlets": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get immutable invoice and payment evidence */
-        get: operations["BillingController_invoice"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/invoices/{id}/download": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Create a short-lived private invoice download */
-        get: operations["BillingController_download"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/payment-methods": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List masked tokenized payment methods */
-        get: operations["BillingController_paymentMethods"];
-        put?: never;
-        /** Attach a provider-tokenized payment method */
-        post: operations["BillingController_addPaymentMethod"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/payment-methods/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Revoke a tokenized payment method */
-        delete: operations["BillingController_deletePaymentMethod"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/webhooks/{provider}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Consume an authenticated payment provider event */
-        post: operations["BillingWebhookController_handle"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List plans and module bundles */
-        get: operations["PlatformBillingController_plans"];
-        put?: never;
-        /** Create a subscription plan with fresh MFA */
-        post: operations["PlatformBillingController_createPlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/plans/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update plan pricing, limits, and module bundle */
-        patch: operations["PlatformBillingController_updatePlan"];
-        trace?: never;
-    };
-    "/platform/invoices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search invoices across tenants */
-        get: operations["PlatformBillingController_invoices"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/invoices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get invoice, tax snapshot and payment attempts */
-        get: operations["PlatformBillingController_invoice"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/payment-transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search provider payment attempts */
-        get: operations["PlatformBillingController_transactions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/dunning": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List subscriptions in dunning */
-        get: operations["PlatformBillingController_dunning"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/dunning/{subscriptionId}/retry": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Retry payment with permission and fresh MFA */
-        post: operations["PlatformBillingController_retry"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/dashboard/billing": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get authoritative revenue and billing KPIs */
-        get: operations["PlatformBillingController_dashboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/health/payment-providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get provider latency and webhook health */
-        get: operations["PlatformBillingController_providerHealth"];
+        /** List outlets for this workspace */
+        get: operations["PosSettingsController_listOutlets"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3279,6 +3723,10 @@ export interface components {
             refreshToken: string;
             /** Format: uuid */
             deviceUuid?: string;
+        };
+        ChangePasswordDto: {
+            currentPassword: string;
+            newPassword: string;
         };
         UpdateTenantSettingsDto: {
             /** @example Asia/Kolkata */
@@ -3346,13 +3794,20 @@ export interface components {
             employeeCode: string;
             /** @example Aarav Sharma */
             fullName: string;
+            /** @example aarav.sharma@acme.com */
+            email: string;
             /** @example +919876543210 */
-            phone?: string;
+            phone: string;
             /**
              * @example OFFICE
              * @enum {string}
              */
             workType: "OFFICE" | "FIELD" | "HYBRID";
+            /**
+             * Format: date
+             * @example 1994-03-18
+             */
+            dateOfBirth: string;
             /**
              * Format: date
              * @example 2026-07-16
@@ -3365,15 +3820,26 @@ export interface components {
             /** Format: uuid */
             managerId?: Record<string, never> | null;
         };
+        CreateEmployeeAccountDto: {
+            /** @example aarav.sharma@acme.com */
+            email: string;
+        };
         UpdateEmployeeDto: {
             /** @example EMP-0001 */
             employeeCode?: string;
             /** @example Aarav Sharma */
             fullName?: string;
+            /** @example aarav.sharma@acme.com */
+            email?: string;
             /** @example +919876543210 */
             phone?: Record<string, never> | null;
             /** @enum {string} */
             workType?: "OFFICE" | "FIELD" | "HYBRID";
+            /**
+             * Format: date
+             * @example 1994-03-18
+             */
+            dateOfBirth?: Record<string, never> | null;
             /**
              * Format: date
              * @example 2026-07-16
@@ -3390,6 +3856,12 @@ export interface components {
              * @example 2026-07-16
              */
             effectiveDate?: string;
+        };
+        UpdateEmployeeAssignmentsDto: {
+            /** Format: uuid */
+            primaryOfficeId?: Record<string, never> | null;
+            /** Format: uuid */
+            defaultShiftId?: Record<string, never> | null;
         };
         TerminateEmployeeDto: {
             /**
@@ -3425,6 +3897,8 @@ export interface components {
             /** @example tenant-id/employee-imports/file.csv */
             objectKey: string;
         };
+        PresignEmployeeDocumentDto: Record<string, never>;
+        RegisterEmployeeDocumentDto: Record<string, never>;
         CreateRoleDto: {
             /** @example Attendance Supervisor */
             name: string;
@@ -3462,6 +3936,11 @@ export interface components {
             /** @example hr.admin@example.com */
             email: string;
             roleIds: string[];
+            /**
+             * Format: uuid
+             * @description Employee to link atomically when the invited user accepts the invitation
+             */
+            employeeId?: string;
         };
         ResendInvitationDto: {
             /** @example hr.admin@example.com */
@@ -3505,6 +3984,10 @@ export interface components {
             timezone: string;
             /** @example 150 */
             seatCount: number;
+            /** @description Pre-set admin password. When provided the user account is created immediately. */
+            adminPassword?: string;
+            /** @description Employee count band (e.g. "1-10", "11-50") */
+            employeeCount?: string;
         };
         UpdatePlatformTenantDto: {
             companyName?: string;
@@ -3557,6 +4040,11 @@ export interface components {
             availability?: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
             dependencyKeys?: string[];
             conflictKeys?: string[];
+            /** @enum {string} */
+            kind?: "PRODUCT" | "ADD_ON";
+            parentModuleId?: string;
+            catalogOrder?: number;
+            customerVisible?: boolean;
         };
         UpdatePlatformModuleDto: {
             name?: string;
@@ -3566,6 +4054,11 @@ export interface components {
             availability?: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
             dependencyKeys?: string[];
             conflictKeys?: string[];
+            /** @enum {string} */
+            kind?: "PRODUCT" | "ADD_ON";
+            parentModuleId?: string;
+            catalogOrder?: number;
+            customerVisible?: boolean;
         };
         ReplaceTenantModulesDto: {
             /**
@@ -3575,6 +4068,7 @@ export interface components {
              */
             moduleKeys: string[];
         };
+        ReplaceTenantCapabilityOverridesDto: Record<string, never>;
         CreateImpersonationDto: {
             /** Format: uuid */
             targetUserId: string;
@@ -3589,6 +4083,34 @@ export interface components {
         SystemAlertDecisionDto: {
             note: string;
         };
+        CreatePlatformPlanDto: Record<string, never>;
+        UpdatePlatformPlanDto: Record<string, never>;
+        DunningRetryDto: Record<string, never>;
+        UpdateBillingProfileDto: {
+            legalName: string;
+            billingEmail: string;
+            gstin?: string;
+            pan?: string;
+            /** @enum {string} */
+            currency: "INR" | "AED" | "OMR" | "QAR" | "SAR" | "USD";
+        };
+        ChangePlanDto: {
+            /** @default false */
+            confirm: Record<string, never>;
+        };
+        AddPaymentMethodDto: {
+            /** @description Token/reference returned by the provider SDK */
+            providerMethodRef: string;
+        };
+        WebPunchDto: {
+            /**
+             * Format: uuid
+             * @description Client-generated idempotency key for safe retries
+             */
+            requestId?: string;
+        };
+        CreateAttendanceExceptionDto: Record<string, never>;
+        UpdateAttendanceExceptionDto: Record<string, never>;
         CreateOfficeDto: Record<string, never>;
         UpdateOfficeDto: Record<string, never>;
         AssignOfficeEmployeesDto: Record<string, never>;
@@ -3610,10 +4132,18 @@ export interface components {
             selfieMode?: "DISABLED" | "REQUIRED";
         };
         ReplacePolicyAssignmentsDto: Record<string, never>;
+        AssignEmployeePolicyDto: {
+            /**
+             * Format: uuid
+             * @description Direct policy override. Use null to inherit department or tenant policy.
+             */
+            policyId: Record<string, never> | null;
+        };
         CreateShiftDto: Record<string, never>;
         UpdateShiftDto: Record<string, never>;
         CreateRosterDto: Record<string, never>;
         BulkRosterDto: Record<string, never>;
+        SyncPublicHolidaysDto: Record<string, never>;
         CreateHolidayDto: Record<string, never>;
         UpdateHolidayDto: Record<string, never>;
         RosterImportPresignDto: {
@@ -3623,18 +4153,11 @@ export interface components {
             contentType: string;
         };
         CreateRosterImportDto: Record<string, never>;
-        WebPunchDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency key for safe retries
-             */
-            requestId?: string;
-        };
-        CreateAttendanceExceptionDto: Record<string, never>;
-        UpdateAttendanceExceptionDto: Record<string, never>;
         RegisterDeviceDto: {
             /** Format: uuid */
             deviceUuid: string;
+            /** Format: uuid */
+            previousDeviceUuid?: string;
             /** @enum {string} */
             platform: "IOS" | "ANDROID";
             deviceModel?: string;
@@ -3796,27 +4319,29 @@ export interface components {
         ReopenPayrollLockDto: Record<string, never>;
         CreateLeavePolicyDto: Record<string, never>;
         UpdateLeavePolicyDto: Record<string, never>;
+        AdjustLeaveBalanceDto: Record<string, never>;
         CreateLeaveRequestDto: Record<string, never>;
         LeaveDecisionDto: Record<string, never>;
-        UpdateBillingProfileDto: {
-            legalName: string;
-            billingEmail: string;
-            gstin?: string;
-            pan?: string;
-            /** @enum {string} */
-            currency: "INR" | "AED" | "OMR" | "QAR" | "SAR" | "USD";
+        UpdatePosSettingsDto: {
+            /** @description Oman VAT registration number */
+            vatNumber?: string;
+            vatRegistrationType?: string;
+            /** @description Whether catalog prices already include VAT */
+            taxInclusive?: boolean;
+            allowNegativeStock?: boolean;
+            autoPrintReceipt?: boolean;
+            /**
+             * @description Maximum discount percentage a cashier may apply without an override. String to preserve Decimal(5,3) precision.
+             * @example 10.000
+             */
+            maxDiscountPercent?: string;
+            returnWindowDays?: number;
+            /** @example INV */
+            invoicePrefix?: string;
+            receiptHeader?: string;
+            receiptFooter?: string;
+            logoUrl?: string;
         };
-        ChangePlanDto: {
-            /** @default false */
-            confirm: Record<string, never>;
-        };
-        AddPaymentMethodDto: {
-            /** @description Token/reference returned by the provider SDK */
-            providerMethodRef: string;
-        };
-        CreatePlatformPlanDto: Record<string, never>;
-        UpdatePlatformPlanDto: Record<string, never>;
-        DunningRetryDto: Record<string, never>;
     };
     responses: never;
     parameters: never;
@@ -3894,6 +4419,28 @@ export interface operations {
             };
         };
     };
+    AuthController_mobileLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginDto"];
+            };
+        };
+        responses: {
+            /** @description Successful employee login */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AuthController_refresh: {
         parameters: {
             query?: never;
@@ -3927,6 +4474,27 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RefreshTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
             };
         };
         responses: {
@@ -4305,6 +4873,59 @@ export interface operations {
             };
         };
     };
+    WorkspaceController_getModuleHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_getSettingsHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_getIntegrations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     OrganizationController_listDepartments: {
         parameters: {
             query?: {
@@ -4591,6 +5212,7 @@ export interface operations {
                 departmentId?: string;
                 designationId?: string;
                 managerId?: string;
+                quickFilter?: "JOINING_SOON" | "MISSING_MANAGER";
                 page?: number;
                 limit?: number;
                 sort?: "name_asc" | "name_desc" | "code_asc" | "code_desc" | "joined_asc" | "joined_desc";
@@ -4700,6 +5322,25 @@ export interface operations {
             };
         };
     };
+    EmployeesController_workspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EmployeesController_getEmployee: {
         parameters: {
             query?: never;
@@ -4731,6 +5372,52 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateEmployeeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeesController_createEmployeeAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeeAccountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeesController_updateAssignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEmployeeAssignmentsDto"];
             };
         };
         responses: {
@@ -4781,6 +5468,23 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeImportsController_schema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4900,6 +5604,111 @@ export interface operations {
         requestBody?: never;
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterEmployeeDocumentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_presign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignEmployeeDocumentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5770,6 +6579,23 @@ export interface operations {
             };
         };
     };
+    PlatformCatalogController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PlatformTenantModulesController_list: {
         parameters: {
             query?: never;
@@ -5801,6 +6627,48 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReplaceTenantModulesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformTenantEntitlementsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformTenantEntitlementsController_replace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceTenantCapabilityOverridesDto"];
             };
         };
         responses: {
@@ -6035,6 +6903,751 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_plans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_updatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_planImpact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_invoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_invoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_transactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_dunning: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DunningRetryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_providerHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBillingProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_changePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_invoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_invoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_paymentMethods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_addPaymentMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddPaymentMethodDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_deletePaymentMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingWebhookController_handle: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-razorpay-signature": string;
+                "stripe-signature": string;
+                "x-razorpay-event-id": string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TenantAuditController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_checkin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_breakStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_breakEnd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_today: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_history: {
+        parameters: {
+            query?: {
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_day: {
+        parameters: {
+            query?: {
+                date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_register: {
+        parameters: {
+            query?: {
+                /** @description Return only records with late minutes greater than zero */
+                lateOnly?: boolean;
+                /** @description Return checked-in records that do not have a checkout */
+                missingCheckout?: boolean;
+                page?: components["schemas"]["Object"];
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_employeeMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_day: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_listExceptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_createException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAttendanceExceptionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_getException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_removeException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_updateException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAttendanceExceptionDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -6348,6 +7961,29 @@ export interface operations {
             };
         };
     };
+    AttendanceConfigController_assignEmployeePolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignEmployeePolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AttendanceConfigController_listShifts: {
         parameters: {
             query?: never;
@@ -6604,6 +8240,27 @@ export interface operations {
             };
         };
     };
+    AttendanceConfigController_syncPublicHolidays: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPublicHolidaysDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AttendanceConfigController_removeHoliday: {
         parameters: {
             query?: never;
@@ -6712,6 +8369,7 @@ export interface operations {
             query?: {
                 date?: string;
                 departmentId?: string;
+                officeId?: string;
                 status?: ("CLOCKED_IN" | "LATE" | "ABSENT" | "ON_FIELD" | "ON_BREAK" | "NOT_YET_IN" | "OFF")[];
                 search?: string;
                 limit?: number;
@@ -6731,91 +8389,7 @@ export interface operations {
             };
         };
     };
-    AttendanceRuntimeController_checkin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_checkout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_breakStart: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_breakEnd: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_today: {
+    HrDashboardController_summary: {
         parameters: {
             query?: never;
             header?: never;
@@ -6823,201 +8397,6 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_history: {
-        parameters: {
-            query?: {
-                month?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_day: {
-        parameters: {
-            query?: {
-                date?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_register: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_employeeMonth: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                employeeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_day: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                employeeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_listExceptions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_createException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateAttendanceExceptionDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_getException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_removeException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_updateException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAttendanceExceptionDto"];
-            };
-        };
         responses: {
             200: {
                 headers: {
@@ -7769,6 +9148,29 @@ export interface operations {
             };
         };
     };
+    RegularizationController_createForEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegularizationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     RegularizationController_presign: {
         parameters: {
             query?: never;
@@ -8194,6 +9596,29 @@ export interface operations {
             };
         };
     };
+    LeaveController_adjustBalance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustLeaveBalanceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LeaveController_requests: {
         parameters: {
             query?: never;
@@ -8320,7 +9745,7 @@ export interface operations {
             };
         };
     };
-    BillingController_profile: {
+    PosSettingsController_setup: {
         parameters: {
             query?: never;
             header?: never;
@@ -8328,65 +9753,6 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_updateProfile: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateBillingProfileDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_subscription: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_changePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangePlanDto"];
-            };
-        };
         responses: {
             201: {
                 headers: {
@@ -8396,7 +9762,7 @@ export interface operations {
             };
         };
     };
-    BillingController_invoices: {
+    PosSettingsController_getSettings: {
         parameters: {
             query?: never;
             header?: never;
@@ -8413,62 +9779,7 @@ export interface operations {
             };
         };
     };
-    BillingController_invoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_download: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_paymentMethods: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_addPaymentMethod: {
+    PosSettingsController_updateSettings: {
         parameters: {
             query?: never;
             header?: never;
@@ -8477,55 +9788,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddPaymentMethodDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_deletePaymentMethod: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingWebhookController_handle: {
-        parameters: {
-            query?: never;
-            header: {
-                "x-razorpay-signature": string;
-                "stripe-signature": string;
-                "x-razorpay-event-id": string;
-            };
-            path: {
-                provider: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    [key: string]: unknown;
-                };
+                "application/json": components["schemas"]["UpdatePosSettingsDto"];
             };
         };
         responses: {
@@ -8537,178 +9800,7 @@ export interface operations {
             };
         };
     };
-    PlatformBillingController_plans: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_createPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePlatformPlanDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_updatePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_invoices: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_invoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_transactions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_dunning: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_retry: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                subscriptionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DunningRetryDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_dashboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_providerHealth: {
+    PosSettingsController_listOutlets: {
         parameters: {
             query?: never;
             header?: never;

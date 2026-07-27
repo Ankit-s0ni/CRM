@@ -88,10 +88,21 @@ describe('RLS Isolation Test', () => {
           module: 'test',
         },
       });
+      await adminPrisma.posSettings.create({ data: { tenantId } });
+      await adminPrisma.posOutlet.create({
+        data: { tenantId, name: `RLS Outlet ${suffix}` },
+      });
     }
   });
 
   afterAll(async () => {
+    // POS rows hold ON DELETE RESTRICT foreign keys to tenants, so they must go first.
+    await adminPrisma.posOutlet.deleteMany({
+      where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
+    });
+    await adminPrisma.posSettings.deleteMany({
+      where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
+    });
     await adminPrisma.importJob.deleteMany({
       where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
     });
@@ -137,6 +148,8 @@ describe('RLS Isolation Test', () => {
         roles: await tx.role.findMany({ where: { tenantId: { not: null } } }),
         imports: await tx.importJob.findMany(),
         audits: await tx.tenantAuditLog.findMany(),
+        posSettings: await tx.posSettings.findMany(),
+        posOutlets: await tx.posOutlet.findMany(),
       };
     });
 
@@ -150,10 +163,14 @@ describe('RLS Isolation Test', () => {
         roles: await tx.role.findMany({ where: { tenantId: { not: null } } }),
         imports: await tx.importJob.findMany(),
         audits: await tx.tenantAuditLog.findMany(),
+        posSettings: await tx.posSettings.findMany(),
+        posOutlets: await tx.posOutlet.findMany(),
       };
     });
 
     const noContextUsers = await userPrisma.user.findMany();
+    const noContextPosOutlets = await userPrisma.posOutlet.findMany();
+    const noContextPosSettings = await userPrisma.posSettings.findMany();
 
     await userPrisma.$disconnect();
     await userPool.end();
@@ -171,6 +188,8 @@ describe('RLS Isolation Test', () => {
       );
     }
     expect(noContextUsers).toEqual([]);
+    expect(noContextPosOutlets).toEqual([]);
+    expect(noContextPosSettings).toEqual([]);
   });
 
   it('prevents the application role from modifying audit records', async () => {

@@ -1,7 +1,17 @@
+// Load the TypeScript permission catalog directly so the seed can never drift from
+// the runtime source of truth. Tenant provisioning at runtime
+// (platform-tenants.service.ts, auth.service.ts) already reads PERMISSIONS; this seed
+// used to hand-duplicate the same list, which silently 403s any newly added permission
+// for locally seeded tenants.
+require('ts-node/register/transpile-only');
+
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
 const argon2 = require('argon2');
+const {
+  PERMISSIONS,
+} = require('../src/shared/authorization/permissions.constants');
 
 const connectionString =
   process.env.DATABASE_URL ??
@@ -10,87 +20,16 @@ const connectionString =
 const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
-const permissions = [
-  'organization.departments.read',
-  'organization.departments.create',
-  'organization.departments.update',
-  'organization.departments.delete',
-  'organization.designations.read',
-  'organization.designations.create',
-  'organization.designations.update',
-  'organization.designations.delete',
-  'organization.employees.read',
-  'organization.employees.reports.read',
-  'organization.employees.self.read',
-  'organization.employees.create',
-  'organization.employees.update',
-  'organization.employees.lifecycle',
-  'organization.employee-documents.read',
-  'organization.employee-documents.manage',
-  'organization.imports.read',
-  'organization.imports.create',
-  'identity.users.read',
-  'identity.users.invite',
-  'identity.users.roles.update',
-  'identity.users.status.update',
-  'identity.roles.read',
-  'identity.roles.create',
-  'identity.roles.update',
-  'identity.roles.delete',
-  'workspace.settings.read',
-  'workspace.settings.update',
-  'workspace.dashboard.admin.read',
-  'workspace.modules.read',
-  'workspace.audit.read',
-  'mobile.runtime.read',
-  'billing.subscription.read',
-  'billing.subscription.manage',
-  'billing.profile.manage',
-  'billing.invoices.read',
-  'billing.payment-methods.manage',
-  'attendance.config.manage',
-  'attendance.config.read',
-  'attendance.offices.read',
-  'attendance.offices.manage',
-  'attendance.policies.read',
-  'attendance.policies.manage',
-  'attendance.shifts.read',
-  'attendance.shifts.manage',
-  'attendance.rosters.read',
-  'attendance.rosters.manage',
-  'attendance.holidays.read',
-  'attendance.holidays.manage',
-  'attendance.records.read',
-  'attendance.records.self.read',
-  'attendance.exceptions.read',
-  'attendance.exceptions.manage',
-  'attendance.approvals.manage',
-  'attendance.reports.read',
-  'attendance.devices.read',
-  'attendance.devices.manage',
-  'attendance.biometrics.read',
-  'attendance.biometrics.manage',
-  'attendance.verification.read',
-  'attendance.alert-rules.manage',
-  'attendance.security-alerts.read',
-  'attendance.security-alerts.manage',
-  'attendance.field.live.read',
-  'attendance.field.routes.read',
-  'attendance.regularizations.self',
-  'attendance.regularizations.manage',
-  'notifications.self',
-  'attendance.reports.generate',
-  'attendance.payroll-lock.manage',
-  'leave.self',
-  'leave.approve',
-  'leave.manage',
-];
+const permissions = Object.values(PERMISSIONS);
 
 const rolePermissions = {
   BUSINESS_ADMIN: permissions,
   HR_ADMIN: permissions.filter(
     (permission) =>
       !permission.startsWith('billing.') &&
+      // POS access is granted through POS's own roles (see docs/POS/mvp/MVP-04),
+      // never inherited by an HR role.
+      !permission.startsWith('pos.') &&
       permission !== 'workspace.dashboard.admin.read',
   ),
   MANAGER: [
@@ -1001,6 +940,30 @@ async function main() {
     });
   }
 
+  // POS is a top-level product alongside Attendance. It must be AVAILABLE and
+  // customerVisible: ModuleGuard filters on availability, and replaceTenantModules
+  // refuses to assign a module that is not customer visible.
+  const posModule = await prisma.module.upsert({
+    where: { key: 'POS' },
+    update: {
+      name: 'Point of Sale',
+      description: 'Retail billing, inventory, catalog and customer operations',
+      icon: 'shopping-cart',
+      availability: 'AVAILABLE',
+      kind: 'PRODUCT',
+      catalogOrder: 30,
+      customerVisible: true,
+    },
+    create: {
+      key: 'POS',
+      name: 'Point of Sale',
+      description: 'Retail billing, inventory, catalog and customer operations',
+      icon: 'shopping-cart',
+      kind: 'PRODUCT',
+      catalogOrder: 30,
+    },
+  });
+
   const modules = await prisma.module.findMany({
     where: {
       key: {
@@ -1010,6 +973,7 @@ async function main() {
           'REGULARIZATION',
           'LEAVE',
           'PAYROLL',
+          'POS',
         ],
       },
     },
@@ -1142,8 +1106,33 @@ async function main() {
       },
     });
   }
+  // POS ships one capability for now. Each MVP area seeds its own capability when the
+  // feature it gates actually exists — a capability with nothing enforcing it is a lie.
+  await prisma.moduleCapability.upsert({
+    where: { key: 'POS_CORE' },
+    update: {
+      name: 'Billing, cart and checkout',
+      isCore: true,
+      configurable: true,
+      requiredModuleKeys: ['POS'],
+      dependencyKeys: [],
+      displayOrder: 10,
+      availability: 'AVAILABLE',
+    },
+    create: {
+      moduleId: posModule.id,
+      key: 'POS_CORE',
+      name: 'Billing, cart and checkout',
+      isCore: true,
+      configurable: true,
+      requiredModuleKeys: ['POS'],
+      dependencyKeys: [],
+      displayOrder: 10,
+    },
+  });
+
   const capabilities = await prisma.moduleCapability.findMany({
-    where: { moduleId: attendanceModule.id },
+    where: { moduleId: { in: [attendanceModule.id, posModule.id] } },
   });
   const capabilityIdByKey = new Map(
     capabilities.map((capability) => [capability.key, capability.id]),
@@ -1174,11 +1163,12 @@ async function main() {
     },
     {
       name: 'Enterprise Monthly',
-      description: 'Complete workforce operations and field tracking bundle',
+      description:
+        'Complete workforce operations, field tracking and point of sale bundle',
       pricePerUser: '499.00',
       maxEmployees: 5000,
       billingPeriod: 'MONTHLY',
-      moduleKeys: ['ATTENDANCE', 'FIELD_TRACKING'],
+      moduleKeys: ['ATTENDANCE', 'FIELD_TRACKING', 'POS'],
       capabilityKeys: capabilities.map(({ key }) => key),
     },
   ];

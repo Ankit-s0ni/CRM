@@ -47,6 +47,30 @@
       ]
     },
     {
+      "name": "pos",
+      "kind": "product",
+      "owner": "pos-team",
+      "compositionRoot": "src/products/pos/pos-product.module.ts",
+      "publicEntry": "src/products/pos/public.ts",
+      "readme": "src/products/pos/README.md",
+      "physicalRoots": [
+        { "id": "pos", "path": "src/products/pos/core" },
+        { "id": "pos-catalog", "path": "src/products/pos/catalog" },
+        { "id": "pos-inventory", "path": "src/products/pos/inventory" },
+        { "id": "pos-payments", "path": "src/products/pos/payments" },
+        { "id": "pos-sales", "path": "src/products/pos/sales" },
+        { "id": "pos-dashboard", "path": "src/products/pos/dashboard" }
+      ]
+    },
+    {
+      "name": "customers",
+      "kind": "platform-capability",
+      "owner": "platform-team",
+      "physicalRoots": [
+        { "id": "customers", "path": "src/platform/customers" }
+      ]
+    },
+    {
       "name": "identity-access",
       "kind": "platform-capability",
       "owner": "identity-team",
@@ -136,7 +160,9 @@
     "notifications": "src/platform/notifications/public.ts",
     "workspace": "src/platform/workspace/public.ts",
     "platform": "src/platform/control-plane/public.ts",
-    "attendance": "src/products/attendance/public.ts"
+    "attendance": "src/products/attendance/public.ts",
+    "pos": "src/products/pos/public.ts",
+    "customers": "src/platform/customers/public.ts"
   },
   "foundationModules": ["tenancy", "audit"],
   "legacyAllowedDependencies": {
@@ -167,6 +193,13 @@
     "organization": ["billing", "identity"],
     "payroll-lock": ["identity"],
     "platform": ["billing", "biometrics"],
+    "pos": ["identity"],
+    "pos-catalog": ["pos"],
+    "pos-inventory": ["pos", "pos-catalog"],
+    "pos-payments": ["pos"],
+    "pos-sales": ["pos", "pos-catalog", "pos-inventory", "pos-payments"],
+    "pos-dashboard": ["pos", "pos-sales", "pos-inventory"],
+    "customers": [],
     "regularization": ["attendance", "identity", "organization"],
     "reporting": ["identity"],
     "runtime-config": ["identity", "workspace"],
@@ -176,7 +209,13 @@
     "workspace-settings": []
   },
   "legacyDomainFrameworkFiles": [
-    "src/platform/billing/domain/billing-money.ts"
+    "src/platform/billing/domain/billing-money.ts",
+    "src/platform/organization/domain/employee.repository.interface.ts",
+    "src/products/attendance/configuration/holidays/domain/holiday.repository.interface.ts",
+    "src/products/attendance/configuration/offices/domain/office.repository.interface.ts",
+    "src/products/attendance/configuration/policies/domain/policy.repository.interface.ts",
+    "src/products/attendance/configuration/rosters/domain/roster.repository.interface.ts",
+    "src/products/attendance/configuration/shifts/domain/shift.repository.interface.ts"
   ],
   "legacyInternalImportPaths": [
     "src/platform/billing/application/dunning.service.ts::../../control-plane/tenants/platform-tenants.service",

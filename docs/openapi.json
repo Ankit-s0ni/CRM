@@ -175,6 +175,36 @@
         ]
       }
     },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the authenticated user password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_getCurrentUser",
@@ -1435,7 +1465,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get an employee employment-event timeline",
+        "summary": "Get the paginated audit and employment history for an employee",
         "tags": [
           "Employees"
         ]
@@ -1570,6 +1600,45 @@
           }
         ],
         "summary": "Create the employee login and return a temporary password",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/assignments": {
+      "patch": {
+        "operationId": "EmployeesController_updateAssignments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeAssignmentsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an employee work assignments",
         "tags": [
           "Employees"
         ]
@@ -5493,7 +5562,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete an unassigned attendance policy",
+        "summary": "Delete a policy and clear assignments",
         "tags": [
           "Attendance configuration"
         ]
@@ -5935,6 +6004,36 @@
           }
         ],
         "summary": "Create a tenant-wide or office holiday",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/holidays/sync": {
+      "post": {
+        "operationId": "AttendanceConfigController_syncPublicHolidays",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPublicHolidaysDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import public holidays for configured office regions",
         "tags": [
           "Attendance configuration"
         ]
@@ -8405,6 +8504,94 @@
           "Leave"
         ]
       }
+    },
+    "/pos/setup": {
+      "post": {
+        "operationId": "PosSettingsController_setup",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Provision POS defaults for this workspace (idempotent: outlet, settings, invoice sequence, Oman VAT rates)",
+        "tags": [
+          "POS configuration"
+        ]
+      }
+    },
+    "/pos/settings": {
+      "get": {
+        "operationId": "PosSettingsController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read POS settings for this workspace",
+        "tags": [
+          "POS configuration"
+        ]
+      },
+      "put": {
+        "operationId": "PosSettingsController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePosSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update POS settings for this workspace",
+        "tags": [
+          "POS configuration"
+        ]
+      }
+    },
+    "/pos/outlets": {
+      "get": {
+        "operationId": "PosSettingsController_listOutlets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List outlets for this workspace",
+        "tags": [
+          "POS configuration"
+        ]
+      }
     }
   },
   "info": {
@@ -8462,6 +8649,22 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
         ]
       },
       "UpdateTenantSettingsDto": {
@@ -8617,6 +8820,11 @@
             ],
             "example": "OFFICE"
           },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1994-03-18",
+            "format": "date"
+          },
           "dateOfJoining": {
             "type": "string",
             "example": "2026-07-16",
@@ -8643,6 +8851,7 @@
           "email",
           "phone",
           "workType",
+          "dateOfBirth",
           "dateOfJoining",
           "deptId"
         ]
@@ -8687,6 +8896,12 @@
               "HYBRID"
             ]
           },
+          "dateOfBirth": {
+            "type": "object",
+            "example": "1994-03-18",
+            "format": "date",
+            "nullable": true
+          },
           "dateOfJoining": {
             "type": "string",
             "example": "2026-07-16",
@@ -8710,6 +8925,21 @@
             "type": "string",
             "example": "2026-07-16",
             "format": "date"
+          }
+        }
+      },
+      "UpdateEmployeeAssignmentsDto": {
+        "type": "object",
+        "properties": {
+          "primaryOfficeId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "defaultShiftId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
           }
         }
       },
@@ -9016,6 +9246,16 @@
             "minimum": 1,
             "maximum": 100000,
             "example": 150
+          },
+          "adminPassword": {
+            "type": "string",
+            "description": "Pre-set admin password. When provided the user account is created immediately.",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "employeeCount": {
+            "type": "string",
+            "description": "Employee count band (e.g. \"1-10\", \"11-50\")"
           }
         },
         "required": [
@@ -9537,6 +9777,10 @@
         "type": "object",
         "properties": {}
       },
+      "SyncPublicHolidaysDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateHolidayDto": {
         "type": "object",
         "properties": {}
@@ -9569,6 +9813,10 @@
         "type": "object",
         "properties": {
           "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "previousDeviceUuid": {
             "type": "string",
             "format": "uuid"
           },
@@ -10138,6 +10386,51 @@
       "LeaveDecisionDto": {
         "type": "object",
         "properties": {}
+      },
+      "UpdatePosSettingsDto": {
+        "type": "object",
+        "properties": {
+          "vatNumber": {
+            "type": "string",
+            "description": "Oman VAT registration number"
+          },
+          "vatRegistrationType": {
+            "type": "string"
+          },
+          "taxInclusive": {
+            "type": "boolean",
+            "description": "Whether catalog prices already include VAT"
+          },
+          "allowNegativeStock": {
+            "type": "boolean"
+          },
+          "autoPrintReceipt": {
+            "type": "boolean"
+          },
+          "maxDiscountPercent": {
+            "type": "string",
+            "description": "Maximum discount percentage a cashier may apply without an override. String to preserve Decimal(5,3) precision.",
+            "example": "10.000"
+          },
+          "returnWindowDays": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 365
+          },
+          "invoicePrefix": {
+            "type": "string",
+            "example": "INV"
+          },
+          "receiptHeader": {
+            "type": "string"
+          },
+          "receiptFooter": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          }
+        }
       }
     }
   }

@@ -22,6 +22,23 @@ Freeze the exact cycles in `module-boundaries.json`; CI rejects any new edge or 
 3. The Attendance internal cycle is contained inside one product and will be removed as
    runtime/configuration/verification use cases move behind Attendance application ports.
 
+## Amendment — 2026-07-27: repository interfaces in `domain/`
+
+Six `*.repository.interface.ts` files under `domain/` import `@prisma/client` for entity
+and `Prisma.*` input types, violating the framework-free `domain` rule. They were failing
+`architecture:check` unrecorded, which left the whole check red and unusable as a gate for
+new work. They are now listed in `legacyDomainFrameworkFiles`:
+
+- `src/platform/organization/domain/employee.repository.interface.ts`
+- `src/products/attendance/configuration/{holidays,offices,policies,rosters,shifts}/domain/*.repository.interface.ts`
+
+Recording them freezes the debt without endorsing it — CI still rejects any *new* domain
+file that imports a framework. The fix is to express these interfaces in terms of
+product-owned domain types rather than Prisma types, which is Attendance/Organization
+migration work, not a POS concern.
+
+Owner: Backend architecture group · Review/removal date: 2026-10-31
+
 ## Consequences
 
 Teams can safely add products now, while the listed internals remain migration work.
