@@ -5,6 +5,7 @@ import {
   BellRing,
   Blocks,
   Building2,
+  Calculator,
   Check,
   ChevronRight,
   CircleAlert,
@@ -14,10 +15,11 @@ import {
   LockKeyhole,
   MapPin,
   Network,
+  PlayCircle,
+  ReceiptText,
   ScrollText,
   Settings2,
   ShieldCheck,
-  Umbrella,
   UserPlus,
   WalletCards,
 } from "lucide-react";
@@ -89,6 +91,35 @@ type IntegrationProvider = {
   message: string;
 };
 
+const PAYROLL_WORKSPACE_PERMISSIONS = [
+  "payroll.settings.read",
+  "payroll.policies.read",
+  "payroll.components.read",
+  "payroll.structures.read",
+  "payroll.compensation.read",
+  "payroll.accounting.read",
+  "payroll.inputs.read",
+  "payroll.inputs.manage",
+  "payroll.runs.read",
+  "payroll.runs.calculate",
+  "payroll.runs.approve",
+  "payroll.runs.finalize",
+  "payroll.payslips.read",
+  "payroll.payslips.self",
+  "payroll.payslips.publish",
+  "payroll.reports.generate",
+  "attendance.reports.read",
+  "attendance.reports.generate",
+  "attendance.payroll-lock.manage",
+];
+
+function hasAnyPermission(
+  permissions: ReadonlySet<string>,
+  keys: readonly string[],
+) {
+  return keys.some((permission) => permissions.has(permission));
+}
+
 export function ModulesHub() {
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
@@ -108,6 +139,12 @@ export function ModulesHub() {
     ["FIELD_TRACKING", "REGULARIZATION"].includes(key),
   );
   const payroll = modules?.find(({ key }) => key === "PAYROLL");
+  const canOpenPayroll = hasAnyPermission(
+    permissions,
+    PAYROLL_WORKSPACE_PERMISSIONS,
+  );
+  const shouldShowPayrollEnablement =
+    !payroll && hasAnyPermission(permissions, PAYROLL_WORKSPACE_PERMISSIONS);
   return (
     <AdminPage
       title="Modules"
@@ -151,12 +188,7 @@ export function ModulesHub() {
               </div>
             </Link>
           )}
-          {payroll &&
-            [
-              "attendance.reports.read",
-              "attendance.reports.generate",
-              "attendance.payroll-lock.manage",
-            ].some((permission) => permissions.has(permission)) && (
+          {payroll && canOpenPayroll && (
               <Link
                 className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-container hover:shadow-md"
                 href="/app/modules/payroll"
@@ -171,8 +203,8 @@ export function ModulesHub() {
                       <ChevronRight className="size-5 text-outline" />
                     </div>
                     <p className="mt-2 text-sm leading-6 text-zinc-500">
-                      Generate payroll evidence, review completed exports, and
-                      close finalized Attendance periods.
+                      Configure salaries, prepare payroll runs, calculate pay,
+                      publish payslips, export files, and close periods.
                     </p>
                     <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
                       Enabled
@@ -181,6 +213,26 @@ export function ModulesHub() {
                 </div>
               </Link>
             )}
+          {shouldShowPayrollEnablement && (
+            <Panel className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+              <div className="flex items-start gap-4">
+                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white text-amber-800">
+                  <WalletCards className="size-6" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-bold">Payroll</h2>
+                  <p className="mt-2 text-sm leading-6 text-amber-900">
+                    Your role has payroll permissions, but Payroll is not
+                    enabled for this workspace yet. Enable the PAYROLL module
+                    from platform tenant modules before using payroll screens.
+                  </p>
+                  <span className="mt-4 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-amber-900">
+                    Needs workspace enablement
+                  </span>
+                </div>
+              </div>
+            </Panel>
+          )}
           {modules
             .filter(
               ({ key }) =>
@@ -671,46 +723,118 @@ export function PayrollModuleHub() {
     useAuthStore((state) => state.user?.permissions ?? []),
   );
   const { health, error } = useModuleHealth("PAYROLL");
+  const foundationPermissions = [
+    "payroll.settings.read",
+    "payroll.policies.read",
+    "payroll.components.read",
+    "payroll.structures.read",
+    "payroll.compensation.read",
+    "payroll.accounting.read",
+  ];
+  const runPermissions = ["payroll.runs.read", "payroll.inputs.manage"];
+  const processingPermissions = [
+    "payroll.runs.calculate",
+    "payroll.runs.approve",
+    "payroll.runs.finalize",
+  ];
+  const payslipPermissions = [
+    "payroll.payslips.read",
+    "payroll.payslips.publish",
+    "payroll.payslips.self",
+  ];
+  const exportPermissions = [
+    "payroll.reports.generate",
+    "attendance.reports.read",
+    "attendance.reports.generate",
+  ];
+  const closePermissions = ["attendance.payroll-lock.manage"];
+  const visibleWorkflows = [
+    hasAnyPermission(permissions, foundationPermissions) && {
+      description:
+        "Configure settings, calendars, pay groups, policies, components, salary structures, employee payroll profiles, protected details, approvals, accounting mappings, and audit evidence.",
+      href: "/app/modules/payroll/foundation",
+      icon: WalletCards,
+      title: "Payroll foundation",
+    },
+    hasAnyPermission(permissions, runPermissions) && {
+      description:
+        "Create monthly payroll runs, import locked attendance snapshots, add salary inputs, preview CSV imports, and validate readiness before calculation.",
+      href: "/app/modules/payroll/runs",
+      icon: PlayCircle,
+      title: "Run preparation",
+    },
+    hasAnyPermission(permissions, processingPermissions) && {
+      description:
+        "Calculate employee payroll results, review variances, approve or finalize runs, and track processing jobs.",
+      href: "/app/modules/payroll/runs",
+      icon: Calculator,
+      title: "Payroll processing",
+    },
+    hasAnyPermission(permissions, payslipPermissions) && {
+      description:
+        "Generate payslip outputs, publish employee payslips, and use private signed downloads for sensitive files.",
+      href: "/app/modules/payroll/runs",
+      icon: ReceiptText,
+      title: "Payslips",
+    },
+    hasAnyPermission(permissions, exportPermissions) && {
+      description:
+        "Generate payroll registers, payroll reports, bank export payloads, accounting export payloads, and downloadable export files.",
+      href: "/app/reports/payroll",
+      icon: FileSpreadsheet,
+      title: "Payroll exports",
+    },
+    hasAnyPermission(permissions, closePermissions) && {
+      description:
+        "Lock a completed payroll month against its export or reopen it later with an audited reason.",
+      href: "/app/attendance/payroll",
+      icon: LockKeyhole,
+      title: "Period close",
+    },
+    {
+      description:
+        "Review Attendance and Leave dependencies that affect payroll readiness, reporting evidence, and month-end close.",
+      href: "/app/settings/payroll",
+      icon: Settings2,
+      title: "Readiness and dependencies",
+    },
+  ].filter(Boolean) as Array<{
+    description: string;
+    href: string;
+    icon: typeof ClipboardCheck;
+    title: string;
+  }>;
   return (
     <AdminPage
       title="Payroll"
-      description="Create immutable payroll exports and close finalized Attendance periods."
+      description="Configure salaries, prepare payroll runs, calculate pay, publish payslips, export files, and close periods."
     >
       {error && <ErrorState message={error} />}
-      {!health ? (
+      {!health && !error ? (
         <LoadingState />
       ) : (
         <>
-          <ModuleReadiness health={health} />
+          {health ? (
+            <ModuleReadiness health={health} />
+          ) : (
+            <Panel className="border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900">
+              Payroll screens are available in the frontend, but this workspace
+              has not passed the PAYROLL module health check. Enable the
+              workspace module and refresh the session before running payroll.
+            </Panel>
+          )}
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            {["attendance.reports.read", "attendance.reports.generate"].some(
-              (permission) => permissions.has(permission),
-            ) && (
-              <WorkflowLink
-                description="Generate and download a snapshot-based payroll CSV for a selected period."
-                href="/app/reports/payroll"
-                icon={FileSpreadsheet}
-                key="reports"
-                title="Payroll exports"
-              />
-            )}
-            {permissions.has("attendance.payroll-lock.manage") && (
-              <WorkflowLink
-                description="Lock a completed month against its export or reopen it with an audited reason."
-                href="/app/attendance/payroll"
-                icon={LockKeyhole}
-                key="close"
-                title="Period close"
-              />
-            )}
-            <WorkflowLink
-              description="Review the Attendance and Leave inputs that determine payroll evidence."
-              href="/app/settings/payroll"
-              icon={Settings2}
-              key="settings"
-              title="Readiness and dependencies"
-            />
+            {visibleWorkflows.map((workflow) => (
+              <WorkflowLink key={workflow.title} {...workflow} />
+            ))}
           </div>
+          {!visibleWorkflows.length && (
+            <Panel className="mt-5 p-6 text-sm leading-6 text-zinc-500">
+              Your role can open Payroll, but no payroll workflow permissions
+              are assigned yet. Add payroll foundation, run, payslip, export, or
+              close permissions to show the related sections here.
+            </Panel>
+          )}
         </>
       )}
     </AdminPage>
@@ -718,42 +842,7 @@ export function PayrollModuleHub() {
 }
 
 export function PayrollSettingsView() {
-  const { health, error } = useModuleHealth("PAYROLL");
-  return (
-    <AdminPage
-      title="Payroll settings"
-      description="Payroll currently derives immutable evidence from Attendance and approved Leave."
-    >
-      {error && <ErrorState message={error} />}
-      {!health ? (
-        <LoadingState />
-      ) : (
-        <>
-          <ModuleReadiness health={health} />
-          <div className="mt-5 grid gap-5 md:grid-cols-3">
-            <WorkflowLink
-              description="Working week, calculation thresholds, shifts, and policy assignments."
-              href="/app/attendance/policies"
-              icon={ClipboardCheck}
-              title="Attendance inputs"
-            />
-            <WorkflowLink
-              description="Approved leave and balances flow into period evidence."
-              href="/app/attendance/setup/leave"
-              icon={Umbrella}
-              title="Leave inputs"
-            />
-            <WorkflowLink
-              description="Generate the period export before attempting to close it."
-              href="/app/reports/payroll"
-              icon={FileSpreadsheet}
-              title="Payroll exports"
-            />
-          </div>
-        </>
-      )}
-    </AdminPage>
-  );
+  return <PayrollModuleHub />;
 }
 
 export function SecuritySettingsView() {
