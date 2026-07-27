@@ -1,4 +1,4 @@
-// =====================================================================
+M// =====================================================================
 // schema.prisma — v4 (matches erd-v4.puml)
 // Conventions: uuidv7 PKs; tenantId + createdAt + updatedAt on all
 // tenant-scoped models; every tenant index leads with tenantId.
