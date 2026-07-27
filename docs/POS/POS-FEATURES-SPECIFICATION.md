@@ -1,6 +1,12 @@
 # DeltCRM POS — Complete Feature Specification
 
 > A comprehensive catalog of every major and minor feature for the DeltCRM Point of Sale system, modeled after Zoho POS (Zakya).
+>
+> ⚠️ Read [`POS-FOUNDATION-DECISIONS.md`](./POS-FOUNDATION-DECISIONS.md) first. This catalogue describes the
+> **target** feature set; that file records which entities exist to support it, which are deliberately
+> deferred (loyalty tiers §7.3, commission tracking §12.4), and the Oman-only payment scope.
+>
+> This is a specification of intent, not a commitment to build every item. See §Appendix A for priority.
 
 ---
 
@@ -84,7 +90,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 - **Top Selling Items** — Ranked list of best-selling products by quantity or revenue
 - **Low Stock Alerts** — Items below reorder threshold, with quick-action to create purchase orders
 - **Recent Transactions** — Latest 10-20 sales with customer name, amount, payment method
-- **Revenue Breakdown** — Pie chart by payment method (cash, card, UPI, etc.)
+- **Revenue Breakdown** — Pie chart by payment method (cash, card, Thawani, Amwal, etc.)
 - **Active Registers** — Status of all registers (open/closed, current session cashier)
 - **Store Performance Comparison** — Multi-store revenue comparison (for multi-outlet tenants)
 
@@ -147,7 +153,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 1. Review cart items and totals
 2. Apply any pending discounts/promotions
 3. Select payment method(s)
-4. Process payment (cash tendered, card swipe, UPI scan)
+4. Process payment (cash tendered, card swipe, Thawani/Amwal QR or link)
 5. Print/email/WhatsApp receipt
 6. Cash drawer opens (if cash payment)
 7. Return to empty register for next customer
@@ -332,6 +338,10 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 - **Automatic reversal** — deduct points if the associated sale is returned/refunded
 - **Loyalty tier system** — Bronze/Silver/Gold/Platinum based on spend thresholds (with different multipliers)
 
+> ⚠️ **Deferred — not modelled.** Loyalty tiers have no table in the schema. Per-group multipliers on
+> `CustomerGroup.loyaltyMultiplier` cover the common case; automatic tier promotion by spend threshold is
+> P2 work. Add the entity in the sprint that delivers it — see D7.7.
+
 ---
 
 ## 8. Discounts & Promotions
@@ -389,7 +399,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 ### 9.2 Refund Options
 
 - **Cash refund** — refund to cash
-- **Original payment method** — refund to card/UPI used for purchase
+- **Original payment method** — refund to the card or gateway used for the purchase
 - **Credit note / Store credit** — issue credit note linked to customer account
 - **Refund amount** — auto-calculated or manually adjusted (for partial refunds)
 
@@ -523,6 +533,9 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 - **Per-product commission** — different rates per product/category
 - **Commission reports** — by employee, by period
 
+> ⚠️ **Deferred — not modelled.** No commission-rule table exists. `PosSale.salespersonId` is captured from
+> day one, so commissions can be computed retroactively once the rules entity is added. See D7.7.
+
 ---
 
 ## 13. Multi-Store & Multi-Warehouse Management
@@ -598,7 +611,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 - **Sales by Category** — revenue per product category
 - **Sales by Customer** — revenue per customer (top customers)
 - **Sales by Salesperson** — performance per employee
-- **Sales by Payment Method** — breakdown by cash, card, UPI, etc.
+- **Sales by Payment Method** — breakdown by cash, card, Thawani, Amwal, etc.
 - **Sales by Hour** — peak hours analysis
 - **Sales by Day of Week** — busiest day analysis
 - **Sales by Outlet** — multi-store comparison
@@ -710,9 +723,11 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 
 ### 17.6 EDC Terminals
 
-- **Pine Labs** — integrated card payment terminal
-- **PayTM EDC** — PayTM soundbox and EDC
-- **Generic terminals** — manual entry of transaction reference number
+- **Bank-supplied EDC terminals** — the card terminals Omani acquirers issue to merchants
+- **Generic terminals** — manual entry of the transaction reference number after the terminal approves
+
+> EDC terminals are **not** integrated in-band. The cashier runs the card on the terminal and records the
+> approval reference in POS. Direct terminal integration is out of scope.
 
 ---
 
@@ -901,7 +916,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 
 - Enabled payment methods
 - Payment gateway credentials
-- UPI merchant ID
+- Thawani secret / publishable keys, Amwal merchant ID + secure-hash secret
 - EDC terminal mapping
 - Partial payment policy (allow/disallow)
 
@@ -934,16 +949,26 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 
 ### 24.2 POS Plan Configuration
 
-| Feature                | Free | Standard  | Professional | Premium   |
-| ---------------------- | ---- | --------- | ------------ | --------- |
-| Users                  | 1    | 3         | 10           | 15        |
-| Registers              | 1    | 1         | 3            | 5         |
-| POS Transactions/month | 50   | Unlimited | Unlimited    | Unlimited |
-| Outlets                | 1    | 1         | 3            | 10        |
-| Loyalty Program        | ❌   | ❌        | ✅           | ✅        |
-| Session/Cash Tracking  | ❌   | ❌        | ✅           | ✅        |
-| Advanced Reports       | ❌   | ✅        | ✅           | ✅        |
-| API Access             | ❌   | ❌        | ✅           | ✅        |
+| Feature                | Capability key          | Free | Standard  | Professional | Premium   |
+| ---------------------- | ----------------------- | ---- | --------- | ------------ | --------- |
+| Users                  | *(seat count on plan)*  | 1    | 3         | 10           | 15        |
+| Registers              | `POS_CORE` limit        | 1    | 1         | 3            | 5         |
+| POS Transactions/month | `POS_CORE` limit        | 50   | Unlimited | Unlimited    | Unlimited |
+| Outlets                | `POS_MULTI_OUTLET` limit| 1    | 1         | 3            | 10        |
+| Loyalty Program        | `POS_LOYALTY`           | ❌   | ❌        | ✅           | ✅        |
+| Session/Cash Tracking  | `POS_SESSIONS`          | ❌   | ❌        | ✅           | ✅        |
+| Advanced Reports       | `POS_ADVANCED_REPORTS`  | ❌   | ✅        | ✅           | ✅        |
+| API Access             | `POS_API_ACCESS`        | ❌   | ❌        | ✅           | ✅        |
+| Dynamic Workflows      | `POS_WORKFLOWS`         | ❌   | ❌        | ✅           | ✅        |
+| Offline Mode           | `POS_OFFLINE`           | ❌   | ❌        | ✅           | ✅        |
+
+> **This table is seed data, not a build.** Ticks are `SubscriptionPlanCapability.included` rows; numeric
+> caps are `SubscriptionPlanCapability.limitValue` JSON; per-tenant exceptions are
+> `TenantCapabilityOverride` rows. The platform already has the tables, guards and admin screens for all
+> of it — see D6.
+>
+> The one genuinely new piece is a **monthly transaction counter** to enforce the Free-tier cap of 50.
+> Nothing currently counts sales per tenant per month.
 
 ### 24.3 Tenant POS Dashboard (Platform View)
 
@@ -967,8 +992,17 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 
 ### 25.1 Internal Integrations (DeltCRM)
 
-- **Attendance Module** — POS cashier sessions linked to attendance records
-- **Employee Module** — shared employee database
+- **Employee Module** — shared employee database, consumed via the Organization public contract
+- **Customers** — the platform `Customer` record, shared with any future product (D4)
+- **Billing Module** — POS entitlement and limits via `Module` / `ModuleCapability`
+- **Notifications** — receipts and alerts through the existing dispatcher
+- **Audit** — POS actions written to the existing tenant audit trail
+
+> ⚠️ **Attendance is explicitly NOT an integration point.** `pnpm architecture:check --self-test` asserts
+> that a `pos -> attendance` dependency is rejected — POS must not import Attendance controllers, services,
+> repositories, DTOs or Prisma helpers. The previously listed idea of "POS cashier sessions linked to
+> attendance records" would violate that boundary. If the business genuinely needs it later, it must be
+> done by subscribing to a published attendance domain event, never by a direct import.
 - **Tenant/Billing Module** — POS subscription as part of tenant billing
 
 ### 25.2 Accounting Integration
@@ -979,7 +1013,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 
 ### 25.3 Payment Integrations
 
-- Razorpay, Pine Labs, PhonePe, PayTM (as listed in Section 10.3)
+- Thawani Pay and Amwal Pay (as listed in Section 10.3). No other gateways are in scope.
 
 ### 25.4 E-Commerce Integration
 
@@ -1074,7 +1108,7 @@ Thanks to the dynamic workflow engine and schema-driven UI, the POS supports div
 | P0 (Must Have)    | VAT compliance, tax calculation                                      | Sprint 1      |
 | P0 (Must Have)    | Customer management, basic profiles                                  | Sprint 2      |
 | P0 (Must Have)    | Register & session management                                        | Sprint 2      |
-| P1 (Should Have)  | Multi-payment methods (card, UPI)                                    | Sprint 2      |
+| P1 (Should Have)  | Multi-payment methods (Thawani, Amwal, card)                         | Sprint 2      |
 | P1 (Should Have)  | Returns, refunds, credit notes                                       | Sprint 2      |
 | P1 (Should Have)  | Employee roles & permissions                                         | Sprint 3      |
 | P1 (Should Have)  | Discounts & promotions                                               | Sprint 3      |

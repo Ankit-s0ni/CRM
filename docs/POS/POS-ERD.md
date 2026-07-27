@@ -1,8 +1,15 @@
 # DeltCRM POS — Entity Relationship Diagram
 
-> Complete database schema ERD for the POS module and its shared modules.  
-> All monetary values use `Decimal(12,3)` for **Omani Rial (OMR)** 3-decimal precision.  
+> Complete database schema ERD for the POS module and the platform entities it consumes.
+> All monetary values use `Decimal(12,3)` for **Omani Rial (OMR)** 3-decimal precision.
 > All tables include implicit fields: `id UUID PK`, `created_at`, `updated_at`, `tenant_id FK` (where applicable).
+>
+> ⚠️ Read [`POS-FOUNDATION-DECISIONS.md`](./POS-FOUNDATION-DECISIONS.md) first — it records the corrections
+> applied to this ERD (customer ownership, the two status axes, `pos_stock` uniqueness, partitioning) and
+> the entities added since the first draft.
+>
+> **All models live in the single `apps/api/prisma/schema.prisma`** under domain banner comments — there is
+> no split-schema directory. Every POS table carries RLS policies created in the same migration as the table.
 
 ---
 
@@ -30,16 +37,23 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────────┐  │
-│  │  PLATFORM CORE  │   │  SHARED MODULES │   │     POS PRODUCT         │  │
-│  │                 │   │                 │   │                         │  │
-│  │  Tenants        │──▶│  Customers      │──▶│  Core (Sales/Cart)      │  │
-│  │  SubscrPlans    │   │  Inventory      │   │  Catalog (Products)     │  │
-│  │  TenantModules  │   │  Payments       │   │  Register (Sessions)    │  │
-│  │  Users          │   │  Messaging      │   │  Purchasing (PO)        │  │
-│  │  Roles          │   │  Forms          │   │  Promotions             │  │
-│  │  Employees      │   │                 │   │  Configuration (Tax)    │  │
-│  └─────────────────┘   └─────────────────┘   │  Workflows              │  │
-│                                               └─────────────────────────┘  │
+│  │  PLATFORM CORE  │   │   CUSTOMERS     │   │     POS PRODUCT         │  │
+│  │                 │   │  (platform ctx) │   │  (owns everything Pos*) │  │
+│  │  Tenants        │──▶│                 │──▶│  Core (Sales/Cart)      │  │
+│  │  SubscrPlans    │   │  Customer       │   │  Catalog (Products)     │  │
+│  │  Modules +      │   │  CustomerGroup  │   │  Register (Sessions)    │  │
+│  │   Capabilities  │   │                 │   │  Inventory (Stock)      │  │
+│  │  TenantModules  │   │  Consumed by    │   │  Payments (Thawani/     │  │
+│  │  Users          │   │  POS via        │   │            Amwal)       │  │
+│  │  Roles          │   │  public.ts —    │   │  Purchasing (PO)        │  │
+│  │  Permissions    │   │  never written  │   │  Promotions + Coupons   │  │
+│  │  Employees      │   │  directly       │   │  Loyalty + Credit Notes │  │
+│  │  Notifications  │   │                 │   │  Workflows + Forms      │  │
+│  │  Outbox / Audit │   │                 │   │  Configuration (VAT)    │  │
+│  └─────────────────┘   └─────────────────┘   └─────────────────────────┘  │
+│                                                                             │
+│  Note: there is no "shared modules" tier. src/shared/** is infrastructure   │
+│  only and may not import platform/** or products/** — see D5.               │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,7 +83,7 @@ erDiagram
         uuid    id                  PK
         string  name
         string  key                 UQ
-        decimal price_per_user      "Decimal(10,3) OMR"
+        decimal price_per_user      "Decimal(10,2) OMR — existing platform column"
         string  billing_period      "MONTHLY|YEARLY"
         int     max_employees
         int     max_outlets
@@ -90,7 +104,7 @@ erDiagram
 
     Module {
         uuid    id                  PK
-        string  key                 UQ   "e.g. pos, attendance"
+        string  key                 UQ   "UPPERCASE: POS, ATTENDANCE"
         string  name
     }
 
@@ -137,7 +151,7 @@ erDiagram
         uuid    id                  PK
         string  key                 UQ   "e.g. pos.sale.create"
         string  description
-        string  module              "e.g. pos"
+        string  module              "key format pos.resource.action"
     }
 
     RolePermission {
@@ -301,6 +315,26 @@ erDiagram
         ts      updated_at
     }
 
+    PosEmployeeOutlet {
+        uuid    id                  PK
+        uuid    tenant_id           FK
+        uuid    user_id             FK
+        uuid    outlet_id           FK
+        ts      assigned_at
+    }
+
+    PosCashierPin {
+        uuid    id                  PK
+        uuid    tenant_id           FK
+        uuid    user_id             FK   UQ "one per user per tenant"
+        string  pin_hash            "Argon2"
+        int     failed_count
+        ts      locked_until
+        ts      last_used_at
+        ts      created_at
+        ts      updated_at
+    }
+
     PosSession {
         uuid    id                  PK
         uuid    tenant_id           FK
@@ -387,7 +421,7 @@ erDiagram
     %% CUSTOMER DOMAIN
     %% ──────────────────────────────────────────────
 
-    PosCustomerGroup {
+    CustomerGroup {
         uuid    id                  PK
         uuid    tenant_id           FK
         string  name                UQ "per tenant"
@@ -397,7 +431,7 @@ erDiagram
         ts      created_at
     }
 
-    PosCustomer {
+    Customer {
         uuid    id                  PK
         uuid    tenant_id           FK
         uuid    group_id            FK   "nullable"
@@ -458,12 +492,13 @@ erDiagram
         uuid    outlet_id           FK
         uuid    register_id         FK
         uuid    session_id          FK
-        uuid    customer_id         FK   "nullable"
+        uuid    customer_id         FK   "nullable → Customer (platform)"
         uuid    salesperson_id      FK   "nullable → User/Employee"
         uuid    workflow_id         FK   "nullable → PosWorkflow"
-        string  invoice_number      UQ "per tenant"
+        uuid    current_state_id    FK   "nullable → PosWorkflowState"
+        string  invoice_number      UQ "per tenant, gapless"
         string  order_type          "WALK_IN|DELIVERY|PICKUP|ONLINE"
-        string  status              "DRAFT|COMPLETED|VOIDED|RETURNED|PARTIALLY_RETURNED"
+        string  status              "DRAFT|OPEN|COMPLETED|VOIDED|RETURNED|PARTIALLY_RETURNED"
         decimal subtotal            "Decimal(12,3)"
         decimal discount_amount     "Decimal(12,3)"
         string  discount_type       "PERCENTAGE|FIXED_AMOUNT nullable"
@@ -472,6 +507,8 @@ erDiagram
         decimal total_amount        "Decimal(12,3)"
         decimal round_off_amount    "Decimal(8,3)"
         decimal net_amount          "Decimal(12,3)"
+        decimal amount_paid         "Decimal(12,3)"
+        decimal amount_due          "Decimal(12,3) credit/due bills"
         string  notes
         bool    is_return
         uuid    original_sale_id    FK   "nullable → self"
@@ -490,20 +527,24 @@ erDiagram
         string  sku                 "Snapshot"
         decimal quantity            "Decimal(10,3)"
         decimal unit_price          "Decimal(12,3)"
+        decimal cost_at_sale        "Decimal(12,3) snapshot for margin reports"
         decimal discount_amount     "Decimal(12,3)"
+        decimal tax_rate            "Decimal(5,3) snapshot"
         decimal tax_amount          "Decimal(12,3)"
         decimal subtotal            "Decimal(12,3)"
         decimal total               "Decimal(12,3)"
         string  notes
         bool    is_returned
         decimal return_quantity     "Decimal(10,3) nullable"
+        string  return_reason       "nullable"
+        string  return_condition    "RESELLABLE|DAMAGED nullable"
     }
 
     PosSalePayment {
         uuid    id                  PK
         uuid    tenant_id           FK
         uuid    sale_id             FK
-        string  method              "CASH|THAWANI|AMWAL|CREDIT_CARD|CREDIT_NOTE|LOYALTY_POINTS|CHEQUE|BANK_TRANSFER"
+        string  method              "CASH|THAWANI|AMWAL|CREDIT_CARD|DEBIT_CARD|CREDIT_NOTE|LOYALTY_POINTS|CHEQUE|BANK_TRANSFER|DUE|CUSTOM"
         decimal amount              "Decimal(12,3)"
         string  reference_number    "Auth code / Cheque no."
         string  gateway_txn_id      "Gateway reference"
@@ -597,8 +638,24 @@ erDiagram
         uuid    tenant_id           FK
         uuid    promotion_id        FK
         uuid    sale_id             FK
+        uuid    coupon_id           FK   "nullable"
         decimal discount_applied    "Decimal(12,3)"
         ts      created_at
+    }
+
+    PosCoupon {
+        uuid    id                  PK
+        uuid    tenant_id           FK
+        uuid    promotion_id        FK
+        string  code                UQ "per tenant"
+        int     max_redemptions     "nullable = unlimited"
+        int     redemption_count
+        int     per_customer_limit  "nullable"
+        ts      starts_at
+        ts      ends_at
+        bool    is_active
+        ts      created_at
+        ts      updated_at
     }
 
     %% ──────────────────────────────────────────────
@@ -774,18 +831,18 @@ erDiagram
     PosVariant              ||--o{ PosStockTransferItem     : "moved in"
 
     %% Customers
-    Tenant                  ||--o{ PosCustomerGroup         : "defines"
-    PosCustomerGroup        ||--o{ PosCustomer              : "groups"
-    Tenant                  ||--o{ PosCustomer              : "owns"
-    PosCustomer             ||--o{ PosLoyaltyTransaction    : "has"
-    PosCustomer             ||--o{ PosCreditNote            : "holds"
+    Tenant                  ||--o{ CustomerGroup         : "defines"
+    CustomerGroup        ||--o{ Customer              : "groups"
+    Tenant                  ||--o{ Customer              : "owns"
+    Customer             ||--o{ PosLoyaltyTransaction    : "has"
+    Customer             ||--o{ PosCreditNote            : "holds"
 
     %% Sales Core
     Tenant                  ||--o{ PosSale                  : "owns"
     PosOutlet               ||--o{ PosSale                  : "processed at"
     PosRegister             ||--o{ PosSale                  : "rung on"
     PosSession              ||--o{ PosSale                  : "within"
-    PosCustomer             ||--o{ PosSale                  : "makes"
+    Customer             ||--o{ PosSale                  : "makes"
     User                    ||--o{ PosSale                  : "salesperson"
     PosWorkflow             ||--o{ PosSale                  : "governs"
     PosSale                 ||--o| PosSale                  : "returned via"
@@ -795,7 +852,7 @@ erDiagram
     PosTaxGroup             ||--o{ PosSaleItem              : "taxed by"
     PosSale                 ||--o{ PosSalePayment           : "paid via"
     PosCreditNote           ||--o{ PosSalePayment           : "redeemed in"
-    PosCustomer             ||--o{ PosLoyaltyTransaction    : "earns/redeems"
+    Customer             ||--o{ PosLoyaltyTransaction    : "earns/redeems"
     PosSale                 ||--o{ PosLoyaltyTransaction    : "triggers"
     PosSale                 ||--o{ PosSaleFieldData         : "captures"
     PosWorkflowState        ||--o{ PosSaleFieldData         : "captured at"
@@ -814,6 +871,13 @@ erDiagram
     Tenant                  ||--o{ PosPromotion             : "defines"
     PosPromotion            ||--o{ PosPromotionUsage        : "used in"
     PosSale                 ||--o{ PosPromotionUsage        : "applied to"
+    PosPromotion            ||--o{ PosCoupon                : "unlocked by"
+    PosCoupon               ||--o{ PosPromotionUsage        : "redeemed in"
+
+    %% Staff scoping
+    User                    ||--o{ PosEmployeeOutlet        : "assigned to"
+    PosOutlet               ||--o{ PosEmployeeOutlet        : "staffed by"
+    User                    ||--o| PosCashierPin            : "authenticates with"
 
     %% Configuration
     Tenant                  ||--|| PosSettings              : "configures"
@@ -821,6 +885,8 @@ erDiagram
 
     %% Workflows
     Tenant                  ||--o{ PosWorkflow              : "defines"
+    PosWorkflow             ||--o{ PosSale                  : "governs"
+    PosWorkflowState        ||--o{ PosSale                  : "current state of"
     PosWorkflow             ||--o{ PosWorkflowState         : "has"
     PosWorkflow             ||--o{ PosWorkflowTransition    : "has"
     PosWorkflowState        ||--o{ PosWorkflowTransition    : "from"
@@ -850,7 +916,7 @@ erDiagram
 | `users` | `id` | Authentication identity |
 | `roles` | `id` | RBAC role definitions |
 | `user_roles` | `id` | M:M — Users to Roles |
-| `permissions` | `id` | Granular CASL permission keys |
+| `permissions` | `id` | Flat permission keys (`pos.sale.create`) — no CASL |
 | `role_permissions` | `id` | M:M — Roles to Permissions |
 | `employees` | `id` | Payroll/HR profile linked to User |
 
@@ -884,13 +950,15 @@ erDiagram
 | `pos_registers` | `id` | Hardware register/counter in an outlet |
 | `pos_sessions` | `id` | A cashier's shift — open to closed |
 | `pos_cash_movements` | `id` | Petty cash in/out during a session |
+| `pos_employee_outlets` | `id` | Restricts a user to specific outlets |
+| `pos_cashier_pins` | `id` | Argon2-hashed PIN for cashier quick-switch |
 
-### Customer Domain
+### Customer Domain (platform-owned — not POS tables)
 
 | Table | Primary Key | Description |
 |---|---|---|
-| `pos_customers` | `id` | Customer profile (B2C and B2B) |
-| `pos_customer_groups` | `id` | VIP, Wholesale, Walk-in tiers |
+| `customers` | `id` | Customer profile (B2C and B2B) — **platform-owned**, see D4 |
+| `customer_groups` | `id` | VIP, Wholesale, Walk-in tiers — **platform-owned** |
 | `pos_loyalty_transactions` | `id` | Points ledger (earn/redeem/expire) |
 | `pos_credit_notes` | `id` | Store credit issued on return |
 
@@ -917,6 +985,7 @@ erDiagram
 |---|---|---|
 | `pos_promotions` | `id` | Discount/offer rule definitions |
 | `pos_promotion_usages` | `id` | Audit log of applied promotions per sale |
+| `pos_coupons` | `id` | Coupon codes unlocking a promotion, with usage limits |
 
 ### Configuration Domain
 
@@ -963,18 +1032,43 @@ erDiagram
 > [!NOTE]
 > **Dynamic Workflows**: `pos_sale_field_data` is the bridge between a sale and the custom data captured at each workflow state. This allows the same `pos_sales` table to serve both a simple retail checkout and a complex multi-step laundry order.
 
+> [!IMPORTANT]
+> **Two status axes**: `pos_sales.status` is the *financial* lifecycle (`DRAFT`, `OPEN`, `COMPLETED`,
+> `VOIDED`, `RETURNED`, `PARTIALLY_RETURNED`). `pos_sales.current_state_id` is the *operational* position
+> within a tenant-defined workflow. A laundry order in cleaning is `status = OPEN` +
+> `current_state = Cleaning`. Retail sales have `workflow_id = NULL` and go straight to `COMPLETED`.
+> See `POS-FOUNDATION-DECISIONS.md` D7.3.
+
+> [!WARNING]
+> **`pos_stock` uniqueness cannot be a plain composite unique.** `variant_id` and `warehouse_id` are
+> nullable, and PostgreSQL treats `NULL`s as distinct in unique indexes — a plain
+> `UNIQUE(tenant_id, product_id, variant_id, outlet_id, warehouse_id)` would permit **duplicate stock rows**
+> for any product without a variant or warehouse. Four partial unique indexes are used instead; see
+> `POS-FOUNDATION-DECISIONS.md` D7.1. Matching queries must use `IS NOT DISTINCT FROM`, not `=`.
+
+> [!NOTE]
+> **Customer is platform-owned**: `customers` and `customer_groups` belong to the Customers platform
+> context, not POS. POS references `customer_id` and updates spend statistics through that context's
+> public contract. See D4.
+
 ---
 
-## Partitioned Tables (High-Volume)
+## Partitioning — deferred
 
-The following tables will use **PostgreSQL time-range partitioning** by `created_at` for performance at scale:
+**No POS table is partitioned at launch** (see `POS-FOUNDATION-DECISIONS.md` D7.2).
 
-| Table | Partition Strategy |
-|---|---|
-| `pos_sales` | Monthly |
-| `pos_sale_items` | Monthly |
-| `pos_sale_payments` | Monthly |
-| `pos_stock_adjustments` | Monthly |
-| `pos_loyalty_transactions` | Monthly |
-| `messaging_logs` | Monthly |
-| `audit_logs` | Monthly |
+Partitioning `pos_sales` by `created_at` is not implementable as originally specified: PostgreSQL requires
+the partition key in every unique constraint, which would forbid the gapless
+`UNIQUE(tenant_id, invoice_number)` that VAT compliance requires, and four child tables hold foreign keys
+into `pos_sales`. The existing partitioned tables in this platform (`attendance_events`,
+`field_location_pings`) are append-only with no inbound foreign keys — sales are neither.
+
+If volume later demands it, these are the candidates, in order — all append-only with no inbound FKs:
+
+| Table | Partition Strategy | Status |
+|---|---|---|
+| `pos_stock_adjustments` | Monthly by `created_at` | Deferred — safe to partition later |
+| `pos_loyalty_transactions` | Monthly by `created_at` | Deferred — safe to partition later |
+| `messaging_logs` | Monthly by `created_at` | Deferred |
+| `audit_logs` | Monthly by `created_at` | Existing platform decision |
+| `pos_sales` and children | — | **Not viable** without dropping the invoice-number constraint |

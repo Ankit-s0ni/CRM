@@ -3,6 +3,9 @@
 > Complete documentation of every user-facing flow in the POS system.
 > Covers all tenant roles: **Administrator**, **Store Manager**, **Cashier/Staff**.
 > Currency: **OMR (Omani Rial)** — 3 decimal places throughout.
+>
+> ⚠️ Read [`POS-FOUNDATION-DECISIONS.md`](./POS-FOUNDATION-DECISIONS.md) for the structural decisions these
+> flows assume. Keyboard shortcuts are defined once in `POS-IMPLEMENTATION-PLAN.md` §7.2 — that table wins.
 
 ---
 
@@ -42,12 +45,19 @@
 
 ```
 Login to DeltCRM Dashboard
-    └── Navigate to Settings → Modules
-        └── Locate "Point of Sale" module
+    └── Navigate to /app/settings/modules
+        └── Locate "Point of Sale" module (module key: POS)
             └── Click "Activate"
-                └── System provisions POS database tables for tenant
+                ├── TenantModule row created/updated (isActive = true)
+                ├── Capability entitlements resolved from the tenant's plan
+                └── Seed defaults for this tenant: Oman VAT rates + tax groups,
+                    PosSettings row, default retail workflow
                     └── Redirect to POS Setup Wizard
 ```
+
+> POS tables are **not** provisioned per tenant. They are shared tables scoped by `tenant_id` under RLS,
+> exactly like attendance. "Activation" is an entitlement flip plus seeding that tenant's default rows.
+> The `ModuleGuard` rejects every `/pos/*` API call until `TenantModule.isActive` is true.
 
 ### Flow 1.2 — POS Setup Wizard
 
@@ -185,7 +195,7 @@ Order-Level Actions:
     └── Add order notes
 
 Checkout:
-    ├── Click "Pay" or press F12 (keyboard shortcut)
+    ├── Click "Pay" or press F8 (see POS-IMPLEMENTATION-PLAN.md §7.2 for the key map)
     ├── Payment modal opens showing:
     │   ├── Cart Summary (items, subtotal, discount, VAT, total)
     │   └── Total Due: 25.750 OMR
@@ -225,13 +235,13 @@ Checkout:
 
 ```
 Cashier has items in cart but customer steps away
-    └── Click "Hold Order" (or press F8)
+    └── Click "Hold Order" (or press F3)
         ├── Enter optional hold note: "Customer checking more items"
         └── Order saved as DRAFT status
             └── Cart clears → Ready for next customer
 
 Later, customer returns:
-    └── Click "Recall" (or press F9)
+    └── Click "Recall" (or press F4)
         └── List of all held orders appears:
             ├── Shows: Hold time, item count, total amount, note
             └── Click on the held order
@@ -287,7 +297,7 @@ STAGE 1: INTAKE (Initial State)
     │   └── Total per item: 1.000 OMR
     ├── Repeat for each garment (adding each to the "cart")
     └── Click "Save Intake"
-        ├── PosSale created with status = INTAKE (custom workflow state)
+        ├── PosSale created: status = OPEN, currentState = Intake
         ├── PosSaleFieldData stores all form answers and photo URLs
         ├── Print Intake Receipt (customer copy):
         │   ├── Lists all garments with photos
@@ -300,7 +310,7 @@ STAGE 2: CLEANING (Processing)
         ├── Filter by status: "Intake" → sees pending laundry orders
         ├── Click on order → View all garment details and photos
         ├── Click "Move to Cleaning"
-        │   └── Workflow state changes: Intake → Cleaning
+        │   └── currentState: Intake → Cleaning (status stays OPEN)
         │       └── WhatsApp message sent automatically:
         │           "Your laundry order #ORD-00012 is now being processed."
         └── Staff processes the garments
@@ -308,7 +318,7 @@ STAGE 2: CLEANING (Processing)
 STAGE 3: READY FOR PICKUP
     └── Staff finishes cleaning
         └── Click "Mark as Ready"
-            └── Workflow state changes: Cleaning → Ready
+            └── currentState: Cleaning → Ready (status stays OPEN)
                 └── WhatsApp message sent automatically:
                     "Your laundry is ready for pickup! Order #ORD-00012."
 
@@ -320,7 +330,7 @@ STAGE 4: DELIVERED & PAID (Final State)
             ├── Finalize bill (any adjustments if needed)
             ├── Process payment (Cash / Thawani / Amwal)
             ├── Click "Complete & Deliver"
-            │   └── Workflow state: Ready → Delivered & Paid
+            │   └── currentState: Ready → Delivered & Paid; status → COMPLETED
             │       ├── Inventory effects applied (if service items tracked)
             │       ├── Loyalty points awarded
             │       └── Final receipt generated
@@ -732,8 +742,11 @@ Total Due: 50.000 OMR
 B2B customer wants to buy on credit
     └── Add items to cart → Attach B2B customer
         └── Checkout → Select "Due Bill / Credit Sale"
-            ├── Full amount (100.000 OMR) recorded as outstanding
-            └── Sale marked as COMPLETED with payment_method = DUE
+            ├── PosSalePayment created with method = DUE, amount = 100.000 OMR
+            ├── Sale: amountPaid = 0.000, amountDue = 100.000
+            └── Sale status = COMPLETED
+                (goods have left the shop and stock is decremented — the
+                 receivable is tracked by amountDue, not by the status)
 
 Later, customer pays:
     └── Navigate to /pos/customers → Select customer → "Due Payments" tab
@@ -742,8 +755,14 @@ Later, customer pays:
             ├── Select method: Bank Transfer
             ├── Enter reference number
             └── Click "Record Payment"
+                ├── New PosSalePayment row (method = BANK_TRANSFER, 50.000)
+                ├── Sale: amountPaid = 50.000, amountDue = 50.000
                 └── Outstanding balance: 50.000 OMR remaining
 ```
+
+`amountDue` across all sales for a customer is what the Receivables report (§15.3) sums. Collecting a
+payment never mutates the original payment row — every collection is an additional `PosSalePayment`, so the
+tender history stays append-only and auditable.
 
 ---
 
@@ -824,21 +843,36 @@ Customer (with profile attached) completes a 50.000 OMR purchase
         ├── Customer group multiplier (VIP = 2x): 10 points
         └── PosLoyaltyTransaction created (type: EARNED, points: +10)
     └── Receipt shows: "You earned 10 loyalty points! Balance: 340 points"
+
+The denormalised `Customer.loyaltyPoints` column is updated in the same transaction as the ledger row,
+but the **ledger is authoritative** — the column is a read cache for display and is rebuilt from the ledger
+if they ever disagree.
 ```
 
 ### Flow 11.2 — Redeeming Points at POS
 
+> **Rates are configuration, not constants.** Two independent settings govern this:
+> `PosSettings.loyaltyPointsPerUnit` (points earned per 1 OMR spent) and
+> `PosSettings.loyaltyRedemptionRate` (OMR each point is worth on redemption). The example below uses
+> **1 point = 0.100 OMR**, which is the seeded default. An earlier draft of this flow implied both
+> 1 point = 1 OMR and 1 point = 1.042 OMR in the same example — that was an error.
+
 ```
 During checkout:
     └── Cashier clicks "Loyalty Points" payment option
-        ├── System shows: Customer has 340 points (= 340.000 OMR)
+        ├── System shows: Customer has 340 points
+        │   └── Redemption rate: 0.100 OMR per point → worth 34.000 OMR
         ├── Cart total: 25.000 OMR
-        ├── Max redemption: 50% of bill = 12.500 OMR = 12 points
-        ├── Customer chooses to use 10 points (10.000 OMR)
+        ├── Max redemption: 50% of bill (tenant setting)
+        │   └── = 12.500 OMR = 125 points
+        ├── Customer chooses to use 100 points (10.000 OMR)
         ├── Remaining: 15.000 OMR → Pay via Cash
-        └── PosLoyaltyTransaction created (type: REDEEMED, points: -10)
-            └── New balance: 330 points
+        └── PosLoyaltyTransaction created (type: REDEEMED, points: -100)
+            └── New balance: 240 points
 ```
+
+Redemption is validated server-side against the ledger balance, never the denormalised
+`Customer.loyaltyPoints` column, and never the client-supplied balance.
 
 ---
 
@@ -1145,12 +1179,23 @@ Navigate to /pos/settings → Roles → Click "New Role"
 Cashier A finishes shift, Cashier B takes over same register:
     └── Cashier A clicks "Switch User"
         └── Login screen shows PIN entry pad
-            └── Cashier B enters 4-digit PIN: ****
-                ├── System validates PIN → Cashier B authenticated
+            └── Cashier B enters 4-6 digit PIN: ****
+                ├── Server verifies against PosCashierPin.pinHash (Argon2)
+                │   ├── Wrong PIN → failedCount++
+                │   └── 5 failures → lockedUntil set; PIN entry blocked,
+                │       full credential login required to unlock
+                ├── PIN scope: only switches the cashier on an already-authenticated
+                │   terminal. It is NOT a login credential and never issues a
+                │   session token on its own.
                 ├── Previous session preserved (Cashier A's session still open if not closed)
                 └── New session opened for Cashier B (if needed)
                     └── Enter opening float → Start billing
 ```
+
+> **Security note.** A 4-digit PIN has 10,000 combinations — it is a convenience factor on a device that
+> has already authenticated, not an authentication factor by itself. It is hashed with Argon2 like any
+> other credential, rate-limited, and locked out on repeated failure. The same mechanism backs the manager
+> override prompts in flows 3.1 and 10.3.
 
 ---
 
@@ -1428,8 +1473,9 @@ Navigate to /platform/pos → Tenants
             ├── Select Plan: Professional
             ├── Set limits: 3 outlets, 10 users, 3 registers
             └── Click "Activate"
-                ├── TenantModule record created (module: pos, is_active: true)
-                ├── POS tables provisioned for tenant
+                ├── TenantModule record created (module key: POS, isActive: true)
+                ├── Limits applied as TenantCapabilityOverride rows where they
+                │   differ from the plan's SubscriptionPlanCapability defaults
                 └── Tenant admin sees POS in sidebar
 ```
 

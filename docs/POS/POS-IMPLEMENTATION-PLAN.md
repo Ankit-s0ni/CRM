@@ -1,6 +1,10 @@
 # DeltCRM POS — Implementation Plan
 
 > Detailed technical implementation plan for integrating a Point of Sale system into the DeltCRM platform, modeled after Zoho POS (Zakya).
+>
+> ⚠️ **Read [`POS-FOUNDATION-DECISIONS.md`](./POS-FOUNDATION-DECISIONS.md) first.** It records the binding
+> structural decisions (routing, schema layout, data layer, customer ownership, architecture governance)
+> and the schema defects corrected in this document. Where anything here is ambiguous, that file wins.
 
 ---
 
@@ -34,54 +38,80 @@
 │                        DeltCRM Monorepo                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  apps/api/src/shared/                                               │
-│  ├── customers/           ← NEW: Shared Customer Module             │
-│  ├── inventory/           ← NEW: Shared Inventory Module            │
-│  ├── payments/            ← NEW: Shared Payment Module              │
-│  ├── messaging/           ← NEW: Shared Messaging (WhatsApp) Module │
-│  └── forms/               ← NEW: Shared Dynamic Forms Module        │
+│  apps/api/src/platform/                                             │
+│  └── customers/           ← NEW: platform-level Customer context    │
+│                              (customers, customer_groups) — D4      │
+│                                                                     │
+│  apps/api/src/shared/     ← infrastructure ONLY, no business code   │
+│                              (see D5: shared may not import         │
+│                               platform/** or products/**)           │
 │                                                                     │
 │  apps/api/src/products/                                             │
 │  ├── attendance/          ← Existing Attendance Product Module      │
 │  └── pos/                 ← NEW: POS Product Module                 │
+│      ├── pos-product.module.ts  ← composition root                  │
+│      ├── public.ts        ← the ONLY import surface for other code  │
+│      ├── README.md        ← required by architecture governance     │
 │      ├── core/            ← Orders, billing, cart, checkout         │
 │      ├── catalog/         ← Products, categories, variants          │
 │      ├── register/        ← Registers, sessions, cash management    │
+│      ├── inventory/       ← Stock, adjustments, transfers           │
+│      ├── payments/        ← Thawani / Amwal checkout adapters       │
 │      ├── purchasing/      ← Purchase orders, vendors, goods receipt │
 │      ├── promotions/      ← Discounts, coupons, promotions          │
+│      ├── loyalty/         ← Points ledger, credit notes             │
 │      ├── reporting/       ← Sales, inventory, financial reports     │
 │      ├── configuration/   ← POS settings, tax, receipts, hardware   │
-│      ├── workflows/       ← NEW: Dynamic order states & transitions │
-│      └── storefront/      ← Online store, omnichannel               │
+│      ├── workflows/       ← Dynamic order states, transitions, forms│
+│      └── storefront/      ← Online store, omnichannel (P3)          │
+│                                                                     │
+│  apps/api/src/platform/notifications/                               │
+│  └── whatsapp provider adapter ← NEW, behind the existing           │
+│      notification-provider.port.ts (not a new module)               │
 │                                                                     │
 │  apps/web/src/                                                      │
-│  ├── app/app/attendance/  ← Existing attendance routes              │
-│  ├── app/pos/             ← NEW: Tenant POS Dashboard (/pos/*)      │
-│  ├── app/pos/register/    ← NEW: Full-screen POS Billing UI         │
-│  └── app/platform/pos/    ← NEW: Platform Admin POS Management      │
+│  ├── app/app/attendance/  ← Existing attendance routes (/app/*)     │
+│  ├── app/pos/             ← NEW: POS at the route ROOT (/pos/*)     │
+│  ├── app/pos/billing/     ← NEW: Full-screen POS Billing UI         │
+│  ├── app/platform/pos/    ← NEW: Platform Admin POS Management      │
+│  └── features/products/pos/  ← NEW: POS feature components          │
 │                                                                     │
 │  apps/mobile/lib/features/                                          │
 │  ├── attendance/          ← Existing attendance features            │
-│  └── pos/                 ← NEW: Mobile POS features                │
+│  └── pos/                 ← NEW: Mobile POS features (P2/P3)        │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+> **Placement corrections** — the earlier draft of this plan put `customers/`, `inventory/`, `payments/`,
+> `messaging/` and `forms/` under `apps/api/src/shared/`. `pnpm architecture:check` fails any file in
+> `src/shared/**` that imports `platform/**` or `products/**`, and business tables there would have no
+> owner under `TABLE-OWNERSHIP.md`. See D5 for the full mapping.
 
 ### 1.2 Technology Decisions
 
 | Concern | Decision | Rationale |
 |---|---|---|
-| Backend Module | NestJS module under `src/products/pos/` | Follows existing DDD modular monolith pattern |
-| Database | Prisma schema files in `prisma/schema/pos-*.prisma` | Follows existing split-schema convention |
-| Multi-tenancy | Same RLS + Prisma Extensions approach | Consistent with existing tenant isolation |
+| Backend Module | NestJS product at `src/products/pos/`, registered in `module-boundaries.json` | Required by architecture governance (D5) |
+| Database | POS models appended to the single `apps/api/prisma/schema.prisma` under banner comments | There is no split-schema directory; splitting is a separate refactor (D2) |
+| Multi-tenancy | `prisma.forTenant()` + per-table RLS policies in the creating migration | Consistent with existing tenant isolation |
+| Customer record | Platform-level `Customer` in `src/platform/customers/` | Reusable across products; this is a CRM (D4) |
 | Real-time | SSE for live register updates, inventory alerts | Proven pattern from field-tracking module |
-| Queue/Jobs | BullMQ workers for async tasks | Inventory recalculation, report generation, sync |
+| Queue/Jobs | BullMQ workers; recurring work as repeatable jobs | `@nestjs/schedule` is not installed and not used anywhere |
 | Offline | IndexedDB (web) + Isar (mobile) with background sync | Aligns with mobile offline-first architecture |
 | Hardware | Web Serial API + WebUSB for direct hardware | Browser-native APIs, no plugins needed |
-| Payments | Amwal Pay + Thawani Pay SDKs/APIs | Local Omani payment integrations required |
-| Forms & UI | JSON Schema + Zod Validation + Dynamic Renderers | Supports custom workflow data capture across tenants |
+| Payments | Thawani Pay + Amwal Pay adapters against the existing `payment-provider.port.ts` shape | Local Omani gateways; port already proven by platform billing |
+| API validation | `class-validator` DTOs + `createValidationPipe()` | Matches the rest of the API — there is no Zod/`nestjs-zod` in this codebase |
+| Dynamic form schemas | JSON Schema stored in `pos_form_schemas`, validated server-side with `ajv` | Tenant-authored schemas are data, not code, so they need a runtime validator |
+| Web data layer | TanStack React Query + React Hook Form, scoped to POS routes | Cache invalidation and form density justify it here only (D3) |
 
 ### 1.3 Routing Architecture
+
+POS sits at the **route root** (`/pos/*`), not under the `/app/*` workspace shell — see D1. On disk that is
+`apps/web/src/app/pos/**`; platform POS administration is `apps/web/src/app/platform/pos/**`.
+
+Because it does not inherit `app/app/layout.tsx`, `apps/web/src/app/pos/layout.tsx` must establish auth,
+tenant resolution, the `QueryClientProvider`, and the POS module guard itself.
 
 | Route | Purpose | Layout |
 |---|---|---|
@@ -105,7 +135,7 @@
 | `/pos/reports/[type]` | Specific report view | POS sidebar layout |
 | `/pos/registers` | Register management | POS sidebar layout |
 | `/pos/settings` | POS settings | POS sidebar layout |
-| `/pos/settings/tax` | Tax/VAT configuration | POS sidebar layout |
+| `/pos/settings/tax` | Tax / VAT configuration | POS sidebar layout |
 | `/pos/settings/receipts` | Receipt template config | POS sidebar layout |
 | `/pos/settings/payments` | Payment method config | POS sidebar layout |
 | `/pos/settings/hardware` | Hardware config | POS sidebar layout |
@@ -125,19 +155,33 @@ The POS module will leverage existing CRM infrastructure:
 
 | Component | Existing | POS Usage |
 |---|---|---|
-| **Authentication** | JWT + Argon2 + CASL | Same auth system, POS-specific permissions added |
-| **Multi-tenancy** | RLS + Prisma Extensions | Same tenant isolation, POS data tenant-scoped |
-| **Employee/User** | `User`, `Employee`, `Role` | POS roles (Cashier, Store Manager) extend existing role system |
-| **Billing/Plans** | `SubscriptionPlan`, `TenantPlan` | POS added as a new module in the plan system |
-| **Audit** | `AuditModule` | POS transactions logged to existing audit trail |
-| **Notifications** | `NotificationsModule` | POS alerts (low stock, etc.) use existing notification channels |
-| **File Storage** | Wasabi + Cloudflare CDN | Product images, receipt PDFs (compressed via Sharp) |
+| **Authentication** | Passport JWT + Argon2 | Same auth system, POS-specific permissions added |
+| **Authorization** | `PermissionsGuard` + `ModuleGuard` over a flat `Permission.key` table | Add `pos.*` keys to `permissions.constants.ts`, grant in `DEFAULT_ROLE_PERMISSIONS`, seed rows. **Not CASL** — `@casl/*` is installed but unused |
+| **Multi-tenancy** | `prisma.forTenant()` + RLS policies | Same tenant isolation; every POS table gets `tenant_isolation` + `platform_access` policies and grants in its creating migration |
+| **Employee/User** | `User`, `Employee`, `Role` | POS roles (Cashier, Store Manager) are seeded roles in the existing system |
+| **Customer** | *(none — POS introduces it)* | New platform context `src/platform/customers/` owning `customers` + `customer_groups` (D4) |
+| **Billing/Plans** | `SubscriptionPlan`, `Module`, `ModuleCapability`, `SubscriptionPlanCapability.limitValue`, `TenantCapabilityOverride` | POS registers as module key `POS` with capability rows. Plan tiers and usage limits are **seed data**, not new tables |
+| **Payments** | `payment-provider.port.ts`, `payment-providers.ts`, `BillingWebhookReceipt` | Thawani + Amwal checkout adapters implementing the same port shape, with POS-owned transaction tables |
+| **Audit** | `TenantAuditLog`, `SystemAuditLog` | POS transactions logged to existing audit trail |
+| **Notifications** | `NotificationsModule` + `notification-provider.port.ts` + dispatcher + worker + templates | POS alerts and receipts ride existing rails; WhatsApp is one new provider adapter |
+| **Domain events** | `OutboxEvent` + `OutboxService` + `OutboxRelayService` | `pos.*` events published transactionally on existing rails |
+| **File Storage** | `shared/storage/private-object-storage.service.ts` on `@aws-sdk/client-s3` | Wasabi is S3-compatible — configuration change. `sharp` compression and the Cloudflare CDN domain are new |
+| **Invoice numbering** | `InvoiceSequence` model (platform billing) | Reuse the row-locking pattern for gapless per-tenant POS invoice numbers |
 | **Queue/Workers** | BullMQ | POS-specific workers added to existing worker process |
+| **Architecture governance** | `apps/api/architecture/` + `pnpm architecture:check` | POS registers as a product with a composition root, `public.ts`, table ownership and a self-test (D5) |
 
 ### 2.2 New Permissions for POS
 
+POS permissions are plain keys in the existing system. Three places must be updated together:
+
+1. `apps/api/src/shared/authorization/permissions.constants.ts` — add to the `PERMISSIONS` object
+2. the same file's `DEFAULT_ROLE_PERMISSIONS` — grant to `BUSINESS_ADMIN` and the new POS roles
+3. `apps/api/prisma/seed.js` — upsert the `permissions` rows
+
+There is no ability factory to update; guards read these keys directly via `@RequirePermissions()`.
+
 ```typescript
-// POS-specific permissions to add to the CASL permission system
+// POS-specific permission keys (added to PERMISSIONS in permissions.constants.ts)
 const POS_PERMISSIONS = {
   // Catalog
   'pos.product.read': 'View products',
@@ -194,32 +238,88 @@ const POS_PERMISSIONS = {
   
   // Promotions
   'pos.promotion.manage': 'Manage discounts and promotions',
+  'pos.coupon.manage': 'Create and revoke coupon codes',
   'pos.loyalty.manage': 'Manage loyalty program',
+  'pos.loyalty.adjust': 'Manually adjust customer loyalty points',
+
+  // Workflows (dynamic order state machines)
+  'pos.workflow.manage': 'Create and edit workflows and form schemas',
+  'pos.order.advance': 'Advance an order to its next workflow state',
+
+  // Outlets
+  'pos.outlet.read': 'View outlets',
+  'pos.outlet.manage': 'Create/configure outlets and warehouses',
 };
 ```
 
+Customer permissions are **not** in this list — customers are a platform context (D4) and reuse
+`customer.read` / `customer.create` / `customer.update` / `customer.delete` keys owned by that context.
+The `pos.customer.*` keys above are retained only as POS-scoped view grants for cashier roles; the write
+paths go through the Customers public contract.
+
+**Discount limits.** `pos.sale.discount` is a boolean grant. The per-role *maximum* discount percentage
+(feature spec §8.5, flow 10.3) is not expressible as a permission key — it is stored as a numeric field on
+the POS role configuration and enforced server-side in the cart service, with `pos.sale.discount.override`
+gating the manager-PIN escalation path.
+
 ### 2.3 Module Registration
 
-The POS module will be registered in the existing Module Catalog system:
+POS registers in the existing catalog. Module keys are **UPPERCASE** (`ATTENDANCE`, `FIELD_TRACKING`), and
+there is no `subModules` field — sub-features are `ModuleCapability` rows, which is also what plan tiers and
+usage limits hang off. Seeded in `apps/api/prisma/seed.js` alongside the attendance module:
+
+```javascript
+const posModule = await prisma.module.upsert({
+  where: { key: 'POS' },
+  update: {
+    name: 'Point of Sale',
+    description: 'Retail billing, inventory, catalog and customer operations',
+    icon: 'shopping-cart',
+    availability: 'AVAILABLE',
+    kind: 'PRODUCT',
+    catalogOrder: 30,
+    customerVisible: true,
+  },
+  create: {
+    key: 'POS',
+    name: 'Point of Sale',
+    description: 'Retail billing, inventory, catalog and customer operations',
+    icon: 'shopping-cart',
+    kind: 'PRODUCT',
+    catalogOrder: 30,
+  },
+});
+```
+
+Capabilities — `[key, name, isCore, configurable, dependencyKeys, displayOrder]`:
+
+```javascript
+const posCapabilities = [
+  ['POS_CORE',            'Billing, cart and checkout',      true,  true,  [],            10],
+  ['POS_CATALOG',         'Products, categories, variants',  true,  true,  ['POS_CORE'],  20],
+  ['POS_INVENTORY',       'Stock tracking and adjustments',  false, true,  ['POS_CORE'],  30],
+  ['POS_SESSIONS',        'Register sessions and cash count',false, true,  ['POS_CORE'],  40],
+  ['POS_RETURNS',         'Returns, refunds, credit notes',  false, true,  ['POS_CORE'],  50],
+  ['POS_PROMOTIONS',      'Discounts, promotions, coupons',  false, true,  ['POS_CORE'],  60],
+  ['POS_LOYALTY',         'Loyalty points programme',        false, true,  ['POS_CORE'],  70],
+  ['POS_MULTI_OUTLET',    'Multiple outlets and transfers',  false, true,  ['POS_CORE'],  80],
+  ['POS_PURCHASING',      'Vendors and purchase orders',     false, true,  ['POS_INVENTORY'], 90],
+  ['POS_WORKFLOWS',       'Dynamic order workflows + forms', false, true,  ['POS_CORE'],  100],
+  ['POS_ADVANCED_REPORTS','Advanced and scheduled reports',  false, true,  ['POS_CORE'],  110],
+  ['POS_OFFLINE',         'Offline billing and sync',        false, true,  ['POS_CORE'],  120],
+  ['POS_API_ACCESS',      'REST API and webhooks',           false, true,  ['POS_CORE'],  130],
+];
+```
+
+Numeric limits from the plan matrix (feature spec §24.2 — users, registers, outlets, monthly transactions)
+are `SubscriptionPlanCapability.limitValue` JSON on the relevant capability, with per-tenant exceptions via
+`TenantCapabilityOverride`. **No new tables and no new platform admin UI are required for plan gating.**
+
+Route protection uses the existing decorators:
 
 ```typescript
-// In the platform module catalog
-{
-  key: 'pos',
-  name: 'Point of Sale',
-  description: 'Retail POS billing, inventory, and customer management',
-  icon: 'ShoppingCart',
-  category: 'products',
-  subModules: [
-    { key: 'pos.billing', name: 'Billing & Checkout' },
-    { key: 'pos.inventory', name: 'Inventory Management' },
-    { key: 'pos.customers', name: 'Customer Management' },
-    { key: 'pos.purchasing', name: 'Purchase Orders' },
-    { key: 'pos.reporting', name: 'Reports & Analytics' },
-    { key: 'pos.loyalty', name: 'Loyalty Program' },
-    { key: 'pos.online-store', name: 'Online Store' },
-  ],
-}
+@RequireModule('POS')
+@RequirePermissions('pos.sale.create')
 ```
 
 ---
@@ -228,24 +328,38 @@ The POS module will be registered in the existing Module Catalog system:
 
 ### 3.1 Schema File Organization
 
-Following the existing convention of split Prisma schema files:
+There is **one** schema file — `apps/api/prisma/schema.prisma` (~2,088 lines). No `prisma/schema/`
+directory exists, and this work does not create one (D2). POS models are appended to that file, grouped
+under banner comments:
 
+```prisma
+// ═════════════════════════════════════════════
+// POS — CATALOG
+// ═════════════════════════════════════════════
+model PosCategory { ... }
+model PosProduct { ... }
+model PosVariant { ... }
+model PosBatch { ... }
+
+// ═════════════════════════════════════════════
+// POS — REGISTER & OUTLETS
+// ═════════════════════════════════════════════
+...
 ```
-apps/api/prisma/schema/
-├── attendance.prisma      ← Existing
-├── auth.prisma             ← Existing
-├── employee.prisma         ← Existing
-├── ...
-├── pos-catalog.prisma      ← NEW: Products, Categories, Variants
-├── pos-inventory.prisma    ← NEW: Stock, Adjustments, Transfers
-├── pos-sales.prisma        ← NEW: Orders, OrderItems, Payments
-├── pos-customers.prisma    ← NEW: POS Customers, Loyalty, CreditNotes
-├── pos-register.prisma     ← NEW: Registers, Sessions, CashMovements
-├── pos-purchasing.prisma   ← NEW: PurchaseOrders, Vendors, GoodsReceipt
-├── pos-promotions.prisma   ← NEW: Discounts, Coupons, Promotions
-├── pos-config.prisma       ← NEW: POS Settings, TaxRates, ReceiptTemplates
-└── pos-workflows.prisma    ← NEW: Order State Machines, Form Schemas
-```
+
+Section order: `CATALOG` → `REGISTER & OUTLETS` → `INVENTORY` → `SALES` → `PURCHASING` →
+`PROMOTIONS & LOYALTY` → `WORKFLOWS` → `CONFIGURATION`. Platform `Customer` / `CustomerGroup` models go
+in a separate `CUSTOMERS` banner near the other platform models, not in the POS block — they are owned by
+the Customers context (D4).
+
+Enums live immediately above the first model that uses them, matching the file's existing style.
+
+**Before writing any model**, add the ownership rows to `apps/api/architecture/TABLE-OWNERSHIP.md`:
+
+| Context | Owned data |
+|---|---|
+| Customers | customers, customer groups |
+| POS | outlets, registers, sessions, cash movements, catalog, variants, batches, stock, adjustments, transfers, sales, sale items, sale payments, sale field data, vendors, purchase orders, promotions, coupons, loyalty ledger, credit notes, workflows, form schemas, POS settings, receipt templates |
 
 ### 3.2 Core Entity Relationship Diagram
 
@@ -282,7 +396,7 @@ apps/api/prisma/schema/
 
 ### 3.3 Detailed Entity Definitions
 
-#### Catalog Domain (`pos-catalog.prisma`)
+#### Catalog Domain — banner `POS — CATALOG`
 
 ```prisma
 model PosProduct {
@@ -390,7 +504,13 @@ model PosBatch {
 }
 ```
 
-#### Sales Domain (`pos-sales.prisma`)
+#### Sales Domain — banner `POS — SALES`
+
+> **Two orthogonal status axes** (D7.3). `status` is the *financial* lifecycle; `currentStateId` is the
+> *operational* position in a tenant-defined workflow. A laundry order is `status = OPEN` with
+> `currentState = Cleaning`; a retail sale carries `workflowId = NULL` and goes straight to `COMPLETED`.
+> The earlier draft had `workflow_id` in the ERD but not in the model, and no field at all for the current
+> state — the state machine had nowhere to persist itself.
 
 ```prisma
 model PosSale {
@@ -399,11 +519,13 @@ model PosSale {
   outletId        String    @db.Uuid
   registerId      String    @db.Uuid
   sessionId       String    @db.Uuid
-  invoiceNumber   String              // Auto-generated, sequential
-  customerId      String?   @db.Uuid
+  invoiceNumber   String              // Gapless per tenant — see 4.2
+  customerId      String?   @db.Uuid  // → platform Customer (D4)
   salespersonId   String?   @db.Uuid
   orderType       PosOrderType @default(WALK_IN)
-  status          PosSaleStatus @default(COMPLETED)
+  status          PosSaleStatus @default(COMPLETED)  // financial lifecycle
+  workflowId      String?   @db.Uuid  // null = plain retail checkout
+  currentStateId  String?   @db.Uuid  // operational position within the workflow
   subtotal        Decimal   @db.Decimal(12, 3)
   discountAmount  Decimal   @db.Decimal(12, 3) @default(0)
   discountType    DiscountType?
@@ -412,26 +534,33 @@ model PosSale {
   totalAmount     Decimal   @db.Decimal(12, 3)
   roundOffAmount  Decimal   @db.Decimal(8, 3) @default(0)
   netAmount       Decimal   @db.Decimal(12, 3)  // totalAmount + roundOff
+  amountPaid      Decimal   @db.Decimal(12, 3) @default(0)  // credit/due bills
+  amountDue       Decimal   @db.Decimal(12, 3) @default(0)  // netAmount - amountPaid
   notes           String?
   isReturn        Boolean   @default(false)
   originalSaleId  String?   @db.Uuid          // For return transactions
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  tenant      Tenant          @relation(fields: [tenantId], references: [id])
-  outlet      PosOutlet       @relation(fields: [outletId], references: [id])
-  register    PosRegister     @relation(fields: [registerId], references: [id])
-  session     PosSession      @relation(fields: [sessionId], references: [id])
-  customer    PosCustomer?    @relation(fields: [customerId], references: [id])
-  items       PosSaleItem[]
-  payments    PosSalePayment[]
-  originalSale PosSale?       @relation("SaleReturn", fields: [originalSaleId], references: [id])
-  returns      PosSale[]      @relation("SaleReturn")
+  tenant       Tenant            @relation(fields: [tenantId], references: [id])
+  outlet       PosOutlet         @relation(fields: [outletId], references: [id])
+  register     PosRegister       @relation(fields: [registerId], references: [id])
+  session      PosSession        @relation(fields: [sessionId], references: [id])
+  customer     Customer?         @relation(fields: [customerId], references: [id])
+  workflow     PosWorkflow?      @relation(fields: [workflowId], references: [id])
+  currentState PosWorkflowState? @relation("SaleCurrentState", fields: [currentStateId], references: [id])
+  items        PosSaleItem[]
+  payments     PosSalePayment[]
+  fieldData    PosSaleFieldData[]
+  promotionUsages PosPromotionUsage[]
+  originalSale PosSale?          @relation("SaleReturn", fields: [originalSaleId], references: [id])
+  returns      PosSale[]         @relation("SaleReturn")
 
   @@unique([tenantId, invoiceNumber])
   @@index([tenantId, outletId, createdAt])
   @@index([tenantId, customerId])
   @@index([tenantId, createdAt])
+  @@index([tenantId, workflowId, currentStateId])  // order queue by state
   @@map("pos_sales")
 }
 
@@ -445,14 +574,18 @@ model PosSaleItem {
   sku           String           // Snapshot
   quantity      Decimal @db.Decimal(10, 3)
   unitPrice     Decimal @db.Decimal(12, 3)  // Price at time of sale
+  costAtSale    Decimal @db.Decimal(12, 3)  // Cost snapshot — required for margin/P&L reports
   discountAmount Decimal @db.Decimal(12, 3) @default(0)
-  taxAmount     Decimal @db.Decimal(12, 3) @default(0)
   taxGroupId    String? @db.Uuid
+  taxRate       Decimal @db.Decimal(5, 3)   // Rate snapshot — invoices must not drift on rate change
+  taxAmount     Decimal @db.Decimal(12, 3) @default(0)
   subtotal      Decimal @db.Decimal(12, 3)  // (unitPrice * quantity) - discount
   total         Decimal @db.Decimal(12, 3)  // subtotal + tax
   notes         String?
   isReturned    Boolean @default(false)
   returnQuantity Decimal? @db.Decimal(10, 3)
+  returnReason   String?                    // Defective / Wrong item / Changed mind
+  returnCondition PosReturnCondition?       // RESELLABLE restocks, DAMAGED does not
 
   tenant   Tenant      @relation(fields: [tenantId], references: [id])
   sale     PosSale     @relation(fields: [saleId], references: [id])
@@ -469,7 +602,7 @@ model PosSalePayment {
   saleId        String  @db.Uuid
   method        PosPaymentMethod
   amount        Decimal @db.Decimal(12, 3)
-  referenceNumber String?         // Card auth code, UPI ref, cheque number
+  referenceNumber String?         // Card auth code, gateway ref, cheque number
   gatewayTransactionId String?    // Payment gateway reference
   changeAmount  Decimal? @db.Decimal(12, 3) // For cash (tendered - total)
   creditNoteId  String? @db.Uuid  // If paying with credit note
@@ -491,7 +624,8 @@ enum PosOrderType {
 }
 
 enum PosSaleStatus {
-  DRAFT        // Held/parked order
+  DRAFT               // Held/parked order, not yet committed
+  OPEN                // Workflow-governed order in progress, not yet fully paid
   COMPLETED
   VOIDED
   RETURNED
@@ -500,15 +634,21 @@ enum PosSaleStatus {
 
 enum PosPaymentMethod {
   CASH
-  CREDIT_CARD
+  THAWANI             // Thawani Pay (Oman)
+  AMWAL               // Amwal Pay (Oman)
+  CREDIT_CARD         // EDC terminal, reference captured manually
   DEBIT_CARD
-  UPI
-  MOBILE_WALLET
   BANK_TRANSFER
   CHEQUE
   CREDIT_NOTE
   LOYALTY_POINTS
+  DUE                 // Credit sale — balance recorded against the customer
   CUSTOM
+}
+
+enum PosReturnCondition {
+  RESELLABLE          // Restocked
+  DAMAGED             // Not restocked; logged as a damaged return
 }
 
 enum DiscountType {
@@ -517,7 +657,7 @@ enum DiscountType {
 }
 ```
 
-#### Register Domain (`pos-register.prisma`)
+#### Register Domain — banner `POS — REGISTER & OUTLETS`
 
 ```prisma
 model PosOutlet {
@@ -615,7 +755,13 @@ enum PosCashMovementType {
 }
 ```
 
-#### Inventory Domain (`pos-inventory.prisma`)
+#### Inventory Domain — banner `POS — INVENTORY`
+
+> ⚠️ **Corrected (D7.1).** The original `@@unique([tenantId, productId, variantId, outletId, warehouseId])`
+> does not do what it looks like: `variantId` and `warehouseId` are nullable, and PostgreSQL treats `NULL`s
+> as distinct in unique indexes. A product with no variant and no warehouse — the most common case — could
+> therefore get **duplicate stock rows**, silently splitting its quantity. Prisma cannot express the fix, so
+> the composite unique is replaced by four partial unique indexes in raw SQL.
 
 ```prisma
 model PosStock {
@@ -635,10 +781,35 @@ model PosStock {
   outlet    PosOutlet    @relation(fields: [outletId], references: [id])
   warehouse PosWarehouse? @relation(fields: [warehouseId], references: [id])
 
-  @@unique([tenantId, productId, variantId, outletId, warehouseId])
+  // Uniqueness enforced by partial indexes in the migration — see below.
   @@index([tenantId, productId])
+  @@index([tenantId, outletId])
   @@map("pos_stock")
 }
+```
+
+Raw SQL appended to the creating migration:
+
+```sql
+CREATE UNIQUE INDEX pos_stock_key_full ON pos_stock
+  ("tenantId","productId","variantId","outletId","warehouseId")
+  WHERE "variantId" IS NOT NULL AND "warehouseId" IS NOT NULL;
+CREATE UNIQUE INDEX pos_stock_key_no_variant ON pos_stock
+  ("tenantId","productId","outletId","warehouseId")
+  WHERE "variantId" IS NULL AND "warehouseId" IS NOT NULL;
+CREATE UNIQUE INDEX pos_stock_key_no_warehouse ON pos_stock
+  ("tenantId","productId","variantId","outletId")
+  WHERE "variantId" IS NOT NULL AND "warehouseId" IS NULL;
+CREATE UNIQUE INDEX pos_stock_key_minimal ON pos_stock
+  ("tenantId","productId","outletId")
+  WHERE "variantId" IS NULL AND "warehouseId" IS NULL;
+```
+
+Stock rows are created lazily on first movement. Because the upsert target varies by which columns are
+null, the stock service selects the matching index explicitly rather than relying on a single Prisma
+`upsert` — see 4.2.
+
+```prisma
 
 model PosStockAdjustment {
   id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -732,11 +903,18 @@ enum PosTransferStatus {
 }
 ```
 
-#### Customer Domain (`pos-customers.prisma`)
+#### Customer Domain — platform-owned (D4)
+
+> `Customer` and `CustomerGroup` are **not** POS tables. They are owned by the new Customers context at
+> `apps/api/src/platform/customers/`, live under a `CUSTOMERS` banner alongside the other platform models,
+> and are consumed by POS through `platform/customers/public.ts`. POS never writes them directly — it calls
+> `recordPurchase()` on the public contract to roll up the spend statistics.
+>
+> The loyalty ledger and credit notes stay POS-owned: they are POS concepts, not general CRM ones.
 
 ```prisma
-model PosCustomer {
-  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model Customer {
+  id            String  @id @default(uuid(7)) @db.Uuid
   tenantId      String  @db.Uuid
   code          String           // Auto or manual customer code
   name          String
@@ -746,9 +924,9 @@ model PosCustomer {
   gender        String?
   billingAddress  String?
   shippingAddress String?
-  vatNumber         String?          // For B2B customers
+  vatNumber     String?          // For B2B customers
   groupId       String? @db.Uuid
-  loyaltyPoints Int     @default(0)
+  loyaltyPoints Int     @default(0)   // Denormalised balance; ledger is authoritative
   totalSpend    Decimal @db.Decimal(14, 3) @default(0)
   visitCount    Int     @default(0)
   lastVisitAt   DateTime?
@@ -757,8 +935,8 @@ model PosCustomer {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  tenant Tenant           @relation(fields: [tenantId], references: [id])
-  group  PosCustomerGroup? @relation(fields: [groupId], references: [id])
+  tenant Tenant         @relation(fields: [tenantId], references: [id])
+  group  CustomerGroup? @relation(fields: [groupId], references: [id])
   sales  PosSale[]
   loyaltyHistory PosLoyaltyTransaction[]
   creditNotes    PosCreditNote[]
@@ -766,11 +944,11 @@ model PosCustomer {
   @@unique([tenantId, code])
   @@unique([tenantId, phone])
   @@index([tenantId, name])
-  @@map("pos_customers")
+  @@map("customers")
 }
 
-model PosCustomerGroup {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model CustomerGroup {
+  id          String  @id @default(uuid(7)) @db.Uuid
   tenantId    String  @db.Uuid
   name        String
   description String?
@@ -778,11 +956,11 @@ model PosCustomerGroup {
   loyaltyMultiplier Decimal @db.Decimal(5, 3) @default(1)
   createdAt   DateTime @default(now())
 
-  tenant    Tenant        @relation(fields: [tenantId], references: [id])
-  customers PosCustomer[]
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  customers Customer[]
 
   @@unique([tenantId, name])
-  @@map("pos_customer_groups")
+  @@map("customer_groups")
 }
 
 model PosLoyaltyTransaction {
@@ -798,7 +976,7 @@ model PosLoyaltyTransaction {
   createdAt   DateTime @default(now())
 
   tenant   Tenant      @relation(fields: [tenantId], references: [id])
-  customer PosCustomer @relation(fields: [customerId], references: [id])
+  customer Customer   @relation(fields: [customerId], references: [id])
 
   @@index([tenantId, customerId])
   @@map("pos_loyalty_transactions")
@@ -819,7 +997,7 @@ model PosCreditNote {
   updatedAt   DateTime @updatedAt
 
   tenant   Tenant      @relation(fields: [tenantId], references: [id])
-  customer PosCustomer @relation(fields: [customerId], references: [id])
+  customer Customer   @relation(fields: [customerId], references: [id])
 
   @@unique([tenantId, creditNumber])
   @@map("pos_credit_notes")
@@ -841,7 +1019,7 @@ enum PosCreditNoteStatus {
 }
 ```
 
-#### Purchasing Domain (`pos-purchasing.prisma`)
+#### Purchasing Domain — banner `POS — PURCHASING`
 
 ```prisma
 model PosVendor {
@@ -917,13 +1095,13 @@ enum PosPurchaseOrderStatus {
 }
 ```
 
-#### Configuration Domain (`pos-config.prisma`)
+#### Configuration Domain — banner `POS — CONFIGURATION`
 
 ```prisma
 model PosTaxRate {
   id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId  String  @db.Uuid
-  name      String           // e.g., "GST 18%", "GST 5%"
+  name      String           // e.g., "Standard VAT 5%", "Zero-Rated"
   rate      Decimal @db.Decimal(5, 3)
   type      PosTaxType
   isActive  Boolean @default(true)
@@ -998,7 +1176,7 @@ model PosPromotion {
   type          PosPromotionType
   discountType  DiscountType
   discountValue Decimal @db.Decimal(12, 3)
-  conditions    Json             // { minQty, minAmount, applicableProducts, applicableCategories }
+  conditions    Json             // { minQty, minAmount, applicableProducts, applicableCategories, daysOfWeek, timeOfDay }
   scope         Json             // { outlets: [], customerGroups: [] }
   startsAt      DateTime
   endsAt        DateTime?
@@ -1007,9 +1185,117 @@ model PosPromotion {
   updatedAt     DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+  usages PosPromotionUsage[]
+  coupons PosCoupon[]
 
   @@index([tenantId, isActive, startsAt, endsAt])
   @@map("pos_promotions")
+}
+
+// Audit of which promotion actually fired on which sale, and for how much.
+// Was present in the ERD but missing from the schema.
+model PosPromotionUsage {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String   @db.Uuid
+  promotionId     String   @db.Uuid
+  saleId          String   @db.Uuid
+  couponId        String?  @db.Uuid
+  discountApplied Decimal  @db.Decimal(12, 3)
+  createdAt       DateTime @default(now())
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  promotion PosPromotion @relation(fields: [promotionId], references: [id])
+  sale      PosSale      @relation(fields: [saleId], references: [id])
+  coupon    PosCoupon?   @relation(fields: [couponId], references: [id])
+
+  @@index([tenantId, promotionId, createdAt])
+  @@map("pos_promotion_usages")
+}
+
+// Coupon codes — specified in features §8.4 and flow 10.4, but absent from the
+// original schema (PosPromotion had no code, validity window or usage limit).
+model PosCoupon {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String   @db.Uuid
+  promotionId   String   @db.Uuid          // The discount this code unlocks
+  code          String                     // e.g. "SAVE20"
+  maxRedemptions Int?                      // null = unlimited
+  redemptionCount Int     @default(0)
+  perCustomerLimit Int?
+  startsAt      DateTime
+  endsAt        DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id])
+  promotion  PosPromotion @relation(fields: [promotionId], references: [id])
+  usages     PosPromotionUsage[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isActive])
+  @@map("pos_coupons")
+}
+
+// Multi-format receipt layouts. Present in the ERD, missing from the schema.
+model PosReceiptTemplate {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @db.Uuid
+  outletId  String?  @db.Uuid       // null = tenant-wide default
+  name      String
+  paperSize PosPaperSize
+  layout    Json                    // Field toggles, header/footer, fonts, margins
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant     @relation(fields: [tenantId], references: [id])
+  outlet PosOutlet? @relation(fields: [outletId], references: [id])
+
+  @@unique([tenantId, name])
+  @@map("pos_receipt_templates")
+}
+
+// Restricts an employee to specific outlets (flow 1.3, features §13).
+model PosEmployeeOutlet {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @db.Uuid
+  userId     String   @db.Uuid
+  outletId   String   @db.Uuid
+  assignedAt DateTime @default(now())
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id])
+  outlet PosOutlet @relation(fields: [outletId], references: [id])
+
+  @@unique([tenantId, userId, outletId])
+  @@index([tenantId, outletId])
+  @@map("pos_employee_outlets")
+}
+
+// PIN-based cashier quick-switch (features §12.3, flow 17.2).
+// Argon2-hashed like every other credential — never a plaintext column on `users`.
+model PosCashierPin {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String    @db.Uuid
+  userId       String    @db.Uuid
+  pinHash      String                       // Argon2
+  failedCount  Int       @default(0)
+  lockedUntil  DateTime?
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, userId])
+  @@map("pos_cashier_pins")
+}
+
+enum PosPaperSize {
+  A4
+  A5
+  THERMAL_58
+  THERMAL_80
 }
 
 enum PosTaxType {
@@ -1028,7 +1314,10 @@ enum PosPromotionType {
 }
 ```
 
-#### Workflow & Forms Domain (`pos-workflows.prisma`)
+#### Workflow & Forms Domain — banner `POS — WORKFLOWS`
+
+> `PosWorkflowTransition` was in the ERD but missing here — without it there is no definition of which
+> state moves are legal, which permission each requires, or what side effects they fire. Added below.
 
 ```prisma
 model PosWorkflow {
@@ -1040,9 +1329,10 @@ model PosWorkflow {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant Tenant             @relation(fields: [tenantId], references: [id])
-  states PosWorkflowState[]
-  sales  PosSale[]
+  tenant      Tenant             @relation(fields: [tenantId], references: [id])
+  states      PosWorkflowState[]
+  transitions PosWorkflowTransition[]
+  sales       PosSale[]
 
   @@unique([tenantId, name])
   @@map("pos_workflows")
@@ -1057,13 +1347,37 @@ model PosWorkflowState {
   isInitial   Boolean  @default(false)
   isFinal     Boolean  @default(false)
   formSchemaId String? @db.Uuid // Optional dynamic form for this state
-  
+
   tenant   Tenant       @relation(fields: [tenantId], references: [id])
   workflow PosWorkflow  @relation(fields: [workflowId], references: [id])
   form     PosFormSchema? @relation(fields: [formSchemaId], references: [id])
+  fieldData PosSaleFieldData[]
+  salesHere PosSale[]    @relation("SaleCurrentState")
+  outgoing  PosWorkflowTransition[] @relation("TransitionFrom")
+  incoming  PosWorkflowTransition[] @relation("TransitionTo")
 
   @@unique([workflowId, name])
   @@map("pos_workflow_states")
+}
+
+model PosWorkflowTransition {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @db.Uuid
+  workflowId         String   @db.Uuid
+  fromStateId        String   @db.Uuid
+  toStateId          String   @db.Uuid
+  label              String            // e.g., "Mark as Cleaned"
+  requiredPermission String?           // e.g., "pos.order.advance"
+  sideEffects        Json?             // [{ type: "SEND_WHATSAPP", template: "order_ready" }]
+  createdAt          DateTime @default(now())
+
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  workflow  PosWorkflow      @relation(fields: [workflowId], references: [id])
+  fromState PosWorkflowState @relation("TransitionFrom", fields: [fromStateId], references: [id])
+  toState   PosWorkflowState @relation("TransitionTo", fields: [toStateId], references: [id])
+
+  @@unique([workflowId, fromStateId, toStateId])
+  @@map("pos_workflow_transitions")
 }
 
 model PosFormSchema {
@@ -1096,15 +1410,31 @@ model PosSaleFieldData {
 }
 ```
 
-### 3.4 Table Partitioning
+### 3.4 Table Partitioning — deferred (D7.2)
 
-High-volume tables will use time-range partitioning (following the existing `AttendanceEvent` and `FieldLocationPing` pattern):
+**Ship unpartitioned.** The original plan called for monthly partitions on `pos_sales`, `pos_sale_items`
+and `pos_sale_payments`. That is not implementable as written:
 
-- **`pos_sales`** — Monthly partitions by `createdAt`
-- **`pos_sale_items`** — Monthly partitions by sale creation date
-- **`pos_sale_payments`** — Monthly partitions
-- **`pos_stock_adjustments`** — Monthly partitions by `createdAt`
-- **`pos_loyalty_transactions`** — Monthly partitions by `createdAt`
+- PostgreSQL requires the partition key in every unique constraint. Partitioning `pos_sales` by `createdAt`
+  makes `@@unique([tenantId, invoiceNumber])` illegal — and gapless per-tenant invoice numbers are a VAT
+  compliance requirement, not a nicety.
+- `pos_sale_items`, `pos_sale_payments`, `pos_sale_field_data` and `pos_promotion_usages` all hold foreign
+  keys into `pos_sales`; referencing a partitioned table requires the partition key in the referenced key.
+
+The existing precedent supports this reading: `AttendanceEvent` and `FieldLocationPing` are partitioned, and
+both are append-only with no inbound foreign keys. Sales are neither.
+
+Instead, index for the access patterns that matter:
+
+```prisma
+@@index([tenantId, createdAt])
+@@index([tenantId, outletId, createdAt])
+@@index([tenantId, customerId])
+```
+
+**Revisit when** a single tenant approaches ~10M sale rows or reporting latency targets are missed. At that
+point partition the genuinely append-only tables first — `pos_stock_adjustments` and
+`pos_loyalty_transactions` — which carry no inbound foreign keys and can be partitioned without redesign.
 
 ---
 
@@ -1112,29 +1442,27 @@ High-volume tables will use time-range partitioning (following the existing `Att
 
 ### 4.1 Module Structure
 
+Layering inside every folder follows the governance rule
+`presentation -> application -> domain`, with `infrastructure` feeding application. Domain files must not
+import NestJS or Prisma.
+
 ```
-apps/api/src/shared/
-├── customers/                       → Shared Customer Module
-│   ├── customers.module.ts
-│   ├── customer.controller.ts
-│   └── customer.service.ts
-├── inventory/                       → Shared Inventory Module
-│   ├── inventory.module.ts
-│   ├── stock.service.ts
-│   ├── adjustment.service.ts
-│   └── transfer.service.ts
-├── payments/                        → Shared Payment Module
-│   ├── payments.module.ts
-│   └── payment.service.ts
-├── messaging/                       → Shared Messaging (WhatsApp) Module
-│   ├── messaging.module.ts
-│   └── whatsapp.service.ts
-├── forms/                           → Shared Dynamic Forms Module
-│   ├── forms.module.ts
-│   └── form-schema.service.ts
+apps/api/src/platform/customers/     → NEW platform context (D4)
+├── customers.module.ts
+├── public.ts                        → CustomersModule + query/command contracts
+├── README.md
+├── presentation/customer.controller.ts   → CRUD /customers
+├── application/customer.service.ts       → incl. recordPurchase() used by POS
+└── infrastructure/customer.repository.ts
+
+apps/api/src/platform/notifications/
+└── infrastructure/whatsapp.provider.ts   → NEW adapter behind the existing
+                                             notification-provider.port.ts
 
 apps/api/src/products/pos/
-├── pos.module.ts                    → Root POS module
+├── pos-product.module.ts            → composition root (registered in module-boundaries.json)
+├── public.ts                        → the ONLY import surface for other modules
+├── README.md                        → required by architecture governance
 ├── core/
 │   ├── core.module.ts
 │   ├── sale.controller.ts           → POST /pos/sales, GET /pos/sales/:id
@@ -1163,13 +1491,25 @@ apps/api/src/products/pos/
 │   ├── session.controller.ts        → Open/Close sessions
 │   ├── session.service.ts           → Session management, cash tracking
 │   ├── cash-movement.service.ts
+│   ├── cashier-pin.service.ts       → Argon2 PIN verify, lockout on repeat failure
 │   └── dto/
-├── register/
-│   ├── register.module.ts
-│   ├── register.controller.ts       → CRUD /pos/registers
-│   ├── session.controller.ts        → Open/Close sessions
-│   ├── session.service.ts           → Session management, cash tracking
-│   ├── cash-movement.service.ts
+├── inventory/
+│   ├── inventory.module.ts
+│   ├── stock.service.ts             → Level reads, atomic decrement/increment
+│   ├── adjustment.service.ts        → Manual adjustments, stocktake
+│   ├── transfer.service.ts          → Inter-outlet transfers
+│   └── dto/
+├── payments/
+│   ├── payments.module.ts
+│   ├── pos-payment-processor.port.ts
+│   ├── thawani.processor.ts
+│   ├── amwal.processor.ts
+│   ├── payment-webhook.controller.ts → Signature + amount verification, idempotent
+│   └── dto/
+├── loyalty/
+│   ├── loyalty.module.ts
+│   ├── loyalty.service.ts           → Earn, redeem, reverse, expire
+│   ├── credit-note.service.ts
 │   └── dto/
 ├── purchasing/
 │   ├── purchasing.module.ts
@@ -1225,43 +1565,84 @@ async processSale(dto: CreateSaleDto, context: TenantContext): Promise<Sale> {
     // 5. Auto-apply matching promotions
     // 6. Calculate tax per line item (based on tax group)
     // 7. Calculate order totals
-    // 8. Generate invoice number (sequential, atomic)
-    // 9. Create PosSale record
-    // 10. Create PosSaleItem records
-    // 11. Create PosSalePayment records
+    // 8. Reserve invoice number under a row lock (see below)
+    // 9. Create PosSale record (workflowId/currentStateId if workflow-governed)
+    // 10. Create PosSaleItem records — snapshot name, sku, unitPrice, costAtSale, taxRate
+    // 11. Create PosSalePayment records; set amountPaid / amountDue
     // 12. Decrement inventory for each item
-    // 13. Update customer stats (totalSpend, visitCount, lastVisitAt)
+    // 13. Update customer stats via the Customers public contract (never a direct write)
     // 14. Award loyalty points (if loyalty enabled and customer attached)
-    // 15. Publish domain event: 'pos.sale.completed'
+    // 15. Write the outbox event 'pos.sale.completed' in the SAME transaction
     // 16. Return completed sale with receipt data
   });
 }
 ```
 
+Steps 9–15 must share one transaction. The outbox write in step 15 is what makes receipt delivery,
+low-stock alerts and analytics reliable — publishing to BullMQ directly would drop events on rollback.
+
+#### Invoice Numbering (gapless, per tenant)
+
+VAT compliance requires a gapless sequence per tenant, so this cannot use a bare Postgres sequence (which
+skips on rollback) or application-side generation. Reuse the row-lock pattern from the platform
+`InvoiceSequence` model:
+
+```typescript
+// Inside the sale transaction, before creating the sale
+const [seq] = await tx.$queryRaw`
+  SELECT "invoiceNextNumber" FROM pos_settings
+  WHERE "tenantId" = ${tenantId}::uuid
+  FOR UPDATE`;                       // serialises concurrent registers
+await tx.posSettings.update({
+  where: { tenantId },
+  data: { invoiceNextNumber: seq.invoiceNextNumber + 1 },
+});
+const invoiceNumber = `${prefix}-${String(seq.invoiceNextNumber).padStart(5, '0')}`;
+```
+
+This makes concurrent checkouts on different registers contend on one row per tenant. That is intended —
+it is the price of a gapless sequence, and the lock is held for milliseconds. Take the lock **late** in the
+transaction, after validation and pricing, to keep the critical section short.
+
 #### Inventory Decrement (Atomic)
 
 ```typescript
-// Use Prisma atomic operations for stock changes
-async decrementStock(productId: string, outletId: string, quantity: number) {
-  const stock = await tx.posStock.update({
-    where: { tenantId_productId_variantId_outletId_warehouseId: {...} },
-    data: { quantity: { decrement: quantity } },
-  });
-  
-  // Check for negative stock (if not allowed)
-  if (!settings.allowNegativeStock && stock.quantity < 0) {
-    throw new InsufficientStockError(productId, stock.quantity + quantity);
+// Atomic decrement. Note: no compound `where` key exists — uniqueness is enforced by
+// partial indexes (D7.1), so match on the nullable columns explicitly.
+async decrementStock(tx, { tenantId, productId, variantId, outletId, warehouseId, quantity }) {
+  const [stock] = await tx.$queryRaw`
+    UPDATE pos_stock
+       SET quantity = quantity - ${quantity}, "updatedAt" = now()
+     WHERE "tenantId" = ${tenantId}::uuid
+       AND "productId" = ${productId}::uuid
+       AND "outletId" = ${outletId}::uuid
+       AND "variantId" IS NOT DISTINCT FROM ${variantId}::uuid
+       AND "warehouseId" IS NOT DISTINCT FROM ${warehouseId}::uuid
+    RETURNING quantity`;
+
+  if (!stock) throw new StockRowMissingError(productId, outletId);
+
+  // Negative stock check (product setting overrides tenant default)
+  if (!allowNegativeStock && stock.quantity.lessThan(0)) {
+    throw new InsufficientStockError(productId, stock.quantity.plus(quantity));
   }
-  
-  // Record stock adjustment for audit
+
+  // Immutable audit row
   await tx.posStockAdjustment.create({...});
-  
-  // Check reorder point
-  if (stock.quantity <= product.reorderPoint) {
-    await this.eventBus.publish(new LowStockEvent(productId, outletId));
+
+  // Reorder point → outbox event, not a direct publish
+  if (product.reorderPoint != null && stock.quantity.lessThanOrEqualTo(product.reorderPoint)) {
+    await this.outbox.write(tx, 'pos.stock.low', { productId, outletId });
   }
 }
 ```
+
+`IS NOT DISTINCT FROM` is what makes the nullable-column match work; `= NULL` would never match. The `UPDATE`
+takes a row lock for the duration of the transaction, which is what serialises concurrent sales of the same
+product — this is the mitigation for the "inventory race conditions" risk in §16.
+
+Comparisons use `Decimal` methods (`lessThan`, `plus`), never JavaScript `<` or `+` — `quantity` is a
+`Decimal(12,3)` and float arithmetic would corrupt it.
 
 ### 4.3 BullMQ Workers
 
@@ -1272,8 +1653,13 @@ New workers to add to the existing `src/worker.ts`:
 | `PosInventorySyncWorker` | `pos:inventory-sync` | Recalculate stock after batch operations |
 | `PosReportWorker` | `pos:reports` | Generate heavy reports asynchronously |
 | `PosStockAlertWorker` | `pos:stock-alerts` | Process low-stock notifications |
-| `PosLoyaltyExpiryWorker` | `pos:loyalty-expiry` | Cron: expire stale loyalty points |
+| `PosLoyaltyExpiryWorker` | `pos:loyalty-expiry` | Expire stale loyalty points |
 | `PosProductImportWorker` | `pos:product-import` | Process CSV product imports |
+| `PosReceiptDeliveryWorker` | `pos:receipt-delivery` | Render receipt PDF, send via WhatsApp/email |
+
+Recurring work (loyalty expiry, daily summaries, low-stock sweeps) uses **BullMQ repeatable jobs**.
+`@nestjs/schedule` is not installed and `@Cron` is not used anywhere in this codebase — do not introduce it
+for POS without a separate decision.
 
 ### 4.4 SSE Endpoints
 
@@ -1289,9 +1675,12 @@ New workers to add to the existing `src/worker.ts`:
 
 ### 5.1 Route Structure
 
+POS is at the route **root** — `apps/web/src/app/pos/`, not `app/app/pos/` (D1).
+
 ```
-apps/web/src/app/app/pos/
-├── layout.tsx                      → POS-specific sidebar layout
+apps/web/src/app/pos/
+├── layout.tsx                      → POS shell: auth, tenant, QueryClientProvider,
+│                                     RequireModule('POS'), sidebar
 ├── page.tsx                        → POS Dashboard (home)
 ├── billing/
 │   └── page.tsx                    → Full-screen POS Register UI
@@ -1341,7 +1730,7 @@ apps/web/src/app/app/pos/
 │   └── [id]/page.tsx               → Outlet detail
 └── settings/
     ├── page.tsx                    → General POS settings
-    ├── tax/page.tsx                → Tax/GST configuration
+    ├── tax/page.tsx                → Tax / VAT configuration
     ├── receipts/page.tsx           → Receipt template customization
     ├── payments/page.tsx           → Payment method configuration
     ├── hardware/page.tsx           → Hardware setup
@@ -1393,7 +1782,7 @@ const posSidebarNav = [
     icon: Settings,
     children: [
       { title: 'General', href: '/pos/settings' },
-      { title: 'Tax / GST', href: '/pos/settings/tax' },
+      { title: 'Tax / VAT', href: '/pos/settings/tax' },
       { title: 'Receipts', href: '/pos/settings/receipts' },
       { title: 'Payments', href: '/pos/settings/payments' },
       { title: 'Hardware', href: '/pos/settings/hardware' },
@@ -1483,8 +1872,11 @@ apps/web/src/features/products/pos/
 
 ### 6.1 Route Structure
 
+Platform admin lives under the existing platform tree at `apps/web/src/app/platform/` — **not**
+`app/app/platform/`, which does not exist.
+
 ```
-apps/web/src/app/app/platform/pos/
+apps/web/src/app/platform/pos/
 ├── page.tsx                      → POS module dashboard (overview across tenants)
 ├── tenants/
 │   └── page.tsx                  → Tenant POS subscription management
@@ -1503,6 +1895,16 @@ apps/web/src/app/app/platform/pos/
 - Global POS feature flags (enable/disable features across platform)
 - Platform-wide POS analytics (total transactions, revenue, active registers)
 - Tenant POS health monitoring
+
+> **Scope note (D6).** Most of this is *configuration of existing machinery*, not new construction.
+> Enabling POS for a tenant is a `TenantModule` row; plan tiers are `SubscriptionPlanCapability` rows;
+> per-tenant exceptions are `TenantCapabilityOverride` rows; feature flags are capability `availability`
+> values. The existing platform module-management screens already edit these. Budget these pages as
+> *POS-specific views over existing endpoints*, and drop the "POS plan/feature gating" line item from
+> Sprint POS-7 down to seed data plus a filtered view.
+>
+> The only genuinely new work here is the **monthly transaction counter** needed to enforce the Free-tier
+> cap in feature spec §24.2 — nothing currently counts sales per tenant per month.
 
 ---
 
@@ -1541,17 +1943,20 @@ The billing register is the most critical UI component. It must be **fast**, **r
 
 1. **Auto-focus search bar** — cursor always returns to search after item added
 2. **Barcode scan** — instant item add on scan (no Enter key needed for scanners in suffix mode)
-3. **Keyboard shortcuts**:
-   - `F1` — Open/close session
-   - `F2` — Customer search
-   - `F3` — Hold order
-   - `F4` — Recall held order
-   - `F5` — Apply discount
-   - `F8` — Process payment
-   - `F9` — Print last receipt
-   - `Esc` — Clear search / Cancel dialog
-   - `+` / `-` — Increment/decrement quantity of selected item
-   - `Del` — Remove selected item
+3. **Keyboard shortcuts** — this table is the single source of truth; `POS-USER-FLOWS.md` follows it:
+
+   | Key | Action |
+   |---|---|
+   | `F1` | Open / close session |
+   | `F2` | Customer search |
+   | `F3` | Hold order |
+   | `F4` | Recall held order |
+   | `F5` | Apply discount |
+   | `F8` | Process payment |
+   | `F9` | Print last receipt |
+   | `Esc` | Clear search / cancel dialog |
+   | `+` / `-` | Increment / decrement quantity of selected item |
+   | `Del` | Remove selected item |
 4. **Touch-optimized** — large touch targets, swipe to delete, pinch for product grid
 5. **Sound effects** — beep on scan success, error sound on invalid scan
 
@@ -1562,7 +1967,7 @@ The billing register is the most critical UI component. It must be **fast**, **r
 interface PosRegisterStore {
   // Cart state
   cart: CartItem[];
-  customer: PosCustomer | null;
+  customer: Customer | null;
   salesperson: Employee | null;
   orderType: PosOrderType;
   billDiscount: { type: DiscountType; value: number } | null;
@@ -1580,7 +1985,7 @@ interface PosRegisterStore {
   updateQuantity: (itemId: string, quantity: number) => void;
   applyItemDiscount: (itemId: string, discount: Discount) => void;
   applyBillDiscount: (discount: Discount) => void;
-  setCustomer: (customer: PosCustomer | null) => void;
+  setCustomer: (customer: Customer | null) => void;
   holdOrder: () => void;
   recallOrder: (orderId: string) => void;
   clearCart: () => void;
@@ -1668,29 +2073,43 @@ apps/mobile/lib/features/pos/
 
 ### 9.1 Payment Architecture
 
+POS checkout payments live in `products/pos/payments/` and mirror the port shape already proven by
+platform billing (`platform/billing/infrastructure/payment-provider.port.ts`). They are a **separate
+implementation with separate tables** — subscription billing and customer checkout are different bounded
+contexts that happen to share an interface shape.
+
 ```typescript
-// Payment processor interface
-interface PaymentProcessor {
+// Payment processor interface (products/pos/payments/)
+interface PosPaymentProcessor {
   name: string;
   processPayment(amount: number, metadata: PaymentMetadata): Promise<PaymentResult>;
   refundPayment(transactionId: string, amount: number): Promise<RefundResult>;
   getStatus(transactionId: string): Promise<PaymentStatus>;
 }
 
-// Implementations
-class ThawaniPayProcessor implements PaymentProcessor { ... }
-class AmwalPayProcessor implements PaymentProcessor { ... }
-class CashProcessor implements PaymentProcessor { ... }
+// Implementations — Oman market only
+class ThawaniPayProcessor implements PosPaymentProcessor { ... }
+class AmwalPayProcessor implements PosPaymentProcessor { ... }
+class CashProcessor implements PosPaymentProcessor { ... }
 ```
 
-### 9.2 UPI QR Code Flow
+Amounts are `Decimal(12,3)` end to end. Never convert to `number` for a payment call — Thawani takes
+integer baisa (1 OMR = 1000 baisa), so convert with integer arithmetic at the adapter boundary.
 
-1. POS generates payment request with amount
-2. Backend creates Razorpay/PhonePe payment link
-3. QR code displayed on POS screen (and customer-facing display)
+### 9.2 Hosted Payment / QR Flow (Thawani & Amwal)
+
+1. POS generates a payment request for the sale total
+2. Backend creates the gateway session:
+   - **Thawani** — `POST /api/v1/checkout/session`, authenticated with the tenant's secret key
+   - **Amwal** — `POST /MerchantOrder/CreatePaymentLink`, signed with `secureHashValue`
+3. QR code / payment link displayed on the POS screen (and customer-facing display)
 4. Customer scans and pays
-5. Webhook callback confirms payment
+5. Gateway webhook confirms payment — **verify signature and amount before trusting it**, and persist the
+   receipt for idempotent replay (the `BillingWebhookReceipt` pattern)
 6. POS auto-completes the sale
+
+The sale is only marked `COMPLETED` on confirmed payment. If the webhook has not arrived when the cashier
+needs to move on, the sale stays `OPEN` with `amountDue` outstanding and reconciles when the webhook lands.
 
 ---
 
@@ -1820,20 +2239,32 @@ class ReceiptPrinterService {
 
 ## 14. Sprint Breakdown
 
+> Effort figures carried over from the original draft have **not** been re-estimated wholesale, but three
+> line items were corrected where the audit showed the work was already done by existing platform
+> machinery — POS permissions (3d → 1d, it is seed data not a rules engine) and POS plan/feature gating
+> (Sprint POS-7) — and foundation tasks the original plan omitted have been added to Sprint POS-1
+> (architecture registration, the Customers context, RLS policies, invoice sequencing).
+
 ### Sprint POS-1: Foundation (4 weeks)
 
 **Goal**: Basic product catalog and billing functionality
 
 | Task | Effort | Priority |
 |---|---|---|
-| Database schema creation (all POS Prisma files) | 3d | P0 |
-| Prisma migrations, seed data | 2d | P0 |
+| **Register POS in `module-boundaries.json` + `TABLE-OWNERSHIP.md`; scaffold composition root, `public.ts`, README, architecture self-test** | 1d | P0 |
+| **Platform `Customer` / `CustomerGroup` context + public contract (D4)** | 3d | P0 |
+| Database schema — POS models appended to `schema.prisma` under banners | 3d | P0 |
+| Prisma migrations incl. RLS policies + grants for every POS table | 2d | P0 |
+| `pos_stock` partial unique indexes (raw SQL, D7.1) | 0.5d | P0 |
+| Seed: `POS` module, capabilities, permissions, default roles, Oman VAT rates | 1d | P0 |
 | Product CRUD API (controller, service, DTOs) | 3d | P0 |
 | Category CRUD API | 2d | P0 |
 | Product variant support | 2d | P0 |
 | Outlet and Register CRUD API | 2d | P0 |
 | Basic POS billing API (create sale, cart logic) | 4d | P0 |
-| Tax calculation engine (GST) | 3d | P0 |
+| Invoice number sequence (row-locked, gapless) | 1d | P0 |
+| Tax calculation engine (Oman VAT) | 3d | P0 |
+| Web: add `@tanstack/react-query` + `react-hook-form`, POS root layout + providers (D3) | 1d | P0 |
 | Web: POS sidebar layout + navigation | 2d | P0 |
 | Web: Product list + create/edit pages | 3d | P0 |
 | Web: Category management page | 1d | P0 |
@@ -1856,7 +2287,7 @@ class ReceiptPrinterService {
 | Customer group management | 1d | P0 |
 | Customer attachment at POS | 1d | P0 |
 | Hold/recall orders at POS | 2d | P0 |
-| Multiple payment methods (card, UPI) | 3d | P1 |
+| Multiple payment methods (Thawani, Amwal, card) | 3d | P1 |
 | Split payment support | 2d | P1 |
 | Web: Inventory overview page | 2d | P0 |
 | Web: Stock adjustment page | 1d | P0 |
@@ -1875,7 +2306,7 @@ class ReceiptPrinterService {
 | Return processing API | 3d | P0 |
 | Credit note system | 2d | P0 |
 | Exchange workflow | 2d | P1 |
-| POS permissions (CASL rules) | 3d | P0 |
+| POS permission keys + seed + role grants | 1d | P0 |
 | POS roles (Cashier, Store Manager) | 2d | P0 |
 | Discount engine (item-level, bill-level) | 3d | P0 |
 | Promotion engine (scheduled, conditional) | 4d | P1 |
@@ -1948,10 +2379,11 @@ class ReceiptPrinterService {
 | Task | Effort | Priority |
 |---|---|---|
 | Online store / mobile store | 5d | P2 |
-| Payment gateway integration (Razorpay) | 4d | P1 |
-| UPI QR code generation | 2d | P1 |
-| Platform admin POS management | 3d | P0 |
-| POS plan/feature gating | 3d | P0 |
+| Payment gateway integration (Thawani + Amwal) | 4d | P1 |
+| Hosted payment link / QR generation | 2d | P1 |
+| Platform admin POS views (over existing module/capability endpoints) | 2d | P0 |
+| POS plan/feature gating — capability + limit seed data (D6) | 1d | P0 |
+| Monthly transaction counter for Free-tier cap enforcement | 2d | P0 |
 | E-commerce sync (Shopify) | 4d | P3 |
 | WhatsApp receipt sharing | 2d | P2 |
 | API documentation (OpenAPI) | 2d | P1 |
@@ -1964,9 +2396,13 @@ class ReceiptPrinterService {
 
 ### 15.1 Database Migrations
 
-- POS tables are added as new Prisma schema files — no changes to existing tables
-- Partitioned tables (`pos_sales`, `pos_sale_items`) require raw SQL migration
-- RLS policies must be added for all new POS tables
+- POS models are appended to the single `apps/api/prisma/schema.prisma` (D2). Existing tables are untouched;
+  the only additions to the platform block are `Customer` and `CustomerGroup` (D4)
+- **RLS is mandatory for every new POS table** — the creating migration must add the `tenant_isolation`
+  policy (`TO app_user`) and the `platform_access` policy (`TO platform_runtime`), plus the matching
+  `GRANT`s, following the pattern in `20260719151000_product_catalog_rls`
+- `pos_stock` partial unique indexes require raw SQL in the migration (D7.1)
+- No partitioning at launch (D7.2)
 - Seed script must create default POS data (tax rates, settings) for existing tenants
 
 ### 15.2 Performance Targets
@@ -1986,7 +2422,7 @@ class ReceiptPrinterService {
 |---|---|---|---|
 | Product catalog | Redis | 5 min | On product update event |
 | Tax rates | Redis | 1 hour | On settings change |
-| Stock levels | Redis | 30 sec | On sale / adjustment |
+| Stock levels | Redis | 30 sec | On sale / adjustment — **read-through cache only**; never satisfy the negative-stock check from cache, always re-read inside the sale transaction |
 | Dashboard metrics | Redis | 1 min | On sale event |
 | Report data | Redis | 5 min | On manual refresh |
 
@@ -2002,7 +2438,7 @@ class ReceiptPrinterService {
 | Payment gateway failures | Medium | High | Retry logic + manual payment recording fallback |
 | Thermal printer compatibility | Medium | Low | ESC/POS standard + vendor-specific drivers |
 | Performance under high transaction volume | Medium | Medium | Table partitioning + query optimization + caching |
-| GST regulation changes | Low | Medium | Configurable tax engine, not hardcoded |
+| Oman VAT regulation changes | Low | Medium | Configurable tax engine, not hardcoded |
 | Multi-store stock inconsistency | Medium | Medium | Eventual consistency model + reconciliation reports |
 
 ---
@@ -2011,6 +2447,9 @@ class ReceiptPrinterService {
 
 ### POST `/pos/sales`
 
+All monetary values are OMR strings with exactly 3 decimal places. They are serialised as **strings**, not
+JSON numbers, so that `Decimal(12,3)` precision survives the wire.
+
 ```json
 {
   "outletId": "uuid",
@@ -2018,21 +2457,22 @@ class ReceiptPrinterService {
   "sessionId": "uuid",
   "customerId": "uuid | null",
   "salespersonId": "uuid | null",
+  "workflowId": "uuid | null",
   "orderType": "WALK_IN",
   "items": [
     {
       "productId": "uuid",
       "variantId": "uuid | null",
-      "quantity": 2,
-      "unitPrice": 500.00,
-      "discount": { "type": "PERCENTAGE", "value": 10 },
+      "quantity": "2.000",
+      "unitPrice": "5.000",
+      "discount": { "type": "PERCENTAGE", "value": "10.000" },
       "notes": "Gift wrap"
     }
   ],
-  "discount": { "type": "FIXED_AMOUNT", "value": 50 },
+  "discount": { "type": "FIXED_AMOUNT", "value": "0.500" },
   "payments": [
-    { "method": "CASH", "amount": 1500, "changeAmount": 76 },
-    { "method": "UPI", "amount": 574, "referenceNumber": "UPI123456" }
+    { "method": "CASH", "amount": "6.000", "changeAmount": "1.550" },
+    { "method": "THAWANI", "amount": "3.000", "gatewayTransactionId": "chk_9f2a1c" }
   ],
   "notes": "Regular customer"
 }
@@ -2045,12 +2485,16 @@ class ReceiptPrinterService {
   "id": "uuid",
   "invoiceNumber": "INV-000042",
   "status": "COMPLETED",
-  "subtotal": 1000.00,
-  "discountAmount": 150.00,
-  "taxAmount": 153.00,
-  "totalAmount": 1003.00,
-  "roundOffAmount": -3.00,
-  "netAmount": 1000.00,
+  "workflowId": null,
+  "currentStateId": null,
+  "subtotal": "10.000",
+  "discountAmount": "1.500",
+  "taxAmount": "0.425",
+  "totalAmount": "8.925",
+  "roundOffAmount": "0.000",
+  "netAmount": "8.925",
+  "amountPaid": "8.925",
+  "amountDue": "0.000",
   "items": [...],
   "payments": [...],
   "customer": {...},

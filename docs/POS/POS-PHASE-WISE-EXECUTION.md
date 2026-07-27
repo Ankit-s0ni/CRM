@@ -1,30 +1,59 @@
 # DeltCRM POS — Phase-Wise Execution Plan
 
 > A step-by-step roadmap for building the POS system from scratch using a production-grade, modular architecture. This execution plan prioritizes the backend infrastructure and web-based frontend applications. Mobile app development is deferred.
+>
+> ⚠️ Read [`POS-FOUNDATION-DECISIONS.md`](./POS-FOUNDATION-DECISIONS.md) first — Phase 1 below was rewritten
+> to match the actual codebase (no split schemas, no `src/shared` business modules, no CASL).
+>
+> **Sequencing concern, unresolved**: Phase 2 builds the dynamic workflow engine and form builder *before*
+> Phase 3 builds billing. The workflow engine is the most speculative component in the specification, and
+> every tenant needs billing while only service-business tenants need workflows. `PosSale.workflowId` is
+> nullable by design, so a fixed retail checkout can ship first at no structural cost. Raise this before
+> Phase 2 starts. See the closing section of the decisions document.
 
 ---
 
-## Phase 1: Foundation & Shared Modules
+## Phase 0: Product Registration (prerequisite, ~1 day)
 
-**Goal**: Establish the database architecture, core libraries, and shared top-level modules required to support the POS orchestration.
+**Goal**: Make POS a legitimate product under the CI-enforced architecture governance before any code lands.
+
+- Copy `apps/api/architecture/templates/module` to `apps/api/src/products/pos`.
+- Create the composition root `pos-product.module.ts`, its `public.ts`, and `README.md`.
+- Register the product in `apps/api/architecture/module-boundaries.json` — name, owner, composition root,
+  public entry, and one `physicalRoots` entry per sub-module folder.
+- Add POS and Customers ownership rows to `apps/api/architecture/TABLE-OWNERSHIP.md`.
+- Add the architecture self-test asserting `pos -> attendance` stays rejected.
+- Verify with `pnpm architecture:check`.
+
+> Skipping this does not "save time" — `pnpm quality` fails and the work cannot merge.
+
+---
+
+## Phase 1: Foundation
+
+**Goal**: Establish the database architecture and the platform capabilities POS depends on.
 
 ### 1.1 Database Schema Initialization
-- **Prisma Schema Division**: Create isolated `.prisma` files for the shared domains (`customers.prisma`, `inventory.prisma`, `payments.prisma`, `messaging.prisma`) and POS-specific domains (`pos-workflows.prisma`, `pos-catalog.prisma`, `pos-core.prisma`).
-- **Oman Localization**: Ensure all currency fields (`costPrice`, `sellingPrice`, `amount`, etc.) are mapped to `@db.Decimal(12, 3)` or `@db.Decimal(8, 3)` to support Omani Rial (OMR) precision.
+- **Schema Location**: Append POS models to the single `apps/api/prisma/schema.prisma` under domain banner comments (`POS — CATALOG`, `POS — SALES`, …). There is no `prisma/schema/` directory (D2).
+- **Oman Localization**: All currency fields (`costPrice`, `sellingPrice`, `amount`, …) use `@db.Decimal(12, 3)`; tax rates `@db.Decimal(5, 3)`; weights `@db.Decimal(8, 3)`.
 - **Tax Configurations**: Initialize Oman VAT configurations (Standard 5%, Zero-Rated, Exempt, Out-of-Scope).
-- **Migration Execution**: Generate and apply the initial Prisma migrations to the PostgreSQL database.
+- **RLS**: Every new POS table gets `tenant_isolation` (`TO app_user`) and `platform_access` (`TO platform_runtime`) policies plus grants **in the same migration that creates it**.
+- **`pos_stock` partial unique indexes**: raw SQL in the migration — a plain composite unique does not work with nullable columns (D7.1).
+- **Migration Execution**: Generate and apply the migrations; verify RLS with a tenant-isolation test.
 
-### 1.2 Shared Modules Development (`apps/api/src/shared/`)
-Build the foundational micro-modules that can be used across the DeltCRM ecosystem:
-- **Messaging Module**: Integrate the WhatsApp Business API for automated notifications. Integrate **Resend** for transactional emails (e.g., scheduled reports, large invoices).
-- **Forms Module**: Create the JSON schema validation engine (using `Zod` and `ajv`) to validate dynamic payloads.
-- **Payment Module**: Scaffold standard interfaces for payment gateways and implement the **Thawani Pay** (REST API) and **Amwal Pay** (secureHashValue) providers.
-- **Storage Service**: Configure the **Wasabi** S3-compatible client. Integrate **Sharp** for compressing images buffer-in-memory before upload, and set up the **Cloudflare CDN** domain for delivery.
+### 1.2 Platform & Infrastructure Prerequisites
+Not "shared modules" — `src/shared/**` is infrastructure only and may not contain business logic (D5):
+- **Customers Context** (`src/platform/customers/`): the platform `Customer` / `CustomerGroup` entities with a `public.ts` exposing queries and a `recordPurchase()` command (D4).
+- **Messaging**: add a **WhatsApp provider adapter** behind the existing `notification-provider.port.ts`. Transactional email already exists — configure Resend as its provider rather than building a parallel path.
+- **Dynamic form validation**: `ajv` for tenant-authored JSON Schemas, inside `products/pos/workflows/`. API DTOs stay on `class-validator` like the rest of the codebase — do not introduce Zod.
+- **Payments**: implement **Thawani Pay** (REST) and **Amwal Pay** (`secureHashValue`) adapters in `products/pos/payments/`, mirroring the existing `payment-provider.port.ts` shape.
+- **Storage**: point the existing `private-object-storage.service.ts` at **Wasabi** (S3-compatible, config change). Add **Sharp** for in-memory image compression and the **Cloudflare CDN** domain for delivery.
 
 ### 1.3 Core POS Orchestrator Scaffolding
-- Scaffold `apps/api/src/products/pos/pos.module.ts`.
-- Set up tenant-isolation middleware (Row-Level Security via Prisma Extensions).
-- Implement basic RBAC (Role-Based Access Control) using CASL (e.g., Cashier, Store Manager, Admin).
+- Wire the sub-module folders into `pos-product.module.ts` and export only through `public.ts`.
+- Register `POS` in the module catalog seed (UPPERCASE key) with its `ModuleCapability` rows.
+- Add `pos.*` permission keys to `permissions.constants.ts`, grant them in `DEFAULT_ROLE_PERMISSIONS`, seed the rows, and seed the Cashier / Store Manager roles.
+- Protect routes with the existing `@RequireModule('POS')` and `@RequirePermissions(...)` decorators. **There is no CASL in this codebase** — do not add an ability factory.
 
 ---
 
@@ -35,10 +64,10 @@ Build the foundational micro-modules that can be used across the DeltCRM ecosyst
 ### 2.1 Product Catalog
 - **Backend API**: Build CRUD endpoints for Products, Categories, and Variants.
 - **Image Uploads**: Implement the upload controller leveraging the Wasabi/Sharp service.
-- **Frontend Dashboard**: Develop the Web UI (`/pos/products`) for catalog management (list, filters, create/edit forms).
+- **Frontend Dashboard**: Develop the Web UI at `apps/web/src/app/pos/products` (URL `/pos/products`) for catalog management (list, filters, create/edit forms), using TanStack Query + React Hook Form (D3).
 
 ### 2.2 Dynamic Workflow Engine
-- **State Machine Backend**: Build the `PosWorkflow` and `PosWorkflowState` services to define legal state transitions (e.g., `Draft -> Paid` for Retail; `Intake -> Cleaning -> Ready -> Paid` for Laundry).
+- **State Machine Backend**: Build the `PosWorkflow`, `PosWorkflowState` and `PosWorkflowTransition` services to define legal state transitions (e.g., `Draft -> Paid` for Retail; `Intake -> Cleaning -> Ready -> Paid` for Laundry). A sale's position is `PosSale.currentStateId`; its financial lifecycle stays in `PosSale.status`. The two are independent (D7.3).
 - **Form Schema Linking**: Create the ability to attach a specific JSON Form Schema to a Workflow State (e.g., linking a "Garment Condition Form" to the "Intake" state).
 
 ### 2.3 Workflow Configuration UI
@@ -61,9 +90,11 @@ Build the foundational micro-modules that can be used across the DeltCRM ecosyst
 - **Frontend POS UI**: Build the full-screen React/Next.js interface (`/pos/billing`). Include the product grid, barcode scanner listener, and the real-time cart sidebar.
 
 ### 3.3 Checkout & Payments
-- **Payment Processing**: Integrate the Shared Payment Module into the POS checkout flow.
+- **Payment Processing**: Integrate the POS payment adapters (Thawani, Amwal, cash) into the checkout flow.
 - **Multi-Tender**: Support splitting bills (e.g., paying 5 OMR in cash, 10 OMR via Thawani Pay).
-- **Transaction Atomicity**: Ensure that `PosSale`, `PosSaleItem`, `PosPayment`, and `Inventory` decrements are committed within a single ACID database transaction.
+- **Invoice Numbering**: Gapless per-tenant sequence under a row lock, taken late in the transaction.
+- **Transaction Atomicity**: `PosSale`, `PosSaleItem`, `PosSalePayment`, inventory decrements, loyalty award and the **outbox event** all commit in a single ACID transaction. Publishing to BullMQ directly instead of the outbox would drop events on rollback.
+- **Webhooks**: verify gateway signature and amount before trusting a callback; persist the receipt so replays are idempotent.
 
 ---
 
@@ -127,5 +158,6 @@ Build the foundational micro-modules that can be used across the DeltCRM ecosyst
 - **Web Serial API**: Add native browser support to directly trigger Cash Drawers and read from USB/Serial Barcode Scanners and Weighing Scales without external plugins.
 
 ### 7.3 Security & Optimization
-- **Audit Logging**: Ensure all critical actions (price overrides, voids, stock adjustments) generate an immutable audit trail.
-- **Load Testing**: Test the database under high concurrency (multiple registers ringing up items simultaneously) to ensure transaction safety and prevent race conditions on inventory stock columns.
+- **Audit Logging**: Ensure all critical actions (price overrides, voids, discount overrides, stock adjustments, PIN overrides) write to the existing append-only `TenantAuditLog`.
+- **Load Testing**: Test the database under high concurrency (multiple registers ringing up items simultaneously) to ensure transaction safety and prevent race conditions on inventory stock columns. Two contention points to measure specifically: the `pos_stock` row lock per product, and the per-tenant invoice-sequence row lock.
+- **Partitioning review**: revisit the deferred partitioning decision (D7.2) with real volume data before assuming it is needed.
