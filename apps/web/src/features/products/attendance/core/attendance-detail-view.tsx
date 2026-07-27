@@ -47,6 +47,7 @@ type MonthResponse = {
       designation: { name: string } | null;
     };
     month: string;
+    timezone: string;
     days: AttendanceDay[];
     summary: {
       days: number;
@@ -250,6 +251,7 @@ export function AttendanceDetailView({
           employeeId={employeeId}
           employeeName={monthData.employee.fullName}
           selectedDate={selectedDate}
+          timezone={monthData.timezone}
           onClose={() => setCorrectionOpen(false)}
           onCreated={(id) =>
             router.push(`/app/attendance/regularizations/${id}`)
@@ -533,6 +535,7 @@ function CreateCorrectionDialog({
   employeeId,
   employeeName,
   selectedDate,
+  timezone,
   onClose,
   onCreated,
 }: {
@@ -540,6 +543,7 @@ function CreateCorrectionDialog({
   employeeId: string;
   employeeName: string;
   selectedDate: string;
+  timezone: string;
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
@@ -562,7 +566,9 @@ function CreateCorrectionDialog({
       return;
     }
     if (reason.trim().length < 5) {
-      setError("Add a short reason for the audit trail.");
+      setError(
+        `Correction reason must be at least 5 characters (currently ${reason.trim().length}).`,
+      );
       return;
     }
     setBusy(true);
@@ -574,10 +580,10 @@ function CreateCorrectionDialog({
           attendanceLogId: data?.id,
           attendanceDate: data ? undefined : selectedDate,
           requestedCheckin: checkin
-            ? correctedTimestamp(selectedDate, checkin)
+            ? correctedTimestamp(selectedDate, checkin, timezone)
             : undefined,
           requestedCheckout: checkout
-            ? correctedTimestamp(selectedDate, checkout)
+            ? correctedTimestamp(selectedDate, checkout, timezone)
             : undefined,
           reason: reason.trim(),
           idempotencyKey,
@@ -648,16 +654,32 @@ function CreateCorrectionDialog({
             />
           </Field>
         </div>
+        <p className="mt-2 text-xs text-outline">
+          Times are interpreted in the employee&apos;s attendance timezone:{" "}
+          <strong>{timezone}</strong>.
+        </p>
         <div className="mt-4">
           <Field label="Reason">
             <textarea
               aria-label="Correction reason"
+              aria-describedby="correction-reason-help"
               className={`${inputClass} h-24 py-3`}
               maxLength={1000}
+              minLength={5}
+              placeholder="Example: Employee could not check in because the office device was unavailable."
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
           </Field>
+          <div
+            className="mt-2 flex items-center justify-between gap-3 text-xs text-outline"
+            id="correction-reason-help"
+          >
+            <span>
+              Minimum 5 characters. This reason is saved in the audit trail.
+            </span>
+            <span>{reason.trim().length}/1000</span>
+          </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button
@@ -676,8 +698,43 @@ function CreateCorrectionDialog({
   );
 }
 
-function correctedTimestamp(date: string, time: string) {
-  return new Date(`${date}T${time}:00`).toISOString();
+function correctedTimestamp(date: string, time: string, timezone: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  const target = Date.UTC(year, month - 1, day, hour, minute);
+  let instant = target;
+
+  // Resolve a wall-clock time in the tenant zone without using the browser zone.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(new Date(instant))
+      .reduce<Record<string, number>>((values, part) => {
+        if (part.type !== "literal") values[part.type] = Number(part.value);
+        return values;
+      }, {});
+    const represented = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second,
+    );
+    const adjustment = target - represented;
+    instant += adjustment;
+    if (adjustment === 0) break;
+  }
+
+  return new Date(instant).toISOString();
 }
 
 function correctionError(cause: unknown) {

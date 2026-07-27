@@ -12,10 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import {
-  useSearchParams,
-  useParams,
-} from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
@@ -58,6 +55,7 @@ type ReportJob = {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
   checksum?: string | null;
   failureMessage?: string | null;
+  contractVersion: number;
   createdAt: string;
   completedAt?: string | null;
   expiresAt?: string | null;
@@ -425,8 +423,8 @@ export function ReportsCenterView({
   }
   return (
     <AdminPage
-      title="Reports center"
-      description="Generate reproducible attendance exports and keep their snapshot evidence."
+      title="Attendance reports"
+      description="Export daily status, check-in, checkout, worked time, breaks, late time, early leave, and overtime."
       action={
         <div className="flex flex-wrap gap-2">
           <select
@@ -438,7 +436,9 @@ export function ReportsCenterView({
             }
           >
             {reportTypes.map((value) => (
-              <option key={value}>{value}</option>
+              <option key={value} value={value}>
+                {reportLabel(value)}
+              </option>
             ))}
           </select>
           <input
@@ -496,10 +496,10 @@ export function ReportsCenterView({
                   <div>
                     <div className="flex items-center gap-2 font-semibold">
                       <FileSpreadsheet className="size-4 text-primary" />
-                      {job.reportType.replaceAll("_", " ")}
+                      {reportLabel(job.reportType, job.contractVersion)}
                     </div>
                     <div className="mt-1 text-xs text-outline">
-                      {job.period} · contract v1{" "}
+                      {job.period} · contract v{job.contractVersion}{" "}
                       {job.checksum ? `· ${job.checksum.slice(0, 12)}…` : ""}
                     </div>
                     {job.failureMessage && (
@@ -1240,8 +1240,8 @@ export function LeavePoliciesView() {
       <Panel className="mb-5 p-5">
         <h2 className="font-bold">How Leave policies apply</h2>
         <p className="mt-2 text-sm leading-6 text-zinc-500">
-          A new policy creates an opening balance for every active employee.
-          New employees receive the same active policies automatically. Policy
+          A new policy creates an opening balance for every active employee. New
+          employees receive the same active policies automatically. Policy
           changes keep existing requests and balance ledger entries intact.
         </p>
       </Panel>
@@ -1556,6 +1556,18 @@ function reportEndpoint(type: ReportJob["reportType"]) {
       FIELD_DISTANCE: "/reports/field-distance",
     } as const
   )[type];
+}
+function reportLabel(type: ReportJob["reportType"], contractVersion?: number) {
+  if (type === "MUSTER" && contractVersion === 1) {
+    return "Attendance muster (legacy)";
+  }
+  return {
+    MUSTER: "Detailed attendance",
+    PAYROLL: "Payroll attendance",
+    LATE_OT: "Late and overtime",
+    VIOLATIONS: "Attendance violations",
+    FIELD_DISTANCE: "Field distance",
+  }[type];
 }
 function dateOnly(value: string) {
   return new Date(value).toLocaleDateString(undefined, {

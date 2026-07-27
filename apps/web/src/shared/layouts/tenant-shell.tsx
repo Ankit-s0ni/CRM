@@ -7,11 +7,13 @@ import {
   Languages,
   LogOut,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   Link,
   usePathname,
@@ -43,6 +45,26 @@ import { PortalSearch } from "@/shared/components/portal-search";
 import { useTenantLocalization } from "@/lib/tenant-localization";
 import { localizedTenantPath } from "@/lib/tenant-routes";
 
+const SIDEBAR_STORAGE_KEY = "deltcrm-sidebar-collapsed";
+const SIDEBAR_CHANGE_EVENT = "deltcrm:sidebar-change";
+
+function subscribeToSidebarPreference(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(SIDEBAR_CHANGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(SIDEBAR_CHANGE_EVENT, onStoreChange);
+  };
+}
+
+function sidebarPreferenceSnapshot() {
+  return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+}
+
+function sidebarPreferenceServerSnapshot() {
+  return false;
+}
+
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -56,6 +78,11 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const userId = user?.id;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const desktopCollapsed = useSyncExternalStore(
+    subscribeToSidebarPreference,
+    sidebarPreferenceSnapshot,
+    sidebarPreferenceServerSnapshot,
+  );
   const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<string>>(
     new Set(),
   );
@@ -72,6 +99,14 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     document.body.style.removeProperty("overflow");
     document.body.style.removeProperty("overflow-y");
   }, [pathname]);
+
+  function toggleDesktopSidebar() {
+    window.localStorage.setItem(
+      SIDEBAR_STORAGE_KEY,
+      String(!desktopCollapsed),
+    );
+    window.dispatchEvent(new Event(SIDEBAR_CHANGE_EVENT));
+  }
 
   useEffect(() => {
     if (!hasHydrated || accessToken) return;
@@ -202,7 +237,8 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col bg-zinc-700 text-surface-variant shadow-xl transition-transform lg:translate-x-0",
+          "fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col bg-zinc-700 text-surface-variant shadow-xl transition-[width,transform] duration-200 lg:translate-x-0",
+          desktopCollapsed ? "lg:w-[84px]" : "lg:w-[280px]",
           mobileOpen
             ? "translate-x-0"
             : direction === "rtl"
@@ -210,7 +246,34 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               : "-translate-x-full",
         )}
       >
-        <div className="flex h-20 items-center gap-3 px-6">
+        <button
+          aria-expanded={!desktopCollapsed}
+          aria-label={
+            desktopCollapsed
+              ? t("tenant.shell.expandNavigation", "Expand navigation")
+              : t("tenant.shell.collapseNavigation", "Collapse navigation")
+          }
+          className="absolute -end-3 top-6 z-10 hidden size-7 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:grid"
+          onClick={toggleDesktopSidebar}
+          title={
+            desktopCollapsed
+              ? t("tenant.shell.expandNavigation", "Expand navigation")
+              : t("tenant.shell.collapseNavigation", "Collapse navigation")
+          }
+          type="button"
+        >
+          {desktopCollapsed ? (
+            <PanelLeftOpen className="size-4" />
+          ) : (
+            <PanelLeftClose className="size-4" />
+          )}
+        </button>
+        <div
+          className={cn(
+            "flex h-20 items-center gap-3 px-6",
+            desktopCollapsed && "lg:justify-center lg:px-3",
+          )}
+        >
           <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-primary-container text-white">
             {user.logoUrl ? (
               <Image
@@ -225,7 +288,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               <Building2 className="size-5" />
             )}
           </div>
-          <div>
+          <div className={cn(desktopCollapsed && "lg:hidden")}>
             <div className="text-lg font-bold text-zinc-100">
               {user.companyName || "DeltCRM"}
             </div>
@@ -255,31 +318,51 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   "flex min-h-10 items-center gap-4 rounded-lg border-s-4 px-4 py-2 text-sm transition",
+                  desktopCollapsed &&
+                    "lg:justify-center lg:gap-0 lg:px-2",
                   active
                     ? "border-zinc-200 bg-primary-container/25 text-zinc-200"
                     : "border-transparent text-zinc-300 hover:bg-white/5 hover:text-white",
                 )}
+                title={
+                  desktopCollapsed
+                    ? t(item.localizationKey, item.label)
+                    : undefined
+                }
               >
-                <Icon className="size-[18px]" />
-                {t(item.localizationKey, item.label)}
+                <Icon className="size-[18px] shrink-0" />
+                <span className={cn(desktopCollapsed && "lg:hidden")}>
+                  {t(item.localizationKey, item.label)}
+                </span>
               </Link>
             );
           })}
         </nav>
         <div className="border-t border-white/10 p-4">
           <button
-            className="flex h-10 w-full items-center gap-4 px-4 text-sm text-zinc-300"
+            aria-label={t("tenant.shell.logout", "Logout")}
+            className={cn(
+              "flex h-10 w-full items-center gap-4 px-4 text-sm text-zinc-300 transition hover:text-white",
+              desktopCollapsed && "lg:justify-center lg:gap-0 lg:px-0",
+            )}
             onClick={() => {
               clearAuth();
               window.location.replace("/login");
             }}
           >
             <LogOut className="size-4" />
-            {t("tenant.shell.logout", "Logout")}
+            <span className={cn(desktopCollapsed && "lg:hidden")}>
+              {t("tenant.shell.logout", "Logout")}
+            </span>
           </button>
         </div>
       </aside>
-      <div className="lg:ps-[280px]">
+      <div
+        className={cn(
+          "transition-[padding] duration-200",
+          desktopCollapsed ? "lg:ps-[84px]" : "lg:ps-[280px]",
+        )}
+      >
         <header className="sticky top-0 z-30 flex h-16 items-center border-b border-surface-variant bg-surface/95 px-4 shadow-sm backdrop-blur lg:px-6">
           <button
             aria-label={t(

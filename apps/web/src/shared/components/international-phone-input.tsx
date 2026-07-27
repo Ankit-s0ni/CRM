@@ -39,9 +39,17 @@ export function InternationalPhoneInput({
   const [country, setCountry] = useState<CountryCode>(initial.country);
   const [nationalNumber, setNationalNumber] = useState(initial.nationalNumber);
   const emittedValue = useRef(value);
+  const previousDefaultCountry = useRef(defaultCountry);
 
   useEffect(() => {
-    if (value === emittedValue.current) return;
+    const defaultChanged = previousDefaultCountry.current !== defaultCountry;
+    previousDefaultCountry.current = defaultCountry;
+    if (value === emittedValue.current && !defaultChanged) return;
+    if (!value && defaultChanged) {
+      setCountry(defaultCountry);
+      setNationalNumber("");
+      return;
+    }
     const next = parts(value, defaultCountry);
     setCountry(next.country);
     setNationalNumber(next.nationalNumber);

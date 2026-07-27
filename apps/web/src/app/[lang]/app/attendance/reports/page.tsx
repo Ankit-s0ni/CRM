@@ -1,3 +1,10 @@
-import { ReportsCenterView } from "@/features/platform/organization/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function ReportsPage() { return <ReportsCenterView />; }
+export default async function ReportsPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  redirect(`/${lang}/app/reports`);
+}

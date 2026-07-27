@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
@@ -19,21 +18,33 @@
   --color-on-error-container: #991b1b;
   --color-secondary-container: #d4d4d8;
   
-  --font-sans: 'Inter', sans-serif;
-  --font-headline-md: 'Inter', sans-serif;
-  --font-body-md: 'Inter', sans-serif;
-  --font-label-md: 'Inter', sans-serif;
-  --font-label-sm: 'Inter', sans-serif;
+  --font-sans: var(--font-source-sans), sans-serif;
+  --font-headline-md: var(--font-lexend), sans-serif;
+  --font-body-md: var(--font-source-sans), sans-serif;
+  --font-label-md: var(--font-source-sans), sans-serif;
+  --font-label-sm: var(--font-source-sans), sans-serif;
 }
 
 body {
   background-color: var(--color-surface);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body-md);
   margin: 0;
 }
 
 html[dir="rtl"] body {
-  font-family: "Noto Sans Arabic", "Inter", sans-serif;
+  font-family: var(--font-noto-arabic), sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-headline-md);
+}
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3 {
+  font-family: var(--font-noto-arabic), sans-serif;
 }
 
 [dir="rtl"] .directional-icon {

@@ -10,12 +10,13 @@ pnpm --filter api exec prisma migrate deploy
 pnpm --filter api exec prisma db seed
 pnpm dev:api
 pnpm dev:web
-pnpm --filter api start:worker
+pnpm dev:worker
 ```
 
 - API: `http://localhost:4001`
 - Swagger: `http://localhost:4001/api/docs`
 - Web: `http://localhost:4002/platform/login`
+- Worker: required for reports, imports, notifications, and scheduled jobs
 - Seed owner: `owner@deltcrm.local` / `PlatformAdmin123!`
 - Local development bypasses platform MFA unless `PLATFORM_MFA_REQUIRED=true`.
 - Production and test require platform MFA by default.

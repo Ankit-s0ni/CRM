@@ -141,39 +141,7 @@ export const tenantContextNavigation: Record<
       ],
     },
   ],
-  reports: [
-    {
-      label: "Report center",
-      localizationKey: "tenant.navigation.reportCenter",
-      href: "/app/reports",
-      anyPermissions: [
-        "attendance.reports.read",
-        "attendance.reports.generate",
-        "organization.employees.reports.read",
-      ],
-    },
-    {
-      label: "Attendance reports",
-      localizationKey: "tenant.navigation.attendanceReports",
-      href: "/app/reports/attendance",
-      moduleKey: "ATTENDANCE",
-      anyPermissions: [
-        "attendance.reports.read",
-        "attendance.reports.generate",
-      ],
-    },
-    {
-      label: "Payroll reports",
-      localizationKey: "tenant.navigation.payrollReports",
-      href: "/app/reports/payroll",
-      icon: WalletCards,
-      moduleKey: "PAYROLL",
-      anyPermissions: [
-        "attendance.reports.read",
-        "attendance.reports.generate",
-      ],
-    },
-  ],
+  reports: [],
   settings: [
     {
       label: "Settings home",

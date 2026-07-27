@@ -27,7 +27,12 @@ import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { canAccessAttendanceWorkspace } from "@/lib/attendance-navigation";
-import { AdminPage, ErrorState, LoadingState, Panel } from "@/shared/components/page-primitives";
+import {
+  AdminPage,
+  ErrorState,
+  LoadingState,
+  Panel,
+} from "@/shared/components/page-primitives";
 import { AttendanceOverview } from "./attendance-workspaces";
 
 type WorkspaceModule = {
@@ -526,7 +531,8 @@ function WorkspaceLaunchChecklist({
     },
     {
       title: "Add employees",
-      description: "Add manually or import employees after the foundation is ready.",
+      description:
+        "Add manually or import employees after the foundation is ready.",
       href: "/app/employees",
       icon: UserPlus,
       complete: health.PEOPLE?.status === "READY",
@@ -542,7 +548,8 @@ function WorkspaceLaunchChecklist({
         </p>
         <h2 className="mt-1 text-xl font-bold">Set up in this order</h2>
         <p className="mt-1 text-sm text-zinc-500">
-          Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.
+          Organization describes who reports where. Offices define where
+          attendance may be recorded. Employees come after both foundations.
         </p>
       </div>
       <div className="grid divide-y divide-surface-variant">
@@ -571,7 +578,11 @@ function WorkspaceLaunchChecklist({
                 <span className="text-xs text-outline">{step.description}</span>
               </span>
               <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
-                {step.complete ? "Complete" : index === firstIncomplete ? "Continue setup" : "Complete previous step"}
+                {step.complete
+                  ? "Complete"
+                  : index === firstIncomplete
+                    ? "Continue setup"
+                    : "Complete previous step"}
               </span>
               {available && <ChevronRight className="size-4 text-outline" />}
             </>
@@ -585,7 +596,10 @@ function WorkspaceLaunchChecklist({
               {content}
             </Link>
           ) : (
-            <div className="flex items-center gap-3 p-4 opacity-60" key={step.title}>
+            <div
+              className="flex items-center gap-3 p-4 opacity-60"
+              key={step.title}
+            >
               {content}
             </div>
           );
@@ -688,7 +702,7 @@ export function PayrollModuleHub() {
             ) && (
               <WorkflowLink
                 description="Generate and download a snapshot-based payroll CSV for a selected period."
-                href="/app/reports/payroll"
+                href="/app/reports?type=PAYROLL"
                 icon={FileSpreadsheet}
                 key="reports"
                 title="Payroll exports"
@@ -745,7 +759,7 @@ export function PayrollSettingsView() {
             />
             <WorkflowLink
               description="Generate the period export before attempting to close it."
-              href="/app/reports/payroll"
+              href="/app/reports?type=PAYROLL"
               icon={FileSpreadsheet}
               title="Payroll exports"
             />

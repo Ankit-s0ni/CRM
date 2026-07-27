@@ -578,7 +578,7 @@ async function seedTenant(seed, planId, moduleId, permissionIdByKey) {
     },
   });
   const operationalModules = await prisma.module.findMany({
-    where: { key: { in: ['REGULARIZATION', 'PAYROLL'] } },
+    where: { key: 'REGULARIZATION' },
   });
   for (const operationalModule of operationalModules) {
     await prisma.tenantModule.upsert({

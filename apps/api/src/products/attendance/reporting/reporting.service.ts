@@ -41,7 +41,7 @@ export class ReportingService {
           reportType,
           period: filters.period ?? `${filters.startDate}:${filters.endDate}`,
           format,
-          contractVersion: 1,
+          contractVersion: reportType === ReportType.MUSTER ? 2 : 1,
           filters: filters,
           sourceCutoff: new Date(),
         },

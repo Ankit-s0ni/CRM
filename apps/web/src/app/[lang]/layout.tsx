@@ -4,6 +4,11 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import "../globals.css";
 
+import {
+  lexend,
+  notoSansArabic,
+  sourceSans,
+} from "@/app/fonts";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/shared/components/theme-provider";
 
@@ -33,7 +38,7 @@ export default async function LocalizedRootLayout({
     <html
       lang={lang}
       dir={lang === "ar" ? "rtl" : "ltr"}
-      className="notranslate h-full antialiased"
+      className={`${sourceSans.variable} ${lexend.variable} ${notoSansArabic.variable} notranslate h-full antialiased`}
       suppressHydrationWarning
       translate="no"
     >
@@ -44,10 +49,6 @@ export default async function LocalizedRootLayout({
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
         />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"

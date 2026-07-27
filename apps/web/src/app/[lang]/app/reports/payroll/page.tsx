@@ -1,5 +1,10 @@
-import { ReportsCenterView } from "@/features/platform/organization/hr-operations-views";
+import { redirect } from "next/navigation";
 
-export default function PayrollReportsPage() {
-  return <ReportsCenterView initialType="PAYROLL" />;
+export default async function PayrollReportsPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  redirect(`/${lang}/app/reports?type=PAYROLL`);
 }

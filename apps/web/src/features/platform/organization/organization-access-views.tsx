@@ -19,7 +19,9 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { phoneCountryForTenant } from "@/lib/phone-country";
 import { InternationalPhoneInput } from "@/shared/components/international-phone-input";
+import type { CountryCode } from "libphonenumber-js";
 import {
   AdminPage,
   EmptyState,
@@ -999,6 +1001,8 @@ export function EmployeeEditorView() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [designations, setDesignations] = useState<Designation[]>([]);
+  const [defaultPhoneCountry, setDefaultPhoneCountry] =
+    useState<CountryCode>("IN");
   const [error, setError] = useState("");
   const [createdAccount, setCreatedAccount] = useState<{
     employeeId: string;
@@ -1022,18 +1026,34 @@ export function EmployeeEditorView() {
       apiClient.get("/departments"),
       apiClient.get("/designations?limit=100"),
       apiClient.get("/employees/next-code"),
+      apiClient
+        .get("/tenant-settings")
+        .catch(() => ({ data: { data: null } })),
     ])
-      .then(([departmentResult, designationResult, codeResult]) => {
-        setDepartments(departmentResult.data.data);
-        setDesignations(designationResult.data.data);
-        setForm((value) => ({
-          ...value,
-          employeeCode:
-            codeResult.data.data?.employeeCode ??
-            codeResult.data.employeeCode ??
-            "",
-        }));
-      })
+      .then(
+        ([
+          departmentResult,
+          designationResult,
+          codeResult,
+          settingsResult,
+        ]) => {
+          setDepartments(departmentResult.data.data);
+          setDesignations(designationResult.data.data);
+          setDefaultPhoneCountry(
+            phoneCountryForTenant({
+              timezone: settingsResult.data.data?.timezone,
+              locale: settingsResult.data.data?.locale,
+            }),
+          );
+          setForm((value) => ({
+            ...value,
+            employeeCode:
+              codeResult.data.data?.employeeCode ??
+              codeResult.data.employeeCode ??
+              "",
+          }));
+        },
+      )
       .catch(() => setError("Employee form options could not be loaded."));
   }, []);
   async function save() {
@@ -1105,6 +1125,7 @@ export function EmployeeEditorView() {
             </Field>
             <Field label="Phone">
               <InternationalPhoneInput
+                defaultCountry={defaultPhoneCountry}
                 value={form.phone}
                 onChange={(phone) => setForm({ ...form, phone })}
               />
