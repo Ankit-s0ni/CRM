@@ -175,6 +175,36 @@
         ]
       }
     },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the authenticated user password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_getCurrentUser",
@@ -1435,7 +1465,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get an employee employment-event timeline",
+        "summary": "Get the paginated audit and employment history for an employee",
         "tags": [
           "Employees"
         ]
@@ -1570,6 +1600,45 @@
           }
         ],
         "summary": "Create the employee login and return a temporary password",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/assignments": {
+      "patch": {
+        "operationId": "EmployeesController_updateAssignments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeAssignmentsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an employee work assignments",
         "tags": [
           "Employees"
         ]
@@ -5493,7 +5562,7 @@
             "bearer": []
           }
         ],
-        "summary": "Delete an unassigned attendance policy",
+        "summary": "Delete a policy and clear assignments",
         "tags": [
           "Attendance configuration"
         ]
@@ -5935,6 +6004,36 @@
           }
         ],
         "summary": "Create a tenant-wide or office holiday",
+        "tags": [
+          "Attendance configuration"
+        ]
+      }
+    },
+    "/holidays/sync": {
+      "post": {
+        "operationId": "AttendanceConfigController_syncPublicHolidays",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPublicHolidaysDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import public holidays for configured office regions",
         "tags": [
           "Attendance configuration"
         ]
@@ -8405,6 +8504,3260 @@
           "Leave"
         ]
       }
+    },
+    "/payroll/settings": {
+      "get": {
+        "operationId": "PayrollFoundationController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollSettingsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get payroll settings for the workspace",
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create payroll settings",
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "patch": {
+        "operationId": "PayrollFoundationController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update payroll settings with optimistic versioning",
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/pay-groups": {
+      "get": {
+        "operationId": "PayrollFoundationController_listPayGroups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createPayGroup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/pay-groups/{id}": {
+      "get": {
+        "operationId": "PayrollFoundationController_getPayGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "patch": {
+        "operationId": "PayrollFoundationController_updatePayGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/pay-groups/{id}/employees": {
+      "get": {
+        "operationId": "PayrollFoundationController_listPayGroupEmployees",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_assignEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignEmployeeToPayGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/pay-groups/{id}/employees/{employeeId}": {
+      "delete": {
+        "operationId": "PayrollFoundationController_removeEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/components": {
+      "get": {
+        "operationId": "PayrollFoundationController_listComponents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createComponent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayComponentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/components/{id}": {
+      "get": {
+        "operationId": "PayrollFoundationController_getComponent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/components/{id}/versions": {
+      "get": {
+        "operationId": "PayrollFoundationController_getComponentHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createComponentVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayComponentVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/components/{id}/versions/{versionId}/activate": {
+      "post": {
+        "operationId": "PayrollFoundationController_activateComponentVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures": {
+      "get": {
+        "operationId": "PayrollFoundationController_listStructures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createStructure",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSalaryStructureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures/{id}": {
+      "get": {
+        "operationId": "PayrollFoundationController_getStructure",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures/{id}/versions": {
+      "get": {
+        "operationId": "PayrollFoundationController_getStructureHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createStructureVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSalaryStructureVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures/{id}/versions/{versionId}/activate": {
+      "post": {
+        "operationId": "PayrollFoundationController_activateStructureVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures/versions/{versionId}/components": {
+      "post": {
+        "operationId": "PayrollFoundationController_addStructureComponent",
+        "parameters": [
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalaryStructureComponentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/salary-structures/versions/{versionId}/components/{componentVersionId}": {
+      "delete": {
+        "operationId": "PayrollFoundationController_removeStructureComponent",
+        "parameters": [
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "componentVersionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/profile": {
+      "get": {
+        "operationId": "PayrollFoundationController_getProfile",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createProfile",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeePayrollProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "patch": {
+        "operationId": "PayrollFoundationController_updateProfile",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeePayrollProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/compensation": {
+      "get": {
+        "operationId": "PayrollFoundationController_getCompensation",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollFoundationController_createCompensation",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeCompensationVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/compensation/history": {
+      "get": {
+        "operationId": "PayrollFoundationController_getCompensationHistory",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/compensation/{compensationId}/end": {
+      "patch": {
+        "operationId": "PayrollFoundationController_endCompensation",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "compensationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndEmployeeCompensationVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/policy-matrix/effective": {
+      "get": {
+        "operationId": "PayrollFoundationController_getEffectivePolicy",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "payGroupId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "policyType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "PRORATION",
+              "type": "string"
+            }
+          },
+          {
+            "name": "effectiveDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll foundation"
+        ]
+      }
+    },
+    "/payroll/calendars": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listCalendars",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_createCalendar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollCalendarDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/calendars/{id}": {
+      "get": {
+        "operationId": "PayrollAdministrationController_getCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "patch": {
+        "operationId": "PayrollAdministrationController_updateCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollCalendarDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/calendars/{id}/versions": {
+      "post": {
+        "operationId": "PayrollAdministrationController_createCalendarVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollCalendarVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/calendars/{id}/activate": {
+      "post": {
+        "operationId": "PayrollAdministrationController_activateCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/calendars/{id}/deactivate": {
+      "post": {
+        "operationId": "PayrollAdministrationController_deactivateCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/policies": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listPolicies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_createPolicy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/policies/{id}": {
+      "patch": {
+        "operationId": "PayrollAdministrationController_updatePolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/policies/{id}/versions": {
+      "post": {
+        "operationId": "PayrollAdministrationController_createPolicyVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollPolicyVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/policies/{id}/versions/{versionId}/activate": {
+      "post": {
+        "operationId": "PayrollAdministrationController_activatePolicyVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/payment-details": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listPaymentDetails",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_upsertPaymentDetail",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertEmployeePaymentDetailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollMaskedPaymentDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/payment-details/{id}/status": {
+      "patch": {
+        "operationId": "PayrollAdministrationController_setPaymentDetailStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProtectedDetailStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollMaskedPaymentDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/employees/{employeeId}/statutory-details": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listStatutoryDetails",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_upsertStatutoryDetail",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertEmployeeStatutoryDetailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollMaskedStatutoryDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/statutory-details/{id}/status": {
+      "patch": {
+        "operationId": "PayrollAdministrationController_setStatutoryDetailStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProtectedDetailStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollMaskedStatutoryDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/approval-policies": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listApprovalPolicies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_createApprovalPolicy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollApprovalPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/approval-policies/{id}": {
+      "patch": {
+        "operationId": "PayrollAdministrationController_updateApprovalPolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollApprovalPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/approval-policies/{id}/versions": {
+      "post": {
+        "operationId": "PayrollAdministrationController_createApprovalPolicyVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollApprovalPolicyVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/approval-policies/{id}/versions/{versionId}/activate": {
+      "post": {
+        "operationId": "PayrollAdministrationController_activateApprovalPolicyVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollStatusCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/accounting-mappings": {
+      "get": {
+        "operationId": "PayrollAdministrationController_listAccountingMappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollAdministrationController_createAccountingMapping",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollAccountingMappingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/accounting-mappings/{id}": {
+      "patch": {
+        "operationId": "PayrollAdministrationController_updateAccountingMapping",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollAccountingMappingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollVersionedCommandResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/audit": {
+      "get": {
+        "operationId": "PayrollAdministrationController_auditHistory",
+        "parameters": [
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollAuditResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List payroll audit history for this workspace",
+        "tags": [
+          "Payroll administration"
+        ]
+      }
+    },
+    "/payroll/runs": {
+      "get": {
+        "operationId": "PayrollRunPreparationController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll run preparation"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollRunPreparationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollRunDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a Payroll input-preparation run",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}": {
+      "get": {
+        "operationId": "PayrollRunPreparationController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/attendance-snapshot": {
+      "post": {
+        "operationId": "PayrollRunPreparationController_importAttendanceSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPayrollAttendanceSnapshotDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import locked attendance snapshot rows",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/inputs": {
+      "post": {
+        "operationId": "PayrollRunPreparationController_addInput",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollRunInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a recurring, one-time, joiner, or leaver input",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/input-imports/preview": {
+      "post": {
+        "operationId": "PayrollRunPreparationController_previewInputCsv",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewPayrollInputCsvDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Parse and validate a Payroll input CSV preview",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/input-imports/{importId}/commit": {
+      "post": {
+        "operationId": "PayrollRunPreparationController_commitInputImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "importId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Commit a previously validated Payroll input CSV",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/validate": {
+      "post": {
+        "operationId": "PayrollRunPreparationController_validate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Validate run readiness and mark INPUTS_READY if clean",
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/readiness": {
+      "get": {
+        "operationId": "PayrollRunPreparationController_readiness",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/validation-issues": {
+      "get": {
+        "operationId": "PayrollRunPreparationController_validationIssues",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/validation-issues/{issueId}/acknowledge": {
+      "patch": {
+        "operationId": "PayrollRunPreparationController_acknowledgeIssue",
+        "parameters": [
+          {
+            "name": "issueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgePayrollValidationIssueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollRunResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll run preparation"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/calculate": {
+      "post": {
+        "operationId": "PayrollProcessingController_calculate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Calculate payroll run results",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/payslips/me": {
+      "get": {
+        "operationId": "PayrollProcessingController_listMyPayslips",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List published payslips for the current employee",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/review": {
+      "post": {
+        "operationId": "PayrollProcessingController_review",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayrollActionReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark calculated payroll run as reviewed",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/approve": {
+      "post": {
+        "operationId": "PayrollProcessingController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayrollActionReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a reviewed payroll run",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/finalize": {
+      "post": {
+        "operationId": "PayrollProcessingController_finalize",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayrollActionReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Finalize an approved payroll run",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/results/{id}/override": {
+      "patch": {
+        "operationId": "PayrollProcessingController_overrideResult",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayrollOverrideResultDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Override a calculated employee result before approval",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/outputs": {
+      "post": {
+        "operationId": "PayrollProcessingController_generateOutput",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePayrollOutputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate payslip, register, bank, or accounting outputs",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/publish": {
+      "post": {
+        "operationId": "PayrollProcessingController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Publish generated payslips",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/payments": {
+      "post": {
+        "operationId": "PayrollProcessingController_markPaid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkPayrollPaidDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record payroll payment status",
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/runs/{id}/payslips": {
+      "get": {
+        "operationId": "PayrollProcessingController_listPayslips",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollProcessingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll processing"
+        ]
+      }
+    },
+    "/payroll/country-rule-packs": {
+      "get": {
+        "operationId": "PayrollCountryRulePackController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCountryRulePackListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Payroll country rule packs"
+        ]
+      },
+      "post": {
+        "operationId": "PayrollCountryRulePackController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayrollCountryRulePackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCountryRulePackResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a tenant country rule pack shell",
+        "tags": [
+          "Payroll country rule packs"
+        ]
+      }
+    },
+    "/payroll/country-rule-packs/{id}/status": {
+      "patch": {
+        "operationId": "PayrollCountryRulePackController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayrollCountryRulePackStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollCountryRulePackResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activate, disable, or draft a country rule pack",
+        "tags": [
+          "Payroll country rule packs"
+        ]
+      }
     }
   },
   "info": {
@@ -8462,6 +11815,22 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
         ]
       },
       "UpdateTenantSettingsDto": {
@@ -8617,6 +11986,11 @@
             ],
             "example": "OFFICE"
           },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1994-03-18",
+            "format": "date"
+          },
           "dateOfJoining": {
             "type": "string",
             "example": "2026-07-16",
@@ -8643,6 +12017,7 @@
           "email",
           "phone",
           "workType",
+          "dateOfBirth",
           "dateOfJoining",
           "deptId"
         ]
@@ -8687,6 +12062,12 @@
               "HYBRID"
             ]
           },
+          "dateOfBirth": {
+            "type": "object",
+            "example": "1994-03-18",
+            "format": "date",
+            "nullable": true
+          },
           "dateOfJoining": {
             "type": "string",
             "example": "2026-07-16",
@@ -8710,6 +12091,21 @@
             "type": "string",
             "example": "2026-07-16",
             "format": "date"
+          }
+        }
+      },
+      "UpdateEmployeeAssignmentsDto": {
+        "type": "object",
+        "properties": {
+          "primaryOfficeId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "defaultShiftId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
           }
         }
       },
@@ -9016,6 +12412,16 @@
             "minimum": 1,
             "maximum": 100000,
             "example": 150
+          },
+          "adminPassword": {
+            "type": "string",
+            "description": "Pre-set admin password. When provided the user account is created immediately.",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "employeeCount": {
+            "type": "string",
+            "description": "Employee count band (e.g. \"1-10\", \"11-50\")"
           }
         },
         "required": [
@@ -9537,6 +12943,10 @@
         "type": "object",
         "properties": {}
       },
+      "SyncPublicHolidaysDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateHolidayDto": {
         "type": "object",
         "properties": {}
@@ -9569,6 +12979,10 @@
         "type": "object",
         "properties": {
           "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "previousDeviceUuid": {
             "type": "string",
             "format": "uuid"
           },
@@ -10138,6 +13552,2084 @@
       "LeaveDecisionDto": {
         "type": "object",
         "properties": {}
+      },
+      "PayrollSettingsResponseDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "OM"
+          },
+          "defaultCurrency": {
+            "type": "string",
+            "example": "OMR"
+          },
+          "payFrequency": {
+            "type": "string",
+            "example": "MONTHLY"
+          },
+          "workingDayBasis": {
+            "type": "string",
+            "example": "CALENDAR_DAYS"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "countryCode",
+          "defaultCurrency",
+          "payFrequency",
+          "workingDayBasis"
+        ]
+      },
+      "PayrollSettingsResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollSettingsResponseDataDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PayrollPeriodRuleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "calendar-month",
+              "month-start",
+              "month-end",
+              "fixed-day",
+              "day-of-month"
+            ],
+            "example": "day-of-month"
+          },
+          "day": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31,
+            "example": 26
+          },
+          "offsetMonth": {
+            "type": "number",
+            "minimum": -1,
+            "maximum": 1,
+            "example": -1
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "PayrollPayoutDateRuleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "fixed-day",
+              "offset-after-period-end",
+              "configured-day-after-close"
+            ],
+            "example": "offset-after-period-end"
+          },
+          "days": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 31,
+            "example": 3
+          },
+          "day": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31,
+            "example": 28
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "PayrollPolicyConfigDto": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "enum": [
+              "proration-v1",
+              "working-day-v1",
+              "rounding-v1",
+              "overtime-v1",
+              "loss-of-pay-v1",
+              "joiner-v1",
+              "leaver-v1",
+              "approval-workflow-v1",
+              "payment-configuration-v1",
+              "accounting-configuration-v1"
+            ],
+            "example": "proration-v1"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "organization",
+              "organization-days",
+              "pay-group",
+              "calendar-days",
+              "working-days",
+              "fixed-days",
+              "nearest",
+              "up",
+              "down",
+              "ignore",
+              "pay",
+              "deduct",
+              "include",
+              "exclude",
+              "prorate"
+            ],
+            "example": "working-days"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "nearest",
+              "up",
+              "down"
+            ],
+            "example": "nearest"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "CALENDAR_DAYS",
+              "WORKING_DAYS",
+              "FIXED_DAYS"
+            ]
+          },
+          "fixedDays": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31,
+            "example": 30
+          },
+          "precisionBasisPoints": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000,
+            "example": 100
+          }
+        }
+      },
+      "RoundingRuleDto": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "enum": [
+              "rounding-v1"
+            ],
+            "example": "rounding-v1"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "nearest",
+              "up",
+              "down"
+            ],
+            "example": "nearest"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "nearest",
+              "up",
+              "down"
+            ],
+            "example": "nearest"
+          }
+        }
+      },
+      "CreatePayrollSettingsDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "defaultCurrency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "locale": {
+            "type": "string",
+            "example": "en-OM",
+            "minLength": 2,
+            "maxLength": 20
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Muscat",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "payFrequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "SEMIMONTHLY",
+              "MONTHLY"
+            ]
+          },
+          "defaultPayPeriodRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "defaultPayoutDateRule": {
+            "$ref": "#/components/schemas/PayrollPayoutDateRuleDto"
+          },
+          "workingDayBasis": {
+            "type": "string",
+            "enum": [
+              "CALENDAR_DAYS",
+              "WORKING_DAYS",
+              "FIXED_DAYS"
+            ]
+          },
+          "defaultProrationPolicy": {
+            "$ref": "#/components/schemas/PayrollPolicyConfigDto"
+          },
+          "defaultRoundingPolicy": {
+            "$ref": "#/components/schemas/RoundingRuleDto"
+          },
+          "moduleStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "SUSPENDED"
+            ]
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-01"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-12-31"
+          }
+        },
+        "required": [
+          "countryCode",
+          "defaultCurrency",
+          "locale",
+          "timezone",
+          "payFrequency",
+          "defaultPayPeriodRule",
+          "defaultPayoutDateRule",
+          "workingDayBasis",
+          "defaultProrationPolicy",
+          "defaultRoundingPolicy",
+          "effectiveFrom"
+        ]
+      },
+      "PayrollIdVersionResponseDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "PayrollVersionedCommandResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollIdVersionResponseDataDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "UpdatePayrollSettingsDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "defaultCurrency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "locale": {
+            "type": "string",
+            "example": "en-OM",
+            "minLength": 2,
+            "maxLength": 20
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Muscat",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "payFrequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "SEMIMONTHLY",
+              "MONTHLY"
+            ]
+          },
+          "defaultPayPeriodRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "defaultPayoutDateRule": {
+            "$ref": "#/components/schemas/PayrollPayoutDateRuleDto"
+          },
+          "workingDayBasis": {
+            "type": "string",
+            "enum": [
+              "CALENDAR_DAYS",
+              "WORKING_DAYS",
+              "FIXED_DAYS"
+            ]
+          },
+          "defaultProrationPolicy": {
+            "$ref": "#/components/schemas/PayrollPolicyConfigDto"
+          },
+          "defaultRoundingPolicy": {
+            "$ref": "#/components/schemas/RoundingRuleDto"
+          },
+          "moduleStatus": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "SUSPENDED"
+            ]
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-01"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-12-31"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "PayrollListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "CreatePayGroupDto": {
+        "type": "object",
+        "properties": {
+          "calendarId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Monthly Oman",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "code": {
+            "type": "string",
+            "example": "MONTHLY_OM",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "currency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "prorationPolicyOverride": {
+            "$ref": "#/components/schemas/PayrollPolicyConfigDto"
+          },
+          "roundingPolicyOverride": {
+            "$ref": "#/components/schemas/RoundingRuleDto"
+          },
+          "overtimePolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lossOfPayPolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "approvalPolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "currency",
+          "countryCode",
+          "effectiveFrom"
+        ]
+      },
+      "UpdatePayGroupDto": {
+        "type": "object",
+        "properties": {
+          "calendarId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Monthly Oman",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "code": {
+            "type": "string",
+            "example": "MONTHLY_OM",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "currency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "prorationPolicyOverride": {
+            "$ref": "#/components/schemas/PayrollPolicyConfigDto"
+          },
+          "roundingPolicyOverride": {
+            "$ref": "#/components/schemas/RoundingRuleDto"
+          },
+          "overtimePolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lossOfPayPolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "approvalPolicyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "AssignEmployeeToPayGroupDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "employeeId",
+          "effectiveFrom"
+        ]
+      },
+      "PayrollStatusResponseDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "PayrollStatusCommandResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollStatusResponseDataDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "CreatePayComponentDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BASIC",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Basic salary",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "EARNING",
+              "DEDUCTION",
+              "EMPLOYER_CONTRIBUTION",
+              "REIMBURSEMENT",
+              "INFORMATIONAL"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "type"
+        ]
+      },
+      "PayrollIdResponseDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PayrollCommandResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollIdResponseDataDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PayComponentConfigDto": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "enum": [
+              "component-v1"
+            ],
+            "example": "component-v1"
+          },
+          "amountType": {
+            "type": "string",
+            "enum": [
+              "basic",
+              "gross",
+              "ctc"
+            ],
+            "example": "basic"
+          },
+          "formulaReference": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "BASIC"
+          }
+        }
+      },
+      "CreatePayComponentVersionDto": {
+        "type": "object",
+        "properties": {
+          "valueMode": {
+            "type": "string",
+            "enum": [
+              "FIXED",
+              "FORMULA_REFERENCE"
+            ]
+          },
+          "taxable": {
+            "type": "boolean"
+          },
+          "statutory": {
+            "type": "boolean"
+          },
+          "recurring": {
+            "type": "boolean"
+          },
+          "calculationOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000,
+            "example": 100
+          },
+          "currencyBehavior": {
+            "type": "string",
+            "example": "EMPLOYEE_CURRENCY",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "roundingBehavior": {
+            "$ref": "#/components/schemas/RoundingRuleDto"
+          },
+          "config": {
+            "$ref": "#/components/schemas/PayComponentConfigDto"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "valueMode",
+          "taxable",
+          "statutory",
+          "recurring",
+          "calculationOrder",
+          "currencyBehavior",
+          "roundingBehavior",
+          "config",
+          "effectiveFrom"
+        ]
+      },
+      "CreateSalaryStructureDto": {
+        "type": "object",
+        "properties": {
+          "payGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "OM_MONTHLY",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Oman monthly salary",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "currency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "currency"
+        ]
+      },
+      "CreateSalaryStructureVersionDto": {
+        "type": "object",
+        "properties": {
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "effectiveFrom"
+        ]
+      },
+      "AddSalaryStructureComponentDto": {
+        "type": "object",
+        "properties": {
+          "payComponentVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fixedAmountMinor": {
+            "type": "string",
+            "description": "Integer minor units as a string",
+            "example": "1234567"
+          },
+          "percentageBasisPoints": {
+            "type": "number",
+            "minimum": 0
+          },
+          "formulaReference": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "calculationOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000,
+            "example": 100
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "payComponentVersionId",
+          "calculationOrder",
+          "required"
+        ]
+      },
+      "CreateEmployeePayrollProfileDto": {
+        "type": "object",
+        "properties": {
+          "payGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payrollStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ON_HOLD",
+              "STOPPED"
+            ]
+          },
+          "payrollCountry": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "BANK_TRANSFER",
+              "CASH",
+              "CHEQUE",
+              "WALLET"
+            ]
+          },
+          "salaryHold": {
+            "type": "boolean"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "payrollCountry",
+          "effectiveFrom"
+        ]
+      },
+      "UpdateEmployeePayrollProfileDto": {
+        "type": "object",
+        "properties": {
+          "payGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payrollStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ON_HOLD",
+              "STOPPED"
+            ]
+          },
+          "payrollCountry": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "BANK_TRANSFER",
+              "CASH",
+              "CHEQUE",
+              "WALLET"
+            ]
+          },
+          "salaryHold": {
+            "type": "boolean"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "CreateEmployeeCompensationVersionDto": {
+        "type": "object",
+        "properties": {
+          "salaryStructureVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "baseAmountMinor": {
+            "type": "string",
+            "example": "1234567",
+            "pattern": "^\\d+$"
+          },
+          "currency": {
+            "type": "string",
+            "example": "OMR",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "salaryStructureVersionId",
+          "baseAmountMinor",
+          "currency",
+          "effectiveFrom",
+          "reason"
+        ]
+      },
+      "EndEmployeeCompensationVersionDto": {
+        "type": "object",
+        "properties": {
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "effectiveTo",
+          "reason"
+        ]
+      },
+      "CreatePayrollCalendarDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "MONTHLY_26_25",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Monthly 26 to 25",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "SEMIMONTHLY",
+              "MONTHLY"
+            ]
+          },
+          "periodStartRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "periodEndRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "payoutDateRule": {
+            "$ref": "#/components/schemas/PayrollPayoutDateRuleDto"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Muscat",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "frequency",
+          "periodStartRule",
+          "periodEndRule",
+          "payoutDateRule",
+          "timezone",
+          "effectiveFrom"
+        ]
+      },
+      "UpdatePayrollCalendarDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "MONTHLY_26_25",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Monthly 26 to 25",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "SEMIMONTHLY",
+              "MONTHLY"
+            ]
+          },
+          "periodStartRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "periodEndRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "payoutDateRule": {
+            "$ref": "#/components/schemas/PayrollPayoutDateRuleDto"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Muscat",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "CreatePayrollCalendarVersionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Monthly 26 to 25",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "SEMIMONTHLY",
+              "MONTHLY"
+            ]
+          },
+          "periodStartRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "periodEndRule": {
+            "$ref": "#/components/schemas/PayrollPeriodRuleDto"
+          },
+          "payoutDateRule": {
+            "$ref": "#/components/schemas/PayrollPayoutDateRuleDto"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Muscat",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "name",
+          "frequency",
+          "periodStartRule",
+          "periodEndRule",
+          "payoutDateRule",
+          "timezone",
+          "effectiveFrom"
+        ]
+      },
+      "CreatePayrollPolicyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PRORATION_DEFAULT",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Default proration",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "PRORATION",
+              "WORKING_DAY_BASIS",
+              "ROUNDING",
+              "OVERTIME_TREATMENT",
+              "LOSS_OF_PAY_TREATMENT",
+              "JOINER_TREATMENT",
+              "LEAVER_TREATMENT",
+              "APPROVAL_WORKFLOW",
+              "PAYMENT_CONFIGURATION",
+              "ACCOUNTING_CONFIGURATION"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "category"
+        ]
+      },
+      "UpdatePayrollPolicyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PRORATION_DEFAULT",
+            "pattern": "^[A-Z0-9_-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Default proration",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "PRORATION",
+              "WORKING_DAY_BASIS",
+              "ROUNDING",
+              "OVERTIME_TREATMENT",
+              "LOSS_OF_PAY_TREATMENT",
+              "JOINER_TREATMENT",
+              "LEAVER_TREATMENT",
+              "APPROVAL_WORKFLOW",
+              "PAYMENT_CONFIGURATION",
+              "ACCOUNTING_CONFIGURATION"
+            ]
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "CreatePayrollPolicyVersionDto": {
+        "type": "object",
+        "properties": {
+          "sourceLevel": {
+            "type": "string",
+            "enum": [
+              "COUNTRY_DEFAULT",
+              "ORGANIZATION",
+              "PAY_GROUP",
+              "SALARY_STRUCTURE",
+              "EMPLOYEE"
+            ]
+          },
+          "sourceEntityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supportsOverrides": {
+            "type": "boolean"
+          },
+          "config": {
+            "$ref": "#/components/schemas/PayrollPolicyConfigDto"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "config",
+          "effectiveFrom"
+        ]
+      },
+      "UpsertEmployeePaymentDetailDto": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "BANK_TRANSFER",
+              "CASH",
+              "CHEQUE",
+              "WALLET"
+            ]
+          },
+          "bankName": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Bank Muscat"
+          },
+          "accountHolderName": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Payroll User"
+          },
+          "accountNumber": {
+            "type": "string",
+            "maxLength": 80,
+            "writeOnly": true
+          },
+          "iban": {
+            "type": "string",
+            "maxLength": 80,
+            "writeOnly": true
+          },
+          "routingNumber": {
+            "type": "string",
+            "maxLength": 80,
+            "writeOnly": true
+          },
+          "swiftBic": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "paymentMethod"
+        ]
+      },
+      "PayrollMaskedPaymentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          },
+          "paymentMethod": {
+            "type": "string",
+            "example": "BANK_TRANSFER"
+          },
+          "bankName": {
+            "type": "object",
+            "example": "Bank Muscat",
+            "nullable": true
+          },
+          "accountNumberMasked": {
+            "type": "object",
+            "example": "****8877",
+            "nullable": true
+          },
+          "ibanMasked": {
+            "type": "object",
+            "example": "****3333",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "paymentMethod",
+          "status"
+        ]
+      },
+      "PayrollMaskedPaymentDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollMaskedPaymentDetailDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "UpdateProtectedDetailStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REPLACED",
+              "REVOKED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "MetadataDto": {
+        "type": "object",
+        "properties": {
+          "issuingAuthority": {
+            "type": "string",
+            "example": "tax-office"
+          },
+          "verified": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "UpsertEmployeeStatutoryDetailDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "example": "OM",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "identifierType": {
+            "type": "string",
+            "example": "NATIONAL_ID",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "writeOnly": true
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/MetadataDto"
+          }
+        },
+        "required": [
+          "countryCode",
+          "identifierType",
+          "identifier"
+        ]
+      },
+      "PayrollMaskedStatutoryDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "OM"
+          },
+          "identifierType": {
+            "type": "string",
+            "example": "NATIONAL_ID"
+          },
+          "identifierMasked": {
+            "type": "object",
+            "example": "****6789",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "countryCode",
+          "identifierType",
+          "status"
+        ]
+      },
+      "PayrollMaskedStatutoryDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayrollMaskedStatutoryDetailDto"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "CreatePayrollApprovalPolicyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Payroll approval",
+            "minLength": 2,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdatePayrollApprovalPolicyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Payroll approval",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "CreatePayrollApprovalPolicyVersionDto": {
+        "type": "object",
+        "properties": {
+          "fourEyesEnabled": {
+            "type": "boolean"
+          },
+          "makerCanApprove": {
+            "type": "boolean"
+          },
+          "requiredLevels": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "allowedPermissions": {
+            "example": [
+              "payroll.runs.approve"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowedRoleKeys": {
+            "example": [
+              "FINANCE_ADMIN"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "fourEyesEnabled",
+          "makerCanApprove",
+          "requiredLevels",
+          "allowedPermissions",
+          "allowedRoleKeys",
+          "effectiveFrom"
+        ]
+      },
+      "CostCenterRuleDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "department",
+              "office",
+              "fixed"
+            ],
+            "example": "department"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 80,
+            "example": "FINANCE"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "CreatePayrollAccountingMappingDto": {
+        "type": "object",
+        "properties": {
+          "payComponentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "debitAccountCode": {
+            "type": "string",
+            "example": "6000",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "creditAccountCode": {
+            "type": "string",
+            "example": "2100",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "costCenterRule": {
+            "$ref": "#/components/schemas/CostCenterRuleDto"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "payComponentId",
+          "debitAccountCode",
+          "creditAccountCode",
+          "costCenterRule",
+          "effectiveFrom"
+        ]
+      },
+      "UpdatePayrollAccountingMappingDto": {
+        "type": "object",
+        "properties": {
+          "payComponentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "debitAccountCode": {
+            "type": "string",
+            "example": "6000",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "creditAccountCode": {
+            "type": "string",
+            "example": "2100",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "costCenterRule": {
+            "$ref": "#/components/schemas/CostCenterRuleDto"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "INACTIVE",
+              "ARCHIVED"
+            ]
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "PayrollAuditEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "example": "payroll.calendar.created"
+          },
+          "entityType": {
+            "type": "string",
+            "example": "PayrollCalendar"
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "entityType",
+          "createdAt"
+        ]
+      },
+      "PayrollAuditMetaDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 25
+          },
+          "total": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "total"
+        ]
+      },
+      "PayrollAuditResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollAuditEntryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PayrollAuditMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "PayrollRunListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "CreatePayrollRunDto": {
+        "type": "object",
+        "properties": {
+          "payGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "periodKey": {
+            "type": "string",
+            "example": "2026-07"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "payGroupId",
+          "periodKey",
+          "periodStart",
+          "periodEnd"
+        ]
+      },
+      "PayrollRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PayrollAttendanceSnapshotRowDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payableDays": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 31
+          },
+          "lossOfPayDays": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 31
+          },
+          "overtimeMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "snapshot": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "employeeId",
+          "payableDays"
+        ]
+      },
+      "ImportPayrollAttendanceSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "example": "attendance-lock:2026-07"
+          },
+          "checksum": {
+            "type": "string",
+            "example": "sha256:abcdef"
+          },
+          "sourceVersion": {
+            "type": "string",
+            "example": "attendance-lock-v1"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollAttendanceSnapshotRowDto"
+            }
+          }
+        },
+        "required": [
+          "source",
+          "checksum",
+          "sourceVersion",
+          "rows"
+        ]
+      },
+      "CreatePayrollRunInputDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "RECURRING",
+              "ONE_TIME",
+              "JOINER",
+              "LEAVER"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "example": "BONUS"
+          },
+          "amountMinor": {
+            "type": "string",
+            "example": "125000"
+          },
+          "currency": {
+            "type": "string",
+            "example": "OMR"
+          },
+          "payload": {
+            "type": "object"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "code"
+        ]
+      },
+      "PreviewPayrollInputCsvDto": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "example": "payroll-inputs-2026-07.csv"
+          },
+          "csvText": {
+            "type": "string",
+            "description": "CSV with headers: employeeId,kind,code,amountMinor,currency,reason"
+          }
+        },
+        "required": [
+          "fileName",
+          "csvText"
+        ]
+      },
+      "AcknowledgePayrollValidationIssueDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
+      },
+      "PayrollProcessingResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "PayrollActionReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PayrollOverrideResultDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "netPayMinor": {
+            "type": "string",
+            "example": "1234567"
+          }
+        },
+        "required": [
+          "reason",
+          "netPayMinor"
+        ]
+      },
+      "GeneratePayrollOutputDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PAYSLIP",
+              "PAYROLL_REGISTER",
+              "BANK_EXPORT",
+              "ACCOUNTING_EXPORT"
+            ]
+          },
+          "adapterKey": {
+            "type": "string",
+            "example": "standard-json-v1"
+          }
+        },
+        "required": [
+          "kind",
+          "adapterKey"
+        ]
+      },
+      "MarkPayrollPaidDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "PAID",
+              "FAILED"
+            ],
+            "example": "PAID"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "PayrollCountryRulePackListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "CreatePayrollCountryRulePackDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "example": "OM"
+          },
+          "version": {
+            "type": "string",
+            "example": "2026.1"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "countryCode",
+          "version",
+          "effectiveFrom"
+        ]
+      },
+      "PayrollCountryRulePackResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "UpdatePayrollCountryRulePackStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "DISABLED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
       }
     }
   }

@@ -124,6 +124,160 @@ enum TenantOverrideMode {
   DISABLE
 }
 
+enum PayrollModuleStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+}
+
+enum PayrollFrequency {
+  WEEKLY
+  BIWEEKLY
+  SEMIMONTHLY
+  MONTHLY
+}
+
+enum PayrollRecordStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum PayrollVersionStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  RETIRED
+}
+
+enum PayrollRunStatus {
+  DRAFT
+  VALIDATING
+  INPUTS_READY
+  CALCULATING
+  CALCULATED
+  REVIEWED
+  APPROVED
+  FINALIZED
+  OUTPUTS_GENERATED
+  PUBLISHED
+  PAID
+  CANCELLED
+}
+
+enum PayrollCalculationResultStatus {
+  DRAFT
+  CALCULATED
+  OVERRIDDEN
+  FINAL
+}
+
+enum PayrollOutputKind {
+  PAYSLIP
+  PAYROLL_REGISTER
+  BANK_EXPORT
+  ACCOUNTING_EXPORT
+}
+
+enum PayrollOutputStatus {
+  GENERATED
+  PUBLISHED
+  REVOKED
+}
+
+enum PayrollPaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+}
+
+enum PayrollCountryPackStatus {
+  DRAFT
+  ACTIVE
+  DISABLED
+}
+
+enum PayrollRunBlockerSeverity {
+  BLOCKER
+  WARNING
+  INFO
+}
+
+enum PayrollInputImportStatus {
+  PREVIEW_READY
+  COMMITTED
+  FAILED
+}
+
+enum PayrollValidationIssueStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  OBSOLETE
+}
+
+enum PayrollInputKind {
+  RECURRING
+  ONE_TIME
+  JOINER
+  LEAVER
+}
+
+enum PayrollPolicyCategory {
+  PRORATION
+  WORKING_DAY_BASIS
+  ROUNDING
+  OVERTIME_TREATMENT
+  LOSS_OF_PAY_TREATMENT
+  JOINER_TREATMENT
+  LEAVER_TREATMENT
+  APPROVAL_WORKFLOW
+  PAYMENT_CONFIGURATION
+  ACCOUNTING_CONFIGURATION
+}
+
+enum PayrollPolicySourceLevel {
+  COUNTRY_DEFAULT
+  ORGANIZATION
+  PAY_GROUP
+  SALARY_STRUCTURE
+  EMPLOYEE
+}
+
+enum PayComponentType {
+  EARNING
+  DEDUCTION
+  EMPLOYER_CONTRIBUTION
+  REIMBURSEMENT
+  INFORMATIONAL
+}
+
+enum PayComponentValueMode {
+  FIXED
+  FORMULA_REFERENCE
+}
+
+enum PayrollPaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  WALLET
+}
+
+enum EmployeePayrollStatus {
+  ACTIVE
+  ON_HOLD
+  STOPPED
+}
+
+enum PayrollProtectedDetailStatus {
+  ACTIVE
+  REPLACED
+  REVOKED
+}
+
 enum SystemAlertType {
   PAYMENT_GATEWAY_DOWN
   QUEUE_LAG
@@ -1110,46 +1264,50 @@ model Designation {
 }
 
 model Employee {
-  id                String                     @id @default(uuid(7)) @db.Uuid
-  tenantId          String                     @db.Uuid
-  employeeCode      String
-  fullName          String
-  phone             String?
-  workType          WorkType
-  status            EmployeeStatus             @default(ACTIVE)
-  dateOfBirth       DateTime?                  @db.Date
-  dateOfJoining     DateTime                   @db.Date
-  dateOfExit        DateTime?                  @db.Date
-  managerId         String?                    @db.Uuid
-  deptId            String                     @db.Uuid
-  designationId     String?                    @db.Uuid
-  userId            String?                    @unique @db.Uuid
-  defaultShiftId    String?                    @db.Uuid
-  masterSelfie      String?
-  faceEmbeddingRef  String?
-  faceEnrolledAt    DateTime?
-  faceEnrolledBy    String?                    @db.Uuid
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  tenant            Tenant                     @relation(fields: [tenantId], references: [id])
-  user              User?                      @relation(fields: [userId], references: [id])
-  department        Department                 @relation(fields: [deptId], references: [id])
-  designation       Designation?               @relation(fields: [designationId], references: [id])
-  manager           Employee?                  @relation("ManagerChain", fields: [managerId], references: [id])
-  reports           Employee[]                 @relation("ManagerChain")
-  defaultShift      Shift?                     @relation("DefaultShift", fields: [defaultShiftId], references: [id])
-  devices           RegisteredDevice[]
-  attendanceDays    AttendanceLog[]
-  officeAssignments EmployeeOfficeAssignment[]
-  consents          BiometricConsent[]
-  faceEnrollments   FaceEnrollment[]
-  employmentEvents  EmploymentEvent[]
-  importedRows      EmployeeImportRow[]
-  rosters           EmployeeShiftRoster[]
-  regularizations   RegularizationRequest[]
-  leaveBalances     LeaveBalance[]
-  leaveRequests     LeaveRequest[]
-  documents         EmployeeDocument[]
+  id                  String                       @id @default(uuid(7)) @db.Uuid
+  tenantId            String                       @db.Uuid
+  employeeCode        String
+  fullName            String
+  phone               String?
+  workType            WorkType
+  status              EmployeeStatus               @default(ACTIVE)
+  dateOfBirth         DateTime?                    @db.Date
+  dateOfJoining       DateTime                     @db.Date
+  dateOfExit          DateTime?                    @db.Date
+  managerId           String?                      @db.Uuid
+  deptId              String                       @db.Uuid
+  designationId       String?                      @db.Uuid
+  userId              String?                      @unique @db.Uuid
+  defaultShiftId      String?                      @db.Uuid
+  masterSelfie        String?
+  faceEmbeddingRef    String?
+  faceEnrolledAt      DateTime?
+  faceEnrolledBy      String?                      @db.Uuid
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+  tenant              Tenant                       @relation(fields: [tenantId], references: [id])
+  user                User?                        @relation(fields: [userId], references: [id])
+  department          Department                   @relation(fields: [deptId], references: [id])
+  designation         Designation?                 @relation(fields: [designationId], references: [id])
+  manager             Employee?                    @relation("ManagerChain", fields: [managerId], references: [id])
+  reports             Employee[]                   @relation("ManagerChain")
+  defaultShift        Shift?                       @relation("DefaultShift", fields: [defaultShiftId], references: [id])
+  devices             RegisteredDevice[]
+  attendanceDays      AttendanceLog[]
+  officeAssignments   EmployeeOfficeAssignment[]
+  consents            BiometricConsent[]
+  faceEnrollments     FaceEnrollment[]
+  employmentEvents    EmploymentEvent[]
+  importedRows        EmployeeImportRow[]
+  rosters             EmployeeShiftRoster[]
+  regularizations     RegularizationRequest[]
+  leaveBalances       LeaveBalance[]
+  leaveRequests       LeaveRequest[]
+  documents           EmployeeDocument[]
+  payrollProfile      EmployeePayrollProfile?
+  payGroupAssignments PayGroupEmployeeAssignment[]
+  payrollRunRows      PayrollRunEmployee[]
+  payrollResults      PayrollEmployeeResult[]
 
   @@unique([tenantId, employeeCode])
   @@index([tenantId, status])
@@ -1524,6 +1682,756 @@ model PayrollLockHistory {
 
   @@index([tenantId, payrollLockId, createdAt])
   @@map("payroll_lock_history")
+}
+
+// ---------------- PAYROLL FOUNDATION ----------------
+model PayrollSettings {
+  id                     String              @id @default(uuid(7)) @db.Uuid
+  tenantId               String              @unique @db.Uuid
+  countryCode            String
+  defaultCurrency        String
+  locale                 String
+  timezone               String
+  payFrequency           PayrollFrequency
+  defaultPayPeriodRule   Json
+  defaultPayoutDateRule  Json
+  workingDayBasis        String
+  defaultProrationPolicy Json
+  defaultRoundingPolicy  Json
+  moduleStatus           PayrollModuleStatus @default(DRAFT)
+  effectiveFrom          DateTime            @db.Date
+  effectiveTo            DateTime?           @db.Date
+  version                Int                 @default(1)
+  createdBy              String              @db.Uuid
+  updatedBy              String?             @db.Uuid
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  @@index([tenantId, moduleStatus])
+  @@map("payroll_settings")
+}
+
+model PayrollCalendar {
+  id              String              @id @default(uuid(7)) @db.Uuid
+  tenantId        String              @db.Uuid
+  code            String
+  name            String
+  frequency       PayrollFrequency
+  periodStartRule Json
+  periodEndRule   Json
+  payoutDateRule  Json
+  timezone        String
+  effectiveFrom   DateTime            @db.Date
+  effectiveTo     DateTime?           @db.Date
+  status          PayrollRecordStatus @default(ACTIVE)
+  version         Int                 @default(1)
+  createdBy       String              @db.Uuid
+  updatedBy       String?             @db.Uuid
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  payGroups       PayGroup[]
+
+  @@unique([tenantId, code, version])
+  @@unique([tenantId, name])
+  @@index([tenantId, code, status])
+  @@index([tenantId, status])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("payroll_calendars")
+}
+
+model PayGroup {
+  id                      String                       @id @default(uuid(7)) @db.Uuid
+  tenantId                String                       @db.Uuid
+  calendarId              String?                      @db.Uuid
+  name                    String
+  code                    String
+  description             String?
+  currency                String
+  countryCode             String
+  prorationPolicyOverride Json?
+  roundingPolicyOverride  Json?
+  overtimePolicyId        String?                      @db.Uuid
+  lossOfPayPolicyId       String?                      @db.Uuid
+  approvalPolicyId        String?                      @db.Uuid
+  effectiveFrom           DateTime                     @db.Date
+  effectiveTo             DateTime?                    @db.Date
+  status                  PayrollRecordStatus          @default(ACTIVE)
+  version                 Int                          @default(1)
+  createdBy               String                       @db.Uuid
+  updatedBy               String?                      @db.Uuid
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  calendar                PayrollCalendar?             @relation(fields: [calendarId], references: [id])
+  assignments             PayGroupEmployeeAssignment[]
+  profiles                EmployeePayrollProfile[]
+  structures              SalaryStructure[]
+  payrollRuns             PayrollRun[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, status])
+  @@index([tenantId, calendarId])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("pay_groups")
+}
+
+model PayGroupEmployeeAssignment {
+  id            String              @id @default(uuid(7)) @db.Uuid
+  tenantId      String              @db.Uuid
+  payGroupId    String              @db.Uuid
+  employeeId    String              @db.Uuid
+  effectiveFrom DateTime            @db.Date
+  effectiveTo   DateTime?           @db.Date
+  status        PayrollRecordStatus @default(ACTIVE)
+  assignedBy    String              @db.Uuid
+  removedBy     String?             @db.Uuid
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  payGroup      PayGroup            @relation(fields: [payGroupId], references: [id])
+  employee      Employee            @relation(fields: [employeeId], references: [id])
+
+  @@unique([tenantId, employeeId, payGroupId, effectiveFrom])
+  @@index([tenantId, employeeId, status])
+  @@index([tenantId, payGroupId, status])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("pay_group_employee_assignments")
+}
+
+model PayrollPolicy {
+  id        String                 @id @default(uuid(7)) @db.Uuid
+  tenantId  String                 @db.Uuid
+  code      String
+  name      String
+  category  PayrollPolicyCategory
+  status    PayrollRecordStatus    @default(ACTIVE)
+  createdBy String                 @db.Uuid
+  updatedBy String?                @db.Uuid
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  versions  PayrollPolicyVersion[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, category, status])
+  @@map("payroll_policies")
+}
+
+model PayrollPolicyVersion {
+  id                String                   @id @default(uuid(7)) @db.Uuid
+  tenantId          String                   @db.Uuid
+  policyId          String                   @db.Uuid
+  version           Int
+  status            PayrollVersionStatus     @default(DRAFT)
+  sourceLevel       PayrollPolicySourceLevel @default(ORGANIZATION)
+  sourceEntityId    String?                  @db.Uuid
+  supportsOverrides Boolean                  @default(true)
+  config            Json
+  effectiveFrom     DateTime                 @db.Date
+  effectiveTo       DateTime?                @db.Date
+  activatedAt       DateTime?
+  activatedBy       String?                  @db.Uuid
+  createdBy         String                   @db.Uuid
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  policy            PayrollPolicy            @relation(fields: [policyId], references: [id])
+
+  @@unique([tenantId, policyId, version])
+  @@index([tenantId, policyId, status])
+  @@index([tenantId, sourceLevel, sourceEntityId])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("payroll_policy_versions")
+}
+
+model PayComponent {
+  id          String                     @id @default(uuid(7)) @db.Uuid
+  tenantId    String                     @db.Uuid
+  code        String
+  name        String
+  description String?
+  type        PayComponentType
+  status      PayrollRecordStatus        @default(ACTIVE)
+  createdBy   String                     @db.Uuid
+  updatedBy   String?                    @db.Uuid
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  versions    PayComponentVersion[]
+  mappings    PayrollAccountingMapping[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, type, status])
+  @@map("pay_components")
+}
+
+model PayComponentVersion {
+  id                  String                            @id @default(uuid(7)) @db.Uuid
+  tenantId            String                            @db.Uuid
+  componentId         String                            @db.Uuid
+  version             Int
+  status              PayrollVersionStatus              @default(DRAFT)
+  valueMode           PayComponentValueMode
+  taxable             Boolean                           @default(false)
+  statutory           Boolean                           @default(false)
+  recurring           Boolean                           @default(true)
+  calculationOrder    Int
+  currencyBehavior    String
+  roundingBehavior    Json
+  config              Json
+  effectiveFrom       DateTime                          @db.Date
+  effectiveTo         DateTime?                         @db.Date
+  activatedAt         DateTime?
+  activatedBy         String?                           @db.Uuid
+  createdBy           String                            @db.Uuid
+  createdAt           DateTime                          @default(now())
+  updatedAt           DateTime                          @updatedAt
+  component           PayComponent                      @relation(fields: [componentId], references: [id])
+  structureComponents SalaryStructureVersionComponent[]
+
+  @@unique([tenantId, componentId, version])
+  @@index([tenantId, componentId, status])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("pay_component_versions")
+}
+
+model SalaryStructure {
+  id          String                   @id @default(uuid(7)) @db.Uuid
+  tenantId    String                   @db.Uuid
+  payGroupId  String?                  @db.Uuid
+  code        String
+  name        String
+  description String?
+  currency    String
+  status      PayrollRecordStatus      @default(ACTIVE)
+  createdBy   String                   @db.Uuid
+  updatedBy   String?                  @db.Uuid
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  payGroup    PayGroup?                @relation(fields: [payGroupId], references: [id])
+  versions    SalaryStructureVersion[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, payGroupId, status])
+  @@map("salary_structures")
+}
+
+model SalaryStructureVersion {
+  id            String                            @id @default(uuid(7)) @db.Uuid
+  tenantId      String                            @db.Uuid
+  structureId   String                            @db.Uuid
+  version       Int
+  status        PayrollVersionStatus              @default(DRAFT)
+  effectiveFrom DateTime                          @db.Date
+  effectiveTo   DateTime?                         @db.Date
+  activatedAt   DateTime?
+  activatedBy   String?                           @db.Uuid
+  createdBy     String                            @db.Uuid
+  createdAt     DateTime                          @default(now())
+  updatedAt     DateTime                          @updatedAt
+  structure     SalaryStructure                   @relation(fields: [structureId], references: [id])
+  components    SalaryStructureVersionComponent[]
+  compensations EmployeeCompensationVersion[]
+
+  @@unique([tenantId, structureId, version])
+  @@index([tenantId, structureId, status])
+  @@index([tenantId, effectiveFrom, effectiveTo])
+  @@map("salary_structure_versions")
+}
+
+model SalaryStructureVersionComponent {
+  id                       String                 @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                 @db.Uuid
+  salaryStructureVersionId String                 @db.Uuid
+  payComponentVersionId    String                 @db.Uuid
+  fixedAmountMinor         BigInt?
+  percentageBasisPoints    Int?
+  formulaReference         String?
+  calculationOrder         Int
+  required                 Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  structureVersion         SalaryStructureVersion @relation(fields: [salaryStructureVersionId], references: [id])
+  componentVersion         PayComponentVersion    @relation(fields: [payComponentVersionId], references: [id])
+
+  @@unique([tenantId, salaryStructureVersionId, payComponentVersionId])
+  @@index([tenantId, salaryStructureVersionId, calculationOrder])
+  @@map("salary_structure_version_components")
+}
+
+model EmployeePayrollProfile {
+  id               String                        @id @default(uuid(7)) @db.Uuid
+  tenantId         String                        @db.Uuid
+  employeeId       String                        @unique @db.Uuid
+  payGroupId       String?                       @db.Uuid
+  payrollStatus    EmployeePayrollStatus         @default(ACTIVE)
+  payrollCountry   String
+  paymentMethod    PayrollPaymentMethod          @default(BANK_TRANSFER)
+  salaryHold       Boolean                       @default(false)
+  effectiveFrom    DateTime                      @db.Date
+  effectiveTo      DateTime?                     @db.Date
+  metadata         Json                          @default("{}")
+  version          Int                           @default(1)
+  createdBy        String                        @db.Uuid
+  updatedBy        String?                       @db.Uuid
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  employee         Employee                      @relation(fields: [employeeId], references: [id])
+  payGroup         PayGroup?                     @relation(fields: [payGroupId], references: [id])
+  compensations    EmployeeCompensationVersion[]
+  paymentDetails   EmployeePaymentDetail[]
+  statutoryDetails EmployeeStatutoryDetail[]
+  payrollRunRows   PayrollRunEmployee[]
+
+  @@unique([tenantId, employeeId])
+  @@index([tenantId, payGroupId])
+  @@index([tenantId, payrollStatus])
+  @@map("employee_payroll_profiles")
+}
+
+model EmployeeCompensationVersion {
+  id                       String                 @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                 @db.Uuid
+  employeePayrollProfileId String                 @db.Uuid
+  salaryStructureVersionId String                 @db.Uuid
+  baseAmountMinor          BigInt
+  currency                 String
+  effectiveFrom            DateTime               @db.Date
+  effectiveTo              DateTime?              @db.Date
+  reason                   String
+  version                  Int
+  createdBy                String                 @db.Uuid
+  endedBy                  String?                @db.Uuid
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  profile                  EmployeePayrollProfile @relation(fields: [employeePayrollProfileId], references: [id])
+  salaryStructureVersion   SalaryStructureVersion @relation(fields: [salaryStructureVersionId], references: [id])
+
+  @@unique([tenantId, employeePayrollProfileId, version])
+  @@index([tenantId, employeePayrollProfileId, effectiveFrom, effectiveTo])
+  @@map("employee_compensation_versions")
+}
+
+model EmployeePaymentDetail {
+  id                       String                       @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                       @db.Uuid
+  employeePayrollProfileId String                       @db.Uuid
+  paymentMethod            PayrollPaymentMethod
+  bankName                 String?
+  accountHolderName        String?
+  accountNumberCiphertext  String?
+  accountNumberLast4       String?
+  ibanCiphertext           String?
+  ibanLast4                String?
+  routingCiphertext        String?
+  routingLast4             String?
+  swiftBic                 String?
+  encryptionKeyVersion     String?
+  verifiedAt               DateTime?
+  status                   PayrollProtectedDetailStatus @default(ACTIVE)
+  version                  Int                          @default(1)
+  updatedBy                String                       @db.Uuid
+  createdAt                DateTime                     @default(now())
+  updatedAt                DateTime                     @updatedAt
+  profile                  EmployeePayrollProfile       @relation(fields: [employeePayrollProfileId], references: [id])
+
+  @@index([tenantId, employeePayrollProfileId, status])
+  @@map("employee_payment_details")
+}
+
+model EmployeeStatutoryDetail {
+  id                       String                       @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                       @db.Uuid
+  employeePayrollProfileId String                       @db.Uuid
+  countryCode              String
+  identifierType           String
+  identifierCiphertext     String
+  identifierLast4          String?
+  encryptionKeyVersion     String?
+  metadata                 Json                         @default("{}")
+  status                   PayrollProtectedDetailStatus @default(ACTIVE)
+  version                  Int                          @default(1)
+  updatedBy                String                       @db.Uuid
+  createdAt                DateTime                     @default(now())
+  updatedAt                DateTime                     @updatedAt
+  profile                  EmployeePayrollProfile       @relation(fields: [employeePayrollProfileId], references: [id])
+
+  @@unique([tenantId, employeePayrollProfileId, countryCode, identifierType, version])
+  @@index([tenantId, employeePayrollProfileId, status])
+  @@map("employee_statutory_details")
+}
+
+model PayrollApprovalPolicy {
+  id        String                         @id @default(uuid(7)) @db.Uuid
+  tenantId  String                         @unique @db.Uuid
+  name      String
+  status    PayrollRecordStatus            @default(ACTIVE)
+  createdBy String                         @db.Uuid
+  updatedBy String?                        @db.Uuid
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  versions  PayrollApprovalPolicyVersion[]
+
+  @@map("payroll_approval_policies")
+}
+
+model PayrollApprovalPolicyVersion {
+  id                 String                @id @default(uuid(7)) @db.Uuid
+  tenantId           String                @db.Uuid
+  approvalPolicyId   String                @db.Uuid
+  version            Int
+  status             PayrollVersionStatus  @default(DRAFT)
+  fourEyesEnabled    Boolean               @default(false)
+  makerCanApprove    Boolean               @default(false)
+  requiredLevels     Int                   @default(1)
+  allowedPermissions String[]              @default([])
+  allowedRoleKeys    String[]              @default([])
+  effectiveFrom      DateTime              @db.Date
+  effectiveTo        DateTime?             @db.Date
+  activatedAt        DateTime?
+  activatedBy        String?               @db.Uuid
+  createdBy          String                @db.Uuid
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  approvalPolicy     PayrollApprovalPolicy @relation(fields: [approvalPolicyId], references: [id])
+
+  @@unique([tenantId, approvalPolicyId, version])
+  @@index([tenantId, status, effectiveFrom, effectiveTo])
+  @@map("payroll_approval_policy_versions")
+}
+
+model PayrollAccountingMapping {
+  id                String              @id @default(uuid(7)) @db.Uuid
+  tenantId          String              @db.Uuid
+  payComponentId    String              @db.Uuid
+  debitAccountCode  String
+  creditAccountCode String
+  costCenterRule    Json
+  effectiveFrom     DateTime            @db.Date
+  effectiveTo       DateTime?           @db.Date
+  version           Int                 @default(1)
+  status            PayrollRecordStatus @default(ACTIVE)
+  createdBy         String              @db.Uuid
+  updatedBy         String?             @db.Uuid
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  component         PayComponent        @relation(fields: [payComponentId], references: [id])
+
+  @@unique([tenantId, payComponentId, version])
+  @@index([tenantId, status, effectiveFrom, effectiveTo])
+  @@map("payroll_accounting_mappings")
+}
+
+model PayrollRun {
+  id                 String                   @id @default(uuid(7)) @db.Uuid
+  tenantId           String                   @db.Uuid
+  payGroupId         String                   @db.Uuid
+  periodKey          String
+  periodStart        DateTime                 @db.Date
+  periodEnd          DateTime                 @db.Date
+  status             PayrollRunStatus         @default(DRAFT)
+  attendanceSource   String?
+  attendanceChecksum String?
+  attendanceVersion  String?
+  calculationVersion String?
+  grossPayMinor      BigInt                   @default(0)
+  taxablePayMinor    BigInt                   @default(0)
+  deductionMinor     BigInt                   @default(0)
+  employerCostMinor  BigInt                   @default(0)
+  netPayMinor        BigInt                   @default(0)
+  resultChecksum     String?
+  inputVersion       Int                      @default(1)
+  lastValidatedAt    DateTime?
+  readiness          Json                     @default("{}")
+  idempotencyKey     String?
+  reviewedAt         DateTime?
+  reviewedBy         String?                  @db.Uuid
+  approvedAt         DateTime?
+  approvedBy         String?                  @db.Uuid
+  finalizedAt        DateTime?
+  finalizedBy        String?                  @db.Uuid
+  outputsGeneratedAt DateTime?
+  publishedAt        DateTime?
+  paidAt             DateTime?
+  createdBy          String                   @db.Uuid
+  updatedBy          String?                  @db.Uuid
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  payGroup           PayGroup                 @relation(fields: [payGroupId], references: [id])
+  employees          PayrollRunEmployee[]
+  inputs             PayrollRunInput[]
+  blockers           PayrollRunBlocker[]
+  timeline           PayrollRunTimeline[]
+  inputImports       PayrollInputImport[]
+  validationRuns     PayrollValidationRun[]
+  validationIssues   PayrollValidationIssue[]
+  employeeResults    PayrollEmployeeResult[]
+  payslips           PayrollPayslip[]
+  outputs            PayrollOutputExport[]
+  paymentBatches     PayrollPaymentBatch[]
+
+  @@unique([tenantId, payGroupId, periodKey])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, status, periodStart, periodEnd])
+  @@map("payroll_runs")
+}
+
+model PayrollRunEmployee {
+  id                       String                  @id @default(uuid(7)) @db.Uuid
+  tenantId                 String                  @db.Uuid
+  payrollRunId             String                  @db.Uuid
+  employeeId               String                  @db.Uuid
+  employeePayrollProfileId String?                 @db.Uuid
+  attendanceSnapshot       Json                    @default("{}")
+  payableDays              Int?
+  lossOfPayDays            Int?
+  overtimeMinutes          Int?
+  status                   PayrollRunStatus        @default(DRAFT)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  run                      PayrollRun              @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee                 Employee                @relation(fields: [employeeId], references: [id])
+  profile                  EmployeePayrollProfile? @relation(fields: [employeePayrollProfileId], references: [id])
+
+  @@unique([tenantId, payrollRunId, employeeId])
+  @@index([tenantId, payrollRunId, status])
+  @@map("payroll_run_employees")
+}
+
+model PayrollRunInput {
+  id             String              @id @default(uuid(7)) @db.Uuid
+  tenantId       String              @db.Uuid
+  payrollRunId   String              @db.Uuid
+  employeeId     String?             @db.Uuid
+  kind           PayrollInputKind
+  code           String
+  amountMinor    BigInt?
+  quantity       Decimal?            @db.Decimal(12, 3)
+  currency       String?
+  payload        Json                @default("{}")
+  source         String?
+  importId       String?             @db.Uuid
+  idempotencyKey String?
+  createdBy      String              @db.Uuid
+  createdAt      DateTime            @default(now())
+  run            PayrollRun          @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  inputImport    PayrollInputImport? @relation(fields: [importId], references: [id])
+
+  @@unique([tenantId, payrollRunId, idempotencyKey])
+  @@index([tenantId, payrollRunId, employeeId, kind])
+  @@index([tenantId, importId])
+  @@map("payroll_run_inputs")
+}
+
+model PayrollRunBlocker {
+  id           String                    @id @default(uuid(7)) @db.Uuid
+  tenantId     String                    @db.Uuid
+  payrollRunId String                    @db.Uuid
+  employeeId   String?                   @db.Uuid
+  severity     PayrollRunBlockerSeverity
+  code         String
+  message      String
+  createdAt    DateTime                  @default(now())
+  run          PayrollRun                @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, payrollRunId, severity])
+  @@map("payroll_run_blockers")
+}
+
+model PayrollRunTimeline {
+  id           String     @id @default(uuid(7)) @db.Uuid
+  tenantId     String     @db.Uuid
+  payrollRunId String     @db.Uuid
+  action       String
+  actorUserId  String?    @db.Uuid
+  payload      Json       @default("{}")
+  createdAt    DateTime   @default(now())
+  run          PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, payrollRunId, createdAt])
+  @@map("payroll_run_timeline")
+}
+
+model PayrollInputImport {
+  id            String                   @id @default(uuid(7)) @db.Uuid
+  tenantId      String                   @db.Uuid
+  payrollRunId  String                   @db.Uuid
+  status        PayrollInputImportStatus @default(PREVIEW_READY)
+  fileName      String?
+  checksum      String
+  rowCount      Int                      @default(0)
+  validRowCount Int                      @default(0)
+  errorCount    Int                      @default(0)
+  previewRows   Json                     @default("[]")
+  errors        Json                     @default("[]")
+  committedAt   DateTime?
+  createdBy     String                   @db.Uuid
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  run           PayrollRun               @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  inputs        PayrollRunInput[]
+
+  @@unique([tenantId, payrollRunId, checksum])
+  @@index([tenantId, payrollRunId, status])
+  @@map("payroll_input_imports")
+}
+
+model PayrollValidationRun {
+  id                 String                   @id @default(uuid(7)) @db.Uuid
+  tenantId           String                   @db.Uuid
+  payrollRunId       String                   @db.Uuid
+  inputVersion       Int
+  attendanceChecksum String?
+  blockerCount       Int                      @default(0)
+  warningCount       Int                      @default(0)
+  infoCount          Int                      @default(0)
+  readiness          Json                     @default("{}")
+  createdBy          String                   @db.Uuid
+  createdAt          DateTime                 @default(now())
+  run                PayrollRun               @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  issues             PayrollValidationIssue[]
+
+  @@index([tenantId, payrollRunId, createdAt])
+  @@map("payroll_validation_runs")
+}
+
+model PayrollValidationIssue {
+  id              String                       @id @default(uuid(7)) @db.Uuid
+  tenantId        String                       @db.Uuid
+  payrollRunId    String                       @db.Uuid
+  validationRunId String?                      @db.Uuid
+  employeeId      String?                      @db.Uuid
+  severity        PayrollRunBlockerSeverity
+  status          PayrollValidationIssueStatus @default(OPEN)
+  code            String
+  message         String
+  context         Json                         @default("{}")
+  acknowledgedAt  DateTime?
+  acknowledgedBy  String?                      @db.Uuid
+  resolvedAt      DateTime?
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  run             PayrollRun                   @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  validationRun   PayrollValidationRun?        @relation(fields: [validationRunId], references: [id])
+
+  @@index([tenantId, payrollRunId, severity, status])
+  @@index([tenantId, validationRunId])
+  @@map("payroll_validation_issues")
+}
+
+model PayrollEmployeeResult {
+  id              String                         @id @default(uuid(7)) @db.Uuid
+  tenantId        String                         @db.Uuid
+  payrollRunId    String                         @db.Uuid
+  employeeId      String                         @db.Uuid
+  grossPayMinor   BigInt                         @default(0)
+  taxablePayMinor BigInt                         @default(0)
+  deductionMinor  BigInt                         @default(0)
+  netPayMinor     BigInt                         @default(0)
+  currency        String
+  breakdown       Json                           @default("{}")
+  variance        Json                           @default("{}")
+  status          PayrollCalculationResultStatus @default(CALCULATED)
+  overrideReason  String?
+  overriddenBy    String?                        @db.Uuid
+  createdAt       DateTime                       @default(now())
+  updatedAt       DateTime                       @updatedAt
+  run             PayrollRun                     @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee        Employee                       @relation(fields: [employeeId], references: [id])
+  components      PayrollComponentResult[]
+
+  @@unique([tenantId, payrollRunId, employeeId])
+  @@index([tenantId, payrollRunId, status])
+  @@map("payroll_employee_results")
+}
+
+model PayrollComponentResult {
+  id               String                @id @default(uuid(7)) @db.Uuid
+  tenantId         String                @db.Uuid
+  employeeResultId String                @db.Uuid
+  employeeId       String                @db.Uuid
+  payComponentId   String?               @db.Uuid
+  code             String
+  name             String
+  componentType    PayComponentType
+  amountMinor      BigInt
+  taxable          Boolean               @default(false)
+  calculationTrace Json                  @default("{}")
+  createdAt        DateTime              @default(now())
+  employeeResult   PayrollEmployeeResult @relation(fields: [employeeResultId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeResultId])
+  @@index([tenantId, employeeId, code])
+  @@map("payroll_component_results")
+}
+
+model PayrollPayslip {
+  id            String              @id @default(uuid(7)) @db.Uuid
+  tenantId      String              @db.Uuid
+  payrollRunId  String              @db.Uuid
+  employeeId    String              @db.Uuid
+  payslipNumber String
+  status        PayrollOutputStatus @default(GENERATED)
+  grossPayMinor BigInt
+  netPayMinor   BigInt
+  currency      String
+  payload       Json
+  objectKey     String?
+  publishedAt   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  run           PayrollRun          @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, payrollRunId, employeeId])
+  @@unique([tenantId, payslipNumber])
+  @@index([tenantId, employeeId, status])
+  @@map("payroll_payslips")
+}
+
+model PayrollOutputExport {
+  id           String              @id @default(uuid(7)) @db.Uuid
+  tenantId     String              @db.Uuid
+  payrollRunId String              @db.Uuid
+  kind         PayrollOutputKind
+  status       PayrollOutputStatus @default(GENERATED)
+  adapterKey   String
+  checksum     String?
+  payload      Json
+  createdBy    String              @db.Uuid
+  createdAt    DateTime            @default(now())
+  run          PayrollRun          @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, payrollRunId, kind])
+  @@map("payroll_output_exports")
+}
+
+model PayrollPaymentBatch {
+  id           String               @id @default(uuid(7)) @db.Uuid
+  tenantId     String               @db.Uuid
+  payrollRunId String               @db.Uuid
+  status       PayrollPaymentStatus @default(PENDING)
+  reference    String?
+  paidAt       DateTime?
+  payload      Json                 @default("{}")
+  createdBy    String               @db.Uuid
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  run          PayrollRun           @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, payrollRunId, status])
+  @@map("payroll_payment_batches")
+}
+
+model PayrollCountryRulePack {
+  id            String                   @id @default(uuid(7)) @db.Uuid
+  tenantId      String?                  @db.Uuid
+  countryCode   String
+  version       String
+  status        PayrollCountryPackStatus @default(DRAFT)
+  effectiveFrom DateTime                 @db.Date
+  effectiveTo   DateTime?                @db.Date
+  metadata      Json                     @default("{}")
+  createdBy     String?                  @db.Uuid
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@unique([tenantId, countryCode, version])
+  @@index([countryCode, status, effectiveFrom, effectiveTo])
+  @@map("payroll_country_rule_packs")
 }
 
 /// PARTITIONED monthly on eventTime (raw SQL).

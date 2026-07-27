@@ -14,10 +14,10 @@ import {
   LockKeyhole,
   MapPin,
   Network,
+  PlayCircle,
   ScrollText,
   Settings2,
   ShieldCheck,
-  Umbrella,
   UserPlus,
   WalletCards,
 } from "lucide-react";
@@ -683,6 +683,32 @@ export function PayrollModuleHub() {
         <>
           <ModuleReadiness health={health} />
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            {[
+              "payroll.settings.read",
+              "payroll.policies.read",
+              "payroll.components.read",
+              "payroll.structures.read",
+              "payroll.compensation.read",
+            ].some((permission) => permissions.has(permission)) && (
+              <WorkflowLink
+                description="Configure settings, calendars, pay groups, policies, structures, employee payroll data, approvals, mappings, and audit evidence."
+                href="/app/modules/payroll/foundation"
+                icon={WalletCards}
+                key="foundation"
+                title="Payroll foundation"
+              />
+            )}
+            {["payroll.runs.read", "payroll.inputs.manage"].some(
+              (permission) => permissions.has(permission),
+            ) && (
+              <WorkflowLink
+                description="Create Payroll runs, import locked attendance snapshots, add inputs, and validate readiness before calculation."
+                href="/app/modules/payroll/runs"
+                icon={PlayCircle}
+                key="runs"
+                title="Run preparation"
+              />
+            )}
             {["attendance.reports.read", "attendance.reports.generate"].some(
               (permission) => permissions.has(permission),
             ) && (
@@ -718,42 +744,7 @@ export function PayrollModuleHub() {
 }
 
 export function PayrollSettingsView() {
-  const { health, error } = useModuleHealth("PAYROLL");
-  return (
-    <AdminPage
-      title="Payroll settings"
-      description="Payroll currently derives immutable evidence from Attendance and approved Leave."
-    >
-      {error && <ErrorState message={error} />}
-      {!health ? (
-        <LoadingState />
-      ) : (
-        <>
-          <ModuleReadiness health={health} />
-          <div className="mt-5 grid gap-5 md:grid-cols-3">
-            <WorkflowLink
-              description="Working week, calculation thresholds, shifts, and policy assignments."
-              href="/app/attendance/policies"
-              icon={ClipboardCheck}
-              title="Attendance inputs"
-            />
-            <WorkflowLink
-              description="Approved leave and balances flow into period evidence."
-              href="/app/attendance/setup/leave"
-              icon={Umbrella}
-              title="Leave inputs"
-            />
-            <WorkflowLink
-              description="Generate the period export before attempting to close it."
-              href="/app/reports/payroll"
-              icon={FileSpreadsheet}
-              title="Payroll exports"
-            />
-          </div>
-        </>
-      )}
-    </AdminPage>
-  );
+  return <PayrollModuleHub />;
 }
 
 export function SecuritySettingsView() {

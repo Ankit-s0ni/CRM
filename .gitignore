@@ -4,6 +4,8 @@ node_modules/
 dist/
 build/
 .next/
+.next-build/
+apps/web/.next-build/
 coverage/
 *.log
 .turbo/
