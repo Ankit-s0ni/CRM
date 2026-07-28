@@ -8,8 +8,10 @@ import { RolesController } from './roles.controller';
 import { RolesService } from './roles.service';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { NotificationsModule } from '../notifications/public';
 
 @Module({
+  imports: [NotificationsModule],
   controllers: [
     RolesController,
     UsersController,
