@@ -254,8 +254,7 @@ export class AuthService {
           ? 'A fresh verification code has been sent'
           : 'The code was created, but email delivery is temporarily unavailable',
       emailDelivery,
-      debugVerificationToken:
-        isDebugTokenExposureEnabled() ? token : undefined,
+      debugVerificationToken: isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -587,7 +586,7 @@ export class AuthService {
         where: { email: email.trim().toLowerCase() },
         include: {
           tenant: {
-            include: { localePolicy: true },
+            include: { settings: true },
           },
         },
       }),
@@ -618,14 +617,13 @@ export class AuthService {
     await this.transactionalEmail.sendPasswordReset({
       email: user.email,
       workspaceName: user.tenant.companyName,
-      locale: user.tenant.localePolicy?.defaultLocale,
+      locale: user.tenant.settings?.locale,
       resetUrl,
     });
 
     return {
       message: 'Password reset link sent if account exists',
-      debugResetToken:
-        isDebugTokenExposureEnabled() ? token : undefined,
+      debugResetToken: isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -664,7 +662,7 @@ export class AuthService {
         where: { id: userId },
         include: {
           tenant: {
-            include: { localePolicy: true },
+            include: { settings: true },
           },
         },
       }),
@@ -675,7 +673,7 @@ export class AuthService {
       await this.transactionalEmail.sendPasswordChanged({
         email: user.email,
         workspaceName: user.tenant.companyName,
-        locale: user.tenant.localePolicy?.defaultLocale,
+        locale: user.tenant.settings?.locale,
       });
     }
 

@@ -130,7 +130,7 @@ function transaction() {
         id: 'tenant-1',
         companyName: 'Acme Logistics',
         subdomain: 'acme',
-        localePolicy: { defaultLocale: 'en' },
+        settings: { locale: 'en' },
       }),
     },
   };

@@ -375,7 +375,7 @@ export class InvitationsService {
     const tenant = await this.prisma.forAdmin((tx) =>
       tx.tenant.findUnique({
         where: { id: tenantId },
-        include: { localePolicy: true },
+        include: { settings: true },
       }),
     );
     if (!tenant) {
@@ -398,7 +398,7 @@ export class InvitationsService {
     return this.transactionalEmail.sendInvitation({
       email,
       workspaceName: tenant.companyName,
-      locale: tenant.localePolicy?.defaultLocale,
+      locale: tenant.settings?.locale,
       invitationUrl,
     });
   }
