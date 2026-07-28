@@ -34,6 +34,7 @@ import {
   publicLanguageForLocale,
   resolveCatalogLocale,
 } from '../localization/localization.constants';
+import { buildTenantPublicUrl } from '../../shared/http/tenant-public-url';
 
 @Injectable()
 export class AuthService {
@@ -622,7 +623,12 @@ export class AuthService {
   async requestPasswordReset(email: string) {
     const user = await this.prisma.forTenant((tx) =>
       tx.user.findFirst({
-        where: { email },
+        where: { email: email.trim().toLowerCase() },
+        include: {
+          tenant: {
+            include: { localePolicy: true },
+          },
+        },
       }),
     );
 
@@ -637,6 +643,23 @@ export class AuthService {
       { userId: user.id },
       user.id,
     );
+    const resetUrl = buildTenantPublicUrl({
+      subdomain: user.tenant.subdomain,
+      path: '/forgot-password',
+      searchParams: {
+        tenantId: user.tenantId,
+        workspace: user.tenant.subdomain,
+        email: user.email,
+        token,
+      },
+    });
+
+    await this.transactionalEmail.sendPasswordReset({
+      email: user.email,
+      workspaceName: user.tenant.companyName,
+      locale: user.tenant.localePolicy?.defaultLocale,
+      resetUrl,
+    });
 
     return {
       message: 'Password reset link sent if account exists',
@@ -677,11 +700,21 @@ export class AuthService {
     const user = await this.prisma.forTenant((tx) =>
       tx.user.findUnique({
         where: { id: userId },
+        include: {
+          tenant: {
+            include: { localePolicy: true },
+          },
+        },
       }),
     );
 
     if (user) {
       await this.revokeUserRefreshTokens(user.id, RevokeReason.PASSWORD_CHANGE);
+      await this.transactionalEmail.sendPasswordChanged({
+        email: user.email,
+        workspaceName: user.tenant.companyName,
+        locale: user.tenant.localePolicy?.defaultLocale,
+      });
     }
 
     return { message: 'Password updated successfully' };

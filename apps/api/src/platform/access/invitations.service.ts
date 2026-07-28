@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -18,6 +19,12 @@ import {
   CreateInvitationDto,
   ResendInvitationDto,
 } from './dto/invitation.dto';
+import {
+  TRANSACTIONAL_EMAIL_PORT,
+  type TransactionalEmailDelivery,
+  type TransactionalEmailPort,
+} from '../notifications/public';
+import { buildTenantPublicUrl } from '../../shared/http/tenant-public-url';
 
 type InvitationPayload = {
   tenantId: string;
@@ -32,6 +39,8 @@ export class InvitationsService {
     private readonly prisma: PrismaService,
     private readonly tenantContextService: TenantContextService,
     private readonly auditService: AuditService,
+    @Inject(TRANSACTIONAL_EMAIL_PORT)
+    private readonly transactionalEmail: TransactionalEmailPort,
   ) {}
 
   async create(
@@ -102,7 +111,8 @@ export class InvitationsService {
       });
     });
 
-    return this.invitationResponse(token);
+    const emailDelivery = await this.sendInvitationEmail(email, token);
+    return this.invitationResponse(token, emailDelivery);
   }
 
   async resend(dto: ResendInvitationDto, inviterId: string) {
@@ -144,7 +154,11 @@ export class InvitationsService {
       invitationFound = true;
     });
 
-    return this.invitationResponse(invitationFound ? token : undefined);
+    const activeToken = invitationFound ? token : undefined;
+    const emailDelivery = activeToken
+      ? await this.sendInvitationEmail(email, activeToken)
+      : undefined;
+    return this.invitationResponse(activeToken, emailDelivery);
   }
 
   async accept(dto: AcceptInvitationDto) {
@@ -356,11 +370,47 @@ export class InvitationsService {
     };
   }
 
-  private invitationResponse(token?: string) {
+  private async sendInvitationEmail(email: string, token: string) {
+    const tenantId = this.requireTenantId();
+    const tenant = await this.prisma.forAdmin((tx) =>
+      tx.tenant.findUnique({
+        where: { id: tenantId },
+        include: { localePolicy: true },
+      }),
+    );
+    if (!tenant) {
+      throw new BadRequestException({
+        code: 'WORKSPACE_NOT_FOUND',
+        message: 'Workspace is unavailable',
+      });
+    }
+
+    const invitationUrl = buildTenantPublicUrl({
+      subdomain: tenant.subdomain,
+      path: '/accept-invitation',
+      searchParams: {
+        token,
+        email,
+        workspace: tenant.subdomain,
+      },
+    });
+
+    return this.transactionalEmail.sendInvitation({
+      email,
+      workspaceName: tenant.companyName,
+      locale: tenant.localePolicy?.defaultLocale,
+      invitationUrl,
+    });
+  }
+
+  private invitationResponse(
+    token?: string,
+    emailDelivery?: TransactionalEmailDelivery,
+  ) {
     return {
       message: 'Invitation sent if an eligible pending invitation exists',
-      debugInvitationToken:
-        isDebugTokenExposureEnabled() ? token : undefined,
+      emailDelivery,
+      debugInvitationToken: isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
