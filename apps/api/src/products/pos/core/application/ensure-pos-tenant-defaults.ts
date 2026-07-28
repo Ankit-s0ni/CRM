@@ -1,5 +1,6 @@
 import { PosTaxType } from '@prisma/client';
 import { PrismaTransaction } from '../../../../shared/database/prisma.service';
+import { DEFAULT_UNITS } from '../domain/default-units';
 import {
   DEFAULT_OUTLET_NAME,
   OMAN_TAX_RATES,
@@ -58,6 +59,27 @@ export async function ensurePosTenantDefaults(
     update: {},
     create: { tenantId, name: DEFAULT_OUTLET_NAME },
   });
+
+  // Units are seeded in two passes because derived units reference a base unit by code.
+  for (const unit of DEFAULT_UNITS) {
+    await tx.posUnitOfMeasure.upsert({
+      where: { tenantId_code: { tenantId, code: unit.code } },
+      update: {},
+      create: { tenantId, code: unit.code, name: unit.name },
+    });
+  }
+  for (const unit of DEFAULT_UNITS) {
+    if (!unit.baseCode || !unit.factor) continue;
+    const base = await tx.posUnitOfMeasure.findUnique({
+      where: { tenantId_code: { tenantId, code: unit.baseCode } },
+      select: { id: true },
+    });
+    if (!base) continue;
+    await tx.posUnitOfMeasure.update({
+      where: { tenantId_code: { tenantId, code: unit.code } },
+      data: { baseUnitId: base.id, conversionFactor: unit.factor },
+    });
+  }
 
   // The invoice sequence is its own row so a settings write never contends with the
   // SELECT ... FOR UPDATE taken on every checkout.

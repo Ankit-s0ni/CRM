@@ -76,6 +76,13 @@ export const PERMISSIONS = {
   POS_SETTINGS_MANAGE: 'pos.settings.manage',
   POS_OUTLET_READ: 'pos.outlet.read',
   POS_OUTLET_MANAGE: 'pos.outlet.manage',
+  POS_PRODUCT_READ: 'pos.product.read',
+  POS_PRODUCT_CREATE: 'pos.product.create',
+  POS_PRODUCT_UPDATE: 'pos.product.update',
+  POS_PRODUCT_DELETE: 'pos.product.delete',
+  POS_PRODUCT_IMPORT: 'pos.product.import',
+  POS_CATEGORY_MANAGE: 'pos.category.manage',
+  POS_UNIT_MANAGE: 'pos.unit.manage',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

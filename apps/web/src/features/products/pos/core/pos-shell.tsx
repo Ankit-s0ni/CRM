@@ -14,6 +14,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RotateCcw,
+  Ruler,
   Settings2,
   ShoppingCart,
   Store,
@@ -48,8 +49,9 @@ const posNavigation = [
   {
     section: "Catalog",
     items: [
-      { label: "Products", href: "/pos/products", icon: Package, comingSoon: true },
-      { label: "Categories", href: "/pos/categories", icon: FolderTree, comingSoon: true },
+      { label: "Products", href: "/pos/products", icon: Package, comingSoon: false },
+      { label: "Categories", href: "/pos/categories", icon: FolderTree, comingSoon: false },
+      { label: "Units", href: "/pos/units", icon: Ruler, comingSoon: false },
     ],
   },
   {
@@ -108,6 +110,7 @@ export function PosShell({ children }: { children: React.ReactNode }) {
 
   // Close mobile sidebar on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 

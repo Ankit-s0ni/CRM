@@ -79,9 +79,18 @@ every tenant-scoped event to the notification queue, and the notification dispat
 resolves recipients from `payload.employeeId`. A POS event carrying that key would fan out
 employee notifications nobody asked for. Use `cashierUserId` or `salespersonEmployeeId`.
 
-**Background workers are registered through `PosProductModule`**, never wired directly into
-`src/worker.module.ts`. `worker.module.ts` sits outside the architecture checker's scan
-scope, so direct registration there silently bypasses the product boundary.
+**Queues and processors are providers of their capability module; `*.worker.ts` classes are
+providers of `src/worker.module.ts` only.** A worker provided by a capability module would be
+instantiated by `AppModule` as well, and would start consuming its queue *inside the API
+process* — which is precisely what the separate worker process exists to avoid. Follow the
+Attendance split exactly: `*.queue.ts` and `*.processor.ts` in the capability module,
+`*.worker.ts` registered solely in `worker.module.ts` (which also imports the capability
+module). `worker.module.ts` sits outside the architecture checker's scan scope, so this rule
+is enforced by review, not by CI.
+
+Every POS queue takes an inline escape hatch for tests, mirroring `IMPORT_QUEUE_MODE`: when
+`POS_IMPORT_QUEUE_MODE=inline` the processor runs synchronously and no Redis connection is
+opened.
 
 **Money is `Decimal(12,3)`** (Omani Rial, 3 decimal places), tax rates are `Decimal(5,3)`,
 quantities are `Decimal(10,3)`. Never convert to a JavaScript `number` for arithmetic or

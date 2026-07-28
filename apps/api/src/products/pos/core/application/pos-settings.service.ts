@@ -53,14 +53,14 @@ export class PosSettingsService {
 
   get() {
     return this.prisma.forTenant(async (tx) => ({
-      data: await this.requireInitialized(tx),
+      data: await this.assertInitialized(tx),
     }));
   }
 
   async update(dto: UpdatePosSettingsDto) {
     const tenantId = this.tenantId();
     return this.prisma.forTenant(async (tx) => {
-      const oldValue = await this.requireInitialized(tx);
+      const oldValue = await this.assertInitialized(tx);
       const settings = await tx.posSettings.update({
         where: { tenantId },
         data: dto,
@@ -87,7 +87,7 @@ export class PosSettingsService {
 
   listOutlets() {
     return this.prisma.forTenant(async (tx) => {
-      await this.requireInitialized(tx);
+      await this.assertInitialized(tx);
       return {
         data: await tx.posOutlet.findMany({ orderBy: { name: 'asc' } }),
       };
@@ -98,7 +98,7 @@ export class PosSettingsService {
    * POS is inert until setup has run. Reporting that distinctly from "no permission"
    * lets the web shell route the user to the setup wizard instead of an error page.
    */
-  private async requireInitialized(tx: PrismaTransaction) {
+  async assertInitialized(tx: PrismaTransaction) {
     const settings = await tx.posSettings.findUnique({
       where: { tenantId: this.tenantId() },
     });

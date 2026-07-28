@@ -194,7 +194,7 @@
     "payroll-lock": ["identity"],
     "platform": ["billing", "biometrics"],
     "pos": ["identity"],
-    "pos-catalog": ["pos"],
+    "pos-catalog": ["pos", "identity"],
     "pos-inventory": ["pos", "pos-catalog"],
     "pos-payments": ["pos"],
     "pos-sales": ["pos", "pos-catalog", "pos-inventory", "pos-payments"],

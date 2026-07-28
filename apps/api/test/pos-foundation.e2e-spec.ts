@@ -232,7 +232,20 @@ async function cleanupPosTenant(prisma: PrismaClient, tenantId: string) {
   const userIds = users.map(({ id }) => id);
   const roleIds = roles.map(({ id }) => id);
 
-  // POS rows hold ON DELETE RESTRICT foreign keys to tenants, so they go first.
+  // POS rows hold ON DELETE RESTRICT foreign keys to tenants, so they go first, and in
+  // dependency order within POS itself.
+  await prisma.posProductImportRow.deleteMany({ where: { tenantId } });
+  await prisma.posProductImportJob.deleteMany({ where: { tenantId } });
+  await prisma.posBundleComponent.deleteMany({ where: { tenantId } });
+  await prisma.posBundle.deleteMany({ where: { tenantId } });
+  await prisma.posVariant.deleteMany({ where: { tenantId } });
+  await prisma.posProduct.deleteMany({ where: { tenantId } });
+  await prisma.posCategory.deleteMany({ where: { tenantId } });
+  await prisma.posUnitOfMeasure.updateMany({
+    where: { tenantId },
+    data: { baseUnitId: null },
+  });
+  await prisma.posUnitOfMeasure.deleteMany({ where: { tenantId } });
   await prisma.posTaxGroupRate.deleteMany({ where: { tenantId } });
   await prisma.posTaxGroup.deleteMany({ where: { tenantId } });
   await prisma.posTaxRate.deleteMany({ where: { tenantId } });

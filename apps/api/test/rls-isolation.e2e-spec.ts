@@ -92,11 +92,30 @@ describe('RLS Isolation Test', () => {
       await adminPrisma.posOutlet.create({
         data: { tenantId, name: `RLS Outlet ${suffix}` },
       });
+      const category = await adminPrisma.posCategory.create({
+        data: { tenantId, name: `RLS Category ${suffix}` },
+      });
+      await adminPrisma.posProduct.create({
+        data: {
+          tenantId,
+          categoryId: category.id,
+          name: `RLS Product ${suffix}`,
+          sku: `RLS-SKU-${suffix}`,
+          costPrice: '1.000',
+          sellingPrice: '2.000',
+        },
+      });
     }
   });
 
   afterAll(async () => {
     // POS rows hold ON DELETE RESTRICT foreign keys to tenants, so they must go first.
+    await adminPrisma.posProduct.deleteMany({
+      where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
+    });
+    await adminPrisma.posCategory.deleteMany({
+      where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
+    });
     await adminPrisma.posOutlet.deleteMany({
       where: { tenantId: { in: [tenantA_Id, tenantB_Id] } },
     });
@@ -150,6 +169,8 @@ describe('RLS Isolation Test', () => {
         audits: await tx.tenantAuditLog.findMany(),
         posSettings: await tx.posSettings.findMany(),
         posOutlets: await tx.posOutlet.findMany(),
+        posCategories: await tx.posCategory.findMany(),
+        posProducts: await tx.posProduct.findMany(),
       };
     });
 
@@ -165,12 +186,15 @@ describe('RLS Isolation Test', () => {
         audits: await tx.tenantAuditLog.findMany(),
         posSettings: await tx.posSettings.findMany(),
         posOutlets: await tx.posOutlet.findMany(),
+        posCategories: await tx.posCategory.findMany(),
+        posProducts: await tx.posProduct.findMany(),
       };
     });
 
     const noContextUsers = await userPrisma.user.findMany();
     const noContextPosOutlets = await userPrisma.posOutlet.findMany();
     const noContextPosSettings = await userPrisma.posSettings.findMany();
+    const noContextPosProducts = await userPrisma.posProduct.findMany();
 
     await userPrisma.$disconnect();
     await userPool.end();
@@ -190,6 +214,7 @@ describe('RLS Isolation Test', () => {
     expect(noContextUsers).toEqual([]);
     expect(noContextPosOutlets).toEqual([]);
     expect(noContextPosSettings).toEqual([]);
+    expect(noContextPosProducts).toEqual([]);
   });
 
   it('prevents the application role from modifying audit records', async () => {

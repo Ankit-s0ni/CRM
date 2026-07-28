@@ -8592,6 +8592,810 @@
           "POS configuration"
         ]
       }
+    },
+    "/pos/categories": {
+      "get": {
+        "operationId": "PosCategoryController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List product categories",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "post": {
+        "operationId": "PosCategoryController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePosCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product category",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/categories/{id}": {
+      "patch": {
+        "operationId": "PosCategoryController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePosCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a product category",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "delete": {
+        "operationId": "PosCategoryController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a category, or deactivate it when products or child categories still reference it",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/units": {
+      "get": {
+        "operationId": "PosUnitController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List units of measure",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "post": {
+        "operationId": "PosUnitController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePosUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a unit of measure",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/units/{id}": {
+      "patch": {
+        "operationId": "PosUnitController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePosUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a unit of measure",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "delete": {
+        "operationId": "PosUnitController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a unit, or deactivate it when products or derived units still reference it",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products": {
+      "get": {
+        "operationId": "PosProductController_list",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search name, SKU or barcode",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeInactive",
+            "required": false,
+            "in": "query",
+            "description": "Defaults to active products only",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List products",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "post": {
+        "operationId": "PosProductController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePosProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/lookup": {
+      "get": {
+        "operationId": "PosProductController_lookup",
+        "parameters": [
+          {
+            "name": "barcode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sku",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolve a product or variant by barcode or SKU (register hot path)",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/export": {
+      "get": {
+        "operationId": "PosProductController_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export the catalog as CSV, in the same column order the import accepts",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}": {
+      "get": {
+        "operationId": "PosProductController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read a product with its variants and bundle",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "patch": {
+        "operationId": "PosProductController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePosProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a product",
+        "tags": [
+          "POS catalog"
+        ]
+      },
+      "delete": {
+        "operationId": "PosProductController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate a product (soft delete — historical sales must keep resolving)",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}/images/presign": {
+      "post": {
+        "operationId": "PosProductController_presignImage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignProductImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Presign a product image upload",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}/variants": {
+      "post": {
+        "operationId": "PosProductController_addVariant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PosVariantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a variant",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}/variants/generate": {
+      "post": {
+        "operationId": "PosProductController_generateVariants",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateVariantsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate the variant matrix from attributes (additive, never destructive)",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}/variants/{variantId}": {
+      "delete": {
+        "operationId": "PosProductController_removeVariant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a variant",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/{id}/bundle": {
+      "put": {
+        "operationId": "PosProductController_putBundle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutBundleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a bundle composition",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/import/template": {
+      "get": {
+        "operationId": "ProductImportController_template",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Column template for the import CSV",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/import/presign": {
+      "post": {
+        "operationId": "ProductImportController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignProductImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Presign a CSV upload; the client then PUTs the file",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/import": {
+      "post": {
+        "operationId": "ProductImportController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterProductImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register an uploaded CSV and queue it for import",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/import/{id}": {
+      "get": {
+        "operationId": "ProductImportController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import job progress",
+        "tags": [
+          "POS catalog"
+        ]
+      }
+    },
+    "/pos/products/import/{id}/errors": {
+      "get": {
+        "operationId": "ProductImportController_errors",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rows that failed to import",
+        "tags": [
+          "POS catalog"
+        ]
+      }
     }
   },
   "info": {
@@ -10431,6 +11235,463 @@
             "type": "string"
           }
         }
+      },
+      "CreatePosCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Beverages"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent category for nesting"
+          },
+          "imageKey": {
+            "type": "string",
+            "description": "Object key of an uploaded category image"
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdatePosCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "imageKey": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreatePosUnitDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PCS"
+          },
+          "name": {
+            "type": "string",
+            "example": "Piece"
+          },
+          "baseUnitId": {
+            "type": "string",
+            "description": "Unit this one converts into"
+          },
+          "conversionFactor": {
+            "type": "string",
+            "description": "How many base units one of these equals. String to preserve Decimal(12,4) precision.",
+            "example": "12.0000"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "UpdatePosUnitDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "baseUnitId": {
+            "type": "string"
+          },
+          "conversionFactor": {
+            "type": "string",
+            "example": "12.0000"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreatePosProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Organic Coffee Beans 250g"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COF-ORG-250"
+          },
+          "barcode": {
+            "type": "string",
+            "example": "8901234567890"
+          },
+          "description": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "vatCode": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "taxGroupId": {
+            "type": "string"
+          },
+          "unitOfMeasureId": {
+            "type": "string"
+          },
+          "costPrice": {
+            "type": "string",
+            "example": "2.500",
+            "description": "OMR, 3 decimal places"
+          },
+          "sellingPrice": {
+            "type": "string",
+            "example": "4.500",
+            "description": "OMR, 3 decimal places"
+          },
+          "mrp": {
+            "type": "string",
+            "example": "5.000"
+          },
+          "wholesalePrice": {
+            "type": "string",
+            "example": "3.800"
+          },
+          "weight": {
+            "type": "string",
+            "example": "0.250"
+          },
+          "imageKeys": {
+            "description": "Uploaded image object keys",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trackInventory": {
+            "type": "boolean"
+          },
+          "allowNegativeStock": {
+            "type": "boolean"
+          },
+          "sellByWeight": {
+            "type": "boolean"
+          },
+          "reorderPoint": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reorderQuantity": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name",
+          "sku",
+          "costPrice",
+          "sellingPrice"
+        ]
+      },
+      "UpdatePosProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Organic Coffee Beans 250g"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COF-ORG-250"
+          },
+          "barcode": {
+            "type": "string",
+            "example": "8901234567890"
+          },
+          "description": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "vatCode": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "taxGroupId": {
+            "type": "string"
+          },
+          "unitOfMeasureId": {
+            "type": "string"
+          },
+          "costPrice": {
+            "type": "string",
+            "example": "2.500",
+            "description": "OMR, 3 decimal places"
+          },
+          "sellingPrice": {
+            "type": "string",
+            "example": "4.500",
+            "description": "OMR, 3 decimal places"
+          },
+          "mrp": {
+            "type": "string",
+            "example": "5.000"
+          },
+          "wholesalePrice": {
+            "type": "string",
+            "example": "3.800"
+          },
+          "weight": {
+            "type": "string",
+            "example": "0.250"
+          },
+          "imageKeys": {
+            "description": "Uploaded image object keys",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trackInventory": {
+            "type": "boolean"
+          },
+          "allowNegativeStock": {
+            "type": "boolean"
+          },
+          "sellByWeight": {
+            "type": "boolean"
+          },
+          "reorderPoint": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reorderQuantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "sku",
+          "costPrice",
+          "sellingPrice"
+        ]
+      },
+      "PresignProductImageDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "coffee.png"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "image/png"
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 204800
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "PosVariantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Red / Large"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "costPrice": {
+            "type": "string"
+          },
+          "sellingPrice": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object",
+            "example": {
+              "color": "Red",
+              "size": "Large"
+            }
+          },
+          "imageKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "sku"
+        ]
+      },
+      "VariantAttributeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Size"
+          },
+          "values": {
+            "example": [
+              "250g",
+              "500g"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "values"
+        ]
+      },
+      "GenerateVariantsDto": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAttributeDto"
+            }
+          }
+        },
+        "required": [
+          "attributes"
+        ]
+      },
+      "BundleComponentDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "2.000"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "PutBundleDto": {
+        "type": "object",
+        "properties": {
+          "bundlePrice": {
+            "type": "string",
+            "example": "9.000"
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleComponentDto"
+            }
+          }
+        },
+        "required": [
+          "bundlePrice",
+          "components"
+        ]
+      },
+      "PresignProductImportDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "products.csv"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "text/csv"
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 51200
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "RegisterProductImportDto": {
+        "type": "object",
+        "properties": {
+          "objectKey": {
+            "type": "string",
+            "description": "Object key returned by the presign call"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPSERT"
+            ],
+            "default": "CREATE",
+            "description": "UPSERT matches existing products on SKU"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "fileSize": {
+            "type": "number"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Retrying with the same key returns the original job"
+          }
+        },
+        "required": [
+          "objectKey"
+        ]
       }
     }
   }

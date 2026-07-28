@@ -3708,6 +3708,319 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pos/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List product categories */
+        get: operations["PosCategoryController_list"];
+        put?: never;
+        /** Create a product category */
+        post: operations["PosCategoryController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a category, or deactivate it when products or child categories still reference it */
+        delete: operations["PosCategoryController_remove"];
+        options?: never;
+        head?: never;
+        /** Update a product category */
+        patch: operations["PosCategoryController_update"];
+        trace?: never;
+    };
+    "/pos/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List units of measure */
+        get: operations["PosUnitController_list"];
+        put?: never;
+        /** Create a unit of measure */
+        post: operations["PosUnitController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/units/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a unit, or deactivate it when products or derived units still reference it */
+        delete: operations["PosUnitController_remove"];
+        options?: never;
+        head?: never;
+        /** Update a unit of measure */
+        patch: operations["PosUnitController_update"];
+        trace?: never;
+    };
+    "/pos/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List products */
+        get: operations["PosProductController_list"];
+        put?: never;
+        /** Create a product */
+        post: operations["PosProductController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve a product or variant by barcode or SKU (register hot path) */
+        get: operations["PosProductController_lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export the catalog as CSV, in the same column order the import accepts */
+        get: operations["PosProductController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a product with its variants and bundle */
+        get: operations["PosProductController_get"];
+        put?: never;
+        post?: never;
+        /** Deactivate a product (soft delete — historical sales must keep resolving) */
+        delete: operations["PosProductController_deactivate"];
+        options?: never;
+        head?: never;
+        /** Update a product */
+        patch: operations["PosProductController_update"];
+        trace?: never;
+    };
+    "/pos/products/{id}/images/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Presign a product image upload */
+        post: operations["PosProductController_presignImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/{id}/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a variant */
+        post: operations["PosProductController_addVariant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/{id}/variants/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate the variant matrix from attributes (additive, never destructive) */
+        post: operations["PosProductController_generateVariants"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/{id}/variants/{variantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a variant */
+        delete: operations["PosProductController_removeVariant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/{id}/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a bundle composition */
+        put: operations["PosProductController_putBundle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/import/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Column template for the import CSV */
+        get: operations["ProductImportController_template"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/import/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Presign a CSV upload; the client then PUTs the file */
+        post: operations["ProductImportController_presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register an uploaded CSV and queue it for import */
+        post: operations["ProductImportController_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/import/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Import job progress */
+        get: operations["ProductImportController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pos/products/import/{id}/errors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rows that failed to import */
+        get: operations["ProductImportController_errors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4341,6 +4654,190 @@ export interface components {
             receiptHeader?: string;
             receiptFooter?: string;
             logoUrl?: string;
+        };
+        CreatePosCategoryDto: {
+            /** @example Beverages */
+            name: string;
+            /** @description Parent category for nesting */
+            parentId?: string;
+            /** @description Object key of an uploaded category image */
+            imageKey?: string;
+            sortOrder?: number;
+        };
+        UpdatePosCategoryDto: {
+            name?: string;
+            parentId?: string;
+            imageKey?: string;
+            sortOrder?: number;
+            isActive?: boolean;
+        };
+        CreatePosUnitDto: {
+            /** @example PCS */
+            code: string;
+            /** @example Piece */
+            name: string;
+            /** @description Unit this one converts into */
+            baseUnitId?: string;
+            /**
+             * @description How many base units one of these equals. String to preserve Decimal(12,4) precision.
+             * @example 12.0000
+             */
+            conversionFactor?: string;
+        };
+        UpdatePosUnitDto: {
+            code?: string;
+            name?: string;
+            baseUnitId?: string;
+            /** @example 12.0000 */
+            conversionFactor?: string;
+            isActive?: boolean;
+        };
+        CreatePosProductDto: {
+            /** @example Organic Coffee Beans 250g */
+            name: string;
+            /** @example COF-ORG-250 */
+            sku: string;
+            /** @example 8901234567890 */
+            barcode?: string;
+            description?: string;
+            brand?: string;
+            vatCode?: string;
+            categoryId?: string;
+            taxGroupId?: string;
+            unitOfMeasureId?: string;
+            /**
+             * @description OMR, 3 decimal places
+             * @example 2.500
+             */
+            costPrice: string;
+            /**
+             * @description OMR, 3 decimal places
+             * @example 4.500
+             */
+            sellingPrice: string;
+            /** @example 5.000 */
+            mrp?: string;
+            /** @example 3.800 */
+            wholesalePrice?: string;
+            /** @example 0.250 */
+            weight?: string;
+            /** @description Uploaded image object keys */
+            imageKeys?: string[];
+            trackInventory?: boolean;
+            allowNegativeStock?: boolean;
+            sellByWeight?: boolean;
+            reorderPoint?: number;
+            reorderQuantity?: number;
+        };
+        UpdatePosProductDto: {
+            /** @example Organic Coffee Beans 250g */
+            name: string;
+            /** @example COF-ORG-250 */
+            sku: string;
+            /** @example 8901234567890 */
+            barcode?: string;
+            description?: string;
+            brand?: string;
+            vatCode?: string;
+            categoryId?: string;
+            taxGroupId?: string;
+            unitOfMeasureId?: string;
+            /**
+             * @description OMR, 3 decimal places
+             * @example 2.500
+             */
+            costPrice: string;
+            /**
+             * @description OMR, 3 decimal places
+             * @example 4.500
+             */
+            sellingPrice: string;
+            /** @example 5.000 */
+            mrp?: string;
+            /** @example 3.800 */
+            wholesalePrice?: string;
+            /** @example 0.250 */
+            weight?: string;
+            /** @description Uploaded image object keys */
+            imageKeys?: string[];
+            trackInventory?: boolean;
+            allowNegativeStock?: boolean;
+            sellByWeight?: boolean;
+            reorderPoint?: number;
+            reorderQuantity?: number;
+            isActive?: boolean;
+        };
+        PresignProductImageDto: {
+            /** @example coffee.png */
+            filename: string;
+            /** @example image/png */
+            contentType: string;
+            /** @example 204800 */
+            fileSize: number;
+        };
+        PosVariantDto: {
+            /** @example Red / Large */
+            name: string;
+            sku: string;
+            barcode?: string;
+            costPrice?: string;
+            sellingPrice?: string;
+            /**
+             * @example {
+             *       "color": "Red",
+             *       "size": "Large"
+             *     }
+             */
+            attributes?: Record<string, never>;
+            imageKey?: string;
+        };
+        VariantAttributeDto: {
+            /** @example Size */
+            name: string;
+            /**
+             * @example [
+             *       "250g",
+             *       "500g"
+             *     ]
+             */
+            values: string[];
+        };
+        GenerateVariantsDto: {
+            attributes: components["schemas"]["VariantAttributeDto"][];
+        };
+        BundleComponentDto: {
+            productId: string;
+            variantId?: string;
+            /** @example 2.000 */
+            quantity: string;
+        };
+        PutBundleDto: {
+            /** @example 9.000 */
+            bundlePrice: string;
+            components: components["schemas"]["BundleComponentDto"][];
+        };
+        PresignProductImportDto: {
+            /** @example products.csv */
+            filename: string;
+            /** @example text/csv */
+            contentType: string;
+            /** @example 51200 */
+            fileSize: number;
+        };
+        RegisterProductImportDto: {
+            /** @description Object key returned by the presign call */
+            objectKey: string;
+            /**
+             * @description UPSERT matches existing products on SKU
+             * @default CREATE
+             * @enum {string}
+             */
+            mode: "CREATE" | "UPSERT";
+            originalFilename?: string;
+            contentType?: string;
+            fileSize?: number;
+            /** @description Retrying with the same key returns the original job */
+            idempotencyKey?: string;
         };
     };
     responses: never;
@@ -9805,6 +10302,519 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosCategoryController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosCategoryController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePosCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosCategoryController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosCategoryController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePosCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosUnitController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosUnitController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePosUnitDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosUnitController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosUnitController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePosUnitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_list: {
+        parameters: {
+            query?: {
+                /** @description Search name, SKU or barcode */
+                q?: string;
+                categoryId?: string;
+                /** @description Defaults to active products only */
+                includeInactive?: boolean;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePosProductDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_lookup: {
+        parameters: {
+            query?: {
+                barcode?: string;
+                sku?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePosProductDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_presignImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignProductImageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_addVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PosVariantDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_generateVariants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateVariantsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_removeVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                variantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProductController_putBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutBundleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductImportController_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductImportController_presign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignProductImportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductImportController_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterProductImportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductImportController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductImportController_errors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;

@@ -24,6 +24,8 @@ import { BillingModule } from './platform/billing/billing.module';
 import { DunningWorker } from './platform/billing/application/dunning.worker';
 import { PlatformTenantsModule } from './platform/control-plane/tenants/platform-tenants.module';
 import { TenantDeletionWorker } from './platform/control-plane/tenants/tenant-deletion.worker';
+import { PosCatalogModule } from './products/pos/catalog/pos-catalog.module';
+import { ProductImportWorker } from './products/pos/catalog/product-import.worker';
 import { RetentionModule } from './shared/retention/retention.module';
 import { DataRetentionWorker } from './shared/retention/data-retention.worker';
 
@@ -42,6 +44,7 @@ import { DataRetentionWorker } from './shared/retention/data-retention.worker';
     BillingModule,
     PlatformTenantsModule,
     RetentionModule,
+    PosCatalogModule,
   ],
   providers: [
     EmployeeImportWorker,
@@ -58,6 +61,7 @@ import { DataRetentionWorker } from './shared/retention/data-retention.worker';
     DunningWorker,
     TenantDeletionWorker,
     DataRetentionWorker,
+    ProductImportWorker,
   ],
 })
 export class WorkerModule {}
