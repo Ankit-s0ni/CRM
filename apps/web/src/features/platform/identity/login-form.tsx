@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { APP_DOMAIN } from "@/lib/app-domain";
@@ -10,6 +10,28 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { isAppLanguage } from "@/i18n/routing";
 import { resolveTenantLoginDestination } from "@/lib/tenant-routes";
 
+const subscribeToHostname = () => () => undefined;
+
+function resolveHostnameWorkspace() {
+  if (typeof window === "undefined") return null;
+
+  const host = window.location.hostname;
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
+  if (
+    !appDomain ||
+    host === appDomain ||
+    host === `www.${appDomain}` ||
+    !host.endsWith(`.${appDomain}`)
+  ) {
+    return null;
+  }
+
+  const subdomain = host.slice(0, host.length - appDomain.length - 1);
+  return subdomain && subdomain !== "api" && subdomain !== "www"
+    ? subdomain
+    : null;
+}
+
 export function LoginForm() {
   const searchParams = useSearchParams();
   const pendingAuth = useAuthStore((state) => state.pendingAuth);
@@ -17,21 +39,11 @@ export function LoginForm() {
   const clearPendingAuth = useAuthStore((state) => state.clearPendingAuth);
   const workspaceParam = searchParams.get("workspace");
 
-  // Auto-detect workspace from subdomain (e.g. delttech.blufield.cloud → "delttech")
-  const [hostnameWorkspace, setHostnameWorkspace] = useState<string | null>(null);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const host = window.location.hostname;
-      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
-      // Extract subdomain: host = "delttech.blufield.cloud", appDomain = "blufield.cloud"
-      if (appDomain && host !== appDomain && host !== `www.${appDomain}` && host.endsWith(`.${appDomain}`)) {
-        const sub = host.slice(0, host.length - appDomain.length - 1);
-        if (sub && sub !== "api" && sub !== "www") {
-          setHostnameWorkspace(sub);
-        }
-      }
-    }
-  }, []);
+  const hostnameWorkspace = useSyncExternalStore(
+    subscribeToHostname,
+    resolveHostnameWorkspace,
+    () => null,
+  );
 
   const workspace = workspaceParam ?? hostnameWorkspace ?? pendingAuth.workspace ?? "";
   const suppliedTenantId = searchParams.get("tenantId") ??

@@ -288,13 +288,25 @@ function DashboardHeader({
   data: DashboardData | null;
 }) {
   const { t, formatNumber } = useLocalization();
-  const stale = data ? isStale(data.updatedAt) : false;
-  const seconds = data
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updateClock = () => setNow(Date.now());
+    const initialTimer = window.setTimeout(updateClock, 0);
+    const interval = window.setInterval(updateClock, 30_000);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const seconds = data && now
     ? Math.max(
         0,
-        Math.round((Date.now() - new Date(data.updatedAt).getTime()) / 1000),
+        Math.round((now - new Date(data.updatedAt).getTime()) / 1000),
       )
     : 0;
+  const stale = seconds > 120;
   return (
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -1112,8 +1124,4 @@ function initials(name: string) {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
-}
-
-function isStale(value: string) {
-  return Date.now() - new Date(value).getTime() > 120_000;
 }
