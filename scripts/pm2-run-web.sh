@@ -10,11 +10,11 @@ if [[ -s "${HOME}/.nvm/nvm.sh" ]]; then
   source "${HOME}/.nvm/nvm.sh"
 fi
 
-cd "${ROOT_DIR}/apps/web"
+cd "${ROOT_DIR}"
 
 if ! command -v pnpm >/dev/null 2>&1; then
   echo "pnpm is required to start the web app under PM2." >&2
   exit 1
 fi
 
-exec pnpm start
+exec pnpm --filter web start
