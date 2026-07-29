@@ -27,6 +27,10 @@ export const PERMISSIONS = {
   ROLES_DELETE: 'identity.roles.delete',
   SETTINGS_READ: 'workspace.settings.read',
   SETTINGS_UPDATE: 'workspace.settings.update',
+  LOCALIZATION_READ: 'workspace.localization.read',
+  LOCALIZATION_MANAGE: 'workspace.localization.manage',
+  LOCALIZATION_OVERRIDES_MANAGE:
+    'workspace.localization.overrides.manage',
   DASHBOARD_ADMIN_READ: 'workspace.dashboard.admin.read',
   MODULES_READ: 'workspace.modules.read',
   AUDIT_READ: 'workspace.audit.read',

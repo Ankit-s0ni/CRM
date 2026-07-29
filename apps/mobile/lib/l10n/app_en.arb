@@ -219,5 +219,7 @@
   "savedOfflineSynced": "Saved offline · synced successfully",
   "logout": "Log out",
   "logoutConfirmTitle": "Log out of DeltCRM?",
-  "logoutConfirmMessage": "You will need to enter your email and password to sign in again."
+  "logoutConfirmMessage": "You will need to enter your email and password to sign in again.",
+  "mapView": "Map",
+  "satelliteView": "Satellite"
 }

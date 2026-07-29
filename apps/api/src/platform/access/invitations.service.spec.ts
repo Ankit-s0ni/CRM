@@ -131,6 +131,7 @@ function transaction() {
         companyName: 'Acme Logistics',
         subdomain: 'acme',
         settings: { locale: 'en' },
+        localePolicy: { defaultLocale: 'en' },
       }),
     },
   };

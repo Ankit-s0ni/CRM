@@ -16,6 +16,11 @@ export const PLATFORM_PERMISSIONS = [
   'platform.billing.read',
   'platform.billing.manage',
   'platform.dunning.manage',
+  'platform.localization.read',
+  'platform.localization.translate',
+  'platform.localization.review',
+  'platform.localization.publish',
+  'platform.localization.tenants.manage',
 ] as const;
 
 export type PlatformPermissionKey = (typeof PLATFORM_PERMISSIONS)[number];

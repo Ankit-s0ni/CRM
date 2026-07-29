@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 const mockApi = process.env.PLAYWRIGHT_MOCK_API === 'true';
+const externalServers = process.env.PLAYWRIGHT_EXTERNAL_SERVERS === 'true';
 
 export default defineConfig({
   testDir: './e2e',
@@ -10,11 +11,11 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {
-    baseURL: 'http://localhost:4002',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:4002',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: [
+  webServer: externalServers ? [] : [
     ...(!mockApi
       ? [{
           command: 'PLATFORM_MFA_REQUIRED=false FIELD_REDIS_MODE=disabled FIELD_QUEUE_MODE=inline ATTENDANCE_QUEUE_MODE=disabled IMPORT_QUEUE_MODE=inline pnpm --dir ../.. --filter api start',

@@ -12,8 +12,8 @@ import {
   Search,
   ShieldAlert,
 } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useDeferredValue, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,8 @@ import {
   type AttendanceStatus,
   type RegisterRow,
 } from "@/features/products/attendance/core/attendance-runtime-types";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type RegisterResponse = {
   data: RegisterRow[];
@@ -48,15 +50,15 @@ type RegisterResponse = {
 };
 
 const statusOptions: Array<{ label: string; value: AttendanceStatus | "" }> = [
-  { label: "All statuses", value: "" },
-  { label: "Present", value: "PRESENT" },
-  { label: "Working", value: "PRESENT_OPEN" },
-  { label: "Half day", value: "HALF_DAY" },
-  { label: "Absent", value: "ABSENT" },
-  { label: "On duty", value: "ON_DUTY" },
-  { label: "On leave", value: "ON_LEAVE" },
-  { label: "Holiday", value: "HOLIDAY" },
-  { label: "Weekly off", value: "WEEKLY_OFF" },
+  { label: tenantMessage("All statuses"), value: "" },
+  { label: tenantMessage("Present"), value: "PRESENT" },
+  { label: tenantMessage("Working"), value: "PRESENT_OPEN" },
+  { label: tenantMessage("Half day"), value: "HALF_DAY" },
+  { label: tenantMessage("Absent"), value: "ABSENT" },
+  { label: tenantMessage("On duty"), value: "ON_DUTY" },
+  { label: tenantMessage("On leave"), value: "ON_LEAVE" },
+  { label: tenantMessage("Holiday"), value: "HOLIDAY" },
+  { label: tenantMessage("Weekly off"), value: "WEEKLY_OFF" },
 ];
 
 type AttentionFilter = "" | "late" | "missing-checkout";
@@ -75,6 +77,7 @@ const validStatuses = new Set<string>(
 );
 
 export function AttendanceRegisterView() {
+  const { tText } = useTenantLocalization();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -134,7 +137,7 @@ export function AttendanceRegisterView() {
       .catch(() => {
         if (active)
           setError(
-            "Attendance register could not be loaded. Check your date range or permissions.",
+            tText("Attendance register could not be loaded. Check your date range or permissions."),
           );
       });
     return () => {
@@ -157,17 +160,14 @@ export function AttendanceRegisterView() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
-            Attendance operations
-          </p>
+            {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
-              Attendance Register
-            </h1>
+              {tText("Attendance Register")}</h1>
             <RouteFeatureInfo />
           </div>
           <p className="mt-1 text-sm text-outline">
-            Review daily evidence, hours, exceptions, and payroll locks.
-          </p>
+            {tText("Review daily evidence, hours, exceptions, and payroll locks.")}</p>
         </div>
         <button
           type="button"
@@ -175,17 +175,16 @@ export function AttendanceRegisterView() {
           className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
         >
           <Download className="size-4" />
-          Export current page
-        </button>
+          {tText("Export current page")}</button>
       </header>
       <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric
-          label="Records"
+          label={tText("Records")}
           value={String(result?.pagination.total ?? 0)}
           icon={CalendarDays}
         />
         <Metric
-          label="Present"
+          label={tText("Present")}
           value={String(
             (summary?.statuses.PRESENT ?? 0) +
               (summary?.statuses.PRESENT_OPEN ?? 0),
@@ -194,13 +193,13 @@ export function AttendanceRegisterView() {
           tone="text-emerald-800 bg-emerald-100"
         />
         <Metric
-          label="Late minutes"
+          label={tText("Late minutes")}
           value={formatMinutes(summary?.totals.lateMinutes ?? 0)}
           icon={Clock3}
           tone="text-amber-800 bg-amber-200"
         />
         <Metric
-          label="Overtime"
+          label={tText("Overtime")}
           value={formatMinutes(summary?.totals.overtimeMinutes ?? 0)}
           icon={ShieldAlert}
           tone="text-sky-700 bg-sky-200"
@@ -210,12 +209,11 @@ export function AttendanceRegisterView() {
         <div className="flex flex-wrap items-end gap-3">
           <label className="relative min-w-56 flex-1">
             <span className="mb-1 block text-xs font-semibold">
-              Search employee
-            </span>
+              {tText("Search employee")}</span>
             <Search className="absolute bottom-3 left-3 size-4 text-outline" />
             <input
               className={`${inputClass} pl-9`}
-              placeholder="Name or employee ID"
+              placeholder={tText("Name or employee ID")}
               value={filters.search}
               onChange={(event) =>
                 updateFilters({ search: event.target.value }, "replace")
@@ -223,17 +221,17 @@ export function AttendanceRegisterView() {
             />
           </label>
           <DateField
-            label="From"
+            label={tText("From")}
             value={filters.startDate}
             onChange={(startDate) => updateFilters({ startDate })}
           />
           <DateField
-            label="To"
+            label={tText("To")}
             value={filters.endDate}
             onChange={(endDate) => updateFilters({ endDate })}
           />
           <label className="min-w-44">
-            <span className="mb-1 block text-xs font-semibold">Status</span>
+            <span className="mb-1 block text-xs font-semibold">{tText("Status")}</span>
             <select
               className={inputClass}
               value={
@@ -254,13 +252,12 @@ export function AttendanceRegisterView() {
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {tText(option.label)}
                 </option>
               ))}
-              <option value="attention:late">Late arrival</option>
+              <option value="attention:late">{tText("Late arrival")}</option>
               <option value="attention:missing-checkout">
-                Missing checkout
-              </option>
+                {tText("Missing checkout")}</option>
             </select>
           </label>
           <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
@@ -283,20 +280,19 @@ export function AttendanceRegisterView() {
       ) : (
         <Panel>
           <EmptyState
-            title="No attendance records"
-            body="No records match this date range and filter combination."
+            title={tText("No attendance records")}
+            body={tText("No records match this date range and filter combination.")}
           />
         </Panel>
       )}
       {result && result.pagination.pages > 1 && (
         <div className="mt-4 flex items-center justify-between text-sm text-on-surface-variant">
           <span>
-            Showing page {result.pagination.page} of {result.pagination.pages} ·{" "}
-            {result.pagination.total} records
-          </span>
+            {tText("Showing page")}{result.pagination.page} {tText("of")}{result.pagination.pages} ·{" "}
+            {result.pagination.total} {tText("records")}</span>
           <div className="flex gap-2">
             <button
-              aria-label="Previous page"
+              aria-label={tText("Previous page")}
               disabled={page <= 1}
               onClick={() => navigateRegister(filters, page - 1)}
               className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
@@ -304,7 +300,7 @@ export function AttendanceRegisterView() {
               <ChevronLeft className="size-4" />
             </button>
             <button
-              aria-label="Next page"
+              aria-label={tText("Next page")}
               disabled={page >= result.pagination.pages}
               onClick={() => navigateRegister(filters, page + 1)}
               className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
@@ -325,19 +321,20 @@ function RegisterTable({
   rows: RegisterRow[];
   returnTo: string;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[1120px] border-collapse text-left">
         <thead>
           <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
-            <Th>Employee</Th>
-            <Th>Date</Th>
-            <Th>Status</Th>
-            <Th>Shift</Th>
-            <Th>In / Out</Th>
-            <Th>Work</Th>
-            <Th>Late / OT</Th>
-            <Th>Evidence</Th>
+            <Th>{tText("Employee")}</Th>
+            <Th>{tText("Date")}</Th>
+            <Th>{tText("Status")}</Th>
+            <Th>{tText("Shift")}</Th>
+            <Th>{tText("In / Out")}</Th>
+            <Th>{tText("Work")}</Th>
+            <Th>{tText("Late / OT")}</Th>
+            <Th>{tText("Evidence")}</Th>
             <Th />
           </tr>
         </thead>
@@ -381,15 +378,15 @@ function RegisterTable({
                     )}
                   >
                     <span className={cn("size-1.5 rounded-full", tone.dot)} />
-                    {tone.label}
+                    {tText(tone.label)}
                   </span>
                 </Td>
                 <Td>
                   <span className="text-sm">
-                    {row.shift?.name ?? "Default"}
+                    {row.shift?.name ?? tText("Default")}
                   </span>
                   <span className="block text-[10px] text-outline">
-                    {row.employee.office?.officeName ?? "No office"}
+                    {row.employee.office?.officeName ?? tText("No office")}
                   </span>
                 </Td>
                 <Td>
@@ -403,7 +400,7 @@ function RegisterTable({
                     {formatMinutes(row.workMinutes)}
                   </strong>
                   <span className="block text-[10px] text-outline">
-                    Break {formatMinutes(row.breakMinutes)}
+                    {tText("Break")}{formatMinutes(row.breakMinutes)}
                   </span>
                 </Td>
                 <Td>
@@ -425,7 +422,7 @@ function RegisterTable({
                       <CheckCircle2 className="size-4 text-emerald-800" />
                     )}
                     <span className="text-[10px] text-outline">
-                      {row.evidence.sources.join(", ") || "Calculated"}
+                      {row.evidence.sources.join(", ") || tText("Calculated")}
                     </span>
                   </div>
                 </Td>
@@ -434,7 +431,7 @@ function RegisterTable({
                     href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-primary"
                   >
-                    View <ChevronRight className="size-3" />
+                    {tText("View")}<ChevronRight className="size-3" />
                   </Link>
                 </Td>
               </tr>

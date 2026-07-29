@@ -7,6 +7,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../../l10n/l10n_context.dart';
 
+enum _BaseMapLayer { map, satellite }
+
 class TrackingMapCard extends StatefulWidget {
   const TrackingMapCard({
     super.key,
@@ -31,6 +33,7 @@ class TrackingMapCard extends StatefulWidget {
 
 class _TrackingMapCardState extends State<TrackingMapCard> {
   final _mapController = MapController();
+  _BaseMapLayer _baseMapLayer = _BaseMapLayer.map;
 
   LatLng get _location => widget.latitude != null && widget.longitude != null
       ? LatLng(widget.latitude!, widget.longitude!)
@@ -63,8 +66,10 @@ class _TrackingMapCardState extends State<TrackingMapCard> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      key: ValueKey(_baseMapLayer),
+                      urlTemplate: _baseMapLayer == _BaseMapLayer.map
+                          ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                          : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                       maxNativeZoom: 19,
                       userAgentPackageName: 'com.deltcrm.employee',
                       tileProvider: NetworkTileProvider(
@@ -86,6 +91,18 @@ class _TrackingMapCardState extends State<TrackingMapCard> {
                         ],
                       ),
                   ],
+                ),
+                Positioned(
+                  left: 12,
+                  top: 12,
+                  child: _MapLayerSwitch(
+                    activeLayer: _baseMapLayer,
+                    mapLabel: context.l10n.mapView,
+                    satelliteLabel: context.l10n.satelliteView,
+                    onChanged: (layer) {
+                      setState(() => _baseMapLayer = layer);
+                    },
+                  ),
                 ),
                 Positioned(
                   right: 14,
@@ -132,7 +149,7 @@ class _TrackingMapCardState extends State<TrackingMapCard> {
                     ),
                   ),
                 ),
-                const Positioned(
+                Positioned(
                   right: 8,
                   bottom: 6,
                   child: IgnorePointer(
@@ -147,8 +164,10 @@ class _TrackingMapCardState extends State<TrackingMapCard> {
                           vertical: 3,
                         ),
                         child: Text(
-                          '© OpenStreetMap',
-                          style: TextStyle(
+                          _baseMapLayer == _BaseMapLayer.map
+                              ? '© OpenStreetMap'
+                              : '© Esri, Maxar',
+                          style: const TextStyle(
                             color: AppTheme.slate,
                             fontSize: 8,
                             fontWeight: FontWeight.w600,
@@ -186,6 +205,99 @@ class _TrackingMapCardState extends State<TrackingMapCard> {
           ],
         ),
       ],
+    ),
+  );
+}
+
+class _MapLayerSwitch extends StatelessWidget {
+  const _MapLayerSwitch({
+    required this.activeLayer,
+    required this.mapLabel,
+    required this.satelliteLabel,
+    required this.onChanged,
+  });
+
+  final _BaseMapLayer activeLayer;
+  final String mapLabel;
+  final String satelliteLabel;
+  final ValueChanged<_BaseMapLayer> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: const Color(0xF7FFFFFF),
+    borderRadius: BorderRadius.circular(10),
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _MapLayerButton(
+            icon: Icons.map_outlined,
+            label: mapLabel,
+            selected: activeLayer == _BaseMapLayer.map,
+            onPressed: () => onChanged(_BaseMapLayer.map),
+          ),
+          _MapLayerButton(
+            icon: Icons.satellite_alt_outlined,
+            label: satelliteLabel,
+            selected: activeLayer == _BaseMapLayer.satellite,
+            onPressed: () => onChanged(_BaseMapLayer.satellite),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _MapLayerButton extends StatelessWidget {
+  const _MapLayerButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: label,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onPressed,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 70),
+        padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.charcoal : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: selected ? Colors.white : AppTheme.charcoal,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.white : AppTheme.charcoal,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

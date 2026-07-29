@@ -20,5 +20,15 @@ module.exports = {
       max_restarts: 10,
       restart_delay: 5000,
     },
+    {
+      name: "deltcrm-worker",
+      cwd: "/home/ubuntu/CRM",
+      script: "./scripts/pm2-run-worker.sh",
+      interpreter: "/bin/bash",
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 5000,
+    },
   ],
 };

@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
@@ -20,6 +21,8 @@ interface ExceptionBody {
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApiExceptionFilter.name);
+
   constructor(
     @Inject(ERROR_REPORTER) private readonly errorReporter: ErrorReporter,
   ) {}
@@ -47,6 +50,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     }
 
     if (status >= 500) {
+      this.logger.error(
+        `Unhandled API error requestId=${requestId || 'unknown'} path=${safeRequestPath(request)}`,
+        exceptionStack(exception),
+      );
       this.errorReporter.captureException(exception, {
         requestId,
         path: safeRequestPath(request),
@@ -122,4 +129,8 @@ function numericStatus(exception: unknown) {
   return typeof value === 'number' && value >= 400 && value < 600
     ? value
     : undefined;
+}
+
+function exceptionStack(exception: unknown) {
+  return exception instanceof Error ? exception.stack : String(exception);
 }

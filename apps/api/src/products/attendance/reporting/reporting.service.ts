@@ -26,11 +26,18 @@ export class ReportingService {
     const tenantId = this.required(this.context.tenantId);
     const requestedBy = this.required(this.context.userId);
     const filters = normalizeFilters(reportType, dto);
-    const format = dto.format ?? ReportFormat.CSV;
-    if (format !== ReportFormat.CSV) {
+    const format =
+      reportType === ReportType.MUSTER
+        ? ReportFormat.XLSX
+        : (dto.format ?? ReportFormat.CSV);
+    const formatSupported =
+      (reportType === ReportType.MUSTER && format === ReportFormat.XLSX) ||
+      (reportType !== ReportType.MUSTER && format === ReportFormat.CSV);
+    if (!formatSupported) {
       throw new BadRequestException({
         code: 'REPORT_FORMAT_UNSUPPORTED',
-        message: 'Sprint 7 report contracts currently support CSV exports',
+        message:
+          'Detailed attendance supports XLSX or CSV. Other reports support CSV.',
       });
     }
     const report = await this.prisma.forTenant((tx) =>
@@ -41,7 +48,7 @@ export class ReportingService {
           reportType,
           period: filters.period ?? `${filters.startDate}:${filters.endDate}`,
           format,
-          contractVersion: 1,
+          contractVersion: reportType === ReportType.MUSTER ? 3 : 1,
           filters: filters,
           sourceCutoff: new Date(),
         },

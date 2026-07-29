@@ -678,4 +678,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get logoutConfirmMessage =>
       'ستحتاج إلى إدخال بريدك الإلكتروني وكلمة المرور لتسجيل الدخول مرة أخرى.';
+
+  @override
+  String get mapView => 'الخريطة';
+
+  @override
+  String get satelliteView => 'القمر الصناعي';
 }
