@@ -10,6 +10,11 @@ const NAMESPACES = [
   "tenant-dashboard",
   "attendance-status",
   "errors",
+  "attendance-ui",
+  "organization-ui",
+  "settings-ui",
+  "shared-ui",
+  "tenant-ui",
 ].join(",");
 
 type LocalizationBootstrap = {
@@ -46,7 +51,7 @@ export async function getTenantLocalizationBootstrap(
 
   try {
     const response = await fetch(url, {
-      next: { revalidate: 300 },
+      cache: "no-store",
       headers: { Accept: "application/json" },
     });
     if (!response.ok) return null;

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { AdminPage, ErrorState, LoadingState, Panel, PrimaryButton } from "@/shared/components/page-primitives";
 import { FieldMap } from "@/features/products/attendance/field/field-map";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type PresenceState = "LIVE" | "STALE" | "OFFLINE";
 type FieldEmployee = {
@@ -38,6 +39,7 @@ type FieldEmployee = {
 };
 
 export function FieldMonitoringView() {
+  const { tText } = useTenantLocalization();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,7 +58,7 @@ export function FieldMonitoringView() {
       setSelectedId((current) => current ?? data.data[0]?.id);
       setError("");
     } catch {
-      setError("Live field locations are temporarily unavailable. The board will retry automatically.");
+      setError(tText("Live field locations are temporarily unavailable. The board will retry automatically."));
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,7 @@ export function FieldMonitoringView() {
         },
         () => {
           if (!active) return;
-          setError("Live field locations are temporarily unavailable. The board will retry automatically.");
+          setError(tText("Live field locations are temporarily unavailable. The board will retry automatically."));
           setLoading(false);
         },
       );
@@ -120,29 +122,26 @@ export function FieldMonitoringView() {
 
   return (
     <AdminPage
-      action={<PrimaryButton onClick={() => void refresh()}><RefreshCw className="size-4" />Refresh</PrimaryButton>}
-      description="Live, stale, and offline field employees with privacy-safe location evidence."
-      title="Field Operations"
+      action={<PrimaryButton onClick={() => void refresh()}><RefreshCw className="size-4" />{tText("Refresh")}</PrimaryButton>}
+      description={tText("Live, stale, and offline field employees with privacy-safe location evidence.")}
+      title={tText("Field Operations")}
     >
       <div className="mb-5 flex items-start gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4 text-sm leading-6 text-zinc-600">
         <FeatureInfo helpKey="background-tracking" />
         <p>
-          Location is shown only for employees enabled by an active field
-          attendance policy and only during eligible work sessions. Raw route
-          evidence follows the workspace retention policy.
-        </p>
+          {tText("Location is shown only for employees enabled by an active field attendance policy and only during eligible work sessions. Raw route evidence follows the workspace retention policy.")}</p>
       </div>
       <div className="mb-5 grid gap-3 sm:grid-cols-4">
-        <Stat label="Field employees" value={employees.length} icon={UsersRound} />
-        <Stat label="Live now" value={employees.filter(({ presence }) => presence === "LIVE").length} icon={Activity} tone="green" />
-        <Stat label="Stale" value={employees.filter(({ presence }) => presence === "STALE").length} icon={CircleDot} tone="amber" />
-        <Stat label="Offline" value={employees.filter(({ presence }) => presence === "OFFLINE").length} icon={LocateFixed} />
+        <Stat label={tText("Field employees")} value={employees.length} icon={UsersRound} />
+        <Stat label={tText("Live now")} value={employees.filter(({ presence }) => presence === "LIVE").length} icon={Activity} tone="green" />
+        <Stat label={tText("Stale")} value={employees.filter(({ presence }) => presence === "STALE").length} icon={CircleDot} tone="amber" />
+        <Stat label={tText("Offline")} value={employees.filter(({ presence }) => presence === "OFFLINE").length} icon={LocateFixed} />
       </div>
       {error && <div className="mb-4"><ErrorState message={error} /></div>}
       <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
         <Panel className="overflow-hidden">
           <div className="border-b border-surface-variant p-4">
-            <div className="mb-3 text-xs font-bold uppercase tracking-[.14em] text-outline">Team presence</div>
+            <div className="mb-3 text-xs font-bold uppercase tracking-[.14em] text-outline">{tText("Team presence")}</div>
             <div className="flex flex-wrap gap-2">
               {(["ALL", "LIVE", "STALE", "OFFLINE"] as const).map((state) => (
                 <button
@@ -186,13 +185,12 @@ export function FieldMonitoringView() {
             <Panel className="flex flex-wrap items-center gap-5 p-4">
               <div className="min-w-48 flex-1">
                 <div className="text-lg font-bold">{selected.fullName}</div>
-                <div className="text-sm text-outline">Last update {selected.location ? relativeTime(selected.location.capturedAt) : "not available"}</div>
+                <div className="text-sm text-outline">{tText("Last update")}{selected.location ? relativeTime(selected.location.capturedAt) : tText("not available")}</div>
               </div>
               <div className="flex items-center gap-2 text-sm"><BatteryMedium className="size-4" />{selected.location?.batteryLevel ?? "--"}%</div>
-              <div className="text-sm">Accuracy {selected.location?.accuracyM ?? "--"}m</div>
+              <div className="text-sm">{tText("Accuracy")}{selected.location?.accuracyM ?? "--"}m</div>
               <Link className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white" href={`/app/attendance/field/${selected.id}/route`}>
-                <Route className="size-4" />View route
-              </Link>
+                <Route className="size-4" />{tText("View route")}</Link>
             </Panel>
           )}
         </div>

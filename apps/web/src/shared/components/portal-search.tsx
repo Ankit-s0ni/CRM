@@ -6,6 +6,7 @@ import { FormEvent, useDeferredValue, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { useTenantLocalization as useLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type EmployeeResult = {
   id: string;
@@ -15,17 +16,17 @@ type EmployeeResult = {
 };
 
 const destinations = [
-  { label: "Employee directory", localizationKey: "tenant.search.employeeDirectory", href: "/app/employees", permissions: ["organization.employees.read", "organization.employees.reports.read"] },
-  { label: "Organization structure", localizationKey: "tenant.search.organizationStructure", href: "/app/employees/organization", permissions: ["organization.departments.read"] },
-  { label: "Employee import", localizationKey: "tenant.search.employeeImport", href: "/app/employees/import", permissions: ["organization.imports.read"] },
-  { label: "Modules", localizationKey: "tenant.navigation.modules", href: "/app/modules", permissions: ["workspace.modules.read"] },
-  { label: "Attendance", localizationKey: "tenant.navigation.attendance", href: "/app/modules/attendance", permissions: ["attendance.records.read", "attendance.config.read"] },
-  { label: "Attendance leave", localizationKey: "tenant.search.attendanceLeave", href: "/app/attendance/leave", permissions: ["leave.self", "leave.approve", "leave.manage"] },
-  { label: "Reports", localizationKey: "tenant.navigation.reports", href: "/app/reports", permissions: ["attendance.reports.read", "attendance.reports.generate"] },
-  { label: "Company settings", localizationKey: "tenant.search.companySettings", href: "/app/settings/company", permissions: ["workspace.settings.read"] },
-  { label: "Admin access", localizationKey: "tenant.navigation.adminAccess", href: "/app/settings/access", permissions: ["identity.roles.read"] },
-  { label: "Attendance policies", localizationKey: "tenant.search.attendancePolicies", href: "/app/attendance/policies", permissions: ["attendance.policies.read", "attendance.policies.manage"] },
-  { label: "Billing", localizationKey: "tenant.navigation.billing", href: "/app/settings/billing", permissions: ["billing.subscription.read"] },
+  { label: tenantMessage("Employee directory"), localizationKey: "tenant.search.employeeDirectory", href: "/app/employees", permissions: ["organization.employees.read", "organization.employees.reports.read"] },
+  { label: tenantMessage("Organization structure"), localizationKey: "tenant.search.organizationStructure", href: "/app/employees/organization", permissions: ["organization.departments.read"] },
+  { label: tenantMessage("Employee import"), localizationKey: "tenant.search.employeeImport", href: "/app/employees/import", permissions: ["organization.imports.read"] },
+  { label: tenantMessage("Modules"), localizationKey: "tenant.navigation.modules", href: "/app/modules", permissions: ["workspace.modules.read"] },
+  { label: tenantMessage("Attendance"), localizationKey: "tenant.navigation.attendance", href: "/app/modules/attendance", permissions: ["attendance.records.read", "attendance.config.read"] },
+  { label: tenantMessage("Attendance leave"), localizationKey: "tenant.search.attendanceLeave", href: "/app/attendance/leave", permissions: ["leave.self", "leave.approve", "leave.manage"] },
+  { label: tenantMessage("Reports"), localizationKey: "tenant.navigation.reports", href: "/app/reports", permissions: ["attendance.reports.read", "attendance.reports.generate"] },
+  { label: tenantMessage("Company settings"), localizationKey: "tenant.search.companySettings", href: "/app/settings/company", permissions: ["workspace.settings.read"] },
+  { label: tenantMessage("Admin access"), localizationKey: "tenant.navigation.adminAccess", href: "/app/settings/access", permissions: ["identity.roles.read"] },
+  { label: tenantMessage("Attendance policies"), localizationKey: "tenant.search.attendancePolicies", href: "/app/attendance/policies", permissions: ["attendance.policies.read", "attendance.policies.manage"] },
+  { label: tenantMessage("Billing"), localizationKey: "tenant.navigation.billing", href: "/app/settings/billing", permissions: ["billing.subscription.read"] },
 ] as const;
 
 export function PortalSearch() {

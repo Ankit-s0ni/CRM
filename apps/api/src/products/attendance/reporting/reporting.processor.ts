@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JobStatus, ReportType } from '@prisma/client';
+import { JobStatus, ReportFormat, ReportType } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import { DateTime } from 'luxon';
 import { PrismaService } from '../../../shared/database/prisma.service';
@@ -10,6 +10,7 @@ import {
   exceptionLeaveFractionForDate,
   isConfiguredWeeklyOff,
 } from '../core/application/attendance-runtime.service';
+import { createAttendanceWorkbook } from './attendance-workbook';
 import { createCsv } from './report-csv';
 
 export type ReportTask = { tenantId: string; reportId: string };
@@ -45,15 +46,19 @@ export class ReportingProcessor {
         task.tenantId,
         report.reportType,
         report.filters,
+        report.format,
       );
       const checksum = createHash('sha256')
         .update(generated.body)
         .digest('hex');
+      const isWorkbook = report.format === ReportFormat.XLSX;
       const objectKey = await this.storage.putReport(
         task.tenantId,
         report.id,
-        'csv',
-        'text/csv; charset=utf-8',
+        isWorkbook ? 'xlsx' : 'csv',
+        isWorkbook
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'text/csv; charset=utf-8',
         generated.body,
       );
       const completedAt = new Date();
@@ -91,9 +96,11 @@ export class ReportingProcessor {
     tenantId: string,
     type: ReportType,
     rawFilters: unknown,
+    format: ReportFormat,
   ) {
     const filters = rawFilters as ReportFilters;
-    if (type === ReportType.MUSTER) return this.muster(tenantId, filters);
+    if (type === ReportType.MUSTER)
+      return this.muster(tenantId, filters, format);
     if (type === ReportType.PAYROLL) return this.payroll(tenantId, filters);
     if (type === ReportType.LATE_OT) return this.lateOt(tenantId, filters);
     if (type === ReportType.VIOLATIONS)
@@ -101,7 +108,11 @@ export class ReportingProcessor {
     return this.fieldDistance(tenantId, filters);
   }
 
-  private async muster(tenantId: string, filters: ReportFilters) {
+  private async muster(
+    tenantId: string,
+    filters: ReportFilters,
+    format: ReportFormat,
+  ) {
     const { start, end } = reportRange(filters);
     const reportData = await this.prisma.forAdmin(async (tx) => {
       const [employees, settings] = await Promise.all([
@@ -133,6 +144,16 @@ export class ReportingProcessor {
             attendanceDays: {
               where: { attendanceDate: { gte: start, lte: end } },
               orderBy: { attendanceDate: 'asc' },
+              include: {
+                events: {
+                  select: {
+                    eventType: true,
+                    source: true,
+                    createdBy: true,
+                  },
+                  orderBy: { eventTime: 'asc' },
+                },
+              },
             },
           },
           orderBy: { employeeCode: 'asc' },
@@ -219,6 +240,8 @@ export class ReportingProcessor {
     });
 
     const days = dateColumns(start, end);
+    const rowsByDate = new Map(days.map((date) => [date, [] as unknown[][]]));
+    const workingDates = new Set<string>();
     const rows = reportData.employees.flatMap((employee) => {
       const office = employee.officeAssignments[0]?.office;
       const timezone = office?.timezone ?? reportData.settings.timezone;
@@ -308,7 +331,7 @@ export class ReportingProcessor {
               'Approved leave')
             : '');
 
-        return [
+        const row = [
           employee.employeeCode,
           employee.fullName,
           employee.department.name,
@@ -318,6 +341,7 @@ export class ReportingProcessor {
           attendanceStatusLabel(display.status),
           label,
           display.source,
+          attendanceProvenance(log),
           roster?.shift.name ?? employee.defaultShift?.name,
           timezone,
           localClock(log?.firstCheckin ?? null, timezone),
@@ -330,45 +354,57 @@ export class ReportingProcessor {
           log?.overtimeMinutes ?? 0,
           log ? (log.finalizedAt ? 'Finalized' : 'Open') : 'Derived',
         ];
+        if (display.isWorkingDay) workingDates.add(date);
+        rowsByDate.get(date)?.push(row);
+        return row;
       });
     });
 
-    return generated(
-      createCsv(
-        [
-          'Employee code',
-          'Employee name',
-          'Department',
-          'Designation',
-          'Office',
-          'Attendance date',
-          'Status',
-          'Day label',
-          'Status source',
-          'Shift',
-          'Timezone',
-          'Check-in',
-          'Checkout',
-          'Worked (HH:MM)',
-          'Worked minutes',
-          'Break minutes',
-          'Late minutes',
-          'Early leave minutes',
-          'Overtime minutes',
-          'Record state',
-        ],
-        rows,
+    const headers = [
+      'Employee code',
+      'Employee name',
+      'Department',
+      'Designation',
+      'Office',
+      'Attendance date',
+      'Status',
+      'Day label',
+      'Status source',
+      'Marked by',
+      'Shift',
+      'Timezone',
+      'Check-in',
+      'Checkout',
+      'Worked (HH:MM)',
+      'Worked minutes',
+      'Break minutes',
+      'Late minutes',
+      'Early leave minutes',
+      'Overtime minutes',
+      'Record state',
+    ];
+    const body =
+      format === ReportFormat.XLSX
+        ? await createAttendanceWorkbook(
+            headers,
+            days
+              .filter((date) => workingDates.has(date))
+              .map((date) => ({
+                date,
+                rows: rowsByDate.get(date) ?? [],
+              })),
+          )
+        : createCsv(headers, rows);
+
+    return generated(body, [
+      reportData.settings.updatedAt,
+      ...reportData.assignments.map((item) => item.policy.updatedAt),
+      ...reportData.exceptions.map((item) => item.updatedAt),
+      ...reportData.approvedLeaves.map((item) => item.updatedAt),
+      ...reportData.employees.flatMap((employee) =>
+        employee.attendanceDays.map((log) => log.updatedAt),
       ),
-      [
-        reportData.settings.updatedAt,
-        ...reportData.assignments.map((item) => item.policy.updatedAt),
-        ...reportData.exceptions.map((item) => item.updatedAt),
-        ...reportData.approvedLeaves.map((item) => item.updatedAt),
-        ...reportData.employees.flatMap((employee) =>
-          employee.attendanceDays.map((log) => log.updatedAt),
-        ),
-      ],
-    );
+    ]);
   }
 
   private async payroll(tenantId: string, filters: ReportFilters) {
@@ -643,6 +679,31 @@ function attendanceStatusLabel(status: string) {
       } as Record<string, string>
     )[status] ?? status.replaceAll('_', ' ')
   );
+}
+
+function attendanceProvenance(
+  log:
+    | {
+        events: Array<{
+          eventType: string;
+          source: string;
+          createdBy: string | null;
+        }>;
+      }
+    | undefined,
+) {
+  if (!log?.events.length) return 'System derived';
+  if (
+    log.events.some(
+      (event) =>
+        event.source === 'REGULARIZED' ||
+        event.eventType === 'REGULARIZED_CHECKIN' ||
+        event.eventType === 'REGULARIZED_CHECKOUT',
+    )
+  ) {
+    return 'Marked by HR';
+  }
+  return 'Self marked';
 }
 
 function localClock(value: Date | null, timezone: string) {

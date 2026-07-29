@@ -1,10 +1,13 @@
 "use client";
 
 import {
+  ArrowLeft,
   ArrowDownToLine,
   Archive as ArchiveIcon,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CircleAlert,
   FileUp,
   Languages,
@@ -13,6 +16,7 @@ import {
   Send,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 import { useDeferredValue, useEffect, useState } from "react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { platformApiClient } from "@/lib/platform-api-client";
@@ -62,7 +66,11 @@ type PackDetail = PackSummary & { keys: PackKey[] };
 
 const localeOrder = ["en", "ar", "ar-OM", "ar-AE"];
 
-export function PlatformLocalizationView() {
+export function PlatformLocalizationEditor({
+  locale,
+}: {
+  locale: string;
+}) {
   const permissions = usePlatformAuthStore(
     (state) => state.user?.permissions ?? [],
   );
@@ -70,13 +78,15 @@ export function PlatformLocalizationView() {
   const canReview = permissions.includes("platform.localization.review");
   const canPublish = permissions.includes("platform.localization.publish");
   const [packs, setPacks] = useState<PackSummary[]>([]);
-  const [selectedLocale, setSelectedLocale] = useState("ar");
+  const [selectedLocale] = useState(locale);
   const [detail, setDetail] = useState<PackDetail | null>(null);
   const [baseArabic, setBaseArabic] = useState<Map<string, string>>(new Map());
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [namespace, setNamespace] = useState("ALL");
   const [missingOnly, setMissingOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [editingKey, setEditingKey] = useState("");
   const [value, setValue] = useState("");
   const [importReport, setImportReport] = useState<{
@@ -90,7 +100,7 @@ export function PlatformLocalizationView() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function loadPacks(preferredLocale = selectedLocale) {
+  async function loadPacks() {
     const { data } = await platformApiClient.get<{
       data: PackSummary[];
     }>("/platform/localization/packs");
@@ -98,11 +108,6 @@ export function PlatformLocalizationView() {
       (a, b) => localeOrder.indexOf(a.locale) - localeOrder.indexOf(b.locale),
     );
     setPacks(sorted);
-    const locale = sorted.some((pack) => pack.locale === preferredLocale)
-      ? preferredLocale
-      : (sorted[0]?.locale ?? "ar");
-    setSelectedLocale(locale);
-    return locale;
   }
 
   async function loadDetail(locale: string) {
@@ -140,11 +145,9 @@ export function PlatformLocalizationView() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    loadPacks()
-      .then((locale) => {
-        if (active) return loadDetail(locale);
-      })
+    // The platform editor hydrates its API-backed state once on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    Promise.all([loadPacks(), loadDetail(selectedLocale)])
       .catch((requestError) => {
         if (active) {
           setError(
@@ -161,29 +164,9 @@ export function PlatformLocalizationView() {
     return () => {
       active = false;
     };
-    // The initial request intentionally runs once; selection changes use selectPack.
+    // The route owns the locale, so the initial request intentionally runs once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function selectPack(locale: string) {
-    setSelectedLocale(locale);
-    setLoading(true);
-    setError("");
-    setNotice("");
-    setEditingKey("");
-    try {
-      await loadDetail(locale);
-    } catch (requestError) {
-      setError(
-        getApiErrorMessage(
-          requestError,
-          "The locale pack could not be loaded.",
-        ),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function startEditing(key: PackKey) {
     setEditingKey(key.key);
@@ -203,7 +186,7 @@ export function PlatformLocalizationView() {
       );
       await Promise.all([
         loadDetail(selectedLocale),
-        loadPacks(selectedLocale),
+        loadPacks(),
       ]);
       setEditingKey("");
       setValue("");
@@ -236,7 +219,7 @@ export function PlatformLocalizationView() {
         `/platform/localization/packs/${selectedLocale}/${action}`,
       );
       await Promise.all([
-        loadPacks(selectedLocale),
+        loadPacks(),
         loadDetail(selectedLocale),
       ]);
       setNotice(
@@ -273,7 +256,7 @@ export function PlatformLocalizationView() {
         `/platform/localization/packs/${selectedLocale}/rollback/${version}`,
       );
       await Promise.all([
-        loadPacks(selectedLocale),
+        loadPacks(),
         loadDetail(selectedLocale),
       ]);
       setNotice(`Version ${version} restored successfully.`);
@@ -304,7 +287,7 @@ export function PlatformLocalizationView() {
         `/platform/localization/packs/${selectedLocale}/archive/${version}`,
       );
       await Promise.all([
-        loadPacks(selectedLocale),
+        loadPacks(),
         loadDetail(selectedLocale),
       ]);
       setNotice(`Version ${version} archived.`);
@@ -384,7 +367,7 @@ export function PlatformLocalizationView() {
       );
       setImportReport(null);
       await Promise.all([
-        loadPacks(selectedLocale),
+        loadPacks(),
         loadDetail(selectedLocale),
       ]);
       setNotice("Translations imported into a new draft version.");
@@ -422,21 +405,37 @@ export function PlatformLocalizationView() {
         key.translation?.status === "REVIEW",
     ).length ?? 0;
   const selectedPack = packs.find(({ locale }) => locale === selectedLocale);
+  const totalPages = Math.max(1, Math.ceil(filteredKeys.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * pageSize;
+  const paginatedKeys = filteredKeys.slice(pageStart, pageStart + pageSize);
 
   return (
     <div className="mx-auto w-full max-w-[1600px] p-5 lg:p-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-600">
-            Product language operations
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">
-            Localization center
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
-            Govern English, base Arabic and regional Oman/UAE terminology with
-            reviewable, reversible releases.
-          </p>
+        <div className="flex items-start gap-3">
+          <Link
+            aria-label="Back to languages"
+            className="mt-0.5 grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white transition hover:border-zinc-400 hover:bg-zinc-50"
+            href="/platform/localization"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-600">
+              Translation editor
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">
+                {detail?.displayName ?? selectedLocale}
+              </h1>
+              {detail && <PackStatusBadge status={detail.status} />}
+            </div>
+            <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
+              Edit {detail?.nativeName ?? selectedLocale} translations, review
+              coverage, and manage versioned releases.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => exportPack("json")} variant="outline">
@@ -473,57 +472,6 @@ export function PlatformLocalizationView() {
           {notice}
         </div>
       )}
-
-      <section className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {packs.map((pack) => (
-          <button
-            className={cn(
-              "rounded-2xl border bg-white p-4 text-start shadow-sm transition hover:-translate-y-0.5",
-              selectedLocale === pack.locale
-                ? "border-zinc-900 ring-2 ring-zinc-900/10"
-                : "border-zinc-200 hover:border-zinc-400",
-            )}
-            key={pack.locale}
-            onClick={() => void selectPack(pack.locale)}
-            type="button"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-zinc-100 font-bold">
-                {pack.locale}
-              </span>
-              <PackStatusBadge status={pack.status} />
-            </div>
-            <div className="mt-4 flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <strong className="block">{pack.displayName}</strong>
-                {pack.nativeName !== pack.displayName && (
-                  <span
-                    className="mt-0.5 block truncate text-xs text-outline"
-                    dir={pack.direction === "RTL" ? "rtl" : "ltr"}
-                    lang={pack.locale}
-                  >
-                    {pack.nativeName}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs text-outline">v{pack.version}</span>
-            </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-100">
-              <div
-                className={cn(
-                  "h-full rounded-full",
-                  pack.coverage === 100 ? "bg-emerald-500" : "bg-amber-500",
-                )}
-                style={{ width: `${pack.coverage}%` }}
-              />
-            </div>
-            <div className="mt-2 flex justify-between text-xs text-outline">
-              <span>{pack.coverage}% coverage</span>
-              <span>{pack.direction}</span>
-            </div>
-          </button>
-        ))}
-      </section>
 
       {importReport && (
         <section className="mb-5 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -569,7 +517,10 @@ export function PlatformLocalizationView() {
                 <input
                   aria-label="Search localization keys"
                   className="h-10 w-full rounded-xl border border-zinc-200 bg-zinc-50 pl-10 pr-3 text-sm outline-none focus:border-zinc-500"
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setPage(1);
+                  }}
                   placeholder="Search key, source or translation..."
                   value={query}
                 />
@@ -577,7 +528,10 @@ export function PlatformLocalizationView() {
               <label className="relative">
                 <select
                   className="h-10 appearance-none rounded-xl border border-zinc-200 bg-white px-3 pr-9 text-sm"
-                  onChange={(event) => setNamespace(event.target.value)}
+                  onChange={(event) => {
+                    setNamespace(event.target.value);
+                    setPage(1);
+                  }}
                   value={namespace}
                 >
                   <option value="ALL">All namespaces</option>
@@ -592,7 +546,10 @@ export function PlatformLocalizationView() {
               <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 px-3 text-sm">
                 <input
                   checked={missingOnly}
-                  onChange={(event) => setMissingOnly(event.target.checked)}
+                  onChange={(event) => {
+                    setMissingOnly(event.target.checked);
+                    setPage(1);
+                  }}
                   type="checkbox"
                 />
                 Missing only
@@ -610,7 +567,7 @@ export function PlatformLocalizationView() {
             </div>
           ) : (
             <div className="divide-y divide-zinc-100">
-              {filteredKeys.map((key) => {
+              {paginatedKeys.map((key) => {
                 const isEditing = editingKey === key.key;
                 return (
                   <article className="p-5" key={key.id}>
@@ -736,6 +693,79 @@ export function PlatformLocalizationView() {
                   No localization keys match these filters.
                 </div>
               )}
+            </div>
+          )}
+          {!loading && filteredKeys.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3">
+              <div className="flex items-center gap-3 text-xs text-outline">
+                <span>
+                  Showing {pageStart + 1}-
+                  {Math.min(pageStart + pageSize, filteredKeys.length)} of{" "}
+                  {filteredKeys.length}
+                </span>
+                <label className="flex items-center gap-2">
+                  Rows
+                  <select
+                    className="h-8 rounded-lg border border-zinc-200 bg-white px-2 text-xs text-zinc-800"
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setPage(1);
+                    }}
+                    value={pageSize}
+                  >
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </label>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  aria-label="Previous page"
+                  className="grid size-9 place-items-center rounded-lg border border-zinc-200 bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage((value) => Math.max(1, value - 1))}
+                  type="button"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                {paginationItems(currentPage, totalPages).map((item, index) =>
+                  item === "ellipsis" ? (
+                    <span
+                      className="grid size-9 place-items-center text-xs text-outline"
+                      key={`ellipsis-${index}`}
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      aria-current={item === currentPage ? "page" : undefined}
+                      className={cn(
+                        "grid size-9 place-items-center rounded-lg text-xs font-semibold",
+                        item === currentPage
+                          ? "bg-zinc-950 text-white"
+                          : "border border-zinc-200 bg-white hover:bg-zinc-50",
+                      )}
+                      key={item}
+                      onClick={() => setPage(item)}
+                      type="button"
+                    >
+                      {item}
+                    </button>
+                  ),
+                )}
+                <button
+                  aria-label="Next page"
+                  className="grid size-9 place-items-center rounded-lg border border-zinc-200 bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={currentPage >= totalPages}
+                  onClick={() =>
+                    setPage((value) => Math.min(totalPages, value + 1))
+                  }
+                  type="button"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
             </div>
           )}
         </section>
@@ -1024,4 +1054,20 @@ function parseCsv(content: string) {
 
 function csvCell(value: string) {
   return `"${value.replaceAll('"', '""')}"`;
+}
+
+function paginationItems(page: number, totalPages: number) {
+  const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+  const visible = [...pages]
+    .filter((value) => value >= 1 && value <= totalPages)
+    .sort((a, b) => a - b);
+  const result: Array<number | "ellipsis"> = [];
+  for (const value of visible) {
+    const previous = result.at(-1);
+    if (typeof previous === "number" && value - previous > 1) {
+      result.push("ellipsis");
+    }
+    result.push(value);
+  }
+  return result;
 }

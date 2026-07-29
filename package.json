@@ -23,6 +23,13 @@
     "load:sprint8:live-board": "k6 run tests/load/sprint8/live-board.js",
     "openapi:export": "pnpm --filter api openapi:export",
     "openapi:generate": "pnpm openapi:export && openapi-typescript docs/openapi.json -o packages/contracts/src/generated.ts && node scripts/generate-flutter-api-routes.mjs",
+    "i18n:audit": "node scripts/audit-tenant-localization.mjs",
+    "i18n:audit:strict": "node scripts/audit-tenant-localization.mjs --strict",
+    "i18n:connect": "node scripts/connect-tenant-localization.mjs",
+    "i18n:catalog:generate": "node scripts/generate-localization-catalog.mjs",
+    "i18n:catalog:translate-ar": "node scripts/generate-localization-catalog.mjs --translate-ar",
+    "i18n:catalog:validate": "node scripts/validate-localization-catalog.mjs",
+    "i18n:catalog:sync": "node apps/api/prisma/sync-localization-catalog.js",
     "security:check": "node scripts/security-check.mjs",
     "release:mobile:check": "node scripts/mobile-release-check.mjs",
     "release:evidence:validate": "node scripts/validate-ga-evidence.mjs --allow-incomplete",
@@ -32,7 +39,7 @@
     "ops:restore-drill": "bash scripts/operations/postgres-restore-drill.sh",
     "ops:retention-audit": "bash scripts/operations/retention-audit.sh",
     "ops:partition-audit": "bash scripts/operations/partition-boundary-audit.sh",
-    "quality": "pnpm security:check && pnpm release:mobile:check && pnpm release:evidence:validate && pnpm architecture:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "quality": "pnpm security:check && pnpm release:mobile:check && pnpm release:evidence:validate && pnpm architecture:check && pnpm i18n:audit:strict && pnpm i18n:catalog:validate && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0",

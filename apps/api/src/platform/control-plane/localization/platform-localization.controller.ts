@@ -19,6 +19,7 @@ import { PlatformJwtGuard } from '../platform-auth/platform-jwt.guard';
 import { PlatformPermissionGuard } from '../platform-auth/platform-permission.guard';
 import { RequirePlatformPermissions } from '../platform-auth/require-platform-permissions.decorator';
 import {
+  CreatePlatformLocalePackDto,
   ImportPlatformTranslationsDto,
   SavePlatformTranslationDto,
   UpdatePlatformTenantLocalePolicyDto,
@@ -37,6 +38,17 @@ export class PlatformLocalizationController {
   @ApiOperation({ summary: 'List locale packs, coverage and release history' })
   listPacks() {
     return this.localization.listPacks();
+  }
+
+  @Post('packs')
+  @RequirePlatformPermissions('platform.localization.translate')
+  @ApiOperation({ summary: 'Create a supported locale pack' })
+  createPack(
+    @Body() dto: CreatePlatformLocalePackDto,
+    @CurrentUser() actor: AuthenticatedPlatformUser,
+    @Req() request: Request,
+  ) {
+    return this.localization.createPack(dto, actor, this.metadata(request));
   }
 
   @Get('packs/:locale')

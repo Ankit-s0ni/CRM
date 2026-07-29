@@ -15,6 +15,7 @@ import {
   canUseAttendanceRoute,
 } from "@/lib/attendance-navigation";
 import { cn } from "@/lib/utils";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type AttendanceWorkspaceChromeProps = {
   permissions: readonly string[];
@@ -100,9 +101,10 @@ export function AttendanceWorkspaceNav({
   currentSection: ReturnType<typeof attendanceSectionForPath>;
   items: readonly AttendanceNavItem[];
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <nav
-      aria-label="Attendance workspace"
+      aria-label={tText("Attendance workspace")}
       className="sticky top-16 z-20 flex min-h-14 items-center gap-1 overflow-x-auto border-b border-zinc-200 bg-white px-3 shadow-sm lg:px-6"
     >
       {items.map((item) => {
@@ -139,9 +141,10 @@ export function AttendanceBreadcrumbs({
 }: {
   items: ReturnType<typeof attendanceBreadcrumbs>;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={tText("Breadcrumb")}
       className="flex items-center gap-1 overflow-x-auto px-5 pt-5 text-xs text-outline lg:px-8"
     >
       {items.map((crumb, index) => (
@@ -245,10 +248,11 @@ function AttendanceGateState({
 }: {
   state: "loading" | "module-unavailable" | "forbidden";
 }) {
+  const { tText } = useTenantLocalization();
   if (state === "loading") {
     return (
       <div
-        aria-label="Checking Attendance access"
+        aria-label={tText("Checking Attendance access")}
         className="mx-auto max-w-5xl p-6"
         role="status"
       >
@@ -267,19 +271,18 @@ function AttendanceGateState({
         <Icon className="size-6" />
       </span>
       <h1 className="mt-4 text-2xl font-bold">
-        {unavailable ? "Attendance is unavailable" : "Attendance access denied"}
+        {unavailable ? tText("Attendance is unavailable") : tText("Attendance access denied")}
       </h1>
       <p className="mt-2 text-sm leading-6 text-on-surface-variant">
         {unavailable
-          ? "This workspace does not currently have the Attendance module enabled."
-          : "Your current workspace permissions do not allow this Attendance area."}
+          ? tText("This workspace does not currently have the Attendance module enabled.")
+          : tText("Your current workspace permissions do not allow this Attendance area.")}
       </p>
       <Link
         className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
         href="/app/modules"
       >
-        Back to modules
-      </Link>
+        {tText("Back to modules")}</Link>
     </section>
   );
 }

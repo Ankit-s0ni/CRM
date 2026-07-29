@@ -3,6 +3,7 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AppLanguage } from "@/i18n/routing";
+import { tenantUiKeyByDefaultMessage } from "@/i18n/generated-tenant-ui-keys";
 
 export type TextDirection = "ltr" | "rtl";
 
@@ -26,6 +27,15 @@ export function useTenantLocalization() {
       translate.has(key)
         ? translate(key, values)
         : interpolate(fallback, values),
+    tText: (
+      fallback: string,
+      values?: Record<string, string | number>,
+    ) => {
+      const key = tenantUiKeyByDefaultMessage[fallback];
+      return key && translate.has(key)
+        ? translate(key, values)
+        : interpolate(fallback, values);
+    },
     formatDate: (
       value: Date | string,
       options?: Intl.DateTimeFormatOptions,

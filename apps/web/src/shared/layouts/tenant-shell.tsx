@@ -71,6 +71,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   const { user, accessToken, clearAuth, hasHydrated, setUser } = useAuthStore();
   const {
     t,
+    tText,
     direction,
     locale,
     enabledLanguages,
@@ -290,7 +291,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className={cn(desktopCollapsed && "lg:hidden")}>
             <div className="text-lg font-bold text-zinc-100">
-              {user.companyName || "DeltCRM"}
+              {user.companyName || tText("DeltCRM")}
             </div>
             <div className="max-w-40 truncate text-[10px] font-semibold uppercase tracking-[.16em] text-zinc-300">
               {t("tenant.shell.workspace", "DeltCRM workspace")}

@@ -38,6 +38,8 @@ import {
   LoadingState,
   Panel,
 } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type DashboardData = {
   date: string;
@@ -89,6 +91,7 @@ type ScopeOption = { id: string; name?: string; officeName?: string };
 const today = () => new Date().toLocaleDateString("en-CA");
 
 export function AttendanceOverview() {
+  const { tText } = useTenantLocalization();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const granted = new Set(permissions);
   const [date, setDate] = useState(today);
@@ -109,7 +112,7 @@ export function AttendanceOverview() {
       .catch(() => {
         if (active)
           setError(
-            "Attendance priorities could not be loaded. Try refreshing the workspace.",
+            tText("Attendance priorities could not be loaded. Try refreshing the workspace."),
           );
       });
     return () => {
@@ -147,7 +150,7 @@ export function AttendanceOverview() {
     ).length ?? 0;
   const summaryCards = [
     {
-      label: "Present",
+      label: tText("Present"),
       value: summary?.present ?? registerStatuses?.PRESENT ?? 0,
       href: registerMetricHref(date, departmentId, officeId, {
         status: "PRESENT",
@@ -155,7 +158,7 @@ export function AttendanceOverview() {
       tone: "success",
     },
     {
-      label: "Absent",
+      label: tText("Absent"),
       value: summary?.absent ?? registerStatuses?.ABSENT ?? 0,
       href: registerMetricHref(date, departmentId, officeId, {
         status: "ABSENT",
@@ -163,7 +166,7 @@ export function AttendanceOverview() {
       tone: "danger",
     },
     {
-      label: "Late",
+      label: tText("Late"),
       value: summary?.late ?? 0,
       href: registerMetricHref(date, departmentId, officeId, {
         lateOnly: "true",
@@ -171,7 +174,7 @@ export function AttendanceOverview() {
       tone: "warning",
     },
     {
-      label: "Missing checkout",
+      label: tText("Missing checkout"),
       value: missingCheckout,
       href: registerMetricHref(date, departmentId, officeId, {
         missingCheckout: "true",
@@ -179,7 +182,7 @@ export function AttendanceOverview() {
       tone: "warning",
     },
     {
-      label: "On leave",
+      label: tText("On leave"),
       value: registerStatuses?.ON_LEAVE ?? 0,
       href: registerMetricHref(date, departmentId, officeId, {
         status: "ON_LEAVE",
@@ -190,18 +193,18 @@ export function AttendanceOverview() {
 
   return (
     <AdminPage
-      title="Attendance overview"
-      description="See today's workforce state, urgent queues, setup health, and month-end readiness in one place."
+      title={tText("Attendance overview")}
+      description={tText("See today's workforce state, urgent queues, setup health, and month-end readiness in one place.")}
       action={
         <div className="flex flex-wrap items-center gap-2">
           {departments.length > 0 && (
             <select
-              aria-label="Department scope"
+              aria-label={tText("Department scope")}
               className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setDepartmentId(event.target.value)}
               value={departmentId}
             >
-              <option value="">All departments</option>
+              <option value="">{tText("All departments")}</option>
               {departments.map((department) => (
                 <option key={department.id} value={department.id}>
                   {department.name}
@@ -211,12 +214,12 @@ export function AttendanceOverview() {
           )}
           {offices.length > 0 && (
             <select
-              aria-label="Office scope"
+              aria-label={tText("Office scope")}
               className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setOfficeId(event.target.value)}
               value={officeId}
             >
-              <option value="">All offices</option>
+              <option value="">{tText("All offices")}</option>
               {offices.map((office) => (
                 <option key={office.id} value={office.id}>
                   {office.officeName}
@@ -225,9 +228,8 @@ export function AttendanceOverview() {
             </select>
           )}
           <label className="text-xs font-bold text-on-surface-variant">
-            Operational date
-            <input
-              aria-label="Operational date"
+            {tText("Operational date")}<input
+              aria-label={tText("Operational date")}
               className="ml-2 h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
               onChange={(event) => setDate(event.target.value)}
               type="date"
@@ -235,7 +237,7 @@ export function AttendanceOverview() {
             />
           </label>
           <Button
-            aria-label="Refresh Attendance overview"
+            aria-label={tText("Refresh Attendance overview")}
             className="size-10"
             onClick={() => setRefreshKey((value) => value + 1)}
             size="icon"
@@ -255,16 +257,13 @@ export function AttendanceOverview() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold" id="today-summary-heading">
-                  Today summary
-                </h2>
+                  {tText("Today summary")}</h2>
                 <p className="text-sm text-on-surface-variant">
-                  Each metric opens the register with the matching date and
-                  filter.
-                </p>
+                  {tText("Each metric opens the register with the matching date and filter.")}</p>
               </div>
               {data.dashboard?.updatedAt && (
                 <span className="text-xs text-outline">
-                  Updated{" "}
+                  {tText("Updated")}{" "}
                   {new Intl.DateTimeFormat("en", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -291,10 +290,7 @@ export function AttendanceOverview() {
 
           {data.unavailable.length > 0 && (
             <p className="rounded-xl border border-surface-variant bg-white px-4 py-3 text-xs text-on-surface-variant">
-              Some optional summaries are unavailable for this role or
-              temporarily offline. Available data is shown without replacing
-              missing values with estimates.
-            </p>
+              {tText("Some optional summaries are unavailable for this role or temporarily offline. Available data is shown without replacing missing values with estimates.")}</p>
           )}
         </div>
       )}
@@ -303,6 +299,7 @@ export function AttendanceOverview() {
 }
 
 export function AttendanceRequestsEntry() {
+  const { tText } = useTenantLocalization();
   const router = useRouter();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
@@ -323,13 +320,13 @@ export function AttendanceRequestsEntry() {
   }
   return (
     <AdminPage
-      title="Requests"
-      description="Review attendance requests permitted for your role."
+      title={tText("Requests")}
+      description={tText("Review attendance requests permitted for your role.")}
     >
       <Panel>
         <EmptyState
-          title="No request queues available"
-          body="Your role does not include OD/WFH or attendance correction review."
+          title={tText("No request queues available")}
+          body={tText("Your role does not include OD/WFH or attendance correction review.")}
         />
       </Panel>
     </AdminPage>
@@ -346,71 +343,71 @@ type SetupGroup = {
 
 const setupGroups: SetupGroup[] = [
   {
-    title: "Rules & verification",
+    title: tenantMessage("Rules & verification"),
     description:
-      "Define employee app prompts, verification requirements, and effective attendance policies.",
+      tenantMessage("Define employee app prompts, verification requirements, and effective attendance policies."),
     icon: SlidersHorizontal,
     helpKey: "policies",
     links: [
       {
-        label: "Attendance policies",
+        label: tenantMessage("Attendance policies"),
         href: "/app/attendance/policies",
         permissions: ["attendance.policies.read", "attendance.policies.manage"],
       },
     ],
   },
   {
-    title: "Work schedule",
+    title: tenantMessage("Work schedule"),
     description:
-      "Create reusable shifts and assign employee-specific roster dates.",
+      tenantMessage("Create reusable shifts and assign employee-specific roster dates."),
     icon: CalendarClock,
     helpKey: "rosters",
     links: [
       {
-        label: "Shifts",
+        label: tenantMessage("Shifts"),
         href: "/app/attendance/shifts",
         permissions: ["attendance.shifts.read", "attendance.shifts.manage"],
       },
       {
-        label: "Rosters",
+        label: tenantMessage("Rosters"),
         href: "/app/attendance/rosters",
         permissions: ["attendance.rosters.read", "attendance.rosters.manage"],
       },
     ],
   },
   {
-    title: "Workplaces & calendar",
+    title: tenantMessage("Workplaces & calendar"),
     description:
-      "Manage office geofences, trusted networks, assignments, and holidays.",
+      tenantMessage("Manage office geofences, trusted networks, assignments, and holidays."),
     icon: Building2,
     helpKey: "offices",
     links: [
       {
-        label: "Offices",
+        label: tenantMessage("Offices"),
         href: "/app/attendance/offices",
         permissions: ["attendance.offices.read", "attendance.offices.manage"],
       },
       {
-        label: "Holidays",
+        label: tenantMessage("Holidays"),
         href: "/app/attendance/holidays",
         permissions: ["attendance.holidays.read", "attendance.holidays.manage"],
       },
     ],
   },
   {
-    title: "Trust & devices",
+    title: tenantMessage("Trust & devices"),
     description:
-      "Approve employee devices and investigate attendance verification signals.",
+      tenantMessage("Approve employee devices and investigate attendance verification signals."),
     icon: MonitorSmartphone,
     helpKey: "devices",
     links: [
       {
-        label: "Devices",
+        label: tenantMessage("Devices"),
         href: "/app/attendance/devices",
         permissions: ["attendance.devices.read", "attendance.devices.manage"],
       },
       {
-        label: "Security feed",
+        label: tenantMessage("Security feed"),
         href: "/app/attendance/security",
         permissions: [
           "attendance.security-alerts.read",
@@ -422,6 +419,7 @@ const setupGroups: SetupGroup[] = [
 ];
 
 export function AttendanceSetupIndex() {
+  const { tText } = useTenantLocalization();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const granted = new Set(permissions);
   const [capabilities, setCapabilities] =
@@ -472,8 +470,8 @@ export function AttendanceSetupIndex() {
 
   return (
     <AdminPage
-      title="Attendance setup"
-      description="Configure attendance in four guided areas. Daily operations remain separate from setup work."
+      title={tText("Attendance setup")}
+      description={tText("Configure attendance in four guided areas. Daily operations remain separate from setup work.")}
     >
       {capabilities &&
         !capabilities.fieldTrackingEntitled &&
@@ -482,13 +480,9 @@ export function AttendanceSetupIndex() {
             <LockKeyhole className="mt-0.5 size-5 shrink-0 text-primary" />
             <div>
               <p className="text-sm font-bold">
-                Field Tracking is not included in this workspace
-              </p>
+                {tText("Field Tracking is not included in this workspace")}</p>
               <p className="mt-1 text-sm text-on-surface-variant">
-                Business Admins can review the subscription with the DeltCRM
-                owner. HR users will continue to see only capabilities already
-                available to the workspace.
-              </p>
+                {tText("Business Admins can review the subscription with the DeltCRM owner. HR users will continue to see only capabilities already available to the workspace.")}</p>
             </div>
           </div>
         )}
@@ -500,8 +494,8 @@ export function AttendanceSetupIndex() {
       {!visibleGroups.length && (
         <Panel>
           <EmptyState
-            title="No Attendance setup access"
-            body="Your role can use operational Attendance features but cannot change workspace configuration."
+            title={tText("No Attendance setup access")}
+            body={tText("Your role can use operational Attendance features but cannot change workspace configuration.")}
           />
         </Panel>
       )}
@@ -547,31 +541,32 @@ export function AttentionQueue({
   data: OverviewData;
   permissions: ReadonlySet<string>;
 }) {
+  const { tText } = useTenantLocalization();
   const items = [
     (permissions.has("attendance.regularizations.manage") ||
       permissions.has("attendance.approvals.manage")) && {
-      label: "Pending corrections",
+      label: tText("Pending corrections"),
       value: data.pendingRegularizations,
       href: "/app/attendance/regularizations?status=PENDING",
       icon: ClipboardCheck,
       helpKey: "regularizations" as const,
     },
     permissions.has("attendance.exceptions.read") && {
-      label: "OD & WFH records",
+      label: tText("OD & WFH records"),
       value: data.odWfh,
       href: "/app/attendance/exceptions",
       icon: CalendarCheck2,
       helpKey: "exceptions" as const,
     },
     permissions.has("attendance.devices.read") && {
-      label: "Devices awaiting approval",
+      label: tText("Devices awaiting approval"),
       value: data.pendingDevices,
       href: "/app/attendance/devices?status=PENDING_APPROVAL",
       icon: MonitorSmartphone,
       helpKey: "devices" as const,
     },
     permissions.has("attendance.security-alerts.read") && {
-      label: "Critical open alerts",
+      label: tText("Critical open alerts"),
       value: data.criticalAlerts,
       href: "/app/attendance/security?status=OPEN&severity=CRITICAL",
       icon: ShieldAlert,
@@ -579,7 +574,7 @@ export function AttentionQueue({
     },
     (permissions.has("attendance.field.live.read") ||
       permissions.has("attendance.field.routes.read")) && {
-      label: "Stale field sessions",
+      label: tText("Stale field sessions"),
       value: data.staleFieldSessions,
       href: "/app/attendance/field?presence=STALE",
       icon: MapPinned,
@@ -595,10 +590,9 @@ export function AttentionQueue({
   return (
     <Panel className="overflow-hidden">
       <div className="border-b border-surface-variant p-5">
-        <h2 className="text-lg font-bold">Needs attention</h2>
+        <h2 className="text-lg font-bold">{tText("Needs attention")}</h2>
         <p className="text-sm text-on-surface-variant">
-          Open the queue that needs action instead of searching across screens.
-        </p>
+          {tText("Open the queue that needs action instead of searching across screens.")}</p>
       </div>
       <div className="divide-y divide-zinc-100">
         {items.map((item) => (
@@ -606,8 +600,8 @@ export function AttentionQueue({
         ))}
         {!items.length && (
           <EmptyState
-            title="No review queues"
-            body="This role has no Attendance approval or investigation queues."
+            title={tText("No review queues")}
+            body={tText("This role has no Attendance approval or investigation queues.")}
           />
         )}
       </div>
@@ -653,27 +647,28 @@ export function AttendanceTaskCard({
 }
 
 function QuickActions({ permissions }: { permissions: ReadonlySet<string> }) {
+  const { tText } = useTenantLocalization();
   const actions = [
     permissions.has("attendance.records.read") && {
-      label: "Open register",
+      label: tText("Open register"),
       href: "/app/attendance/register",
       icon: UsersRound,
     },
     (permissions.has("attendance.exceptions.read") ||
       permissions.has("attendance.regularizations.manage") ||
       permissions.has("attendance.approvals.manage")) && {
-      label: "Review requests",
+      label: tText("Review requests"),
       href: "/app/attendance/requests",
       icon: ClipboardCheck,
     },
     (permissions.has("attendance.reports.read") ||
       permissions.has("attendance.reports.generate")) && {
-      label: "Generate report",
+      label: tText("Generate report"),
       href: "/app/attendance/reports",
       icon: FileSpreadsheet,
     },
     permissions.has("attendance.policies.manage") && {
-      label: "Add policy",
+      label: tText("Add policy"),
       href: "/app/attendance/policies",
       icon: SlidersHorizontal,
     },
@@ -684,7 +679,7 @@ function QuickActions({ permissions }: { permissions: ReadonlySet<string> }) {
   }>;
   return (
     <Panel className="p-5">
-      <h2 className="text-lg font-bold">Quick actions</h2>
+      <h2 className="text-lg font-bold">{tText("Quick actions")}</h2>
       <div className="mt-4 grid gap-2">
         {actions.map(({ label, href, icon: Icon }) => (
           <Link
@@ -709,6 +704,7 @@ function SetupHealth({
   data: OverviewData["setup"];
   permissions: ReadonlySet<string>;
 }) {
+  const { tText } = useTenantLocalization();
   if (
     ![
       "attendance.config.read",
@@ -720,13 +716,13 @@ function SetupHealth({
     return null;
   const checks = [
     {
-      label: "Policies",
+      label: tText("Policies"),
       value: data.policies,
       ready: Boolean(data.policies),
       icon: ClipboardCheck,
     },
     {
-      label: "Policies assigned",
+      label: tText("Policies assigned"),
       value:
         data.assignedPolicies === undefined || data.policies === undefined
           ? undefined
@@ -735,25 +731,25 @@ function SetupHealth({
       icon: CheckCircle2,
     },
     {
-      label: "Shifts",
+      label: tText("Shifts"),
       value: data.shifts,
       ready: Boolean(data.shifts),
       icon: Clock3,
     },
     {
-      label: "Upcoming rosters",
+      label: tText("Upcoming rosters"),
       value: data.rosters,
       ready: Boolean(data.rosters),
       icon: CalendarClock,
     },
     {
-      label: "Office geofences",
+      label: tText("Office geofences"),
       value: data.offices,
       ready: Boolean(data.offices),
       icon: Building2,
     },
     {
-      label: "Trusted devices",
+      label: tText("Trusted devices"),
       value:
         data.activeDevices === undefined
           ? undefined
@@ -762,7 +758,7 @@ function SetupHealth({
       icon: MonitorSmartphone,
     },
     {
-      label: "Biometric readiness",
+      label: tText("Biometric readiness"),
       value:
         data.biometricAvailable === undefined
           ? undefined
@@ -773,7 +769,7 @@ function SetupHealth({
       icon: ShieldAlert,
     },
     {
-      label: "Mobile runtime",
+      label: tText("Mobile runtime"),
       value:
         data.runtimeConfigVersion === undefined
           ? undefined
@@ -786,17 +782,15 @@ function SetupHealth({
     <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold">Setup health</h2>
+          <h2 className="text-lg font-bold">{tText("Setup health")}</h2>
           <p className="text-sm text-on-surface-variant">
-            Core configuration reported by current setup APIs.
-          </p>
+            {tText("Core configuration reported by current setup APIs.")}</p>
         </div>
         <Link
           className="text-xs font-bold text-primary"
           href="/app/attendance/setup"
         >
-          Open setup
-        </Link>
+          {tText("Open setup")}</Link>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
         {checks.map(({ label, value, ready, icon: Icon }) => (
@@ -825,6 +819,7 @@ function MonthEndReadiness({
   data: OverviewData["monthEnd"];
   permissions: ReadonlySet<string>;
 }) {
+  const { tText } = useTenantLocalization();
   const canReports =
     permissions.has("attendance.reports.read") ||
     permissions.has("attendance.reports.generate");
@@ -837,22 +832,21 @@ function MonthEndReadiness({
           <LockKeyhole className="size-5" />
         </span>
         <div>
-          <h2 className="text-lg font-bold">Month-end readiness</h2>
+          <h2 className="text-lg font-bold">{tText("Month-end readiness")}</h2>
           <p className="text-sm text-on-surface-variant">
-            Confirm a completed export before locking attendance for payroll.
-          </p>
+            {tText("Confirm a completed export before locking attendance for payroll.")}</p>
         </div>
         <FeatureInfo className="ml-auto" helpKey="payroll-lock" />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-zinc-50 p-3">
-          <p className="text-xs text-on-surface-variant">Completed reports</p>
+          <p className="text-xs text-on-surface-variant">{tText("Completed reports")}</p>
           <p className="mt-1 text-xl font-bold">
             {data.completedReports ?? "—"}
           </p>
         </div>
         <div className="rounded-lg bg-zinc-50 p-3">
-          <p className="text-xs text-on-surface-variant">Active payroll locks</p>
+          <p className="text-xs text-on-surface-variant">{tText("Active payroll locks")}</p>
           <p className="mt-1 text-xl font-bold">{data.activeLocks ?? "—"}</p>
         </div>
       </div>
@@ -862,7 +856,7 @@ function MonthEndReadiness({
           canPayroll ? "/app/attendance/payroll" : "/app/attendance/reports"
         }
       >
-        {canPayroll ? "Review payroll close" : "Open reports"}
+        {canPayroll ? tText("Review payroll close") : tText("Open reports")}
         <ArrowRight className="size-4" />
       </Link>
     </Panel>
@@ -876,6 +870,7 @@ function SetupGroupCard({
   group: SetupGroup;
   health: OverviewData["setup"];
 }) {
+  const { tText } = useTenantLocalization();
   const Icon = group.icon;
   const status = setupStatus(group.title, health);
   return (
@@ -886,11 +881,11 @@ function SetupGroupCard({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-bold">{group.title}</h2>
+            <h2 className="text-lg font-bold">{tText(group.title)}</h2>
             <SetupHealthBadge status={status} />
           </div>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-            {group.description}
+            {tText(group.description)}
           </p>
         </div>
         <FeatureInfo helpKey={group.helpKey} />
@@ -902,7 +897,7 @@ function SetupGroupCard({
             href={link.href}
             key={link.href}
           >
-            {link.label}
+            {tText(link.label)}
             <ArrowRight className="size-3.5" />
           </Link>
         ))}

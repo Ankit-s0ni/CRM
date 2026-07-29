@@ -18,6 +18,7 @@ import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { AdminPage, ErrorState, LoadingState, Panel } from "@/shared/components/page-primitives";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type Capabilities = {
   attendanceEntitled: boolean;
@@ -40,6 +41,7 @@ type Policy = {
 };
 
 export function AttendanceCapabilitiesView() {
+  const { tText } = useTenantLocalization();
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
   );
@@ -68,7 +70,7 @@ export function AttendanceCapabilitiesView() {
       setInterval(next.fieldTrackingIntervalMin);
       setPolicies(policyResponse.data.data);
     } catch {
-      setError("Attendance capabilities could not be loaded.");
+      setError(tText("Attendance capabilities could not be loaded."));
     }
   }
 
@@ -86,7 +88,7 @@ export function AttendanceCapabilitiesView() {
         setInterval(next.fieldTrackingIntervalMin);
         setPolicies(policyResponse.data.data);
       })
-      .catch(() => setError("Attendance capabilities could not be loaded."));
+      .catch(() => setError(tText("Attendance capabilities could not be loaded.")));
   }, []);
 
   async function save() {
@@ -118,8 +120,8 @@ export function AttendanceCapabilitiesView() {
   );
   return (
     <AdminPage
-      title="Employee app behavior"
-      description="Control the tenant-wide capability boundary. Policy assignments decide the exact behavior for each employee."
+      title={tText("Employee app behavior")}
+      description={tText("Control the tenant-wide capability boundary. Policy assignments decide the exact behavior for each employee.")}
       action={
         <Button
           className="h-11 bg-primary px-5 text-white hover:bg-primary/90"
@@ -128,7 +130,7 @@ export function AttendanceCapabilitiesView() {
           }
           onClick={save}
         >
-          {saving ? "Saving..." : "Save capabilities"}
+          {saving ? tText("Saving...") : tText("Save capabilities")}
         </Button>
       }
     >
@@ -141,7 +143,7 @@ export function AttendanceCapabilitiesView() {
             <StatusCard
               enabled={capabilities.attendanceEntitled}
               icon={Smartphone}
-              label="Attendance module"
+              label={tText("Attendance module")}
               detail="Workspace entitlement status reported by the DeltCRM platform."
             />
             <StatusCard
@@ -150,7 +152,7 @@ export function AttendanceCapabilitiesView() {
               )}
               helpKey="location-verification"
               icon={MapPin}
-              label="Location verification"
+              label={tText("Location verification")}
               detail="Applied only by the employee's effective policy."
             />
             {capabilities.biometricEnforcementAvailable && (
@@ -160,7 +162,7 @@ export function AttendanceCapabilitiesView() {
                 )}
                 helpKey="selfie-verification"
                 icon={Fingerprint}
-                label="Selfie verification"
+                label={tText("Selfie verification")}
                 detail="Provider gate is available for policies that require a selfie."
               />
             )}
@@ -170,7 +172,7 @@ export function AttendanceCapabilitiesView() {
               )}
               helpKey="devices"
               icon={ShieldCheck}
-              label="Registered devices"
+              label={tText("Registered devices")}
               detail="Device and integrity checks remain independent from selfie rules."
             />
           </div>
@@ -184,15 +186,11 @@ export function AttendanceCapabilitiesView() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold">
-                      Field tracking boundary
-                    </h2>
+                      {tText("Field tracking boundary")}</h2>
                     <FeatureInfo helpKey="background-tracking" />
                   </div>
                   <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    Turning this off ends active field sessions and rejects new
-                    tracking requests. Eligible employee policies still need to
-                    enable field tracking individually.
-                  </p>
+                    {tText("Turning this off ends active field sessions and rejects new tracking requests. Eligible employee policies still need to enable field tracking individually.")}</p>
                 </div>
               </div>
               {!capabilities.fieldTrackingEntitled ? (
@@ -200,12 +198,11 @@ export function AttendanceCapabilitiesView() {
                   <LockKeyhole className="mt-0.5 size-5 shrink-0 text-zinc-500" />
                   <div>
                     <p className="text-sm font-bold">
-                      Not included for this workspace
-                    </p>
+                      {tText("Not included for this workspace")}</p>
                     <p className="mt-1 text-sm text-zinc-500">
                       {canManageSubscription
-                        ? "Review the workspace subscription with the DeltCRM platform owner before enabling tracked field work."
-                        : "Field Tracking is unavailable for this workspace. Office and non-tracked attendance continue normally."}
+                        ? tText("Review the workspace subscription with the DeltCRM platform owner before enabling tracked field work.")
+                        : tText("Field Tracking is unavailable for this workspace. Office and non-tracked attendance continue normally.")}
                     </p>
                   </div>
                 </div>
@@ -214,15 +211,12 @@ export function AttendanceCapabilitiesView() {
                   <label className="flex items-center justify-between gap-4 rounded-xl border border-surface-variant p-4">
                     <span>
                       <span className="block text-sm font-bold">
-                        Allow field tracking
-                      </span>
+                        {tText("Allow field tracking")}</span>
                       <span className="mt-1 block text-xs text-outline">
-                        Effective only for FIELD and explicitly allowed HYBRID
-                        employees.
-                      </span>
+                        {tText("Effective only for FIELD and explicitly allowed HYBRID employees.")}</span>
                     </span>
                     <input
-                      aria-label="Allow field tracking"
+                      aria-label={tText("Allow field tracking")}
                       checked={fieldEnabled}
                       className="size-5 accent-primary"
                       disabled={!canManage}
@@ -233,8 +227,7 @@ export function AttendanceCapabilitiesView() {
                     />
                   </label>
                   <label className="text-sm font-bold">
-                    Tracking interval
-                    <Input
+                    {tText("Tracking interval")}<Input
                       className="mt-2 h-11"
                       disabled={!canManage || !fieldEnabled}
                       max={120}
@@ -251,24 +244,21 @@ export function AttendanceCapabilitiesView() {
               {saved && (
                 <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-800">
                   <CheckCircle2 className="size-4" />
-                  Runtime configuration updated.
-                </p>
+                  {tText("Runtime configuration updated.")}</p>
               )}
             </Panel>
 
             <Panel className="p-7">
-              <h2 className="text-lg font-bold">Employee policy impact</h2>
+              <h2 className="text-lg font-bold">{tText("Employee policy impact")}</h2>
               <p className="mt-2 text-sm leading-6 text-zinc-500">
-                Department and employee assignments override the tenant default.
-                The mobile app receives only the final effective behavior.
-              </p>
+                {tText("Department and employee assignments override the tenant default. The mobile app receives only the final effective behavior.")}</p>
               <dl className="mt-5 space-y-3 text-sm">
                 <Impact
-                  label="Assigned policies"
+                  label={tText("Assigned policies")}
                   value={String(assignedPolicies.length)}
                 />
                 <Impact
-                  label="Location-only supported"
+                  label={tText("Location-only supported")}
                   value={
                     assignedPolicies.some(
                       (policy) =>
@@ -280,7 +270,7 @@ export function AttendanceCapabilitiesView() {
                   }
                 />
                 <Impact
-                  label="Configuration version"
+                  label={tText("Configuration version")}
                   value={String(capabilities.runtimeConfigVersion)}
                 />
               </dl>
@@ -288,8 +278,7 @@ export function AttendanceCapabilitiesView() {
                 className="mt-6 flex h-9 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium transition hover:bg-zinc-50"
                 href="/app/attendance/policies"
               >
-                Manage employee policies
-              </Link>
+                {tText("Manage employee policies")}</Link>
             </Panel>
           </div>
         </div>
@@ -311,6 +300,7 @@ function StatusCard({
   detail: string;
   helpKey?: AttendanceHelpKey;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
@@ -324,7 +314,7 @@ function StatusCard({
           <span
             className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "bg-emerald-100 text-emerald-900" : "bg-zinc-100 text-on-surface-variant"}`}
           >
-            {enabled ? "Enabled" : "Off"}
+            {enabled ? tText("Enabled") : tText("Off")}
           </span>
         </div>
       </div>

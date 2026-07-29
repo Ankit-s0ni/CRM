@@ -20,6 +20,71 @@ describe('PlatformLocalizationService release governance', () => {
     return new PlatformLocalizationService(database);
   }
 
+  it('creates a supported language as a draft with its fallback parent', async () => {
+    const created = {
+      ...pack('ar-OM'),
+      id: 'pack-ar-OM',
+      status: LocalizationStatus.DRAFT,
+      publishedAt: null,
+    };
+    let packCreateInput: unknown;
+    let auditCreateInput: unknown;
+    const tx = {
+      localePack: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn((input: unknown) => {
+          packCreateInput = input;
+          return Promise.resolve(created);
+        }),
+      },
+      systemAuditLog: {
+        create: jest.fn((input: unknown) => {
+          auditCreateInput = input;
+          return Promise.resolve({});
+        }),
+      },
+    };
+
+    const response = await serviceWith(tx).createPack(
+      { locale: 'ar-OM' },
+      actor,
+      { requestId: 'request-1' },
+    );
+
+    expect(response.data).toEqual(created);
+    expect(packCreateInput).toMatchObject({
+      data: {
+        locale: 'ar-OM',
+        parentLocale: 'ar',
+        status: LocalizationStatus.DRAFT,
+        version: 1,
+      },
+    });
+    expect(auditCreateInput).toMatchObject({
+      data: {
+        action: 'platform.localization.pack.created',
+        requestId: 'request-1',
+      },
+    });
+  });
+
+  it('rejects a language that is already configured', async () => {
+    const tx = {
+      localePack: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'existing-pack' }),
+      },
+    };
+
+    await expect(
+      serviceWith(tx).createPack({ locale: 'ar' }, actor, {}),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'LOCALIZATION_PACK_EXISTS',
+      },
+      status: 400,
+    });
+  });
+
   it('reports inherited base Arabic as effective regional coverage', async () => {
     const now = new Date();
     const packs = [

@@ -17,6 +17,7 @@ import {
 } from '../../../platform/localization/localization.constants';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
+  CreatePlatformLocalePackDto,
   ImportPlatformTranslationsDto,
   SavePlatformTranslationDto,
   UpdatePlatformTenantLocalePolicyDto,
@@ -32,6 +33,51 @@ type RequestMetadata = {
 export class PlatformLocalizationService {
   constructor(private readonly database: PlatformDatabaseService) {}
 
+  createPack(
+    dto: CreatePlatformLocalePackDto,
+    actor: AuthenticatedPlatformUser,
+    metadata: RequestMetadata,
+  ) {
+    this.assertLocale(dto.locale);
+    return this.database.transaction(async (tx) => {
+      const locale = dto.locale as SupportedLocale;
+      const existing = await tx.localePack.findFirst({
+        where: { locale },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new BadRequestException({
+          code: 'LOCALIZATION_PACK_EXISTS',
+          message: 'This language is already configured',
+        });
+      }
+      const definition = LOCALE_REGISTRY[locale];
+      const pack = await tx.localePack.create({
+        data: {
+          locale,
+          parentLocale: definition.parentLocale,
+          displayName: definition.displayName,
+          nativeName: definition.nativeName,
+          direction: definition.direction,
+          version: 1,
+          status: LocalizationStatus.DRAFT,
+        },
+      });
+      await this.audit(
+        tx,
+        actor,
+        metadata,
+        'platform.localization.pack.created',
+        {
+          locale,
+          version: pack.version,
+          parentLocale: pack.parentLocale,
+        },
+      );
+      return { data: pack };
+    });
+  }
+
   listPacks() {
     return this.database.transaction(async (tx) => {
       const requiredKeys = await tx.localizationKey.findMany({
@@ -42,14 +88,11 @@ export class PlatformLocalizationService {
         orderBy: [{ locale: 'asc' }, { version: 'desc' }],
         include: {
           translations: {
-            where: { status: LocalizationStatus.PUBLISHED },
             select: { keyId: true },
           },
           _count: {
             select: {
-              translations: {
-                where: { status: LocalizationStatus.PUBLISHED },
-              },
+              translations: true,
             },
           },
         },

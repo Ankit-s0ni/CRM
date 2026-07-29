@@ -5,6 +5,8 @@ import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 export type WeeklyOffValue = Array<
   string | { weekday: string; occurrences?: number[] }
@@ -17,19 +19,19 @@ type WeeklyOffEditorProps = {
 };
 
 const weekdays = [
-  { code: "MON", label: "Monday", short: "Mon" },
-  { code: "TUE", label: "Tuesday", short: "Tue" },
-  { code: "WED", label: "Wednesday", short: "Wed" },
-  { code: "THU", label: "Thursday", short: "Thu" },
-  { code: "FRI", label: "Friday", short: "Fri" },
-  { code: "SAT", label: "Saturday", short: "Sat" },
-  { code: "SUN", label: "Sunday", short: "Sun" },
+  { code: "MON", label: tenantMessage("Monday"), short: "Mon" },
+  { code: "TUE", label: tenantMessage("Tuesday"), short: "Tue" },
+  { code: "WED", label: tenantMessage("Wednesday"), short: "Wed" },
+  { code: "THU", label: tenantMessage("Thursday"), short: "Thu" },
+  { code: "FRI", label: tenantMessage("Friday"), short: "Fri" },
+  { code: "SAT", label: tenantMessage("Saturday"), short: "Sat" },
+  { code: "SUN", label: tenantMessage("Sunday"), short: "Sun" },
 ] as const;
 
 const presets = [
-  { label: "Friday + Saturday", days: ["FRI", "SAT"] },
-  { label: "Saturday + Sunday", days: ["SAT", "SUN"] },
-  { label: "Sunday only", days: ["SUN"] },
+  { label: tenantMessage("Friday + Saturday"), days: ["FRI", "SAT"] },
+  { label: tenantMessage("Saturday + Sunday"), days: ["SAT", "SUN"] },
+  { label: tenantMessage("Sunday only"), days: ["SUN"] },
 ] as const;
 
 const occurrenceLabels = ["1st", "2nd", "3rd", "4th", "5th"];
@@ -41,6 +43,7 @@ export function WeeklyOffEditor({
   onChange,
   mode,
 }: WeeklyOffEditorProps) {
+  const { tText } = useTenantLocalization();
   const patterns = normalizePatterns(value);
   const summary = describeWeeklyOffs(patterns);
 
@@ -103,12 +106,11 @@ export function WeeklyOffEditor({
         </span>
         <div className="min-w-0 flex-1">
           <h3 id={`weekly-off-${mode}-title`} className="font-semibold">
-            Weekly-off pattern
-          </h3>
+            {tText("Weekly-off pattern")}</h3>
           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
             {mode === "compact"
-              ? "Choose a common weekend or select any days your team takes off every week."
-              : "Set every-week or occurrence-based weekly offs for each weekday."}
+              ? tText("Choose a common weekend or select any days your team takes off every week.")
+              : tText("Set every-week or occurrence-based weekly offs for each weekday.")}
           </p>
         </div>
         <FeatureInfo className="ml-auto" helpKey="weekly-off" />
@@ -131,14 +133,11 @@ export function WeeklyOffEditor({
 
       <div className="mt-5 rounded-lg border border-zinc-200 bg-white px-4 py-3">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-outline">
-          Current schedule
-        </p>
+          {tText("Current schedule")}</p>
         <p className="mt-1 text-sm font-medium text-[#2e2e2e]">{summary}</p>
         {mode === "compact" && (
           <p className="mt-1 text-xs text-outline">
-            Occurrence-based schedules can be configured later in Company
-            Settings.
-          </p>
+            {tText("Occurrence-based schedules can be configured later in Company Settings.")}</p>
         )}
       </div>
     </section>
@@ -154,9 +153,10 @@ function CompactEditor({
   onPreset: (days: readonly string[]) => void;
   onDayChange: (weekday: string, checked: boolean) => void;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <>
-      <div className="mt-5 flex flex-wrap gap-2" aria-label="Weekend presets">
+      <div className="mt-5 flex flex-wrap gap-2" aria-label={tText("Weekend presets")}>
         {presets.map((preset) => {
           const active = matchesEveryWeekDays(patterns, preset.days);
           return (
@@ -173,7 +173,7 @@ function CompactEditor({
               }
               onClick={() => onPreset(preset.days)}
             >
-              {preset.label}
+              {tText(preset.label)}
             </Button>
           );
         })}
@@ -225,6 +225,7 @@ function AdvancedEditor({
     checked: boolean,
   ) => void;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div className="mt-5 grid gap-3">
       {weekdays.map((day) => {
@@ -234,7 +235,7 @@ function AdvancedEditor({
         return (
           <fieldset
             key={day.code}
-            aria-label={`${day.label} weekly off`}
+            aria-label={`${tText(day.label)} ${tText("weekly off")}`}
             className={`rounded-lg border bg-white p-4 transition ${selected ? "border-zinc-400" : "border-surface-variant"}`}
           >
             <div className="flex flex-wrap items-center gap-4">
@@ -247,11 +248,11 @@ function AdvancedEditor({
                   checked={selected}
                   onCheckedChange={(checked) => onDayChange(day.code, checked)}
                 />
-                {day.label}
+                {tText(day.label)}
               </Label>
               {selected && (
                 <select
-                  aria-label={`${day.label} recurrence`}
+                  aria-label={`${tText(day.label)} ${tText("recurrence")}`}
                   className="h-9 rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                   value={selectedWeeks ? "selected" : "every"}
                   onChange={(event) =>
@@ -261,8 +262,8 @@ function AdvancedEditor({
                     )
                   }
                 >
-                  <option value="every">Every week</option>
-                  <option value="selected">Selected weeks</option>
+                  <option value="every">{tText("Every week")}</option>
+                  <option value="selected">{tText("Selected weeks")}</option>
                 </select>
               )}
             </div>

@@ -26,6 +26,8 @@ import {
   PrimaryButton,
   inputClass,
 } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type DeviceStatus =
   | "PENDING_APPROVAL"
@@ -58,14 +60,15 @@ type Decision =
   | { action: "replace"; device: ManagedDevice; candidates: ManagedDevice[] };
 
 const filters: Array<{ label: string; value: DeviceStatus | "ALL" }> = [
-  { label: "All devices", value: "ALL" },
-  { label: "Pending approval", value: "PENDING_APPROVAL" },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Blocked", value: "BLOCKED" },
-  { label: "Replaced", value: "REPLACED" },
+  { label: tenantMessage("All devices"), value: "ALL" },
+  { label: tenantMessage("Pending approval"), value: "PENDING_APPROVAL" },
+  { label: tenantMessage("Active"), value: "ACTIVE" },
+  { label: tenantMessage("Blocked"), value: "BLOCKED" },
+  { label: tenantMessage("Replaced"), value: "REPLACED" },
 ];
 
 export function DeviceManagementView() {
+  const { tText } = useTenantLocalization();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,7 +83,7 @@ export function DeviceManagementView() {
       const response = await apiClient.get("/devices?limit=100");
       setDevices(response.data.data);
     } catch {
-      setError("Registered devices could not be loaded.");
+      setError(tText("Registered devices could not be loaded."));
     }
   }
 
@@ -92,7 +95,7 @@ export function DeviceManagementView() {
         if (active) setDevices(response.data.data);
       })
       .catch(() => {
-        if (active) setError("Registered devices could not be loaded.");
+        if (active) setError(tText("Registered devices could not be loaded."));
       });
     return () => {
       active = false;
@@ -105,26 +108,25 @@ export function DeviceManagementView() {
 
   return (
     <AdminPage
-      title="Employee devices"
-      description="Review registrations and control which devices can submit trusted attendance."
+      title={tText("Employee devices")}
+      description={tText("Review registrations and control which devices can submit trusted attendance.")}
       action={
         <PrimaryButton onClick={() => void loadDevices()}>
-          <RefreshCw className="size-4" /> Refresh
-        </PrimaryButton>
+          <RefreshCw className="size-4" /> {tText("Refresh")}</PrimaryButton>
       }
     >
       {error && <ErrorState message={error} />}
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Pending review"
+          label={tText("Pending review")}
           value={count(devices, "PENDING_APPROVAL")}
           tone="warning"
         />
-        <MetricCard label="Active" value={count(devices, "ACTIVE")} tone="success" />
-        <MetricCard label="Blocked" value={count(devices, "BLOCKED")} tone="danger" />
-        <MetricCard label="Total registrations" value={devices?.length ?? 0} />
+        <MetricCard label={tText("Active")} value={count(devices, "ACTIVE")} tone="success" />
+        <MetricCard label={tText("Blocked")} value={count(devices, "BLOCKED")} tone="danger" />
+        <MetricCard label={tText("Total registrations")} value={devices?.length ?? 0} />
       </div>
-      <div className="mb-5 flex flex-wrap gap-2" aria-label="Device status filters">
+      <div className="mb-5 flex flex-wrap gap-2" aria-label={tText("Device status filters")}>
         {filters.map((item) => (
           <button
             aria-pressed={filter === item.value}
@@ -142,7 +144,7 @@ export function DeviceManagementView() {
             )
           }
           >
-            {item.label}
+            {tText(item.label)}
           </button>
         ))}
       </div>
@@ -158,8 +160,8 @@ export function DeviceManagementView() {
       ) : (
         <Panel>
           <EmptyState
-            title="No devices in this state"
-            body="New mobile registrations will appear here immediately for review."
+            title={tText("No devices in this state")}
+            body={tText("New mobile registrations will appear here immediately for review.")}
           />
         </Panel>
       )}
@@ -178,6 +180,7 @@ export function DeviceManagementView() {
 }
 
 export function EmployeeDevicePanel({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canManage = permissions.includes("attendance.devices.manage");
   const [devices, setDevices] = useState<ManagedDevice[] | null>(null);
@@ -192,7 +195,7 @@ export function EmployeeDevicePanel({ employeeId }: { employeeId: string }) {
       );
       setDevices(response.data.data);
     } catch {
-      setError("Employee devices could not be loaded.");
+      setError(tText("Employee devices could not be loaded."));
     }
   }
 
@@ -204,7 +207,7 @@ export function EmployeeDevicePanel({ employeeId }: { employeeId: string }) {
         if (active) setDevices(response.data.data);
       })
       .catch(() => {
-        if (active) setError("Employee devices could not be loaded.");
+        if (active) setError(tText("Employee devices could not be loaded."));
       });
     return () => {
       active = false;
@@ -224,8 +227,8 @@ export function EmployeeDevicePanel({ employeeId }: { employeeId: string }) {
         />
       ) : (
         <EmptyState
-          title="No registered device"
-          body="The employee’s first mobile registration will appear here for approval."
+          title={tText("No registered device")}
+          body={tText("The employee’s first mobile registration will appear here for approval.")}
         />
       )}
       {decision && (
@@ -253,6 +256,7 @@ function DeviceTable({
   onDecision?: (decision: Decision) => void;
   showEmployee?: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="overflow-hidden">
       <div className="divide-y divide-surface-variant">
@@ -283,12 +287,11 @@ function DeviceTable({
                     </h2>
                     {device.isPrimary && (
                       <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
-                        Primary
-                      </span>
+                        {tText("Primary")}</span>
                     )}
                   </div>
                   <p className="mt-1 truncate text-xs text-outline">
-                    {device.osVersion || "Unknown OS"} · App {device.appVersion || "unknown"}
+                    {device.osVersion || tText("Unknown OS")} {tText("· App")}{device.appVersion || tText("unknown")}
                   </p>
                   {showEmployee && device.employee && (
                     <Link
@@ -304,10 +307,10 @@ function DeviceTable({
               <div>
                 <StatusBadge status={device.status} />
                 <p className="mt-2 text-xs text-outline">
-                  Registered {formatDate(device.registeredAt)}
+                  {tText("Registered")}{formatDate(device.registeredAt)}
                 </p>
                 <p className="mt-1 text-xs text-outline">
-                  Last seen {device.lastSeenAt ? formatDate(device.lastSeenAt) : "never"}
+                  {tText("Last seen")}{device.lastSeenAt ? formatDate(device.lastSeenAt) : tText("never")}
                 </p>
               </div>
               {onDecision && (
@@ -316,8 +319,7 @@ function DeviceTable({
                     <PrimaryButton
                       onClick={() => onDecision({ action: "approve", device })}
                     >
-                      <CheckCircle2 className="size-4" /> Approve
-                    </PrimaryButton>
+                      <CheckCircle2 className="size-4" /> {tText("Approve")}</PrimaryButton>
                   )}
                   {(device.status === "PENDING_APPROVAL" || device.status === "ACTIVE") && (
                     <button
@@ -325,8 +327,7 @@ function DeviceTable({
                       className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-error px-4 text-sm font-semibold text-error"
                       onClick={() => onDecision({ action: "block", device })}
                     >
-                      <ShieldAlert className="size-4" /> Block
-                    </button>
+                      <ShieldAlert className="size-4" /> {tText("Block")}</button>
                   )}
                   {device.status === "ACTIVE" && candidates.length > 0 && (
                     <button
@@ -336,8 +337,7 @@ function DeviceTable({
                         onDecision({ action: "replace", device, candidates })
                       }
                     >
-                      <RefreshCw className="size-4" /> Replace
-                    </button>
+                      <RefreshCw className="size-4" /> {tText("Replace")}</button>
                   )}
                 </div>
               )}
@@ -358,6 +358,7 @@ function DeviceDecisionDialog({
   onClose: () => void;
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [reason, setReason] = useState("");
   const [newDeviceId, setNewDeviceId] = useState(
     decision.action === "replace" ? decision.candidates[0]?.id ?? "" : "",
@@ -367,7 +368,7 @@ function DeviceDecisionDialog({
 
   async function submit() {
     if (reason.trim().length < 5) {
-      setError("Enter a clear reason of at least 5 characters.");
+      setError(tText("Enter a clear reason of at least 5 characters."));
       return;
     }
     setSaving(true);
@@ -399,18 +400,17 @@ function DeviceDecisionDialog({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
             <h2 id="device-decision-title" className="text-xl font-bold capitalize">
-              {decision.action} device
-            </h2>
+              {decision.action} {tText("device")}</h2>
               <FeatureInfo helpKey="devices" />
             </div>
             <p className="mt-1 text-sm text-outline">
               {decision.device.deviceModel || decision.device.platform} ·{" "}
-              {decision.device.employee?.fullName || "Employee device"}
+              {decision.device.employee?.fullName || tText("Employee device")}
             </p>
           </div>
           <button
             type="button"
-            aria-label="Close device action"
+            aria-label={tText("Close device action")}
             className="grid size-11 place-items-center rounded-full text-zinc-500 hover:bg-surface-variant"
             onClick={onClose}
           >
@@ -419,7 +419,7 @@ function DeviceDecisionDialog({
         </div>
         <div className="mt-6 grid gap-4">
           {decision.action === "replace" && (
-            <Field label="Replacement device">
+            <Field label={tText("Replacement device")}>
               <select
                 className={inputClass}
                 value={newDeviceId}
@@ -427,19 +427,19 @@ function DeviceDecisionDialog({
               >
                 {decision.candidates.map((candidate) => (
                   <option key={candidate.id} value={candidate.id}>
-                    {candidate.deviceModel || candidate.platform} · registered{" "}
+                    {candidate.deviceModel || candidate.platform} {tText("· registered")}{" "}
                     {formatDate(candidate.registeredAt)}
                   </option>
                 ))}
               </select>
             </Field>
           )}
-          <Field label="Decision reason">
+          <Field label={tText("Decision reason")}>
             <textarea
               className={`${inputClass} min-h-28 py-3`}
               value={reason}
               maxLength={500}
-              placeholder="Explain why this device action is being taken"
+              placeholder={tText("Explain why this device action is being taken")}
               onChange={(event) => setReason(event.target.value)}
             />
           </Field>
@@ -448,7 +448,7 @@ function DeviceDecisionDialog({
             disabled={saving || reason.trim().length < 5 || (decision.action === "replace" && !newDeviceId)}
             onClick={() => void submit()}
           >
-            {saving ? "Saving…" : `Confirm ${decision.action}`}
+            {saving ? tText("Saving…") : `Confirm ${decision.action}`}
           </PrimaryButton>
         </div>
       </div>

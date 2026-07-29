@@ -35,7 +35,7 @@ export class CreateReportDto {
 
   @IsOptional()
   @IsEnum(ReportFormat)
-  format: ReportFormat = ReportFormat.CSV;
+  format?: ReportFormat;
 }
 
 export class ReportListQueryDto {

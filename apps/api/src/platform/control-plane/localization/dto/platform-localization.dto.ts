@@ -15,6 +15,11 @@ import {
   SUPPORTED_LOCALES,
 } from '../../../localization/localization.constants';
 
+export class CreatePlatformLocalePackDto {
+  @IsIn(SUPPORTED_LOCALES)
+  locale!: string;
+}
+
 export class SavePlatformTranslationDto {
   @IsString()
   key!: string;
