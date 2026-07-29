@@ -29,6 +29,12 @@ import {
   TRANSACTIONAL_EMAIL_PORT,
   type TransactionalEmailPort,
 } from '../notifications/public';
+import {
+  normalizeEnabledLanguages,
+  publicLanguageForLocale,
+  resolveCatalogLocale,
+} from '../localization/localization.constants';
+import { buildTenantPublicUrl } from '../../shared/http/tenant-public-url';
 
 @Injectable()
 export class AuthService {
@@ -75,6 +81,14 @@ export class AuthService {
 
       await tx.tenantSettings.create({
         data: { tenantId: createdTenant.id },
+      });
+      await tx.tenantLocalePolicy.create({
+        data: {
+          tenantId: createdTenant.id,
+          defaultLocale: 'en',
+          regionalLocale: 'ar',
+          enabledLocales: ['en', 'ar'],
+        },
       });
       await provisionTenantAttendanceDefaults(tx, createdTenant.id);
 
@@ -253,8 +267,7 @@ export class AuthService {
           ? 'A fresh verification code has been sent'
           : 'The code was created, but email delivery is temporarily unavailable',
       emailDelivery,
-      debugVerificationToken:
-        isDebugTokenExposureEnabled() ? token : undefined,
+      debugVerificationToken: isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -268,7 +281,10 @@ export class AuthService {
     const user = await this.prisma.forTenant(async (tx) => {
       return tx.user.findFirst({
         where: { email },
-        include: { tenant: true, roles: { include: { role: true } } },
+        include: {
+          tenant: { include: { localePolicy: true } },
+          roles: { include: { role: true } },
+        },
       });
     });
 
@@ -522,7 +538,13 @@ export class AuthService {
       tx.user.findUnique({
         where: { id: userId },
         include: {
-          tenant: { include: { settings: true } },
+          tenant: {
+            include: {
+              settings: true,
+              localePolicy: true,
+              billingProfile: { select: { currency: true } },
+            },
+          },
           roles: {
             include: {
               role: {
@@ -577,13 +599,36 @@ export class AuthService {
         status: user.tenant.status,
         logoUrl,
       },
+      localization: {
+        defaultLanguage: publicLanguageForLocale(
+          user.tenant.localePolicy?.defaultLocale ??
+            user.tenant.settings?.locale ??
+            'en',
+        ),
+        enabledLanguages: normalizeEnabledLanguages(
+          user.tenant.localePolicy?.enabledLocales ?? ['en'],
+        ),
+        catalogVersion: user.tenant.localePolicy?.catalogVersion ?? 1,
+        allowUserPreference:
+          user.tenant.localePolicy?.allowUserPreference ?? false,
+        regionalArabicLocale: resolveCatalogLocale(
+          'ar',
+          user.tenant.localePolicy?.regionalLocale ?? 'ar',
+        ),
+        currency: user.tenant.billingProfile?.currency ?? 'OMR',
+      },
     };
   }
 
   async requestPasswordReset(email: string) {
     const user = await this.prisma.forTenant((tx) =>
       tx.user.findFirst({
-        where: { email },
+        where: { email: email.trim().toLowerCase() },
+        include: {
+          tenant: {
+            include: { settings: true, localePolicy: true },
+          },
+        },
       }),
     );
 
@@ -598,11 +643,29 @@ export class AuthService {
       { userId: user.id },
       user.id,
     );
+    const resetUrl = buildTenantPublicUrl({
+      subdomain: user.tenant.subdomain,
+      path: '/forgot-password',
+      searchParams: {
+        tenantId: user.tenantId,
+        workspace: user.tenant.subdomain,
+        email: user.email,
+        token,
+      },
+    });
+
+    await this.transactionalEmail.sendPasswordReset({
+      email: user.email,
+      workspaceName: user.tenant.companyName,
+      locale:
+        user.tenant.localePolicy?.defaultLocale ??
+        user.tenant.settings?.locale,
+      resetUrl,
+    });
 
     return {
       message: 'Password reset link sent if account exists',
-      debugResetToken:
-        isDebugTokenExposureEnabled() ? token : undefined,
+      debugResetToken: isDebugTokenExposureEnabled() ? token : undefined,
     };
   }
 
@@ -639,11 +702,23 @@ export class AuthService {
     const user = await this.prisma.forTenant((tx) =>
       tx.user.findUnique({
         where: { id: userId },
+        include: {
+          tenant: {
+            include: { settings: true, localePolicy: true },
+          },
+        },
       }),
     );
 
     if (user) {
       await this.revokeUserRefreshTokens(user.id, RevokeReason.PASSWORD_CHANGE);
+      await this.transactionalEmail.sendPasswordChanged({
+        email: user.email,
+        workspaceName: user.tenant.companyName,
+        locale:
+          user.tenant.localePolicy?.defaultLocale ??
+          user.tenant.settings?.locale,
+      });
     }
 
     return { message: 'Password updated successfully' };
@@ -699,6 +774,10 @@ export class AuthService {
       tenantId: string;
       tenant?: {
         subdomain: string;
+        localePolicy?: {
+          defaultLocale: string;
+          enabledLocales: string[];
+        } | null;
       } | null;
       roles: Array<{ role: { name: string } }>;
     },
@@ -747,6 +826,12 @@ export class AuthService {
         email: user.email,
         tenantId: user.tenantId,
         workspace: user.tenant?.subdomain ?? '',
+        defaultLanguage: publicLanguageForLocale(
+          user.tenant?.localePolicy?.defaultLocale ?? 'en',
+        ),
+        enabledLanguages: normalizeEnabledLanguages(
+          user.tenant?.localePolicy?.enabledLocales ?? ['en'],
+        ),
         roles: user.roles.map(({ role }) => role.name),
         device: device
           ? {

@@ -1,7 +1,8 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { Map as MapIcon, MapPin, Satellite } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 import { cn } from "@/lib/utils";
 
 export type MapCoordinate = {
@@ -31,6 +32,8 @@ export interface FieldMapProviderProps {
   className?: string;
 }
 
+type BaseMapLayer = "map" | "satellite";
+
 export function FieldMap(props: FieldMapProviderProps) {
   const provider = process.env.NEXT_PUBLIC_FIELD_MAP_PROVIDER;
   return provider === "deterministic" ? (
@@ -50,10 +53,26 @@ function OpenStreetMapFieldMap({
   className,
 }: FieldMapProviderProps) {
   const container = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<import("leaflet").Map | null>(null);
+  const baseLayers = useRef<Record<
+    BaseMapLayer,
+    import("leaflet").TileLayer
+  > | null>(null);
+  const [baseLayer, setBaseLayer] = useState<BaseMapLayer>("map");
   const [failed, setFailed] = useState(false);
+  const { tText } = useTenantLocalization();
   const emitMapClick = useEffectEvent((coordinate: MapCoordinate) => {
     onMapClick?.(coordinate);
   });
+  const changeBaseLayer = (nextLayer: BaseMapLayer) => {
+    setBaseLayer(nextLayer);
+    const map = mapInstance.current;
+    const layers = baseLayers.current;
+    if (!map || !layers) return;
+    map.removeLayer(layers.map);
+    map.removeLayer(layers.satellite);
+    layers[nextLayer].addTo(map);
+  };
 
   useEffect(() => {
     let active = true;
@@ -69,19 +88,36 @@ function OpenStreetMapFieldMap({
           zoom: points.length ? 14 : 10,
         });
         map = initializedMap;
+        mapInstance.current = initializedMap;
         initializedMap.on("click", (event) => {
           emitMapClick({
             latitude: event.latlng.lat,
             longitude: event.latlng.lng,
           });
         });
-        leaflet
-          .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        const streetLayer = leaflet.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
             attribution:
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
-          })
-          .addTo(initializedMap);
+          },
+        );
+        const satelliteLayer = leaflet.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution:
+              "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
+            maxZoom: 19,
+          },
+        );
+        baseLayers.current = {
+          map: streetLayer,
+          satellite: satelliteLayer,
+        };
+        (baseLayer === "satellite" ? satelliteLayer : streetLayer).addTo(
+          initializedMap,
+        );
         const bounds = leaflet.latLngBounds([]);
         points.forEach((point) =>
           bounds.extend([point.latitude, point.longitude]),
@@ -130,6 +166,8 @@ function OpenStreetMapFieldMap({
     return () => {
       active = false;
       map?.remove();
+      mapInstance.current = null;
+      baseLayers.current = null;
     };
   }, [geofences, markers, onMarkerSelect, path, selectedId]);
 
@@ -148,15 +186,24 @@ function OpenStreetMapFieldMap({
   }
   return (
     <div
-      aria-label="Field location map"
       className={cn(
         "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-zinc-300 bg-stone-200",
         onMapClick && "cursor-crosshair",
         className,
       )}
       data-map-provider="openstreetmap"
-      ref={container}
     >
+      <div
+        aria-label={tText("Field location map")}
+        className="absolute inset-0"
+        ref={container}
+      />
+      <MapLayerSwitch
+        activeLayer={baseLayer}
+        mapLabel={tText("Map")}
+        onChange={changeBaseLayer}
+        satelliteLabel={tText("Satellite")}
+      />
       <style jsx global>{`
         .field-map-marker__pin { display:block; width:30px; height:30px; border:4px solid white; border-radius:999px 999px 999px 0; box-shadow:0 4px 12px rgba(25,24,35,.28); transform:rotate(-45deg); }
         .field-map-marker__pin--live { background:#138a55; }
@@ -181,6 +228,8 @@ export function DeterministicFieldMap({
   onMapClick,
   className,
 }: FieldMapProviderProps) {
+  const [baseLayer, setBaseLayer] = useState<BaseMapLayer>("map");
+  const { tText } = useTenantLocalization();
   const all = [
     ...markers,
     ...path,
@@ -207,10 +256,19 @@ export function DeterministicFieldMap({
         });
       }}
     >
-      <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#c9c6c0_1px,transparent_1px),linear-gradient(90deg,#c9c6c0_1px,transparent_1px)] [background-size:52px_52px]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,.9),transparent_24%),radial-gradient(circle_at_80%_72%,rgba(215,225,213,.8),transparent_28%)]" />
+      {baseLayer === "map" ? (
+        <>
+          <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#c9c6c0_1px,transparent_1px),linear-gradient(90deg,#c9c6c0_1px,transparent_1px)] [background-size:52px_52px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,.9),transparent_24%),radial-gradient(circle_at_80%_72%,rgba(215,225,213,.8),transparent_28%)]" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-[#43523d] [background-image:radial-gradient(circle_at_18%_24%,#8d9270_0_9%,transparent_10%),radial-gradient(circle_at_72%_68%,#315d49_0_14%,transparent_15%),radial-gradient(circle_at_48%_38%,#6f7552_0_20%,transparent_21%)]" />
+          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(28deg,transparent_46%,#c9c39a_47%_49%,transparent_50%),linear-gradient(118deg,transparent_47%,#74806a_48%_50%,transparent_51%)] [background-size:130px_110px]" />
+        </>
+      )}
       <svg
-        aria-label="Field location map"
+        aria-label={tText("Field location map")}
         className="absolute inset-0 size-full"
         preserveAspectRatio="none"
         viewBox="0 0 1000 600"
@@ -270,9 +328,59 @@ export function DeterministicFieldMap({
           </button>
         );
       })}
+      <MapLayerSwitch
+        activeLayer={baseLayer}
+        mapLabel={tText("Map")}
+        onChange={setBaseLayer}
+        satelliteLabel={tText("Satellite")}
+      />
       <div className="absolute bottom-3 left-3 rounded-lg border border-zinc-300 bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-zinc-500 shadow-sm backdrop-blur">
-        Deterministic map provider
+        {baseLayer === "map"
+          ? tText("Deterministic map provider")
+          : tText("Deterministic satellite preview")}
       </div>
+    </div>
+  );
+}
+
+function MapLayerSwitch({
+  activeLayer,
+  mapLabel,
+  satelliteLabel,
+  onChange,
+}: {
+  activeLayer: BaseMapLayer;
+  mapLabel: string;
+  satelliteLabel: string;
+  onChange: (layer: BaseMapLayer) => void;
+}) {
+  return (
+    <div
+      aria-label={`${mapLabel} / ${satelliteLabel}`}
+      className="absolute left-1/2 top-3 z-[500] flex -translate-x-1/2 rounded-xl border border-white/70 bg-white/95 p-1 shadow-lg backdrop-blur"
+      onClick={(event) => event.stopPropagation()}
+      role="group"
+    >
+      {[
+        { id: "map" as const, label: mapLabel, Icon: MapIcon },
+        { id: "satellite" as const, label: satelliteLabel, Icon: Satellite },
+      ].map(({ id, label, Icon }) => (
+        <button
+          aria-pressed={activeLayer === id}
+          className={cn(
+            "flex h-11 min-w-24 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors",
+            activeLayer === id
+              ? "bg-zinc-900 text-white shadow-sm"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950",
+          )}
+          key={id}
+          onClick={() => onChange(id)}
+          type="button"
+        >
+          <Icon className="size-4" />
+          {label}
+        </button>
+      ))}
     </div>
   );
 }

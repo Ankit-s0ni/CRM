@@ -9,14 +9,19 @@ describe('InvitationsService employee account linking', () => {
 
   it('stores the selected employee in the signed invitation payload', async () => {
     const tx = transaction();
+    const sendInvitation = jest.fn().mockResolvedValue('SENT');
     const service = new InvitationsService(
       {
         forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
           callback(tx),
         ),
+        forAdmin: jest.fn((callback: (client: typeof tx) => unknown) =>
+          callback(tx),
+        ),
       } as never,
       { tenantId } as never,
       { append: jest.fn() } as never,
+      { sendInvitation } as never,
     );
 
     await service.create(
@@ -37,6 +42,12 @@ describe('InvitationsService employee account linking', () => {
         payload: { tenantId, inviterId, roleIds: [roleId], employeeId },
       }) as unknown,
     });
+    expect(sendInvitation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'employee@example.com',
+        workspaceName: 'Acme Logistics',
+      }),
+    );
   });
 
   it('rejects an employee that already has an account', async () => {
@@ -47,9 +58,13 @@ describe('InvitationsService employee account linking', () => {
         forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
           callback(tx),
         ),
+        forAdmin: jest.fn((callback: (client: typeof tx) => unknown) =>
+          callback(tx),
+        ),
       } as never,
       { tenantId } as never,
       { append: jest.fn() } as never,
+      { sendInvitation: jest.fn() } as never,
     );
 
     const promise = service.create(
@@ -74,9 +89,13 @@ describe('InvitationsService employee account linking', () => {
         forTenant: jest.fn((callback: (client: typeof tx) => unknown) =>
           callback(tx),
         ),
+        forAdmin: jest.fn((callback: (client: typeof tx) => unknown) =>
+          callback(tx),
+        ),
       } as never,
       { tenantId } as never,
       { append: jest.fn() } as never,
+      { sendInvitation: jest.fn() } as never,
     );
 
     const promise = service.create(
@@ -105,6 +124,15 @@ function transaction() {
     verificationToken: {
       findFirst: jest.fn().mockResolvedValue(null),
       create: jest.fn().mockResolvedValue({ id: 'invitation' }),
+    },
+    tenant: {
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'tenant-1',
+        companyName: 'Acme Logistics',
+        subdomain: 'acme',
+        settings: { locale: 'en' },
+        localePolicy: { defaultLocale: 'en' },
+      }),
     },
   };
 }

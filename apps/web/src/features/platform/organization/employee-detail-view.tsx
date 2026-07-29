@@ -24,7 +24,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -43,6 +43,8 @@ import {
   PrimaryButton,
   inputClass,
 } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type EmployeeDetail = {
   id: string;
@@ -231,6 +233,7 @@ function employeeTabFromParam(value: string | null): EmployeeTab {
 }
 
 export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
   const searchParams = useSearchParams();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canReadBiometrics = permissions.includes("attendance.biometrics.read");
@@ -270,7 +273,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           .catch(() => setBiometrics(null));
       }
     } catch {
-      setError("Employee details could not be loaded.");
+      setError(tText("Employee details could not be loaded."));
     } finally {
       setLoading(false);
     }
@@ -296,7 +299,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         }
       })
       .catch(() => {
-        if (active) setError("Employee details could not be loaded.");
+        if (active) setError(tText("Employee details could not be loaded."));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -309,8 +312,8 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
   if (loading) {
     return (
       <AdminPage
-        title="Employee profile"
-        description="Loading employee identity and attendance access."
+        title={tText("Employee profile")}
+        description={tText("Loading employee identity and attendance access.")}
       >
         <LoadingState />
       </AdminPage>
@@ -330,8 +333,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           href="/app/employees"
           className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-on-surface-variant"
         >
-          <ArrowLeft className="size-4" /> Employees
-        </Link>
+          <ArrowLeft className="size-4" /> {tText("Employees")}</Link>
       }
     >
       {error && <ErrorState message={error} />}
@@ -393,10 +395,9 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.7fr)]">
           <div>
             <div className="mb-3">
-              <h2 className="text-xl font-bold">Registered devices</h2>
+              <h2 className="text-xl font-bold">{tText("Registered devices")}</h2>
               <p className="mt-1 text-sm text-outline">
-                Approve, block, or replace devices with an auditable reason.
-              </p>
+                {tText("Approve, block, or replace devices with an auditable reason.")}</p>
             </div>
             <EmployeeDevicePanel employeeId={employeeId} />
           </div>
@@ -405,21 +406,20 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
             <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
               <Fingerprint className="size-6" />
             </div>
-            <h2 className="mt-5 text-xl font-bold">Biometric identity</h2>
+            <h2 className="mt-5 text-xl font-bold">{tText("Biometric identity")}</h2>
             {!canReadBiometrics ? (
               <p className="mt-3 text-sm text-outline">
-                You do not have permission to view biometric enrollment status.
-              </p>
+                {tText("You do not have permission to view biometric enrollment status.")}</p>
             ) : biometrics ? (
               <>
                 <div className="mt-5 grid gap-3">
                   <IdentityRow
-                    label="Consent"
+                    label={tText("Consent")}
                     value={biometrics.consentActive ? "Active" : "Not active"}
                     positive={biometrics.consentActive}
                   />
                   <IdentityRow
-                    label="Face profile"
+                    label={tText("Face profile")}
                     value={
                       biometrics.enrolled
                         ? `Enrolled · v${biometrics.version}`
@@ -428,7 +428,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
                     positive={biometrics.enrolled}
                   />
                   <IdentityRow
-                    label="Face verification ready"
+                    label={tText("Face verification ready")}
                     value={
                       biometrics.eligibleForFaceVerification ? "Yes" : "No"
                     }
@@ -437,7 +437,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
                 </div>
                 {biometrics.enrolledAt && (
                   <p className="mt-4 text-xs text-outline">
-                    Enrolled {formatDate(biometrics.enrolledAt)}
+                    {tText("Enrolled")}{formatDate(biometrics.enrolledAt)}
                   </p>
                 )}
                 {canManageBiometrics && biometrics.enrolled && (
@@ -446,8 +446,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
                     className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-error px-4 text-sm font-semibold text-error"
                     onClick={() => setResetOpen(true)}
                   >
-                    Reset face profile
-                  </button>
+                    {tText("Reset face profile")}</button>
                 )}
               </>
             ) : (
@@ -480,46 +479,47 @@ function EmployeeWorkspaceTabs({
   onChange: (tab: EmployeeTab) => void;
   permissions: string[];
 }) {
+  const { tText } = useTenantLocalization();
   const items: Array<{
     key: EmployeeTab;
     label: string;
     permissions?: string[];
   }> = [
-    { key: "overview", label: "Overview" },
-    { key: "assignments", label: "Assignments" },
+    { key: "overview", label: tText("Overview") },
+    { key: "assignments", label: tText("Assignments") },
     {
       key: "attendance",
-      label: "Attendance",
+      label: tText("Attendance"),
       permissions: ["attendance.records.read", "attendance.records.self.read"],
     },
     {
       key: "leave",
-      label: "Leave",
+      label: tText("Leave"),
       permissions: ["leave.self", "leave.approve", "leave.manage"],
     },
     {
       key: "access",
-      label: "Account access",
+      label: tText("Account access"),
       permissions: ["identity.users.read", "organization.employees.self.read"],
     },
     {
       key: "trust",
-      label: "Devices & biometrics",
+      label: tText("Devices & biometrics"),
       permissions: ["attendance.devices.read", "attendance.biometrics.read"],
     },
     {
       key: "documents",
-      label: "Documents",
+      label: tText("Documents"),
       permissions: [
         "organization.employee-documents.read",
         "organization.employee-documents.manage",
       ],
     },
-    { key: "history", label: "History" },
+    { key: "history", label: tText("History") },
   ];
   return (
     <nav
-      aria-label="Employee workspace"
+      aria-label={tText("Employee workspace")}
       className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-surface-variant bg-white p-2"
     >
       {items
@@ -552,6 +552,7 @@ function EmploymentProfile({
 }: {
   employee: EmployeeWorkspace["employee"];
 }) {
+  const { tText } = useTenantLocalization();
   const primaryOffice =
     employee.officeAssignments?.find(({ isPrimary }) => isPrimary) ??
     employee.officeAssignments?.[0];
@@ -563,9 +564,9 @@ function EmploymentProfile({
             <UserRound className="size-7" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">Employment profile</h2>
+            <h2 className="text-xl font-bold">{tText("Employment profile")}</h2>
             <p className="mt-1 text-sm text-outline">
-              {employee.phone || "No phone number recorded"}
+              {employee.phone || tText("No phone number recorded")}
             </p>
           </div>
         </div>
@@ -584,37 +585,37 @@ function EmploymentProfile({
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Detail
           icon={Phone}
-          label="Phone"
+          label={tText("Phone")}
           value={employee.phone || "Not recorded"}
         />
         <Detail
           icon={Mail}
-          label="Work email"
+          label={tText("Work email")}
           value={employee.user?.email || "No account linked"}
         />
         <Detail
           icon={MapPin}
-          label="Primary office"
+          label={tText("Primary office")}
           value={primaryOffice?.office.officeName || "Not assigned"}
         />
         <Detail
           icon={Building2}
-          label="Department"
+          label={tText("Department")}
           value={employee.department.name}
         />
         <Detail
           icon={BriefcaseBusiness}
-          label="Designation"
+          label={tText("Designation")}
           value={employee.designation?.name || "Not assigned"}
         />
         <Detail
           icon={UserRound}
-          label="Manager"
+          label={tText("Manager")}
           value={employee.manager?.fullName || "No manager"}
         />
         <Detail
           icon={CalendarDays}
-          label="Date of birth"
+          label={tText("Date of birth")}
           value={
             employee.dateOfBirth
               ? formatDate(employee.dateOfBirth)
@@ -623,7 +624,7 @@ function EmploymentProfile({
         />
         <Detail
           icon={CalendarDays}
-          label="Joined"
+          label={tText("Joined")}
           value={formatDate(employee.dateOfJoining)}
         />
       </div>
@@ -636,6 +637,7 @@ function TodaySummary({
 }: {
   attendance: EmployeeWorkspace["attendance"]["today"];
 }) {
+  const { tText } = useTenantLocalization();
   const labels: Record<string, string> = {
     PRESENT_OPEN: "Checked in",
     PRESENT: "Present",
@@ -661,8 +663,7 @@ function TodaySummary({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-outline">
-              Today
-            </p>
+              {tText("Today")}</p>
             <h2 className="mt-2 text-2xl font-bold">
               {labels[attendance.status] ?? attendance.status}
             </h2>
@@ -681,7 +682,7 @@ function TodaySummary({
       </div>
       <div className="grid grid-cols-2 gap-px bg-surface-variant">
         <TodayValue
-          label="Check-in"
+          label={tText("Check-in")}
           value={
             attendance.record?.firstCheckin
               ? formatTime(attendance.record.firstCheckin, attendance.timezone)
@@ -689,7 +690,7 @@ function TodaySummary({
           }
         />
         <TodayValue
-          label="Check-out"
+          label={tText("Check-out")}
           value={
             attendance.record?.lastCheckout
               ? formatTime(attendance.record.lastCheckout, attendance.timezone)
@@ -697,11 +698,11 @@ function TodaySummary({
           }
         />
         <TodayValue
-          label="Worked"
+          label={tText("Worked")}
           value={formatMinutes(attendance.record?.totalWorkMinutes ?? 0)}
         />
         <TodayValue
-          label="Late"
+          label={tText("Late")}
           value={formatMinutes(attendance.record?.lateMinutes ?? 0)}
         />
       </div>
@@ -729,6 +730,7 @@ function EmployeeLifecyclePanel({
   permissions: string[];
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const canUpdate = permissions.includes("organization.employees.update");
   const canManageLifecycle = permissions.includes(
     "organization.employees.lifecycle",
@@ -746,11 +748,9 @@ function EmployeeLifecyclePanel({
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold">Employment actions</h2>
+          <h2 className="text-lg font-bold">{tText("Employment actions")}</h2>
           <p className="mt-1 text-sm leading-6 text-outline">
-            Update placement and record lifecycle changes here so history,
-            access, policies, and payroll evidence remain connected.
-          </p>
+            {tText("Update placement and record lifecycle changes here so history, access, policies, and payroll evidence remain connected.")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canUpdate && employee.status !== "TERMINATED" && (
@@ -759,8 +759,7 @@ function EmployeeLifecyclePanel({
               onClick={() => setDialog("edit")}
               type="button"
             >
-              <Pencil className="size-4" /> Edit or transfer
-            </button>
+              <Pencil className="size-4" /> {tText("Edit or transfer")}</button>
           )}
           {canManageLifecycle && employee.status !== "TERMINATED" && (
             <button
@@ -768,13 +767,11 @@ function EmployeeLifecyclePanel({
               onClick={() => setDialog("terminate")}
               type="button"
             >
-              <UserMinus className="size-4" /> End employment
-            </button>
+              <UserMinus className="size-4" /> {tText("End employment")}</button>
           )}
           {canManageLifecycle && employee.status === "TERMINATED" && (
             <PrimaryButton onClick={() => setDialog("reactivate")}>
-              <RotateCcw className="size-4" /> Reactivate
-            </PrimaryButton>
+              <RotateCcw className="size-4" /> {tText("Reactivate")}</PrimaryButton>
           )}
         </div>
       </div>
@@ -812,6 +809,7 @@ function EditEmployeeDialog({
   onClose: () => void;
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [departments, setDepartments] = useState<OrganizationOption[]>([]);
   const [designations, setDesignations] = useState<OrganizationOption[]>([]);
   const [managers, setManagers] = useState<EmployeeOption[]>([]);
@@ -844,7 +842,7 @@ function EditEmployeeDialog({
           ),
         );
       })
-      .catch(() => setError("Organization options could not be loaded."));
+      .catch(() => setError(tText("Organization options could not be loaded.")));
   }, [employee.id]);
 
   async function save() {
@@ -858,7 +856,7 @@ function EditEmployeeDialog({
     const email = form.email.trim().toLowerCase();
     if (email !== (employee.user?.email ?? "").toLowerCase()) {
       if (!/^\S+@\S+\.\S+$/.test(email)) {
-        setError("Enter a valid employee email address.");
+        setError(tText("Enter a valid employee email address."));
         setSaving(false);
         return;
       }
@@ -867,7 +865,7 @@ function EditEmployeeDialog({
     if (phone !== (employee.phone ?? "")) {
       if (phone && !/^\+[1-9]\d{7,14}$/.test(phone)) {
         setError(
-          "Phone must include the country code in E.164 format, for example +96891234567.",
+          tText("Phone must include the country code in E.164 format, for example +96891234567."),
         );
         setSaving(false);
         return;
@@ -890,7 +888,7 @@ function EditEmployeeDialog({
       payload.dateOfBirth = form.dateOfBirth || null;
     }
     if (!Object.keys(payload).length) {
-      setError("No employment changes to save.");
+      setError(tText("No employment changes to save."));
       setSaving(false);
       return;
     }
@@ -907,13 +905,13 @@ function EditEmployeeDialog({
 
   return (
     <EmployeeActionDialog
-      description="Update employee identity, login email and employment placement. Organization changes are recorded in employment history."
+      description={tText("Update employee identity, login email and employment placement. Organization changes are recorded in employment history.")}
       onClose={onClose}
-      title="Edit employee"
+      title={tText("Edit employee")}
     >
       {error && <ErrorState message={error} />}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Full name">
+        <Field label={tText("Full name")}>
           <input
             className={inputClass}
             value={form.fullName}
@@ -922,20 +920,19 @@ function EditEmployeeDialog({
             }
           />
         </Field>
-        <Field label="Phone">
+        <Field label={tText("Phone")}>
           <InternationalPhoneInput
             value={form.phone}
             onChange={(phone) => setForm({ ...form, phone })}
           />
           <span className="text-xs leading-5 text-outline">
-            Select the country code, then enter the local mobile number.
-          </span>
+            {tText("Select the country code, then enter the local mobile number.")}</span>
         </Field>
-        <Field label="Work email">
+        <Field label={tText("Work email")}>
           <input
             className={inputClass}
             disabled={!employee.user}
-            placeholder="employee@company.com"
+            placeholder={tText("employee@company.com")}
             type="email"
             value={form.email}
             onChange={(event) =>
@@ -944,11 +941,11 @@ function EditEmployeeDialog({
           />
           <span className="text-xs leading-5 text-outline">
             {employee.user
-              ? "This is the email used to sign in to the employee app."
-              : "This legacy employee has no login account yet. Create it from Account access."}
+              ? tText("This is the email used to sign in to the employee app.")
+              : tText("This legacy employee has no login account yet. Create it from Account access.")}
           </span>
         </Field>
-        <Field label="Department">
+        <Field label={tText("Department")}>
           <select
             className={inputClass}
             value={form.deptId}
@@ -963,7 +960,7 @@ function EditEmployeeDialog({
             ))}
           </select>
         </Field>
-        <Field label="Date of birth">
+        <Field label={tText("Date of birth")}>
           <input
             className={inputClass}
             max={today()}
@@ -974,7 +971,7 @@ function EditEmployeeDialog({
             value={form.dateOfBirth}
           />
         </Field>
-        <Field label="Designation">
+        <Field label={tText("Designation")}>
           <select
             className={inputClass}
             value={form.designationId}
@@ -982,7 +979,7 @@ function EditEmployeeDialog({
               setForm({ ...form, designationId: event.target.value })
             }
           >
-            <option value="">No designation</option>
+            <option value="">{tText("No designation")}</option>
             {designations.map((designation) => (
               <option key={designation.id} value={designation.id}>
                 {designation.name}
@@ -990,7 +987,7 @@ function EditEmployeeDialog({
             ))}
           </select>
         </Field>
-        <Field label="Manager">
+        <Field label={tText("Manager")}>
           <select
             className={inputClass}
             value={form.managerId}
@@ -998,7 +995,7 @@ function EditEmployeeDialog({
               setForm({ ...form, managerId: event.target.value })
             }
           >
-            <option value="">No manager</option>
+            <option value="">{tText("No manager")}</option>
             {managers.map((manager) => (
               <option key={manager.id} value={manager.id}>
                 {manager.fullName} ({manager.employeeCode})
@@ -1006,7 +1003,7 @@ function EditEmployeeDialog({
             ))}
           </select>
         </Field>
-        <Field label="Work type">
+        <Field label={tText("Work type")}>
           <select
             className={inputClass}
             value={form.workType}
@@ -1014,12 +1011,12 @@ function EditEmployeeDialog({
               setForm({ ...form, workType: event.target.value })
             }
           >
-            <option value="OFFICE">Office</option>
-            <option value="FIELD">Field</option>
-            <option value="HYBRID">Hybrid</option>
+            <option value="OFFICE">{tText("Office")}</option>
+            <option value="FIELD">{tText("Field")}</option>
+            <option value="HYBRID">{tText("Hybrid")}</option>
           </select>
         </Field>
-        <Field label="Effective date">
+        <Field label={tText("Effective date")}>
           <input
             className={inputClass}
             type="date"
@@ -1049,6 +1046,7 @@ function TerminateEmployeeDialog({
   onClose: () => void;
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [exitDate, setExitDate] = useState(today());
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
@@ -1070,14 +1068,14 @@ function TerminateEmployeeDialog({
   }
   return (
     <EmployeeActionDialog
-      description="This records the employee exit, removes them from active workforce counts, updates subscribed seat usage, and preserves their history."
+      description={tText("This records the employee exit, removes them from active workforce counts, updates subscribed seat usage, and preserves their history.")}
       onClose={onClose}
       title={`End employment for ${employee.fullName}`}
       tone="danger"
     >
       {error && <ErrorState message={error} />}
       <div className="grid gap-4">
-        <Field label="Last working date">
+        <Field label={tText("Last working date")}>
           <input
             className={inputClass}
             min={employee.dateOfJoining.slice(0, 10)}
@@ -1086,12 +1084,12 @@ function TerminateEmployeeDialog({
             value={exitDate}
           />
         </Field>
-        <Field label="Reason">
+        <Field label={tText("Reason")}>
           <textarea
             className={`${inputClass} min-h-24 py-3`}
             maxLength={500}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Voluntary resignation, contract completed, or another auditable reason"
+            placeholder={tText("Voluntary resignation, contract completed, or another auditable reason")}
             value={reason}
           />
         </Field>
@@ -1116,6 +1114,7 @@ function ReactivateEmployeeDialog({
   onClose: () => void;
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [effectiveDate, setEffectiveDate] = useState(today());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -1140,12 +1139,12 @@ function ReactivateEmployeeDialog({
   }
   return (
     <EmployeeActionDialog
-      description="Reactivation is quota-checked and returns this employee to active workforce and subscription seat counts. Review assignments after completion."
+      description={tText("Reactivation is quota-checked and returns this employee to active workforce and subscription seat counts. Review assignments after completion.")}
       onClose={onClose}
       title={`Reactivate ${employee.fullName}`}
     >
       {error && <ErrorState message={error} />}
-      <Field label="Effective date">
+      <Field label={tText("Effective date")}>
         <input
           className={inputClass}
           onChange={(event) => setEffectiveDate(event.target.value)}
@@ -1170,46 +1169,47 @@ function ReadinessPanel({
   readiness: Record<string, boolean>;
   onSelect: (tab: EmployeeTab) => void;
 }) {
+  const { tText } = useTenantLocalization();
   const steps: Record<
     string,
     { title: string; description: string; tab: EmployeeTab; action: string }
   > = {
     accountLinked: {
-      title: "Create employee login",
+      title: tText("Create employee login"),
       description:
-        "Invite the employee so they can use the app and self-service.",
+        tText("Invite the employee so they can use the app and self-service."),
       tab: "access",
       action: "Open account access",
     },
     managerAssigned: {
-      title: "Assign reporting manager",
-      description: "Needed for manager approvals and team visibility.",
+      title: tText("Assign reporting manager"),
+      description: tText("Needed for manager approvals and team visibility."),
       tab: "overview",
       action: "Review employment",
     },
     officeAssigned: {
-      title: "Assign workplace",
-      description: "Select the office or work location used for attendance.",
+      title: tText("Assign workplace"),
+      description: tText("Select the office or work location used for attendance."),
       tab: "assignments",
       action: "Open assignments",
     },
     shiftAssigned: {
-      title: "Assign shift or roster",
-      description: "Defines expected start, end and working days.",
+      title: tText("Assign shift or roster"),
+      description: tText("Defines expected start, end and working days."),
       tab: "assignments",
       action: "Open assignments",
     },
     attendancePolicyAssigned: {
-      title: "Apply attendance policy",
+      title: tText("Apply attendance policy"),
       description:
-        "Controls location, selfie and registered-device requirements.",
+        tText("Controls location, selfie and registered-device requirements."),
       tab: "assignments",
       action: "Open assignments",
     },
     approvedDevice: {
-      title: "Approve employee device",
+      title: tText("Approve employee device"),
       description:
-        "Required only when the selected policy enforces device trust.",
+        tText("Required only when the selected policy enforces device trust."),
       tab: "trust",
       action: "Open devices",
     },
@@ -1220,10 +1220,9 @@ function ReadinessPanel({
     <Panel className="p-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold">Employee setup checklist</h2>
+          <h2 className="text-lg font-bold">{tText("Employee setup checklist")}</h2>
           <p className="mt-1 text-sm text-outline">
-            Complete these steps before the employee starts using attendance.
-          </p>
+            {tText("Complete these steps before the employee starts using attendance.")}</p>
         </div>
         <span className="rounded-full bg-zinc-50 px-3 py-1 text-sm font-bold text-primary">
           {complete}/{total}
@@ -1235,7 +1234,7 @@ function ReadinessPanel({
             title: key
               .replace(/([a-z])([A-Z])/g, "$1 $2")
               .replace(/^./, (letter) => letter.toUpperCase()),
-            description: "Complete this employee setup requirement.",
+            description: tText("Complete this employee setup requirement."),
             tab: "overview" as EmployeeTab,
             action: "Review",
           };
@@ -1258,7 +1257,7 @@ function ReadinessPanel({
               <span>
                 <strong className="block text-zinc-800">{step.title}</strong>
                 <span className="mt-1 block text-xs leading-5 text-outline">
-                  {ready ? "Complete" : step.description}
+                  {ready ? tText("Complete") : step.description}
                 </span>
                 {!ready && (
                   <span className="mt-2 block text-xs font-bold text-primary">
@@ -1279,30 +1278,30 @@ function AccountSummary({
 }: {
   employee: EmployeeWorkspace["employee"];
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="h-fit p-6">
       <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
         <KeyRound className="size-6" />
       </div>
-      <h2 className="mt-5 text-xl font-bold">Account access</h2>
+      <h2 className="mt-5 text-xl font-bold">{tText("Account access")}</h2>
       {employee.user ? (
         <div className="mt-5 grid gap-3">
-          <IdentityRow label="Email" positive value={employee.user.email} />
+          <IdentityRow label={tText("Email")} positive value={employee.user.email} />
           <IdentityRow
-            label="Status"
+            label={tText("Status")}
             positive={employee.user.status === "ACTIVE"}
             value={employee.user.status}
           />
           <IdentityRow
-            label="Email verified"
+            label={tText("Email verified")}
             positive={Boolean(employee.user.emailVerifiedAt)}
             value={employee.user.emailVerifiedAt ? "Yes" : "No"}
           />
         </div>
       ) : (
         <p className="mt-3 text-sm leading-6 text-outline">
-          No login account is linked yet. Create it from the Account access tab.
-        </p>
+          {tText("No login account is linked yet. Create it from the Account access tab.")}</p>
       )}
     </Panel>
   );
@@ -1317,6 +1316,7 @@ function AssignmentsPanel({
   workspace: EmployeeWorkspace;
   onUpdate: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   const policy = workspace.assignments.effectiveAttendancePolicy;
   const [editing, setEditing] = useState(false);
 
@@ -1324,17 +1324,16 @@ function AssignmentsPanel({
     <div className="grid gap-6 lg:grid-cols-2">
       <Panel className="p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Work assignments</h2>
+          <h2 className="text-lg font-bold">{tText("Work assignments")}</h2>
           <button
             className="flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-200"
             onClick={() => setEditing(true)}
           >
-            <Pencil className="size-3" /> Edit
-          </button>
+            <Pencil className="size-3" /> {tText("Edit")}</button>
         </div>
         <div className="mt-5 grid gap-3">
           <AssignmentRow
-            label="Primary office"
+            label={tText("Primary office")}
             value={
               workspace.assignments.offices.find(({ isPrimary }) => isPrimary)
                 ?.office.officeName ??
@@ -1343,11 +1342,11 @@ function AssignmentsPanel({
             }
           />
           <AssignmentRow
-            label="Default shift"
+            label={tText("Default shift")}
             value={workspace.assignments.defaultShift?.name ?? "Not assigned"}
           />
           <AssignmentRow
-            label="Upcoming roster entries"
+            label={tText("Upcoming roster entries")}
             value={String(workspace.assignments.upcomingRosters.length)}
           />
           {workspace.assignments.offices.map(({ office, isPrimary }) => (
@@ -1369,28 +1368,27 @@ function AssignmentsPanel({
           className="mt-5 inline-flex text-sm font-bold text-primary"
           href="/app/attendance/rosters"
         >
-          Manage shifts and rosters
-        </Link>
+          {tText("Manage shifts and rosters")}</Link>
       </Panel>
       <Panel className="p-6">
-        <h2 className="text-lg font-bold">Effective Attendance policy</h2>
+        <h2 className="text-lg font-bold">{tText("Effective Attendance policy")}</h2>
         {policy ? (
           <div className="mt-5 grid gap-3">
-            <AssignmentRow label="Policy" value={policy.policy.name} />
+            <AssignmentRow label={tText("Policy")} value={policy.policy.name} />
             <AssignmentRow
-              label="Resolved from"
+              label={tText("Resolved from")}
               value={policy.scope.replaceAll("_", " ")}
             />
             <AssignmentRow
-              label="Location"
+              label={tText("Location")}
               value={policy.policy.locationMode.replaceAll("_", " ")}
             />
             <AssignmentRow
-              label="Selfie"
+              label={tText("Selfie")}
               value={policy.policy.selfieMode.replaceAll("_", " ")}
             />
             <AssignmentRow
-              label="Device"
+              label={tText("Device")}
               value={
                 policy.policy.requireRegisteredDevice ? "Required" : "Optional"
               }
@@ -1398,23 +1396,18 @@ function AssignmentsPanel({
           </div>
         ) : (
           <p className="mt-4 text-sm text-amber-900">
-            No tenant, department, or employee policy currently resolves for
-            this employee.
-          </p>
+            {tText("No tenant, department, or employee policy currently resolves for this employee.")}</p>
         )}
         <Link
           className="mt-5 inline-flex text-sm font-bold text-primary"
           href={`/app/attendance/policies?employeeId=${employeeId}&returnTo=${encodeURIComponent(`/app/employees/${employeeId}?tab=assignments`)}`}
         >
-          Change this employee&apos;s policy
-        </Link>
+          {tText("Change this employee&apos;s policy")}</Link>
       </Panel>
       <Panel className="p-6 lg:col-span-2">
-        <h2 className="text-lg font-bold">Assigned Leave policies</h2>
+        <h2 className="text-lg font-bold">{tText("Assigned Leave policies")}</h2>
         <p className="mt-1 text-sm text-outline">
-          A balance confirms the employee is assigned to that versioned Leave
-          policy.
-        </p>
+          {tText("A balance confirms the employee is assigned to that versioned Leave policy.")}</p>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {workspace.leave.balances.length ? (
             workspace.leave.balances.map((balance) => (
@@ -1426,16 +1419,14 @@ function AssignmentsPanel({
             ))
           ) : (
             <p className="text-sm text-amber-900">
-              No Leave policy balance is assigned to this employee.
-            </p>
+              {tText("No Leave policy balance is assigned to this employee.")}</p>
           )}
         </div>
         <Link
           className="mt-5 inline-flex text-sm font-bold text-primary"
           href="/app/attendance/setup/leave"
         >
-          Manage Leave policies
-        </Link>
+          {tText("Manage Leave policies")}</Link>
       </Panel>
       {editing && (
         <EditAssignmentsModal
@@ -1477,10 +1468,11 @@ function LeavePanel({
   employeeId: string;
   workspace: EmployeeWorkspace;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Panel className="p-6">
-        <h2 className="text-lg font-bold">Leave balances</h2>
+        <h2 className="text-lg font-bold">{tText("Leave balances")}</h2>
         <div className="mt-4 grid gap-3">
           {workspace.leave.balances.length ? (
             workspace.leave.balances.map((balance) => (
@@ -1491,19 +1483,18 @@ function LeavePanel({
               />
             ))
           ) : (
-            <p className="text-sm text-outline">No balances assigned.</p>
+            <p className="text-sm text-outline">{tText("No balances assigned.")}</p>
           )}
         </div>
       </Panel>
       <Panel className="p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">Recent requests</h2>
+          <h2 className="text-lg font-bold">{tText("Recent requests")}</h2>
           <Link
             className="text-sm font-bold text-primary"
             href={`/app/attendance/leave/requests?employeeId=${employeeId}&returnTo=/app/employees/${employeeId}`}
           >
-            Open full history
-          </Link>
+            {tText("Open full history")}</Link>
         </div>
         <div className="mt-4 grid gap-3">
           {workspace.leave.recentRequests.length ? (
@@ -1514,13 +1505,12 @@ function LeavePanel({
                   <span className="text-xs font-bold">{request.status}</span>
                 </div>
                 <p className="mt-1 text-xs text-outline">
-                  {formatDate(request.startDate)} to{" "}
-                  {formatDate(request.endDate)} · {request.totalDays} days
-                </p>
+                  {formatDate(request.startDate)} {tText("to")}{" "}
+                  {formatDate(request.endDate)} · {request.totalDays} {tText("days")}</p>
               </div>
             ))
           ) : (
-            <p className="text-sm text-outline">No leave requests yet.</p>
+            <p className="text-sm text-outline">{tText("No leave requests yet.")}</p>
           )}
         </div>
       </Panel>
@@ -1539,6 +1529,7 @@ function AccountPanel({
   onAccountCreated: () => Promise<void>;
   permissions: string[];
 }) {
+  const { tText } = useTenantLocalization();
   const canCreateAccount = permissions.includes(
     "organization.employees.update",
   );
@@ -1553,37 +1544,30 @@ function AccountPanel({
           <Panel className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="font-bold">Create employee login</h2>
+                <h2 className="font-bold">{tText("Create employee login")}</h2>
                 <p className="mt-1 text-sm leading-6 text-outline">
-                  Enter the work email. DeltCRM will create the Employee login
-                  and generate a temporary password immediately.
-                </p>
+                  {tText("Enter the work email. DeltCRM will create the Employee login and generate a temporary password immediately.")}</p>
               </div>
               <PrimaryButton onClick={() => setAccountOpen(true)}>
-                <KeyRound className="size-4" /> Create login
-              </PrimaryButton>
+                <KeyRound className="size-4" /> {tText("Create login")}</PrimaryButton>
             </div>
           </Panel>
         )}
       </div>
       <Panel className="p-6">
-        <h2 className="text-lg font-bold">Employee access</h2>
+        <h2 className="text-lg font-bold">{tText("Employee access")}</h2>
         {employee.user ? (
           <div className="mt-4 grid gap-4">
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
               <p className="text-sm font-bold text-emerald-900">
-                Employee self-service active
-              </p>
+                {tText("Employee self-service active")}</p>
               <p className="mt-1 text-xs leading-5 text-emerald-900">
-                The Employee role was assigned automatically when this login was
-                created.
-              </p>
+                {tText("The Employee role was assigned automatically when this login was created.")}</p>
             </div>
             {elevatedRoles.length > 0 && (
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-outline">
-                  Additional access
-                </p>
+                  {tText("Additional access")}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {elevatedRoles.map(({ role }) => (
                     <span
@@ -1599,11 +1583,9 @@ function AccountPanel({
           </div>
         ) : (
           <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-            <p className="text-sm font-bold text-amber-900">Not activated</p>
+            <p className="text-sm font-bold text-amber-900">{tText("Not activated")}</p>
             <p className="mt-1 text-xs leading-5 text-amber-900">
-              Create the employee login here. The Employee role is assigned
-              automatically; no separate role setup is required.
-            </p>
+              {tText("Create the employee login here. The Employee role is assigned automatically; no separate role setup is required.")}</p>
           </div>
         )}
       </Panel>
@@ -1630,6 +1612,7 @@ function CreateEmployeeAccountDialog({
   onClose: () => void;
   onCreated: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [credentials, setCredentials] = useState<{
@@ -1662,18 +1645,16 @@ function CreateEmployeeAccountDialog({
     <EmployeeActionDialog
       description={`Create the mobile and self-service login for ${employeeName}. The Employee role is assigned automatically.`}
       onClose={onClose}
-      title="Create employee login"
+      title={tText("Create employee login")}
     >
       {credentials ? (
         <div className="grid gap-4">
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
-            Login created successfully. Give these temporary credentials to the
-            employee.
-          </div>
-          <Field label="Login email">
+            {tText("Login created successfully. Give these temporary credentials to the employee.")}</div>
+          <Field label={tText("Login email")}>
             <input className={inputClass} readOnly value={credentials.email} />
           </Field>
-          <Field label="Temporary password">
+          <Field label={tText("Temporary password")}>
             <input
               className={inputClass}
               readOnly
@@ -1686,13 +1667,12 @@ function CreateEmployeeAccountDialog({
               void onCreated();
             }}
           >
-            Done
-          </PrimaryButton>
+            {tText("Done")}</PrimaryButton>
         </div>
       ) : (
         <div className="grid gap-4">
           {error && <ErrorState message={error} />}
-          <Field label="Employee work email">
+          <Field label={tText("Employee work email")}>
             <input
               autoFocus
               className={inputClass}
@@ -1703,18 +1683,13 @@ function CreateEmployeeAccountDialog({
           </Field>
           <div className="rounded-lg bg-zinc-50 p-4 text-sm">
             <span className="block text-xs font-bold uppercase tracking-wide text-outline">
-              Account role
-            </span>
-            <strong className="mt-1 block">Employee self-service</strong>
+              {tText("Account role")}</span>
+            <strong className="mt-1 block">{tText("Employee self-service")}</strong>
             <span className="mt-1 block text-xs leading-5 text-outline">
-              Attendance, leave, notifications, and the employee&apos;s own
-              profile only. Additional HR access can be granted later.
-            </span>
+              {tText("Attendance, leave, notifications, and the employee&apos;s own profile only. Additional HR access can be granted later.")}</span>
           </div>
           <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-            The temporary password is the employee name plus the first six phone
-            digits. It is shown after account creation.
-          </p>
+            {tText("The temporary password is the employee name plus the first six phone digits. It is shown after account creation.")}</p>
           <DialogActions
             busy={saving}
             confirmDisabled={!email}
@@ -1769,19 +1744,20 @@ const HISTORY_CATEGORIES: Array<{
   value: "ALL" | EmployeeHistoryCategory;
   label: string;
 }> = [
-  { value: "ALL", label: "All activity" },
-  { value: "PROFILE", label: "Profile" },
-  { value: "ASSIGNMENT", label: "Assignments" },
-  { value: "ACCESS", label: "Access" },
-  { value: "ATTENDANCE", label: "Attendance" },
-  { value: "LEAVE", label: "Leave" },
-  { value: "TRUST", label: "Devices & biometrics" },
-  { value: "DOCUMENT", label: "Documents" },
-  { value: "LIFECYCLE", label: "Lifecycle" },
-  { value: "SECURITY", label: "Security" },
+  { value: "ALL", label: tenantMessage("All activity") },
+  { value: "PROFILE", label: tenantMessage("Profile") },
+  { value: "ASSIGNMENT", label: tenantMessage("Assignments") },
+  { value: "ACCESS", label: tenantMessage("Access") },
+  { value: "ATTENDANCE", label: tenantMessage("Attendance") },
+  { value: "LEAVE", label: tenantMessage("Leave") },
+  { value: "TRUST", label: tenantMessage("Devices & biometrics") },
+  { value: "DOCUMENT", label: tenantMessage("Documents") },
+  { value: "LIFECYCLE", label: tenantMessage("Lifecycle") },
+  { value: "SECURITY", label: tenantMessage("Security") },
 ];
 
 function HistoryPanel({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
   const [category, setCategory] = useState<"ALL" | EmployeeHistoryCategory>(
     "ALL",
   );
@@ -1863,13 +1839,12 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
         <div className="flex items-center gap-3">
           <ListChecks className="size-5 text-primary" />
           <div>
-            <h2 className="text-lg font-bold">Employee history</h2>
+            <h2 className="text-lg font-bold">{tText("Employee history")}</h2>
             <p className="text-sm text-outline">
-              A chronological audit trail of changes related to this employee.
-            </p>
+              {tText("A chronological audit trail of changes related to this employee.")}</p>
           </div>
         </div>
-        <Field label="Activity type">
+        <Field label={tText("Activity type")}>
           <select
             className={`${inputClass} min-w-52`}
             onChange={(event) => {
@@ -1883,7 +1858,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
           >
             {HISTORY_CATEGORIES.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {tText(option.label)}
               </option>
             ))}
           </select>
@@ -1909,18 +1884,17 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold">{entry.title}</p>
                     <span className="rounded-full bg-zinc-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-outline">
-                      {historyCategoryLabel(entry.category)}
+                      {tText(historyCategoryLabel(entry.category))}
                     </span>
                     {entry.impersonated && (
                       <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase text-amber-900">
-                        Impersonated
-                      </span>
+                        {tText("Impersonated")}</span>
                     )}
                   </div>
                   <p className="mt-1 text-xs text-outline">
                     {entry.actor
                       ? `By ${entry.actor.displayName || entry.actor.email}`
-                      : "System activity"}{" "}
+                      : tText("System activity")}{" "}
                     · {formatDateTime(entry.occurredAt)}
                     {entry.effectiveAt
                       ? ` · Effective ${formatDate(entry.effectiveAt)}`
@@ -1946,7 +1920,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
                   )}
                   {entry.requestId && (
                     <p className="mt-2 break-all text-[10px] text-outline">
-                      Request: {entry.requestId}
+                      {tText("Request:")}{entry.requestId}
                     </p>
                   )}
                 </div>
@@ -1955,10 +1929,9 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
           ))
         ) : (
           <div className="rounded-xl border border-dashed border-surface-variant p-8 text-center">
-            <p className="text-sm font-semibold">No matching activity</p>
+            <p className="text-sm font-semibold">{tText("No matching activity")}</p>
             <p className="mt-1 text-xs text-outline">
-              New employee actions will appear here automatically.
-            </p>
+              {tText("New employee actions will appear here automatically.")}</p>
           </div>
         )}
       </div>
@@ -1969,7 +1942,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
           onClick={loadMore}
           type="button"
         >
-          {loadingMore ? "Loading more..." : "Load more activity"}
+          {loadingMore ? tText("Loading more...") : tText("Load more activity")}
         </button>
       )}
     </Panel>
@@ -1991,6 +1964,7 @@ type DocumentUploadStage =
   "idle" | "preparing" | "uploading" | "registering" | "refreshing";
 
 function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const canManage = permissions.includes(
     "organization.employee-documents.manage",
@@ -2014,12 +1988,12 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
     apiClient
       .get<{ data: EmployeeDocument[] }>(`/employees/${employeeId}/documents`)
       .then(({ data }) => setDocuments(data.data))
-      .catch(() => setError("Employee documents could not be loaded."));
+      .catch(() => setError(tText("Employee documents could not be loaded.")));
   useEffect(() => {
     apiClient
       .get<{ data: EmployeeDocument[] }>(`/employees/${employeeId}/documents`)
       .then(({ data }) => setDocuments(data.data))
-      .catch(() => setError("Employee documents could not be loaded."));
+      .catch(() => setError(tText("Employee documents could not be loaded.")));
   }, [employeeId]);
 
   async function upload() {
@@ -2105,7 +2079,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       );
       window.location.assign(data.data.url);
     } catch {
-      setError("A private download link could not be created.");
+      setError(tText("A private download link could not be created."));
     }
   }
 
@@ -2118,7 +2092,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       );
       setPreview({ document, url: data.data.url });
     } catch {
-      setError("A private preview link could not be created.");
+      setError(tText("A private preview link could not be created."));
     } finally {
       setPreviewLoadingId(null);
     }
@@ -2129,7 +2103,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
     await apiClient
       .delete(`/employees/${employeeId}/documents/${document.id}`)
       .then(load)
-      .catch(() => setError("The document could not be deleted."));
+      .catch(() => setError(tText("The document could not be deleted.")));
   }
 
   return (
@@ -2137,11 +2111,9 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       <Panel className="overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-4 p-6">
           <div>
-            <h2 className="text-lg font-bold">Employee documents</h2>
+            <h2 className="text-lg font-bold">{tText("Employee documents")}</h2>
             <p className="mt-1 max-w-2xl text-sm text-outline">
-              Store private employee files and issue short-lived download links.
-              Uploads and deletions are recorded in the audit history.
-            </p>
+              {tText("Store private employee files and issue short-lived download links. Uploads and deletions are recorded in the audit history.")}</p>
           </div>
           {canManage && (
             <PrimaryButton
@@ -2156,35 +2128,35 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               ) : (
                 <Upload className="size-4" />
               )}
-              {uploadOpen ? "Close" : "Add document"}
+              {uploadOpen ? tText("Close") : tText("Add document")}
             </PrimaryButton>
           )}
         </div>
         {canManage && uploadOpen && (
           <div className="border-t border-surface-variant bg-zinc-50/70 p-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <Field label="Document title">
+              <Field label={tText("Document title")}>
                 <input
                   className={inputClass}
-                  placeholder="e.g. Employment contract"
+                  placeholder={tText("e.g. Employment contract")}
                   onChange={(event) => setTitle(event.target.value)}
                   value={title}
                 />
               </Field>
-              <Field label="Document type">
+              <Field label={tText("Document type")}>
                 <select
                   className={inputClass}
                   onChange={(event) => setDocumentType(event.target.value)}
                   value={documentType}
                 >
-                  <option value="EMPLOYMENT">Employment</option>
-                  <option value="IDENTITY">Identity</option>
-                  <option value="CERTIFICATION">Certification</option>
-                  <option value="POLICY">Policy acknowledgement</option>
-                  <option value="OTHER">Other</option>
+                  <option value="EMPLOYMENT">{tText("Employment")}</option>
+                  <option value="IDENTITY">{tText("Identity")}</option>
+                  <option value="CERTIFICATION">{tText("Certification")}</option>
+                  <option value="POLICY">{tText("Policy acknowledgement")}</option>
+                  <option value="OTHER">{tText("Other")}</option>
                 </select>
               </Field>
-              <Field label="Expiry date (optional)">
+              <Field label={tText("Expiry date (optional)")}>
                 <input
                   className={inputClass}
                   onChange={(event) => setExpiresAt(event.target.value)}
@@ -2192,7 +2164,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                   value={expiresAt}
                 />
               </Field>
-              <Field label="Private file">
+              <Field label={tText("Private file")}>
                 <input
                   accept="application/pdf,image/jpeg,image/png,image/webp"
                   className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-primary"
@@ -2206,13 +2178,12 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 <strong className="block truncate text-sm text-on-surface">
                   {file.name}
                 </strong>
-                {file.type || "Unknown file type"} · {formatFileSize(file.size)}
+                {file.type || tText("Unknown file type")} · {formatFileSize(file.size)}
               </div>
             )}
             {!file && (
               <p className="mt-3 text-xs text-outline">
-                Select a PDF, PNG, JPEG, or WebP file under 10 MB.
-              </p>
+                {tText("Select a PDF, PNG, JPEG, or WebP file under 10 MB.")}</p>
             )}
             {error && (
               <div className="mt-4">
@@ -2221,22 +2192,20 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             )}
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <span className="mr-auto text-xs text-outline">
-                A title and a file are required.
-              </span>
+                {tText("A title and a file are required.")}</span>
               <button
                 className="h-11 rounded-xl border border-zinc-300 bg-white px-5 text-sm font-semibold"
                 onClick={() => setUploadOpen(false)}
                 type="button"
               >
-                Cancel
-              </button>
+                {tText("Cancel")}</button>
               <PrimaryButton
                 disabled={busy || !file || title.trim().length < 2}
                 onClick={upload}
               >
                 {busy
                   ? documentUploadStageLabel(uploadStage)
-                  : "Upload document"}
+                  : tText("Upload document")}
               </PrimaryButton>
             </div>
           </div>
@@ -2275,7 +2244,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 </strong>
                 {document.expiresAt
                   ? `Expires ${formatDate(document.expiresAt)}`
-                  : "No expiry"}
+                  : tText("No expiry")}
               </div>
               <div className="flex gap-2">
                 <button
@@ -2314,8 +2283,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
           ))
         ) : (
           <p className="border-t border-surface-variant p-6 text-sm text-outline">
-            No private documents are stored for this employee yet.
-          </p>
+            {tText("No private documents are stored for this employee yet.")}</p>
         )}
       </Panel>
       {preview && (
@@ -2349,10 +2317,9 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                   type="button"
                 >
                   <Download className="size-4" />
-                  Download
-                </button>
+                  {tText("Download")}</button>
                 <button
-                  aria-label="Close document viewer"
+                  aria-label={tText("Close document viewer")}
                   className="grid size-10 place-items-center rounded-lg text-outline hover:bg-zinc-100"
                   onClick={() => setPreview(null)}
                   type="button"
@@ -2405,6 +2372,7 @@ function EmployeeActionDialog({
   tone?: "default" | "danger";
   children: ReactNode;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div
       aria-modal="true"
@@ -2433,7 +2401,7 @@ function EmployeeActionDialog({
             </p>
           </div>
           <button
-            aria-label="Close dialog"
+            aria-label={tText("Close dialog")}
             className="ml-auto grid size-10 shrink-0 place-items-center rounded-lg text-outline hover:bg-zinc-50"
             onClick={onClose}
             type="button"
@@ -2462,6 +2430,7 @@ function DialogActions({
   onCancel: () => void;
   onConfirm: () => void | Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div className="mt-6 flex flex-wrap justify-end gap-3">
       <button
@@ -2470,8 +2439,7 @@ function DialogActions({
         onClick={onCancel}
         type="button"
       >
-        Cancel
-      </button>
+        {tText("Cancel")}</button>
       <button
         className={`min-h-11 rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50 ${
           danger ? "bg-error" : "bg-primary"
@@ -2480,7 +2448,7 @@ function DialogActions({
         onClick={() => void onConfirm()}
         type="button"
       >
-        {busy ? "Saving..." : confirmLabel}
+        {busy ? tText("Saving...") : confirmLabel}
       </button>
     </div>
   );
@@ -2538,6 +2506,7 @@ function FaceResetDialog({
   onClose: () => void;
   onComplete: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -2552,7 +2521,7 @@ function FaceResetDialog({
       });
       await onComplete();
     } catch {
-      setError("The face profile could not be reset. Refresh and try again.");
+      setError(tText("The face profile could not be reset. Refresh and try again."));
     } finally {
       setSaving(false);
     }
@@ -2569,14 +2538,11 @@ function FaceResetDialog({
           <Fingerprint className="size-6" />
         </div>
         <h2 className="mt-5 text-xl font-bold">
-          Reset {employeeName}’s face profile?
-        </h2>
+          {tText("Reset")}{employeeName}{tText("’s face profile?")}</h2>
         <p className="mt-2 text-sm text-outline">
-          Existing biometric evidence will be revoked and deleted. The employee
-          must complete enrollment again.
-        </p>
+          {tText("Existing biometric evidence will be revoked and deleted. The employee must complete enrollment again.")}</p>
         <div className="mt-5 grid gap-4">
-          <Field label="Reset reason">
+          <Field label={tText("Reset reason")}>
             <textarea
               className={`${inputClass} min-h-28 py-3`}
               maxLength={500}
@@ -2591,14 +2557,13 @@ function FaceResetDialog({
               className="min-h-11 flex-1 rounded-xl border border-zinc-300 px-4 text-sm font-semibold"
               onClick={onClose}
             >
-              Cancel
-            </button>
+              {tText("Cancel")}</button>
             <PrimaryButton
               className="flex-1"
               disabled={saving || reason.trim().length < 5}
               onClick={() => void reset()}
             >
-              {saving ? "Resetting…" : "Reset profile"}
+              {saving ? tText("Resetting…") : tText("Reset profile")}
             </PrimaryButton>
           </div>
         </div>
@@ -2708,6 +2673,7 @@ function EditAssignmentsModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   const [offices, setOffices] = useState<
     Array<{ id: string; officeName: string }>
   >([]);
@@ -2736,7 +2702,7 @@ function EditAssignmentsModal({
         defaultShiftId: form.defaultShiftId || null,
       })
       .then(onSuccess)
-      .catch(() => alert("Failed to update assignments"))
+      .catch(() => alert(tText("Failed to update assignments")))
       .finally(() => setSaving(false));
   }
 
@@ -2744,7 +2710,7 @@ function EditAssignmentsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-surface-variant p-4">
-          <h2 className="text-lg font-bold">Edit assignments</h2>
+          <h2 className="text-lg font-bold">{tText("Edit assignments")}</h2>
           <button onClick={onClose}>
             <X className="size-5 text-outline" />
           </button>
@@ -2755,7 +2721,7 @@ function EditAssignmentsModal({
               <LoadingState />
             ) : (
               <>
-                <Field label="Primary office">
+                <Field label={tText("Primary office")}>
                   <select
                     className={inputClass}
                     value={form.primaryOfficeId}
@@ -2763,7 +2729,7 @@ function EditAssignmentsModal({
                       setForm({ ...form, primaryOfficeId: e.target.value })
                     }
                   >
-                    <option value="">None</option>
+                    <option value="">{tText("None")}</option>
                     {offices.map((o) => (
                       <option key={o.id} value={o.id}>
                         {o.officeName}
@@ -2771,7 +2737,7 @@ function EditAssignmentsModal({
                     ))}
                   </select>
                 </Field>
-                <Field label="Default shift">
+                <Field label={tText("Default shift")}>
                   <select
                     className={inputClass}
                     value={form.defaultShiftId}
@@ -2779,7 +2745,7 @@ function EditAssignmentsModal({
                       setForm({ ...form, defaultShiftId: e.target.value })
                     }
                   >
-                    <option value="">None</option>
+                    <option value="">{tText("None")}</option>
                     {shifts.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -2788,8 +2754,7 @@ function EditAssignmentsModal({
                   </select>
                 </Field>
                 <PrimaryButton disabled={saving} onClick={save}>
-                  Save assignments
-                </PrimaryButton>
+                  {tText("Save assignments")}</PrimaryButton>
               </>
             )}
           </div>

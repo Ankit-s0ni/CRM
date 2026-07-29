@@ -22,6 +22,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 import { cn } from "@/lib/utils";
 import {
   AdminPage,
@@ -207,6 +208,7 @@ export const payrollFoundationTabs: PayrollTab[] = [
 const today = new Date().toISOString().slice(0, 10);
 
 export function PayrollFoundationWorkspace() {
+  const { tText } = useTenantLocalization();
   const permissionList = useAuthStore((state) => state.user?.permissions ?? []);
   const permissions = useMemo(() => new Set(permissionList), [permissionList]);
   const visibleTabs = useMemo(
@@ -224,11 +226,11 @@ export function PayrollFoundationWorkspace() {
 
   return (
     <AdminPage
-      title="Payroll foundation"
-      description="Complete Phase 1 payroll setup without payroll runs, calculations, payslips, journals or payments."
+      title={tText("Payroll foundation")}
+      description={tText("Complete Phase 1 payroll setup without payroll runs, calculations, payslips, journals or payments.")}
     >
       {!visibleTabs.length ? (
-        <ErrorState message="Your account does not have Payroll foundation permissions." />
+        <ErrorState message={tText("Your account does not have Payroll foundation permissions.")} />
       ) : (
         <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
           <Panel className="p-2">
@@ -248,7 +250,7 @@ export function PayrollFoundationWorkspace() {
                     type="button"
                   >
                     <Icon className="size-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span>{tText(item.label)}</span>
                   </button>
                 );
               })}
@@ -279,6 +281,7 @@ function PayrollTabPanel({
   permissions: Set<string>;
   tab: PayrollTab;
 }) {
+  const { tText } = useTenantLocalization();
   const employeeEndpoint = endpointForEmployee(tab.key, employeeId);
   const endpoint = tab.endpoint || employeeEndpoint;
   const resource = usePayrollResource(endpoint);
@@ -295,27 +298,27 @@ function PayrollTabPanel({
             <div className="flex items-center gap-3">
               <tab.icon className="size-5 text-primary" />
               <h2 className="text-xl font-semibold text-zinc-900">
-                {tab.label}
+                {tText(tab.label)}
               </h2>
             </div>
             <p className="mt-1 max-w-3xl text-sm text-zinc-500">
-              {tab.description}
+              {tText(tab.description)}
             </p>
           </div>
           <PrimaryButton disabled={!endpoint} onClick={resource.refresh}>
             <RefreshCw className="size-4" />
-            Refresh
+            {tText("Refresh")}
           </PrimaryButton>
         </div>
         {needsEmployee && (
           <div className="mt-5 max-w-xl">
-            <Field label="Employee ID">
+            <Field label={tText("Employee ID")}>
               <div className="relative">
                 <Search className="absolute left-3 top-3.5 size-4 text-zinc-400" />
                 <input
                   className={`${inputClass} pl-9`}
                   onChange={(event) => onEmployeeIdChange(event.target.value)}
-                  placeholder="Paste an employee UUID"
+                  placeholder={tText("Paste an employee UUID")}
                   value={employeeId}
                 />
               </div>
@@ -343,8 +346,8 @@ function PayrollTabPanel({
             />
           ) : (
             <EmptyState
-              body="Select an employee before loading employee-specific payroll data."
-              title="Employee required"
+              body={tText("Select an employee before loading employee-specific payroll data.")}
+              title={tText("Employee required")}
             />
           )}
         </>
@@ -354,6 +357,7 @@ function PayrollTabPanel({
 }
 
 function usePayrollResource(endpoint: string): ResourceState & { refresh: () => void } {
+  const { tText } = useTenantLocalization();
   const [state, setState] = useState<ResourceState>({
     data: null,
     loading: false,
@@ -369,10 +373,10 @@ function usePayrollResource(endpoint: string): ResourceState & { refresh: () => 
         setState({
           data: null,
           loading: false,
-          error: apiError(error),
+          error: apiError(error, tText),
         }),
       );
-  }, [endpoint]);
+  }, [endpoint, tText]);
 
   useEffect(() => {
     void Promise.resolve().then(refresh);
@@ -381,6 +385,7 @@ function usePayrollResource(endpoint: string): ResourceState & { refresh: () => 
 }
 
 function PayrollOverview({ permissions }: { permissions: Set<string> }) {
+  const { tText } = useTenantLocalization();
   const settings = usePayrollResource("/payroll/settings");
   const calendars = usePayrollResource("/payroll/calendars");
   const payGroups = usePayrollResource("/payroll/pay-groups");
@@ -391,14 +396,14 @@ function PayrollOverview({ permissions }: { permissions: Set<string> }) {
   const accounting = usePayrollResource("/payroll/accounting-mappings");
 
   const cards = [
-    statusCard("Settings", Boolean(dataObject(settings.data)), "/app/settings/payroll"),
-    statusCard("Active calendar", rows(calendars.data).some((item) => item.status === "ACTIVE"), ""),
-    countCard("Pay groups", rows(payGroups.data).length),
-    countCard("Policies", rows(policies.data).length),
-    countCard("Components", rows(components.data).length),
-    countCard("Salary structures", rows(structures.data).length),
-    statusCard("Approval policy", rows(approvals.data).length > 0, ""),
-    statusCard("Accounting mappings", rows(accounting.data).length > 0, ""),
+    statusCard(tText("Settings"), Boolean(dataObject(settings.data)), "/app/settings/payroll"),
+    statusCard(tText("Active calendar"), rows(calendars.data).some((item) => item.status === "ACTIVE"), ""),
+    countCard(tText("Pay groups"), rows(payGroups.data).length),
+    countCard(tText("Policies"), rows(policies.data).length),
+    countCard(tText("Components"), rows(components.data).length),
+    countCard(tText("Salary structures"), rows(structures.data).length),
+    statusCard(tText("Approval policy"), rows(approvals.data).length > 0, ""),
+    statusCard(tText("Accounting mappings"), rows(accounting.data).length > 0, ""),
   ];
 
   return (
@@ -423,27 +428,27 @@ function PayrollOverview({ permissions }: { permissions: Set<string> }) {
                     : "bg-amber-50 text-amber-700",
                 )}
               >
-                {card.ready ? "Ready" : "Needed"}
+                {tText(card.ready ? "Ready" : "Needed")}
               </span>
             </div>
           </Panel>
         ))}
       </div>
       <Panel className="p-5">
-        <h3 className="text-base font-semibold">Setup sequence</h3>
+        <h3 className="text-base font-semibold">{tText("Setup sequence")}</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {[
-            "Payroll settings",
-            "Payroll calendar",
-            "Pay group",
-            "Policies",
-            "Components",
-            "Salary structure",
-            "Employee payroll profile",
-            "Compensation",
-            "Protected details",
-            "Approval policy",
-            "Accounting mapping",
+            tText("Payroll settings"),
+            tText("Payroll calendar"),
+            tText("Pay group"),
+            tText("Policies"),
+            tText("Components"),
+            tText("Salary structure"),
+            tText("Employee payroll profile"),
+            tText("Compensation"),
+            tText("Protected details"),
+            tText("Approval policy"),
+            tText("Accounting mapping"),
           ].map((item) => (
             <div className="flex items-center gap-3 text-sm" key={item}>
               <CheckCircle2 className="size-4 text-primary" />
@@ -453,8 +458,7 @@ function PayrollOverview({ permissions }: { permissions: Set<string> }) {
         </div>
         {!permissions.has("payroll.protected-data.read") && (
           <p className="mt-4 text-sm text-zinc-500">
-            Protected detail setup is hidden because this user lacks the
-            dedicated protected-data permission.
+            {tText("Protected detail setup is hidden because this user lacks the dedicated protected-data permission.")}
           </p>
         )}
       </Panel>
@@ -507,6 +511,7 @@ function SettingsForm({
   current: Record<string, unknown> | null;
   onSaved: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     countryCode: text(current?.countryCode, "OM"),
     defaultCurrency: text(current?.defaultCurrency, "OMR"),
@@ -537,9 +542,9 @@ function SettingsForm({
   };
   return (
     <FormPanel
-      action={current ? "Save settings" : "Create settings"}
+      action={tText(current ? "Save settings" : "Create settings")}
       onSubmit={submit}
-      title="Payroll settings"
+      title={tText("Payroll settings")}
     >
       <FieldGrid>
         <TextField form={form} name="countryCode" setForm={setForm} />
@@ -561,6 +566,7 @@ function SettingsForm({
 }
 
 function CalendarForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "MONTHLY_26_25",
     name: "Monthly 26 to 25",
@@ -570,7 +576,7 @@ function CalendarForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create calendar"
+      action={tText("Create calendar")}
       onSubmit={() =>
         save(
           "post",
@@ -584,7 +590,7 @@ function CalendarForm({ onSaved }: { onSaved: () => void }) {
           onSaved,
         )
       }
-      title="Create calendar"
+      title={tText("Create calendar")}
     >
       <FieldGrid>
         <TextField form={form} name="code" setForm={setForm} />
@@ -598,6 +604,7 @@ function CalendarForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function PayGroupForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "MONTHLY_OM",
     name: "Monthly Oman",
@@ -608,9 +615,9 @@ function PayGroupForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create pay group"
+      action={tText("Create pay group")}
       onSubmit={() => save("post", "/payroll/pay-groups", clean(form), onSaved)}
-      title="Create pay group"
+      title={tText("Create pay group")}
     >
       <FieldGrid>
         <TextField form={form} name="code" setForm={setForm} />
@@ -625,6 +632,7 @@ function PayGroupForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function PolicyForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "PRORATION_DEFAULT",
     name: "Default proration",
@@ -637,10 +645,10 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
   const config = policyConfig(form);
   return (
     <FormPanel
-      action="Create policy"
+      action={tText("Create policy")}
       secondary={
         <InlineAction
-          action="Create version"
+          action={tText("Create version")}
           disabled={!policyId}
           onClick={() =>
             save(
@@ -669,7 +677,7 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
           onSaved,
         )
       }
-      title="Policy metadata and typed version"
+      title={tText("Policy metadata and typed version")}
     >
       <FieldGrid>
         <TextField form={form} name="code" setForm={setForm} />
@@ -691,7 +699,7 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
           ]}
           setForm={setForm}
         />
-        <Field label="Policy ID">
+        <Field label={tText("Policy ID")}>
           <input
             className={inputClass}
             onChange={(event) => setPolicyId(event.target.value)}
@@ -736,6 +744,7 @@ function PolicyMatrix({ employeeId }: { employeeId: string }) {
 }
 
 function ComponentForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "BASIC",
     name: "Basic salary",
@@ -751,10 +760,10 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create component"
+      action={tText("Create component")}
       secondary={
         <InlineAction
-          action="Create version"
+          action={tText("Create version")}
           disabled={!form.componentId}
           onClick={() =>
             save(
@@ -784,7 +793,7 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
           onSaved,
         )
       }
-      title="Component metadata and version"
+      title={tText("Component metadata and version")}
     >
       <FieldGrid>
         <TextField form={form} name="code" setForm={setForm} />
@@ -803,6 +812,7 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function StructureForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "OM_MONTHLY",
     name: "Oman monthly salary",
@@ -816,11 +826,11 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create structure"
+      action={tText("Create structure")}
       secondary={
         <>
           <InlineAction
-            action="Create version"
+            action={tText("Create version")}
             disabled={!form.structureId}
             onClick={() =>
               save(
@@ -832,7 +842,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
             }
           />
           <InlineAction
-            action="Add component"
+            action={tText("Add component")}
             disabled={!form.versionId || !form.payComponentVersionId}
             onClick={() =>
               save(
@@ -858,7 +868,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
           onSaved,
         )
       }
-      title="Salary structure and components"
+      title={tText("Salary structure and components")}
     >
       <FieldGrid>
         <TextField form={form} name="code" setForm={setForm} />
@@ -876,6 +886,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function EmployeeProfileForm({ current, employeeId, onSaved }: { current: Record<string, unknown> | null; employeeId: string; onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     payGroupId: text(current?.payGroupId, ""),
     payrollCountry: text(current?.payrollCountry, "OM"),
@@ -888,7 +899,7 @@ function EmployeeProfileForm({ current, employeeId, onSaved }: { current: Record
   if (!employeeId) return null;
   return (
     <FormPanel
-      action={current ? "Save profile" : "Create profile"}
+      action={tText(current ? "Save profile" : "Create profile")}
       onSubmit={() =>
         save(
           current ? "patch" : "post",
@@ -905,7 +916,7 @@ function EmployeeProfileForm({ current, employeeId, onSaved }: { current: Record
           onSaved,
         )
       }
-      title="Employee payroll profile"
+      title={tText("Employee payroll profile")}
     >
       <FieldGrid>
         <TextField form={form} name="payGroupId" setForm={setForm} />
@@ -921,6 +932,7 @@ function EmployeeProfileForm({ current, employeeId, onSaved }: { current: Record
 }
 
 function CompensationForm({ employeeId, onSaved }: { employeeId: string; onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     salaryStructureVersionId: "",
     currency: "OMR",
@@ -931,7 +943,7 @@ function CompensationForm({ employeeId, onSaved }: { employeeId: string; onSaved
   if (!employeeId) return null;
   return (
     <FormPanel
-      action="Create compensation revision"
+      action={tText("Create compensation revision")}
       onSubmit={() =>
         save(
           "post",
@@ -946,7 +958,7 @@ function CompensationForm({ employeeId, onSaved }: { employeeId: string; onSaved
           onSaved,
         )
       }
-      title="Compensation revision"
+      title={tText("Compensation revision")}
     >
       <FieldGrid>
         <TextField form={form} name="salaryStructureVersionId" setForm={setForm} />
@@ -960,6 +972,7 @@ function CompensationForm({ employeeId, onSaved }: { employeeId: string; onSaved
 }
 
 function PaymentDetailsForm({ employeeId, onSaved }: { employeeId: string; onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     paymentMethod: "BANK_TRANSFER",
     bankName: "",
@@ -972,8 +985,8 @@ function PaymentDetailsForm({ employeeId, onSaved }: { employeeId: string; onSav
   if (!employeeId) return null;
   return (
     <FormPanel
-      action="Save protected payment details"
-      confirm="Replace protected payment details? Stored plaintext will not be displayed after submission."
+      action={tText("Save protected payment details")}
+      confirm={tText("Replace protected payment details? Stored plaintext will not be displayed after submission.")}
       onSubmit={() =>
         save("post", `/payroll/employees/${employeeId}/payment-details`, clean(form), () => {
           setForm((current) => ({
@@ -985,7 +998,7 @@ function PaymentDetailsForm({ employeeId, onSaved }: { employeeId: string; onSav
           onSaved();
         })
       }
-      title="Protected payment details"
+      title={tText("Protected payment details")}
     >
       <FieldGrid>
         <SelectField form={form} name="paymentMethod" options={["BANK_TRANSFER", "CASH", "CHEQUE"]} setForm={setForm} />
@@ -1001,6 +1014,7 @@ function PaymentDetailsForm({ employeeId, onSaved }: { employeeId: string; onSav
 }
 
 function StatutoryDetailsForm({ employeeId, onSaved }: { employeeId: string; onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     countryCode: "OM",
     identifierType: "NATIONAL_ID",
@@ -1009,15 +1023,15 @@ function StatutoryDetailsForm({ employeeId, onSaved }: { employeeId: string; onS
   if (!employeeId) return null;
   return (
     <FormPanel
-      action="Save protected statutory detail"
-      confirm="Replace protected statutory detail? Stored plaintext will not be displayed after submission."
+      action={tText("Save protected statutory detail")}
+      confirm={tText("Replace protected statutory detail? Stored plaintext will not be displayed after submission.")}
       onSubmit={() =>
         save("post", `/payroll/employees/${employeeId}/statutory-details`, clean(form), () => {
           setForm((current) => ({ ...current, identifier: "" }));
           onSaved();
         })
       }
-      title="Protected statutory details"
+      title={tText("Protected statutory details")}
     >
       <FieldGrid>
         <TextField form={form} name="countryCode" setForm={setForm} />
@@ -1029,6 +1043,7 @@ function StatutoryDetailsForm({ employeeId, onSaved }: { employeeId: string; onS
 }
 
 function ApprovalPolicyForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     name: "Payroll approval",
     approvalPolicyId: "",
@@ -1041,10 +1056,10 @@ function ApprovalPolicyForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create approval policy"
+      action={tText("Create approval policy")}
       secondary={
         <InlineAction
-          action="Create version"
+          action={tText("Create version")}
           disabled={!form.approvalPolicyId}
           onClick={() =>
             save(
@@ -1064,7 +1079,7 @@ function ApprovalPolicyForm({ onSaved }: { onSaved: () => void }) {
         />
       }
       onSubmit={() => save("post", "/payroll/approval-policies", { name: form.name }, onSaved)}
-      title="Approval policy"
+      title={tText("Approval policy")}
     >
       <FieldGrid>
         <TextField form={form} name="name" setForm={setForm} />
@@ -1081,6 +1096,7 @@ function ApprovalPolicyForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function AccountingMappingForm({ onSaved }: { onSaved: () => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     payComponentId: "",
     debitAccountCode: "",
@@ -1090,7 +1106,7 @@ function AccountingMappingForm({ onSaved }: { onSaved: () => void }) {
   });
   return (
     <FormPanel
-      action="Create accounting mapping"
+      action={tText("Create accounting mapping")}
       onSubmit={() =>
         save(
           "post",
@@ -1105,7 +1121,7 @@ function AccountingMappingForm({ onSaved }: { onSaved: () => void }) {
           onSaved,
         )
       }
-      title="Accounting mapping"
+      title={tText("Accounting mapping")}
     >
       <FieldGrid>
         <TextField form={form} name="payComponentId" setForm={setForm} />
@@ -1119,12 +1135,11 @@ function AccountingMappingForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function AuditFilters() {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="p-5">
       <p className="text-sm text-zinc-500">
-        Use the audit table pagination from the API response. Date range, action,
-        entity type and entity ID filters are available on the backend endpoint
-        and can be appended to the route query.
+        {tText("Use the audit table pagination from the API response. Date range, action, entity type and entity ID filters are available on the backend endpoint and can be appended to the route query.")}
       </p>
     </Panel>
   );
@@ -1143,12 +1158,13 @@ function ResourceTable({
   onChanged: () => void;
   tabKey: PayrollTabKey;
 }) {
+  const { tText } = useTenantLocalization();
   const rowList = rows(data);
   if (!rowList.length) {
     return (
       <EmptyState
-        body="No records were returned for this Payroll foundation section."
-        title="No Payroll records yet"
+        body={tText("No records were returned for this Payroll foundation section.")}
+        title={tText("No Payroll records yet")}
       />
     );
   }
@@ -1161,10 +1177,10 @@ function ResourceTable({
             <tr>
               {columns.map((column) => (
                 <th className="px-4 py-3" key={column}>
-                  {label(column)}
+                  {tText(label(column))}
                 </th>
               ))}
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{tText("Actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -1172,7 +1188,7 @@ function ResourceTable({
               <tr key={`${row.id ?? index}`}>
                 {columns.map((column) => (
                   <td className="max-w-[360px] px-4 py-3 align-top" key={column}>
-                    {formatValue(row[column])}
+                    {formatValue(row[column], tText)}
                   </td>
                 ))}
                 <td className="min-w-56 px-4 py-3 align-top">
@@ -1206,31 +1222,32 @@ function RowActions({
   row: Record<string, unknown>;
   tabKey: PayrollTabKey;
 }) {
-  if (!canManage) return <span className="text-xs text-zinc-400">Read only</span>;
+  const { tText } = useTenantLocalization();
+  if (!canManage) return <span className="text-xs text-zinc-400">{tText("Read only")}</span>;
   const id = String(row.id ?? "");
   const actions: Array<{ label: string; endpoint: string; method?: "post" | "delete" | "patch"; body?: unknown; confirm?: string }> = [];
   if (tabKey === "calendars") {
-    actions.push({ label: "Activate", endpoint: `/payroll/calendars/${id}/activate`, confirm: "Activate this calendar version?" });
-    actions.push({ label: "Deactivate", endpoint: `/payroll/calendars/${id}/deactivate`, confirm: "Deactivate this calendar?" });
+    actions.push({ label: tText("Activate"), endpoint: `/payroll/calendars/${id}/activate`, confirm: tText("Activate this calendar version?") });
+    actions.push({ label: tText("Deactivate"), endpoint: `/payroll/calendars/${id}/deactivate`, confirm: tText("Deactivate this calendar?") });
   }
   if (tabKey === "components" && row.versions && Array.isArray(row.versions)) {
     const version = row.versions[0] as Record<string, unknown> | undefined;
-    if (version?.id) actions.push({ label: "Activate latest", endpoint: `/payroll/components/${id}/versions/${version.id}/activate`, confirm: "Activate this component version?" });
+    if (version?.id) actions.push({ label: tText("Activate latest"), endpoint: `/payroll/components/${id}/versions/${version.id}/activate`, confirm: tText("Activate this component version?") });
   }
   if (tabKey === "structures" && row.versions && Array.isArray(row.versions)) {
     const version = row.versions[0] as Record<string, unknown> | undefined;
-    if (version?.id) actions.push({ label: "Activate latest", endpoint: `/payroll/salary-structures/${id}/versions/${version.id}/activate`, confirm: "Activate this salary structure version?" });
+    if (version?.id) actions.push({ label: tText("Activate latest"), endpoint: `/payroll/salary-structures/${id}/versions/${version.id}/activate`, confirm: tText("Activate this salary structure version?") });
   }
   if (tabKey === "payment-details") {
-    actions.push({ label: "Revoke", endpoint: `/payroll/payment-details/${id}/status`, method: "patch", body: { status: "REVOKED" }, confirm: "Revoke this protected payment detail?" });
+    actions.push({ label: tText("Revoke"), endpoint: `/payroll/payment-details/${id}/status`, method: "patch", body: { status: "REVOKED" }, confirm: tText("Revoke this protected payment detail?") });
   }
   if (tabKey === "statutory-details") {
-    actions.push({ label: "Revoke", endpoint: `/payroll/statutory-details/${id}/status`, method: "patch", body: { status: "REVOKED" }, confirm: "Revoke this protected statutory detail?" });
+    actions.push({ label: tText("Revoke"), endpoint: `/payroll/statutory-details/${id}/status`, method: "patch", body: { status: "REVOKED" }, confirm: tText("Revoke this protected statutory detail?") });
   }
   if (tabKey === "compensation" && employeeId) {
-    actions.push({ label: "End today", endpoint: `/payroll/employees/${employeeId}/compensation/${id}/end`, method: "patch", body: { effectiveTo: today, reason: "Ended from Payroll foundation UI" }, confirm: "End this compensation version today?" });
+    actions.push({ label: tText("End today"), endpoint: `/payroll/employees/${employeeId}/compensation/${id}/end`, method: "patch", body: { effectiveTo: today, reason: "Ended from Payroll foundation UI" }, confirm: tText("End this compensation version today?") });
   }
-  if (!actions.length) return <span className="text-xs text-zinc-400">No action</span>;
+  if (!actions.length) return <span className="text-xs text-zinc-400">{tText("No action")}</span>;
   return (
     <div className="flex flex-wrap gap-2">
       {actions.map((action) => (
@@ -1238,7 +1255,7 @@ function RowActions({
           className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
           key={action.label}
           onClick={() => {
-            if (action.confirm && !window.confirm(action.confirm)) return;
+            if (action.confirm && !window.confirm(tText(action.confirm))) return;
             void save(action.method ?? "post", action.endpoint, action.body ?? {}, onChanged);
           }}
           type="button"
@@ -1251,12 +1268,13 @@ function RowActions({
 }
 
 function PolicyMatrixResult({ data }: { data: unknown }) {
+  const { tText } = useTenantLocalization();
   const value = dataObject(data);
   if (!value) {
     return (
       <EmptyState
-        body="Enter an employee and policy filter to resolve policy source evidence."
-        title="No matrix result"
+        body={tText("Enter an employee and policy filter to resolve policy source evidence.")}
+        title={tText("No matrix result")}
       />
     );
   }
@@ -1279,10 +1297,10 @@ function PolicyMatrixResult({ data }: { data: unknown }) {
         {cells.map((cell) => (
           <div key={cell}>
             <div className="text-xs font-semibold uppercase text-zinc-500">
-              {label(cell)}
+              {tText(label(cell))}
             </div>
             <div className="mt-1 break-words text-sm text-zinc-900">
-              {formatValue(value[cell])}
+              {formatValue(value[cell], tText)}
             </div>
           </div>
         ))}
@@ -1306,6 +1324,7 @@ function FormPanel({
   secondary?: React.ReactNode;
   title: string;
 }) {
+  const { tText } = useTenantLocalization();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -1323,8 +1342,8 @@ function FormPanel({
               setError("");
               setMessage("");
               void onSubmit()
-                .then(() => setMessage("Saved."))
-                .catch((saveError) => setError(apiError(saveError)))
+                .then(() => setMessage(tText("Saved.")))
+                .catch((saveError) => setError(apiError(saveError, tText)))
                 .finally(() => setBusy(false));
             }}
           >
@@ -1348,6 +1367,7 @@ function InlineAction({
   disabled?: boolean;
   onClick: () => Promise<void>;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <button
       className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
@@ -1355,7 +1375,7 @@ function InlineAction({
       onClick={() => void onClick()}
       type="button"
     >
-      {action}
+      {tText(action)}
     </button>
   );
 }
@@ -1375,8 +1395,9 @@ function TextField({
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   type?: string;
 }) {
+  const { tText } = useTenantLocalization();
   return (
-    <Field label={label(name)}>
+    <Field label={tText(label(name))}>
       <input
         className={inputClass}
         onChange={(event) =>
@@ -1400,8 +1421,9 @@ function SelectField({
   options: string[];
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
 }) {
+  const { tText } = useTenantLocalization();
   return (
-    <Field label={label(name)}>
+    <Field label={tText(label(name))}>
       <select
         className={inputClass}
         onChange={(event) =>
@@ -1411,7 +1433,7 @@ function SelectField({
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {label(option.toLowerCase())}
+            {tText(label(option.toLowerCase()))}
           </option>
         ))}
       </select>
@@ -1428,6 +1450,7 @@ function CheckboxField({
   name: string;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <label className="flex h-11 items-center gap-3 rounded-lg border border-zinc-300 px-3 text-sm font-medium">
       <input
@@ -1437,7 +1460,7 @@ function CheckboxField({
         }
         type="checkbox"
       />
-      {label(name)}
+      {tText(label(name))}
     </label>
   );
 }
@@ -1521,11 +1544,12 @@ function label(value: string) {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
-function formatValue(value: unknown) {
+function formatValue(value: unknown, t?: (s: string) => string) {
+  const tr = t ?? ((s: string) => s);
   if (value === null || value === undefined || value === "") return "-";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "boolean") return value ? tr("Yes") : tr("No");
   if (typeof value === "string" || typeof value === "number") return value;
-  if (Array.isArray(value)) return `${value.length} items`;
+  if (Array.isArray(value)) return `${value.length} ${tr("items")}`;
   return JSON.stringify(value);
 }
 
@@ -1572,7 +1596,8 @@ function decimalToMinor(value: string, currency: string) {
   return `${whole}${fraction.padEnd(scale, "0").slice(0, scale)}`.replace(/^0+(?=\d)/, "");
 }
 
-function apiError(error: unknown) {
+function apiError(error: unknown, tr?: (s: string) => string) {
+  const t = tr ?? ((s: string) => s);
   const response = error as {
     response?: { data?: { message?: string; code?: string } };
     message?: string;
@@ -1580,9 +1605,9 @@ function apiError(error: unknown) {
   const code = response.response?.data?.code;
   const message = response.response?.data?.message ?? response.message;
   if (code === "VERSION_CONFLICT") {
-    return "Version conflict. Refresh the section and retry with the latest version.";
+    return t("Version conflict. Refresh the section and retry with the latest version.");
   }
-  return message ?? "Payroll request failed.";
+  return message ?? t("Payroll request failed.");
 }
 
 const employeeTabs = new Set<PayrollTabKey>([

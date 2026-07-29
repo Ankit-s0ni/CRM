@@ -5,7 +5,10 @@ dist/
 build/
 .next/
 .next-build/
+<<<<<<< HEAD
 apps/web/.next-build/
+=======
+>>>>>>> f47ba7d96fee363515a35751e3d064647f64ec6d
 coverage/
 *.log
 .turbo/

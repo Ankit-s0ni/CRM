@@ -20,16 +20,23 @@ import {
   ScrollText,
   Settings2,
   ShieldCheck,
+  Umbrella,
   UserPlus,
   WalletCards,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { canAccessAttendanceWorkspace } from "@/lib/attendance-navigation";
-import { AdminPage, ErrorState, LoadingState, Panel } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
+import {
+  AdminPage,
+  ErrorState,
+  LoadingState,
+  Panel,
+} from "@/shared/components/page-primitives";
 import { AttendanceOverview } from "./attendance-workspaces";
 
 type WorkspaceModule = {
@@ -121,6 +128,7 @@ function hasAnyPermission(
 }
 
 export function ModulesHub() {
+  const { tText } = useTenantLocalization();
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
   );
@@ -131,7 +139,9 @@ export function ModulesHub() {
     apiClient
       .get<{ modules: WorkspaceModule[] }>("/workspace/modules")
       .then(({ data }) => setModules(data.modules))
-      .catch(() => setError("Enabled modules could not be loaded."));
+      .catch(() =>
+        setError(tText("Enabled modules could not be loaded.")),
+      );
   }, []);
 
   const attendance = modules?.find(({ key }) => key === "ATTENDANCE");
@@ -147,8 +157,10 @@ export function ModulesHub() {
     !payroll && hasAnyPermission(permissions, PAYROLL_WORKSPACE_PERMISSIONS);
   return (
     <AdminPage
-      title="Modules"
-      description="Choose a product area, then manage its operations, policies, and controls in one place."
+      title={tText("Modules")}
+      description={tText(
+        "Choose a product area, then manage its operations, policies, and controls in one place.",
+      )}
     >
       {error && <ErrorState message={error} />}
       {!modules ? (
@@ -166,22 +178,25 @@ export function ModulesHub() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-lg font-bold">{attendance.name}</h2>
+                    <h2 className="text-lg font-bold">
+                      {tText("Attendance")}
+                    </h2>
                     <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-primary" />
                   </div>
                   <p className="mt-2 text-sm leading-6 text-zinc-500">
-                    Policies, schedules, attendance, leave, device trust, and
-                    field monitoring.
+                    {tText(
+                      "Policies, schedules, attendance, leave, device trust, and field monitoring.",
+                    )}
                   </p>
                   <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
-                    Enabled
+                    {tText("Enabled")}
                   </span>
                   {attendanceAddOns?.map((module) => (
                     <span
                       className="ml-2 mt-4 inline-flex rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-primary"
                       key={module.key}
                     >
-                      {module.name}
+                      {localizedModuleName(module.key, module.name, tText)}
                     </span>
                   ))}
                 </div>
@@ -199,15 +214,18 @@ export function ModulesHub() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-bold">{payroll.name}</h2>
+                      <h2 className="text-lg font-bold">
+                        {tText("Payroll")}
+                      </h2>
                       <ChevronRight className="size-5 text-outline" />
                     </div>
                     <p className="mt-2 text-sm leading-6 text-zinc-500">
-                      Configure salaries, prepare payroll runs, calculate pay,
-                      publish payslips, export files, and close periods.
+                      {tText(
+                        "Generate payroll evidence, review completed exports, and close finalized Attendance periods.",
+                      )}
                     </p>
                     <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
-                      Enabled
+                      {tText("Enabled")}
                     </span>
                   </div>
                 </div>
@@ -255,10 +273,13 @@ export function ModulesHub() {
                     <Building2 className="size-6" />
                   </span>
                   <div>
-                    <h2 className="text-lg font-bold">{module.name}</h2>
+                    <h2 className="text-lg font-bold">
+                      {localizedModuleName(module.key, module.name, tText)}
+                    </h2>
                     <p className="mt-2 text-sm text-zinc-500">
-                      Review this enabled service, its dependencies, and its
-                      current configuration health.
+                      {tText(
+                        "Review this enabled service, its dependencies, and its current configuration health.",
+                      )}
                     </p>
                   </div>
                   <ChevronRight className="ml-auto size-5 text-outline" />
@@ -267,14 +288,18 @@ export function ModulesHub() {
             ))}
           {!modules.length && (
             <Panel className="p-8 text-sm text-zinc-500">
-              No business modules are enabled for this workspace.
+              {tText("No business modules are enabled for this workspace.")}
             </Panel>
           )}
         </div>
       )}
       {permissions.size === 0 && (
         <div className="mt-5">
-          <ErrorState message="Your permissions are still loading. Refresh before making policy changes." />
+          <ErrorState
+            message={tText(
+              "Your permissions are still loading. Refresh before making policy changes.",
+            )}
+          />
         </div>
       )}
     </AdminPage>
@@ -286,6 +311,7 @@ export function AttendanceModuleHub() {
 }
 
 export function SettingsHub() {
+  const { tText } = useTenantLocalization();
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
   );
@@ -325,25 +351,25 @@ export function SettingsHub() {
       .finally(() => setHealthLoaded(true));
   }, [canReadSettingsHealth]);
 
-  const sections: SettingsSection[] = [
+  const rawSections: SettingsSection[] = [
     {
-      title: "Company foundation",
+      title: tText("Company foundation"),
       description:
-        "Start here. Set the company identity and organization structure used by every module.",
+        tText("Start here. Set the company identity and organization structure used by every module."),
       links: [
         {
-          title: "Company settings",
+          title: tText("Company settings"),
           description:
-            "Workspace identity, branding, timezone, locale, and onboarding details.",
+            tText("Workspace identity, branding, timezone, locale, and onboarding details."),
           href: "/app/settings/company",
           icon: Building2,
           permissions: ["workspace.settings.read"],
           healthKey: "COMPANY",
         },
         {
-          title: "Organization structure",
+          title: tText("Organization structure"),
           description:
-            "Departments, designations, reporting hierarchy, and employee organization.",
+            tText("Departments, designations, reporting hierarchy, and employee organization."),
           href: "/app/settings/organization",
           icon: Network,
           permissions: ["organization.departments.read"],
@@ -352,23 +378,23 @@ export function SettingsHub() {
       ],
     },
     {
-      title: "People and access",
+      title: tText("People and access"),
       description:
-        "Invite administrators, assign permissions, and review which DeltCRM tools are enabled.",
+        tText("Invite administrators, assign permissions, and review which DeltCRM tools are enabled."),
       links: [
         {
-          title: "Admin access",
+          title: tText("Admin access"),
           description:
-            "Invite administrators, HR and managers, and review elevated access.",
+            tText("Invite administrators, HR and managers, and review elevated access."),
           href: "/app/settings/access",
           icon: ShieldCheck,
           permissions: ["identity.roles.read"],
           healthKey: "ACCESS",
         },
         {
-          title: "Modules and entitlements",
+          title: tText("Modules and entitlements"),
           description:
-            "Review subscribed tools, operational readiness, and configuration entry points.",
+            tText("Review subscribed tools, operational readiness, and configuration entry points."),
           href: "/app/settings/modules",
           icon: Blocks,
           permissions: ["workspace.modules.read"],
@@ -377,14 +403,14 @@ export function SettingsHub() {
       ],
     },
     {
-      title: "Configure enabled modules",
+      title: tText("Configure enabled modules"),
       description:
-        "Set the policies and defaults employees will follow. Only enabled modules appear here.",
+        tText("Set the policies and defaults employees will follow. Only enabled modules appear here."),
       links: [
         {
-          title: "Attendance settings",
+          title: tText("Attendance settings"),
           description:
-            "Working week, offices, policies, verification, shifts, rosters, and holidays.",
+            tText("Working week, offices, policies, verification, shifts, rosters, and holidays."),
           href: "/app/attendance/policies",
           icon: ClipboardCheck,
           permissions: ["attendance.config.read", "attendance.config.manage"],
@@ -392,9 +418,9 @@ export function SettingsHub() {
           healthKey: "ATTENDANCE",
         },
         {
-          title: "Payroll settings",
+          title: tText("Payroll settings"),
           description:
-            "Review payroll dependencies, export readiness, and period-close controls.",
+            tText("Review payroll dependencies, export readiness, and period-close controls."),
           href: "/app/settings/payroll",
           icon: WalletCards,
           permissions: [
@@ -407,32 +433,32 @@ export function SettingsHub() {
       ],
     },
     {
-      title: "Governance and subscription",
+      title: tText("Governance and subscription"),
       description:
-        "Review activity, your notification inbox, and the commercial workspace subscription.",
+        tText("Review activity, your notification inbox, and the commercial workspace subscription."),
       links: [
         {
-          title: "Audit history",
+          title: tText("Audit history"),
           description:
-            "Search attributed workspace changes, impersonation activity, and before/after evidence.",
+            tText("Search attributed workspace changes, impersonation activity, and before/after evidence."),
           href: "/app/settings/audit",
           icon: ScrollText,
           permissions: ["workspace.audit.read"],
           healthKey: "AUDIT",
         },
         {
-          title: "My notification preferences",
+          title: tText("My notification preferences"),
           description:
-            "Choose how optional notices reach your account and review mandatory events.",
+            tText("Choose how optional notices reach your account and review mandatory events."),
           href: "/app/settings/notifications",
           icon: BellRing,
           permissions: ["notifications.self"],
           healthKey: "NOTIFICATIONS",
         },
         {
-          title: "Security controls",
+          title: tText("Security controls"),
           description:
-            "Review trusted devices, biometric behavior, verification evidence, and alert rules.",
+            tText("Review trusted devices, biometric behavior, verification evidence, and alert rules."),
           href: "/app/settings/security",
           icon: ShieldCheck,
           permissions: [
@@ -444,18 +470,18 @@ export function SettingsHub() {
           healthKey: "SECURITY",
         },
         {
-          title: "Integrations",
+          title: tText("Integrations"),
           description:
-            "Check which deployment services are available without exposing provider credentials.",
+            tText("Check which deployment services are available without exposing provider credentials."),
           href: "/app/settings/integrations",
           icon: Activity,
           permissions: ["workspace.settings.read"],
           healthKey: "INTEGRATIONS",
         },
         {
-          title: "Billing and subscription",
+          title: tText("Billing and subscription"),
           description:
-            "Manage plans, employee seats, payment methods and GST invoices.",
+            tText("Manage plans, employee seats, payment methods and GST invoices."),
           href: "/app/settings/billing",
           icon: Landmark,
           permissions: ["billing.subscription.read"],
@@ -464,10 +490,23 @@ export function SettingsHub() {
       ],
     },
   ];
+  const sections = rawSections.map((section) => ({
+    ...section,
+    title: tText(section.title),
+    description: tText(section.description),
+    links: section.links.map((link) => ({
+      ...link,
+      title: tText(link.title),
+      description: tText(link.description),
+    })),
+  }));
+
   return (
     <AdminPage
-      title="Settings"
-      description="Set up the workspace in order. Each step opens the real configuration already used by DeltCRM."
+      title={tText("Settings")}
+      description={tText(
+        "Set up the workspace in order. Each step opens the real configuration already used by DeltCRM.",
+      )}
     >
       {healthError && <ErrorState message={healthError} />}
       {healthLoaded && <WorkspaceLaunchChecklist health={health} />}
@@ -540,19 +579,22 @@ function WorkspaceLaunchChecklist({
 }: {
   health: Record<string, SettingsHealthCategory>;
 }) {
+  const { tText } = useTenantLocalization();
   const attendance = health.ATTENDANCE?.configuration ?? {};
   const organization = health.ORGANIZATION?.configuration ?? {};
   const steps = [
     {
-      title: "Company profile",
-      description: "Confirm company identity, logo, timezone and locale.",
+      title: tText("Company profile"),
+      description: tText(
+        "Confirm company identity, logo, timezone and locale.",
+      ),
       href: "/app/settings/company",
       icon: Building2,
       complete: health.COMPANY?.status === "READY",
     },
     {
-      title: "Organization structure",
-      description: "Create departments and reusable designations.",
+      title: tText("Organization structure"),
+      description: tText("Create departments and reusable designations."),
       href: "/app/settings/organization",
       icon: Network,
       complete:
@@ -560,15 +602,19 @@ function WorkspaceLaunchChecklist({
         (organization.designations ?? 0) > 0,
     },
     {
-      title: "Office and geofence",
-      description: "Define the physical workplace and allowed punch radius.",
+      title: tText("Office and geofence"),
+      description: tText(
+        "Define the physical workplace and allowed punch radius.",
+      ),
       href: "/app/attendance/offices",
       icon: MapPin,
       complete: (attendance.offices ?? 0) > 0,
     },
     {
-      title: "Attendance rules",
-      description: "Create a shift, policy and default policy assignment.",
+      title: tText("Attendance rules"),
+      description: tText(
+        "Create a shift, policy and default policy assignment.",
+      ),
       href: "/app/attendance/policies",
       icon: ClipboardCheck,
       complete:
@@ -577,8 +623,10 @@ function WorkspaceLaunchChecklist({
         (attendance.assignments ?? 0) > 0,
     },
     {
-      title: "Add employees",
-      description: "Add manually or import employees after the foundation is ready.",
+      title: tText("Add employees"),
+      description: tText(
+        "Add manually or import employees after the foundation is ready.",
+      ),
       href: "/app/employees",
       icon: UserPlus,
       complete: health.PEOPLE?.status === "READY",
@@ -590,11 +638,15 @@ function WorkspaceLaunchChecklist({
     <Panel className="mb-8 overflow-hidden border-zinc-200">
       <div className="border-b border-surface-variant bg-zinc-50 p-5">
         <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">
-          Workspace launch checklist
+          {tText("Workspace launch checklist")}
         </p>
-        <h2 className="mt-1 text-xl font-bold">Set up in this order</h2>
+        <h2 className="mt-1 text-xl font-bold">
+          {tText("Set up in this order")}
+        </h2>
         <p className="mt-1 text-sm text-zinc-500">
-          Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.
+          {tText(
+            "Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.",
+          )}
         </p>
       </div>
       <div className="grid divide-y divide-surface-variant">
@@ -623,7 +675,11 @@ function WorkspaceLaunchChecklist({
                 <span className="text-xs text-outline">{step.description}</span>
               </span>
               <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
-                {step.complete ? "Complete" : index === firstIncomplete ? "Continue setup" : "Complete previous step"}
+                {step.complete
+                  ? tText("Complete")
+                  : index === firstIncomplete
+                    ? tText("Continue setup")
+                    : tText("Complete previous step")}
               </span>
               {available && <ChevronRight className="size-4 text-outline" />}
             </>
@@ -637,7 +693,10 @@ function WorkspaceLaunchChecklist({
               {content}
             </Link>
           ) : (
-            <div className="flex items-center gap-3 p-4 opacity-60" key={step.title}>
+            <div
+              className="flex items-center gap-3 p-4 opacity-60"
+              key={step.title}
+            >
               {content}
             </div>
           );
@@ -648,6 +707,7 @@ function WorkspaceLaunchChecklist({
 }
 
 export function ModuleSettingsView() {
+  const { tText } = useTenantLocalization();
   const [modules, setModules] = useState<WorkspaceModule[] | null>(null);
   const [health, setHealth] = useState<Record<string, ModuleHealth>>({});
   const [error, setError] = useState("");
@@ -683,7 +743,7 @@ export function ModuleSettingsView() {
         }
       })
       .catch(() => {
-        if (active) setError("Module entitlements could not be loaded.");
+        if (active) setError(tText("Module entitlements could not be loaded."));
       });
     return () => {
       active = false;
@@ -692,8 +752,8 @@ export function ModuleSettingsView() {
 
   return (
     <AdminPage
-      title="Modules and entitlements"
-      description="Review commercially enabled tools, required dependencies, and configuration health."
+      title={tText("Modules and entitlements")}
+      description={tText("Review commercially enabled tools, required dependencies, and configuration health.")}
     >
       {error && <ErrorState message={error} />}
       {!modules ? (
@@ -710,15 +770,14 @@ export function ModuleSettingsView() {
         </div>
       ) : (
         <Panel className="p-8 text-sm text-zinc-500">
-          No modules are enabled. Review the subscription with the Business
-          Admin or DeltCRM support.
-        </Panel>
+          {tText("No modules are enabled. Review the subscription with the Business Admin or DeltCRM support.")}</Panel>
       )}
     </AdminPage>
   );
 }
 
 export function PayrollModuleHub() {
+  const { tText } = useTenantLocalization();
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
   );
@@ -766,21 +825,21 @@ export function PayrollModuleHub() {
     hasAnyPermission(permissions, processingPermissions) && {
       description:
         "Calculate employee payroll results, review variances, approve or finalize runs, and track processing jobs.",
-      href: "/app/modules/payroll/runs",
+      href: "/app/modules/payroll/processing",
       icon: Calculator,
       title: "Payroll processing",
     },
     hasAnyPermission(permissions, payslipPermissions) && {
       description:
         "Generate payslip outputs, publish employee payslips, and use private signed downloads for sensitive files.",
-      href: "/app/modules/payroll/runs",
+      href: "/app/modules/payroll/payslips",
       icon: ReceiptText,
       title: "Payslips",
     },
     hasAnyPermission(permissions, exportPermissions) && {
       description:
         "Generate payroll registers, payroll reports, bank export payloads, accounting export payloads, and downloadable export files.",
-      href: "/app/reports/payroll",
+      href: "/app/modules/payroll/exports",
       icon: FileSpreadsheet,
       title: "Payroll exports",
     },
@@ -806,8 +865,8 @@ export function PayrollModuleHub() {
   }>;
   return (
     <AdminPage
-      title="Payroll"
-      description="Configure salaries, prepare payroll runs, calculate pay, publish payslips, export files, and close periods."
+      title={tText("Payroll")}
+      description={tText("Create immutable payroll exports and close finalized Attendance periods.")}
     >
       {error && <ErrorState message={error} />}
       {!health && !error ? (
@@ -824,17 +883,34 @@ export function PayrollModuleHub() {
             </Panel>
           )}
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            {visibleWorkflows.map((workflow) => (
-              <WorkflowLink key={workflow.title} {...workflow} />
-            ))}
+            {["attendance.reports.read", "attendance.reports.generate"].some(
+              (permission) => permissions.has(permission),
+            ) && (
+              <WorkflowLink
+                description={tText("Generate and download a snapshot-based payroll CSV for a selected period.")}
+                href="/app/reports?type=PAYROLL"
+                icon={FileSpreadsheet}
+                key="reports"
+                title={tText("Payroll exports")}
+              />
+            )}
+            {permissions.has("attendance.payroll-lock.manage") && (
+              <WorkflowLink
+                description={tText("Lock a completed month against its export or reopen it with an audited reason.")}
+                href="/app/attendance/payroll"
+                icon={LockKeyhole}
+                key="close"
+                title={tText("Period close")}
+              />
+            )}
+            <WorkflowLink
+              description={tText("Review the Attendance and Leave inputs that determine payroll evidence.")}
+              href="/app/settings/payroll"
+              icon={Settings2}
+              key="settings"
+              title={tText("Readiness and dependencies")}
+            />
           </div>
-          {!visibleWorkflows.length && (
-            <Panel className="mt-5 p-6 text-sm leading-6 text-zinc-500">
-              Your role can open Payroll, but no payroll workflow permissions
-              are assigned yet. Add payroll foundation, run, payslip, export, or
-              close permissions to show the related sections here.
-            </Panel>
-          )}
         </>
       )}
     </AdminPage>
@@ -842,33 +918,70 @@ export function PayrollModuleHub() {
 }
 
 export function PayrollSettingsView() {
-  return <PayrollModuleHub />;
+  const { tText } = useTenantLocalization();
+  const { health, error } = useModuleHealth("PAYROLL");
+  return (
+    <AdminPage
+      title={tText("Payroll settings")}
+      description={tText("Payroll currently derives immutable evidence from Attendance and approved Leave.")}
+    >
+      {error && <ErrorState message={error} />}
+      {!health ? (
+        <LoadingState />
+      ) : (
+        <>
+          <ModuleReadiness health={health} />
+          <div className="mt-5 grid gap-5 md:grid-cols-3">
+            <WorkflowLink
+              description={tText("Working week, calculation thresholds, shifts, and policy assignments.")}
+              href="/app/attendance/policies"
+              icon={ClipboardCheck}
+              title={tText("Attendance inputs")}
+            />
+            <WorkflowLink
+              description={tText("Approved leave and balances flow into period evidence.")}
+              href="/app/attendance/setup/leave"
+              icon={Umbrella}
+              title={tText("Leave inputs")}
+            />
+            <WorkflowLink
+              description={tText("Generate the period export before attempting to close it.")}
+              href="/app/reports?type=PAYROLL"
+              icon={FileSpreadsheet}
+              title={tText("Payroll exports")}
+            />
+          </div>
+        </>
+      )}
+    </AdminPage>
+  );
 }
 
 export function SecuritySettingsView() {
+  const { tText } = useTenantLocalization();
   return (
     <AdminPage
-      title="Security controls"
-      description="Manage Attendance trust from the existing device, verification, and alert workflows."
+      title={tText("Security controls")}
+      description={tText("Manage Attendance trust from the existing device, verification, and alert workflows.")}
     >
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <WorkflowLink
-          description="Approve, block, or replace employee devices with an auditable reason."
+          description={tText("Approve, block, or replace employee devices with an auditable reason.")}
           href="/app/attendance/devices"
           icon={ShieldCheck}
-          title="Trusted devices"
+          title={tText("Trusted devices")}
         />
         <WorkflowLink
-          description="Configure location, selfie, face, and registered-device requirements."
+          description={tText("Configure location, selfie, face, and registered-device requirements.")}
           href="/app/modules/attendance/capabilities"
           icon={Settings2}
-          title="Verification behavior"
+          title={tText("Verification behavior")}
         />
         <WorkflowLink
-          description="Review verification evidence, alert rules, and unresolved security events."
+          description={tText("Review verification evidence, alert rules, and unresolved security events.")}
           href="/app/attendance/security"
           icon={CircleAlert}
-          title="Security feed and rules"
+          title={tText("Security feed and rules")}
         />
       </div>
     </AdminPage>
@@ -876,6 +989,7 @@ export function SecuritySettingsView() {
 }
 
 export function IntegrationSettingsView() {
+  const { tText } = useTenantLocalization();
   const [providers, setProviders] = useState<IntegrationProvider[] | null>(
     null,
   );
@@ -891,13 +1005,13 @@ export function IntegrationSettingsView() {
         setProviders(data.data.providers);
         setNote(data.data.note);
       })
-      .catch(() => setError("Integration diagnostics could not be loaded."));
+      .catch(() => setError(tText("Integration diagnostics could not be loaded.")));
   }, []);
 
   return (
     <AdminPage
-      title="Integrations"
-      description="Check deployment-managed services used by this workspace."
+      title={tText("Integrations")}
+      description={tText("Check deployment-managed services used by this workspace.")}
     >
       {error && <ErrorState message={error} />}
       {!providers ? (
@@ -950,6 +1064,7 @@ function ModuleHealthCard({
   module: WorkspaceModule;
   health?: ModuleHealth;
 }) {
+  const { tText } = useTenantLocalization();
   const href = moduleHref(module.key);
   return (
     <Panel className="p-6">
@@ -963,7 +1078,7 @@ function ModuleHealthCard({
             <HealthPill value={health?.status ?? "CHECKING"} />
           </div>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
-            {module.description ?? "DeltCRM workspace module"}
+            {module.description ?? tText("DeltCRM workspace module")}
           </p>
         </div>
       </div>
@@ -973,7 +1088,7 @@ function ModuleHealthCard({
           className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-primary"
           href={href}
         >
-          Open configuration <ChevronRight className="size-4" />
+          {tText("Open configuration")}<ChevronRight className="size-4" />
         </Link>
       )}
     </Panel>
@@ -987,6 +1102,7 @@ function ModuleReadiness({
   health: ModuleHealth;
   compact?: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div
       className={cn(
@@ -997,7 +1113,7 @@ function ModuleReadiness({
       {!compact && (
         <div className="flex items-center gap-3">
           <Activity className="size-5 text-primary" />
-          <h2 className="font-bold">Configuration health</h2>
+          <h2 className="font-bold">{tText("Configuration health")}</h2>
           <HealthPill value={health.status} />
         </div>
       )}
@@ -1074,6 +1190,22 @@ function HealthPill({ value }: { value: string }) {
       {value.replaceAll("_", " ")}
     </span>
   );
+}
+
+function localizedModuleName(
+  key: string,
+  fallback: string,
+  tText: (message: string) => string,
+) {
+  const sourceName: Record<string, string> = {
+    ATTENDANCE: "Attendance",
+    FIELD_TRACKING: "Field tracking",
+    PAYROLL: "Payroll",
+  };
+  if (key === "REGULARIZATION") {
+    return tText("Attendance regularization");
+  }
+  return tText(sourceName[key] ?? fallback);
 }
 
 function moduleHref(key: string) {

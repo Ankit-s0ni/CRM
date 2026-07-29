@@ -2,6 +2,7 @@
 
 import { LocateFixed } from "lucide-react";
 import { inputClass } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 const PRIORITY_TIMEZONES = [
   "Asia/Dubai",
@@ -34,6 +35,7 @@ export function TimezoneSelect({
   description?: string;
   showDetect?: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   function useDeviceTimezone() {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone && allTimezones.includes(timezone)) onChange(timezone);
@@ -47,18 +49,18 @@ export function TimezoneSelect({
           value={value}
           onChange={(event) => onChange(event.target.value)}
         >
-          {!value ? <option value="">Select timezone</option> : null}
+          {!value ? <option value="">{tText("Select timezone")}</option> : null}
           {!allTimezones.includes(value) && value ? (
             <option value={value}>{timezoneLabel(value)}</option>
           ) : null}
-          <optgroup label="Gulf and nearby">
+          <optgroup label={tText("Gulf and nearby")}>
             {priorityTimezones.map((timezone) => (
               <option key={timezone} value={timezone}>
                 {timezoneLabel(timezone)}
               </option>
             ))}
           </optgroup>
-          <optgroup label="All timezones">
+          <optgroup label={tText("All timezones")}>
             {remainingTimezones.map((timezone) => (
               <option key={timezone} value={timezone}>
                 {timezoneLabel(timezone)}
@@ -72,8 +74,7 @@ export function TimezoneSelect({
             onClick={useDeviceTimezone}
             type="button"
           >
-            <LocateFixed className="size-4" /> Detect
-          </button>
+            <LocateFixed className="size-4" /> {tText("Detect")}</button>
         ) : null}
       </div>
       <p className="text-xs text-outline">{description}</p>

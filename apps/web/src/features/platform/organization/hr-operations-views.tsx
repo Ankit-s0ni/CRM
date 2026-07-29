@@ -11,17 +11,14 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import Link from "next/link";
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-  useParams,
-} from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams, useParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 import {
   AdminPage,
   EmptyState,
@@ -57,8 +54,10 @@ type ReportJob = {
     "MUSTER" | "PAYROLL" | "LATE_OT" | "VIOLATIONS" | "FIELD_DISTANCE";
   period: string;
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
+  format: "CSV" | "XLSX" | "PDF";
   checksum?: string | null;
   failureMessage?: string | null;
+  contractVersion: number;
   createdAt: string;
   completedAt?: string | null;
   expiresAt?: string | null;
@@ -121,6 +120,7 @@ type InboxItem = {
 };
 
 export function RegularizationQueueView() {
+  const { tText } = useTenantLocalization();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -147,11 +147,13 @@ export function RegularizationQueueView() {
   }, [status]);
   return (
     <AdminPage
-      title="Attendance corrections"
-      description="Review correction requests by age, evidence, and reporting scope."
+      title={tText("Attendance corrections")}
+      description={tText(
+        "Review correction requests by age, evidence, and reporting scope.",
+      )}
       action={
         <select
-          aria-label="Request status"
+          aria-label={tText("Request status")}
           className={inputClass}
           value={status}
           onChange={(event) => {
@@ -159,10 +161,10 @@ export function RegularizationQueueView() {
             router.push(`${pathname}?status=${nextStatus}`, { scroll: false });
           }}
         >
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="CANCELLED">Cancelled</option>
+          <option value="PENDING">{tText("Pending")}</option>
+          <option value="APPROVED">{tText("Approved")}</option>
+          <option value="REJECTED">{tText("Rejected")}</option>
+          <option value="CANCELLED">{tText("Cancelled")}</option>
         </select>
       }
     >
@@ -186,12 +188,14 @@ export function RegularizationQueueView() {
                 </div>
                 <div className="text-sm">
                   <span className="block text-xs text-outline">
-                    Attendance date
+                    {tText("Attendance date")}
                   </span>
                   {dateOnly(item.attendanceLog.attendanceDate)}
                 </div>
                 <div className="text-sm">
-                  <span className="block text-xs text-outline">Waiting</span>
+                  <span className="block text-xs text-outline">
+                    {tText("Waiting")}
+                  </span>
                   {age(item.createdAt)}
                 </div>
                 <StatusPill value={item.status} />
@@ -199,8 +203,8 @@ export function RegularizationQueueView() {
             ))
           ) : (
             <EmptyState
-              title="Queue is clear"
-              body="There are no correction requests in this state."
+              title={tText("Queue is clear")}
+              body={tText("There are no correction requests in this state.")}
             />
           )}
         </Panel>
@@ -210,6 +214,7 @@ export function RegularizationQueueView() {
 }
 
 export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
+  const { tText } = useTenantLocalization();
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<Regularization | null>(null);
   const [comment, setComment] = useState("");
@@ -220,7 +225,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
       .get(`/regularizations/${id}`)
       .then(({ data }) => setItem(data.data))
       .catch(() =>
-        setError("This request is unavailable or outside your scope."),
+        setError(tText("This request is unavailable or outside your scope.")),
       );
   // The route id is the only reactive input; load is also reused after decisions.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -229,7 +234,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
   }, [id]);
   async function decide(action: "approve" | "reject") {
     if (!comment.trim())
-      return setError("Add a decision comment before continuing.");
+      return setError(tText("Add a decision comment before continuing."));
     if (
       !window.confirm(
         `${action === "approve" ? "Approve" : "Reject"} this correction?`,
@@ -249,19 +254,21 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
   if (!item && !error)
     return (
       <AdminPage
-        title="Correction request"
-        description="Loading request evidence and recompute preview."
+        title={tText("Correction request")}
+        description={tText("Loading request evidence and recompute preview.")}
       >
         <LoadingState />
       </AdminPage>
     );
   return (
     <AdminPage
-      title="Correction decision"
-      description="Compare immutable attendance evidence with the requested correction."
+      title={tText("Correction decision")}
+      description={tText(
+        "Compare immutable attendance evidence with the requested correction.",
+      )}
       action={
         <Link className="text-sm font-semibold text-primary" href={returnTo}>
-          Back to queue
+          {tText("Back to queue")}
         </Link>
       }
     >
@@ -288,32 +295,32 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
             </Panel>
             <Panel className="overflow-hidden">
               <div className="grid grid-cols-3 bg-zinc-700 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white">
-                <span>Evidence</span>
-                <span>Recorded</span>
-                <span>Requested</span>
+                <span>{tText("Evidence")}</span>
+                <span>{tText("Recorded")}</span>
+                <span>{tText("Requested")}</span>
               </div>
               <Comparison
-                label="Check-in"
+                label={tText("Check-in")}
                 current={time(item.attendanceLog.firstCheckin)}
                 requested={time(item.requestedCheckin)}
               />
               <Comparison
-                label="Checkout"
+                label={tText("Checkout")}
                 current={time(item.attendanceLog.lastCheckout)}
                 requested={time(item.requestedCheckout)}
               />
               <Comparison
-                label="Result"
+                label={tText("Result")}
                 current={item.attendanceLog.attendanceStatus}
                 requested="Recompute on approval"
               />
             </Panel>
           </div>
           <Panel className="h-fit p-6">
-            <h2 className="font-bold">Decision</h2>
+            <h2 className="font-bold">{tText("Decision")}</h2>
             {item.status === "PENDING" ? (
               <>
-                <Field label="Audit comment">
+                <Field label={tText("Audit comment")}>
                   <textarea
                     className={`${inputClass} mt-4 h-28 py-3`}
                     value={comment}
@@ -327,20 +334,20 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                     onClick={() => decide("reject")}
                   >
                     <X className="mr-2 inline size-4" />
-                    Reject
+                    {tText("Reject")}
                   </button>
                   <PrimaryButton
                     disabled={busy}
                     onClick={() => decide("approve")}
                   >
                     <Check className="size-4" />
-                    Approve
+                    {tText("Approve")}
                   </PrimaryButton>
                 </div>
               </>
             ) : (
               <p className="mt-3 text-sm text-zinc-500">
-                {item.managerComments || "Decision completed."}
+                {item.managerComments || tText("Decision completed.")}
               </p>
             )}
           </Panel>
@@ -361,6 +368,7 @@ export function ReportsCenterView({
 }: {
   initialType?: ReportJob["reportType"];
 } = {}) {
+  const { t, tText, formatDate } = useTenantLocalization();
   const [jobs, setJobs] = useState<ReportJob[] | null>(null);
   const [type, setType] = useState<ReportJob["reportType"]>(initialType);
   const [period, setPeriod] = useState("2026-07");
@@ -383,7 +391,7 @@ export function ReportsCenterView({
     apiClient
       .get("/reports?page=1&limit=100")
       .then(({ data }) => setJobs(data.data))
-      .catch(() => setError("Report jobs could not be loaded."));
+      .catch(() => setError(tText("Report jobs could not be loaded.")));
   useEffect(() => {
     void load();
     apiClient
@@ -408,7 +416,7 @@ export function ReportsCenterView({
     await apiClient
       .post(reportEndpoint(reportType), {
         period: reportPeriod,
-        format: "CSV",
+        format: reportType === "MUSTER" ? "XLSX" : "CSV",
       })
       .then(() => load())
       .catch((reason) =>
@@ -426,12 +434,14 @@ export function ReportsCenterView({
   }
   return (
     <AdminPage
-      title="Reports center"
-      description="Generate reproducible attendance exports and keep their snapshot evidence."
+      title={tText("Attendance reports")}
+      description={tText(
+        "Export daily status, check-in, checkout, worked time, breaks, late time, early leave, and overtime.",
+      )}
       action={
         <div className="flex flex-wrap gap-2">
           <select
-            aria-label="Report type"
+            aria-label={tText("Report type")}
             className={inputClass}
             value={type}
             onChange={(event) =>
@@ -439,11 +449,13 @@ export function ReportsCenterView({
             }
           >
             {reportTypes.map((value) => (
-              <option key={value}>{value}</option>
+              <option key={value} value={value}>
+                {reportLabel(value, undefined, tText)}
+              </option>
             ))}
           </select>
           <input
-            aria-label="Report period"
+            aria-label={tText("Report period")}
             className={inputClass}
             type="month"
             value={period}
@@ -452,7 +464,7 @@ export function ReportsCenterView({
           {canGenerate && (
             <PrimaryButton disabled={busy} onClick={() => create()}>
               <Plus className="size-4" />
-              Generate
+              {tText("Generate")}
             </PrimaryButton>
           )}
         </div>
@@ -461,7 +473,7 @@ export function ReportsCenterView({
       {error && <ErrorState message={error} />}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm font-semibold">
-          Job status
+          {tText("Job status")}
           <select
             className={inputClass}
             value={status}
@@ -469,14 +481,15 @@ export function ReportsCenterView({
           >
             {["ALL", "PENDING", "RUNNING", "COMPLETED", "FAILED"].map(
               (value) => (
-                <option key={value}>{value}</option>
+                <option key={value}>{reportStatusLabel(value, tText)}</option>
               ),
             )}
           </select>
         </label>
         <p className="text-xs text-outline">
-          Jobs refresh automatically. Failed jobs can be generated again with
-          the same period.
+          {tText(
+            "Jobs refresh automatically. Failed jobs can be generated again with the same period.",
+          )}
         </p>
       </div>
       {!jobs ? (
@@ -489,6 +502,9 @@ export function ReportsCenterView({
                 job.status === "COMPLETED" &&
                 job.expiresAt &&
                 new Date(job.expiresAt) <= new Date();
+              const legacyAttendanceExport =
+                job.reportType === "MUSTER" &&
+                (job.contractVersion < 3 || job.format !== "XLSX");
               return (
                 <div
                   className="grid gap-3 border-b border-surface-variant p-5 last:border-0 md:grid-cols-[1fr_140px_140px_150px] md:items-center"
@@ -497,10 +513,15 @@ export function ReportsCenterView({
                   <div>
                     <div className="flex items-center gap-2 font-semibold">
                       <FileSpreadsheet className="size-4 text-primary" />
-                      {job.reportType.replaceAll("_", " ")}
+                      {reportLabel(job.reportType, job.contractVersion, tText)}
                     </div>
                     <div className="mt-1 text-xs text-outline">
-                      {job.period} · contract v1{" "}
+                      {job.period} · {job.format}{" "}
+                      {job.reportType === "MUSTER" &&
+                        job.contractVersion >= 3 &&
+                        `· ${tText("One tab per working day")} `}
+                      {tText("· contract v")}
+                      {job.contractVersion}{" "}
                       {job.checksum ? `· ${job.checksum.slice(0, 12)}…` : ""}
                     </div>
                     {job.failureMessage && (
@@ -509,16 +530,32 @@ export function ReportsCenterView({
                       </div>
                     )}
                   </div>
-                  <span className="text-sm">{dateTime(job.createdAt)}</span>
+                  <span className="text-sm">
+                    {formatDate(job.createdAt, {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                   <StatusPill value={expired ? "EXPIRED" : job.status} />
-                  {job.status === "FAILED" && canGenerate ? (
+                  {legacyAttendanceExport && canGenerate ? (
+                    <button
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary"
+                      disabled={busy}
+                      onClick={() => create("MUSTER", job.period)}
+                    >
+                      <RotateCcw className="mr-2 inline size-4" />
+                      {tText("Generate workbook")}
+                    </button>
+                  ) : job.status === "FAILED" && canGenerate ? (
                     <button
                       className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary"
                       disabled={busy}
                       onClick={() => create(job.reportType, job.period)}
                     >
                       <RotateCcw className="mr-2 inline size-4" />
-                      Generate again
+                      {tText("Generate again")}
                     </button>
                   ) : (
                     <button
@@ -527,7 +564,9 @@ export function ReportsCenterView({
                       onClick={() => download(job.id)}
                     >
                       <Download className="mr-2 inline size-4" />
-                      {expired ? "Expired" : "Download"}
+                      {expired
+                        ? t("common.status.expired", "Expired")
+                        : tText("Download")}
                     </button>
                   )}
                 </div>
@@ -535,7 +574,7 @@ export function ReportsCenterView({
             })
           ) : (
             <EmptyState
-              title="No report jobs"
+              title={tText("No report jobs")}
               body={
                 status === "ALL"
                   ? "Generate an Attendance export to create the first report job."
@@ -546,9 +585,13 @@ export function ReportsCenterView({
         </Panel>
       )}
       <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-primary">
-        <Link href="/app/attendance/register">Open Attendance register</Link>
+        <Link href="/app/attendance/register">
+          {tText("Open Attendance register")}
+        </Link>
         {moduleKeys.has("PAYROLL") && (
-          <Link href="/app/modules/payroll">Review payroll locks</Link>
+          <Link href="/app/modules/payroll">
+            {tText("Review payroll locks")}
+          </Link>
         )}
       </div>
     </AdminPage>
@@ -556,6 +599,7 @@ export function ReportsCenterView({
 }
 
 export function PayrollLockView() {
+  const { tText } = useTenantLocalization();
   const [locks, setLocks] = useState<PayrollLock[] | null>(null);
   const [exports, setExports] = useState<ReportJob[]>([]);
   const [period, setPeriod] = useState("2026-07");
@@ -572,7 +616,7 @@ export function PayrollLockView() {
         setLocks(lockResult.data.data);
         setExports(exportResult.data.data);
       })
-      .catch(() => setError("Payroll lock data could not be loaded."));
+      .catch(() => setError(tText("Payroll lock data could not be loaded.")));
   useEffect(() => {
     void load();
   }, []);
@@ -601,14 +645,16 @@ export function PayrollLockView() {
   }
   return (
     <AdminPage
-      title="Payroll close"
-      description="Lock a finalized month against a completed payroll export, with an immutable reopen trail."
+      title={tText("Payroll close")}
+      description={tText(
+        "Lock a finalized month against a completed payroll export, with an immutable reopen trail.",
+      )}
       action={
         <Link
           className="text-sm font-semibold text-primary"
           href="/app/attendance/reports"
         >
-          Open reports center
+          {tText("Open reports center")}
         </Link>
       }
     >
@@ -619,16 +665,18 @@ export function PayrollLockView() {
             <LockKeyhole className="size-5" />
           </div>
           <div className="mt-4 flex items-center gap-2">
-            <h2 className="text-lg font-bold">Close a payroll month</h2>
+            <h2 className="text-lg font-bold">
+              {tText("Close a payroll month")}
+            </h2>
             <FeatureInfo helpKey="payroll-lock" />
           </div>
           <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            Locking freezes attendance, corrections, OD/WFH changes, and leave
-            integration for the selected period. Confirm the completed payroll
-            export and affected month before continuing.
+            {tText(
+              "Locking freezes attendance, corrections, OD/WFH changes, and leave integration for the selected period. Confirm the completed payroll export and affected month before continuing.",
+            )}
           </div>
           <div className="mt-5 grid gap-4">
-            <Field label="Period">
+            <Field label={tText("Period")}>
               <input
                 className={inputClass}
                 type="month"
@@ -636,13 +684,13 @@ export function PayrollLockView() {
                 onChange={(event) => setPeriod(event.target.value)}
               />
             </Field>
-            <Field label="Completed payroll export">
+            <Field label={tText("Completed payroll export")}>
               <select
                 className={inputClass}
                 value={exportId}
                 onChange={(event) => setExportId(event.target.value)}
               >
-                <option value="">Select export</option>
+                <option value="">{tText("Select export")}</option>
                 {exports
                   .filter((item) => item.period === period)
                   .map((item) => (
@@ -654,7 +702,7 @@ export function PayrollLockView() {
             </Field>
             <PrimaryButton disabled={!exportId} onClick={lock}>
               <LockKeyhole className="size-4" />
-              Lock month
+              {tText("Lock month")}
             </PrimaryButton>
           </div>
         </Panel>
@@ -672,7 +720,8 @@ export function PayrollLockView() {
                     <div>
                       <div className="text-xl font-bold">{item.period}</div>
                       <div className="mt-1 text-xs text-outline">
-                        Export {item.export?.id.slice(0, 8)} ·{" "}
+                        {tText("Export")}
+                        {item.export?.id.slice(0, 8)} ·{" "}
                         {item.export?.checksum?.slice(0, 12)}…
                       </div>
                     </div>
@@ -684,7 +733,7 @@ export function PayrollLockView() {
                           onClick={() => reopen(item)}
                         >
                           <RotateCcw className="mr-1 inline size-4" />
-                          Reopen
+                          {tText("Reopen")}
                         </button>
                       )}
                     </div>
@@ -704,8 +753,10 @@ export function PayrollLockView() {
               ))
             ) : (
               <EmptyState
-                title="No closed periods"
-                body="Generate a payroll export before locking the first month."
+                title={tText("No closed periods")}
+                body={tText(
+                  "Generate a payroll export before locking the first month.",
+                )}
               />
             )}
           </Panel>
@@ -716,6 +767,7 @@ export function PayrollLockView() {
 }
 
 export function LeaveBalancesView() {
+  const { tText } = useTenantLocalization();
   const [balances, setBalances] = useState<LeaveBalance[] | null>(null);
   const [policies, setPolicies] = useState<LeavePolicy[]>([]);
   const [open, setOpen] = useState(false);
@@ -737,7 +789,7 @@ export function LeaveBalancesView() {
         setBalances(balanceResult.data.data);
         setPolicies(policyResult.data.data);
       })
-      .catch(() => setError("Leave balances could not be loaded."));
+      .catch(() => setError(tText("Leave balances could not be loaded.")));
   useEffect(() => {
     void load();
   }, []);
@@ -754,12 +806,14 @@ export function LeaveBalancesView() {
   }
   return (
     <AdminPage
-      title="My leave"
-      description="Review available entitlement and request full or half-day leave."
+      title={tText("My leave")}
+      description={tText(
+        "Review available entitlement and request full or half-day leave.",
+      )}
       action={
         <PrimaryButton onClick={() => setOpen(true)}>
           <Plus className="size-4" />
-          Apply for leave
+          {tText("Apply for leave")}
         </PrimaryButton>
       }
     >
@@ -779,7 +833,7 @@ export function LeaveBalancesView() {
               <div className="mt-1 text-4xl font-bold">
                 {Number(balance.remainingDays)}
                 <span className="ml-2 text-base font-medium text-outline">
-                  days
+                  {tText("days")}
                 </span>
               </div>
             </Panel>
@@ -787,9 +841,9 @@ export function LeaveBalancesView() {
         </div>
       )}
       {open && (
-        <Modal title="Apply for leave" onClose={() => setOpen(false)}>
+        <Modal title={tText("Apply for leave")} onClose={() => setOpen(false)}>
           <div className="grid gap-4">
-            <Field label="Leave type">
+            <Field label={tText("Leave type")}>
               <select
                 className={inputClass}
                 value={form.policyId}
@@ -797,7 +851,7 @@ export function LeaveBalancesView() {
                   setForm({ ...form, policyId: event.target.value })
                 }
               >
-                <option value="">Select policy</option>
+                <option value="">{tText("Select policy")}</option>
                 {policies
                   .filter((item) => item.isActive)
                   .map((item) => (
@@ -808,7 +862,7 @@ export function LeaveBalancesView() {
               </select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Starts">
+              <Field label={tText("Starts")}>
                 <input
                   className={inputClass}
                   type="date"
@@ -818,7 +872,7 @@ export function LeaveBalancesView() {
                   }
                 />
               </Field>
-              <Field label="Ends">
+              <Field label={tText("Ends")}>
                 <input
                   className={inputClass}
                   type="date"
@@ -831,21 +885,21 @@ export function LeaveBalancesView() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <CheckField
-                label="Half-day start"
+                label={tText("Half-day start")}
                 checked={form.halfDayStart}
                 onChange={(checked) =>
                   setForm({ ...form, halfDayStart: checked })
                 }
               />
               <CheckField
-                label="Half-day end"
+                label={tText("Half-day end")}
                 checked={form.halfDayEnd}
                 onChange={(checked) =>
                   setForm({ ...form, halfDayEnd: checked })
                 }
               />
             </div>
-            <Field label="Reason">
+            <Field label={tText("Reason")}>
               <textarea
                 className={`${inputClass} h-24 py-3`}
                 value={form.reason}
@@ -858,7 +912,7 @@ export function LeaveBalancesView() {
               disabled={!form.policyId || form.reason.length < 3}
               onClick={submit}
             >
-              Submit request
+              {tText("Submit request")}
             </PrimaryButton>
           </div>
         </Modal>
@@ -872,6 +926,7 @@ export function LeaveRequestsView({
 }: {
   approvals?: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   const [items, setItems] = useState<LeaveRequest[] | null>(null);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -928,7 +983,7 @@ export function LeaveRequestsView({
       );
   }
   async function cancel(item: LeaveRequest) {
-    if (!window.confirm("Cancel this leave request?")) return;
+    if (!window.confirm(tText("Cancel this leave request?"))) return;
     await apiClient
       .post(`/leave-requests/${item.id}/cancel`, {})
       .then(load)
@@ -955,7 +1010,7 @@ export function LeaveRequestsView({
       action={
         returnTo ? (
           <Link className="text-sm font-bold text-primary" href={returnTo}>
-            Back to employee
+            {tText("Back to employee")}
           </Link>
         ) : undefined
       }
@@ -963,16 +1018,19 @@ export function LeaveRequestsView({
       {error && <ErrorState message={error} />}
       {policiesConfigured === false && canDecide && !error ? (
         <Panel className="p-8 text-center">
-          <h2 className="text-xl font-bold">Create your first leave policy</h2>
+          <h2 className="text-xl font-bold">
+            {tText("Create your first leave policy")}
+          </h2>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-outline">
-            Define leave types and annual entitlement before employees can
-            submit requests. Existing requests, if any, remain preserved.
+            {tText(
+              "Define leave types and annual entitlement before employees can submit requests. Existing requests, if any, remain preserved.",
+            )}
           </p>
           <Link
             className="mt-5 inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
             href="/app/attendance/setup/leave"
           >
-            Set up leave policies
+            {tText("Set up leave policies")}
           </Link>
         </Panel>
       ) : !items ? (
@@ -991,7 +1049,7 @@ export function LeaveRequestsView({
                   </div>
                   <div className="mt-1 text-xs text-outline">
                     {canDecide ? `${item.policy.name} · ` : ""}
-                    {item.reason} · {item.totalDays} day(s)
+                    {item.reason} · {item.totalDays} {tText("day(s)")}
                   </div>
                 </div>
                 <div className="text-sm">
@@ -1005,13 +1063,13 @@ export function LeaveRequestsView({
                         className="h-9 flex-1 rounded-lg border border-error text-xs font-semibold text-error"
                         onClick={() => decision(item, "reject")}
                       >
-                        Reject
+                        {tText("Reject")}
                       </button>
                       <button
                         className="h-9 flex-1 rounded-lg bg-primary text-xs font-semibold text-white"
                         onClick={() => decision(item, "approve")}
                       >
-                        Approve
+                        {tText("Approve")}
                       </button>
                     </>
                   ) : item.status === "PENDING" && !employeeId ? (
@@ -1019,7 +1077,7 @@ export function LeaveRequestsView({
                       className="h-9 w-full rounded-lg border border-zinc-300 text-xs font-semibold"
                       onClick={() => cancel(item)}
                     >
-                      Cancel
+                      {tText("Cancel")}
                     </button>
                   ) : (
                     <span className="text-xs text-outline">
@@ -1032,7 +1090,9 @@ export function LeaveRequestsView({
           ) : (
             <EmptyState
               title={approvals ? "No approvals waiting" : "No leave requests"}
-              body="Requests will appear here with their current decision state."
+              body={tText(
+                "Requests will appear here with their current decision state.",
+              )}
             />
           )}
         </Panel>
@@ -1044,17 +1104,19 @@ export function LeaveRequestsView({
             disabled={page === 1}
             onClick={() => setPage((current) => current - 1)}
           >
-            Previous
+            {tText("Previous")}
           </button>
           <span>
-            Page {page} of {pages}
+            {tText("Page")}
+            {page} {tText("of")}
+            {pages}
           </span>
           <button
             className="rounded-lg border border-zinc-300 px-4 py-2 font-semibold disabled:opacity-40"
             disabled={page >= pages}
             onClick={() => setPage((current) => current + 1)}
           >
-            Next
+            {tText("Next")}
           </button>
         </div>
       )}
@@ -1063,13 +1125,14 @@ export function LeaveRequestsView({
 }
 
 export function NotificationsInboxView() {
+  const { tText } = useTenantLocalization();
   const [items, setItems] = useState<InboxItem[] | null>(null);
   const [error, setError] = useState("");
   const load = () =>
     apiClient
       .get("/notifications?page=1&limit=100")
       .then(({ data }) => setItems(data.data))
-      .catch(() => setError("Notifications could not be loaded."));
+      .catch(() => setError(tText("Notifications could not be loaded.")));
   useEffect(() => {
     void load();
   }, []);
@@ -1081,8 +1144,10 @@ export function NotificationsInboxView() {
   }
   return (
     <AdminPage
-      title="Inbox"
-      description="Attendance, leave, approval, sync, and security notices for your account."
+      title={tText("Inbox")}
+      description={tText(
+        "Attendance, leave, approval, sync, and security notices for your account.",
+      )}
       action={
         <button
           className="text-sm font-semibold text-primary"
@@ -1090,7 +1155,7 @@ export function NotificationsInboxView() {
             apiClient.post("/notifications/read-all", {}).then(load)
           }
         >
-          Mark all read
+          {tText("Mark all read")}
         </button>
       }
     >
@@ -1124,8 +1189,10 @@ export function NotificationsInboxView() {
             ))
           ) : (
             <EmptyState
-              title="Inbox is clear"
-              body="New transactional and attendance notices will appear here."
+              title={tText("Inbox is clear")}
+              body={tText(
+                "New transactional and attendance notices will appear here.",
+              )}
             />
           )}
         </Panel>
@@ -1135,6 +1202,7 @@ export function NotificationsInboxView() {
 }
 
 export function LeavePoliciesView() {
+  const { tText } = useTenantLocalization();
   const [policies, setPolicies] = useState<LeavePolicy[] | null>(null);
   const [balances, setBalances] = useState<LeaveBalance[] | null>(null);
   const [editing, setEditing] = useState<LeavePolicy | null>(null);
@@ -1156,7 +1224,7 @@ export function LeavePoliciesView() {
         setPolicies(policyResponse.data.data);
         setBalances(balanceResponse.data.data);
       })
-      .catch(() => setError("Leave setup could not be loaded."));
+      .catch(() => setError(tText("Leave setup could not be loaded.")));
   useEffect(() => {
     void load();
   }, []);
@@ -1202,7 +1270,7 @@ export function LeavePoliciesView() {
     if (rawDays === null) return;
     const days = Number(rawDays);
     if (!Number.isFinite(days) || days === 0) {
-      setError("Enter a non-zero number of days.");
+      setError(tText("Enter a non-zero number of days."));
       return;
     }
     const reason = window.prompt("Reason for this balance adjustment");
@@ -1231,19 +1299,21 @@ export function LeavePoliciesView() {
             setOpen(true);
           }}
         >
-          <Plus className="size-4" /> Create policy
+          <Plus className="size-4" /> {tText("Create policy")}
         </PrimaryButton>
       }
-      description="Define leave types for all active employees and manage their balances."
-      title="Leave policies"
+      description={tText(
+        "Define leave types for all active employees and manage their balances.",
+      )}
+      title={tText("Leave policies")}
     >
       {error && <ErrorState message={error} />}
       <Panel className="mb-5 p-5">
-        <h2 className="font-bold">How Leave policies apply</h2>
+        <h2 className="font-bold">{tText("How Leave policies apply")}</h2>
         <p className="mt-2 text-sm leading-6 text-zinc-500">
-          A new policy creates an opening balance for every active employee.
-          New employees receive the same active policies automatically. Policy
-          changes keep existing requests and balance ledger entries intact.
+          {tText(
+            "A new policy creates an opening balance for every active employee. New employees receive the same active policies automatically. Policy changes keep existing requests and balance ledger entries intact.",
+          )}
         </p>
       </Panel>
       {!policies ? (
@@ -1258,20 +1328,26 @@ export function LeavePoliciesView() {
               </div>
               <h2 className="mt-5 text-lg font-bold">{policy.name}</h2>
               <p className="mt-1 text-sm text-outline">
-                {policy.leaveType.replaceAll("_", " ")} · version{" "}
+                {policy.leaveType.replaceAll("_", " ")} {tText("· version")}{" "}
                 {policy.version ?? 1}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-zinc-50 p-3">
-                  <span className="text-xs text-outline">Annual</span>
+                  <span className="text-xs text-outline">
+                    {tText("Annual")}
+                  </span>
                   <strong className="mt-1 block">
-                    {policy.accrualLogic?.annualEntitlement ?? 0} days
+                    {policy.accrualLogic?.annualEntitlement ?? 0}{" "}
+                    {tText("days")}
                   </strong>
                 </div>
                 <div className="rounded-xl bg-zinc-50 p-3">
-                  <span className="text-xs text-outline">Carry forward</span>
+                  <span className="text-xs text-outline">
+                    {tText("Carry forward")}
+                  </span>
                   <strong className="mt-1 block">
-                    {policy.accrualLogic?.carryForwardLimit ?? 0} days
+                    {policy.accrualLogic?.carryForwardLimit ?? 0}{" "}
+                    {tText("days")}
                   </strong>
                 </div>
               </div>
@@ -1280,7 +1356,7 @@ export function LeavePoliciesView() {
                 onClick={() => beginEdit(policy)}
                 type="button"
               >
-                Edit policy
+                {tText("Edit policy")}
               </button>
             </Panel>
           ))}
@@ -1288,17 +1364,20 @@ export function LeavePoliciesView() {
       ) : (
         <Panel>
           <EmptyState
-            body="Create the first policy before employees submit leave requests."
-            title="No Leave policies"
+            body={tText(
+              "Create the first policy before employees submit leave requests.",
+            )}
+            title={tText("No Leave policies")}
           />
         </Panel>
       )}
       <Panel className="mt-5 overflow-hidden">
         <div className="border-b border-surface-variant p-5">
-          <h2 className="font-bold">Employee balances</h2>
+          <h2 className="font-bold">{tText("Employee balances")}</h2>
           <p className="mt-1 text-sm text-outline">
-            Make a manual correction only when HR needs to add or subtract
-            entitlement.
+            {tText(
+              "Make a manual correction only when HR needs to add or subtract entitlement.",
+            )}
           </p>
         </div>
         {!balances ? (
@@ -1310,26 +1389,32 @@ export function LeavePoliciesView() {
               key={balance.id}
             >
               <div>
-                <strong>{balance.employee?.fullName ?? "Employee"}</strong>
+                <strong>
+                  {balance.employee?.fullName ?? tText("Employee")}
+                </strong>
                 <div className="text-xs text-outline">
                   {balance.employee?.employeeCode}
                 </div>
               </div>
               <span className="text-sm">{balance.policy.name}</span>
-              <strong>{Number(balance.remainingDays)} days</strong>
+              <strong>
+                {Number(balance.remainingDays)} {tText("days")}
+              </strong>
               <button
                 className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-primary"
                 onClick={() => adjustBalance(balance)}
                 type="button"
               >
-                Adjust
+                {tText("Adjust")}
               </button>
             </div>
           ))
         ) : (
           <EmptyState
-            body="Balances are created when an active policy and employee exist."
-            title="No employee balances"
+            body={tText(
+              "Balances are created when an active policy and employee exist.",
+            )}
+            title={tText("No employee balances")}
           />
         )}
       </Panel>
@@ -1342,7 +1427,7 @@ export function LeavePoliciesView() {
           title={editing ? "Edit Leave policy" : "Create Leave policy"}
         >
           <div className="grid gap-4">
-            <Field label="Policy name">
+            <Field label={tText("Policy name")}>
               <input
                 className={inputClass}
                 minLength={2}
@@ -1352,7 +1437,7 @@ export function LeavePoliciesView() {
                 value={form.name}
               />
             </Field>
-            <Field label="Leave type">
+            <Field label={tText("Leave type")}>
               <input
                 className={inputClass}
                 minLength={2}
@@ -1363,7 +1448,7 @@ export function LeavePoliciesView() {
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Annual entitlement">
+              <Field label={tText("Annual entitlement")}>
                 <input
                   className={inputClass}
                   max={366}
@@ -1378,7 +1463,7 @@ export function LeavePoliciesView() {
                   value={form.annualEntitlement}
                 />
               </Field>
-              <Field label="Carry-forward limit">
+              <Field label={tText("Carry-forward limit")}>
                 <input
                   className={inputClass}
                   max={366}
@@ -1397,7 +1482,7 @@ export function LeavePoliciesView() {
             {editing && (
               <CheckField
                 checked={form.isActive}
-                label="Allow new requests under this policy"
+                label={tText("Allow new requests under this policy")}
                 onChange={(isActive) => setForm({ ...form, isActive })}
               />
             )}
@@ -1407,7 +1492,7 @@ export function LeavePoliciesView() {
               }
               onClick={save}
             >
-              {editing ? "Save next version" : "Create policy"}
+              {editing ? tText("Save next version") : tText("Create policy")}
             </PrimaryButton>
           </div>
         </Modal>
@@ -1417,39 +1502,44 @@ export function LeavePoliciesView() {
 }
 
 export function LeaveModuleHub() {
+  const { tText } = useTenantLocalization();
   const permissions = new Set(
     useAuthStore((state) => state.user?.permissions ?? []),
   );
   const links = [
     {
-      title: "My balances",
-      body: "Review entitlement and apply for leave.",
+      title: tText("My balances"),
+      body: tText("Review entitlement and apply for leave."),
       href: "/app/attendance/leave/balances",
       show: permissions.has("leave.self"),
     },
     {
-      title: "My requests",
-      body: "Track every leave decision and cancellation.",
+      title: tText("My requests"),
+      body: tText("Track every leave decision and cancellation."),
       href: "/app/attendance/leave/requests",
       show: permissions.has("leave.self"),
     },
     {
-      title: "Approval queue",
-      body: "Review reporting-line requests and coverage warnings.",
+      title: tText("Approval queue"),
+      body: tText("Review reporting-line requests and coverage warnings."),
       href: "/app/attendance/leave/approvals",
       show: permissions.has("leave.approve") || permissions.has("leave.manage"),
     },
     {
-      title: "Policies and configuration",
-      body: "Manage entitlement, carry-forward, versions, and request availability.",
+      title: tText("Policies and configuration"),
+      body: tText(
+        "Manage entitlement, carry-forward, versions, and request availability.",
+      ),
       href: "/app/attendance/setup/leave",
       show: permissions.has("leave.manage"),
     },
   ];
   return (
     <AdminPage
-      title="Leave management"
-      description="Leave policies, balances, requests, and approvals inside Attendance."
+      title={tText("Leave management")}
+      description={tText(
+        "Leave policies, balances, requests, and approvals inside Attendance.",
+      )}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {links
@@ -1473,6 +1563,7 @@ export function LeaveModuleHub() {
 }
 
 function StatusPill({ value }: { value: string }) {
+  const { tText } = useTenantLocalization();
   const tone =
     value === "APPROVED" || value === "COMPLETED" || value === "LOCKED"
       ? "bg-emerald-100 text-emerald-900"
@@ -1483,7 +1574,7 @@ function StatusPill({ value }: { value: string }) {
           : "bg-zinc-50 text-on-surface-variant";
   return (
     <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
-      {value.replaceAll("_", " ")}
+      {reportStatusLabel(value, tText)}
     </span>
   );
 }
@@ -1513,12 +1604,13 @@ function Modal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
       <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">{title}</h2>
-          <button aria-label="Close" onClick={onClose}>
+          <button aria-label={tText("Close")} onClick={onClose}>
             <X className="size-5" />
           </button>
         </div>
@@ -1557,6 +1649,37 @@ function reportEndpoint(type: ReportJob["reportType"]) {
       FIELD_DISTANCE: "/reports/field-distance",
     } as const
   )[type];
+}
+function reportLabel(
+  type: ReportJob["reportType"],
+  contractVersion: number | undefined,
+  tText: (message: string) => string,
+) {
+  if (
+    type === "MUSTER" &&
+    contractVersion !== undefined &&
+    contractVersion < 3
+  ) {
+    return tText("Attendance export (legacy single sheet)");
+  }
+  if (type === "MUSTER") return tText("Detailed attendance");
+  if (type === "PAYROLL") return tText("Payroll attendance");
+  if (type === "LATE_OT") return tText("Late and overtime");
+  if (type === "VIOLATIONS") return tText("Attendance violations");
+  return tText("Field distance");
+}
+
+function reportStatusLabel(value: string, tText: (message: string) => string) {
+  if (value === "ALL") return tText("All");
+  if (value === "PENDING") return tText("Pending");
+  if (value === "RUNNING") return tText("Running");
+  if (value === "COMPLETED") return tText("Completed");
+  if (value === "FAILED") return tText("Failed");
+  if (value === "APPROVED") return tText("Approved");
+  if (value === "REJECTED") return tText("Rejected");
+  if (value === "LOCKED") return tText("Locked");
+  if (value === "EXPIRED") return tText("Expired");
+  return value.replaceAll("_", " ");
 }
 function dateOnly(value: string) {
   return new Date(value).toLocaleDateString(undefined, {

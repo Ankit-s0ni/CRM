@@ -13,8 +13,7 @@ import {
   Smartphone,
   TriangleAlert,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { type CSSProperties, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
@@ -37,6 +36,7 @@ import {
   type AttendanceDay,
   type AttendanceTimelineEvent,
 } from "@/features/products/attendance/core/attendance-runtime-types";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type MonthResponse = {
   data: {
@@ -48,6 +48,7 @@ type MonthResponse = {
       designation: { name: string } | null;
     };
     month: string;
+    timezone: string;
     days: AttendanceDay[];
     summary: {
       days: number;
@@ -80,6 +81,7 @@ export function AttendanceDetailView({
   returnTo: string;
   embedded?: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   const router = useRouter();
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const startDate = initialDate ?? localIsoDate();
@@ -124,7 +126,7 @@ export function AttendanceDetailView({
       .catch(() => {
         if (active)
           setError(
-            "Employee attendance could not be loaded or is outside your reporting scope.",
+            tText("Employee attendance could not be loaded or is outside your reporting scope."),
           );
       });
     return () => {
@@ -169,7 +171,7 @@ export function AttendanceDetailView({
       <header className="mb-6 flex flex-wrap items-center gap-4">
         {!embedded && (
           <Link
-            aria-label="Back to attendance register"
+            aria-label={tText("Back to attendance register")}
             href={returnTo}
             className="grid size-10 place-items-center rounded-xl border border-zinc-300 bg-white"
           >
@@ -178,27 +180,27 @@ export function AttendanceDetailView({
         )}
         <div className="min-w-56 flex-1">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
-            {embedded ? "Employee attendance" : "Attendance detail"}
+            {embedded ? tText("Employee attendance") : tText("Attendance detail")}
           </p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-2xl font-bold">
               {embedded
-                ? "Monthly attendance calendar"
-                : (monthData?.employee.fullName ?? "Employee attendance")}
+                ? tText("Monthly attendance calendar")
+                : (monthData?.employee.fullName ?? tText("Employee attendance"))}
             </h1>
             <RouteFeatureInfo />
           </div>
           <p className="mt-1 text-xs text-outline">
             {embedded
-              ? "Working days, weekly offs, approved leave, and attendance records."
+              ? tText("Working days, weekly offs, approved leave, and attendance records.")
               : monthData
-                ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? "Employee"} · ${monthData.employee.department.name}`
-                : "Monthly calendar and evidence timeline"}
+                ? `${monthData.employee.employeeCode} · ${monthData.employee.designation?.name ?? tText("Employee")} · ${monthData.employee.department.name}`
+                : tText("Monthly calendar and evidence timeline")}
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-white p-1">
           <button
-            aria-label="Previous month"
+            aria-label={tText("Previous month")}
             onClick={() => moveMonth(-1)}
             className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
           >
@@ -211,7 +213,7 @@ export function AttendanceDetailView({
             }).format(new Date(`${month}-15T12:00:00`))}
           </span>
           <button
-            aria-label="Next month"
+            aria-label={tText("Next month")}
             onClick={() => moveMonth(1)}
             className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
           >
@@ -251,6 +253,7 @@ export function AttendanceDetailView({
           employeeId={employeeId}
           employeeName={monthData.employee.fullName}
           selectedDate={selectedDate}
+          timezone={monthData.timezone}
           onClose={() => setCorrectionOpen(false)}
           onCreated={(id) =>
             router.push(`/app/attendance/regularizations/${id}`)
@@ -262,18 +265,19 @@ export function AttendanceDetailView({
 }
 
 function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
+  const { tText } = useTenantLocalization();
   const values = [
-    { label: "Present", value: data.present, color: "text-emerald-800" },
-    { label: "Absent", value: data.absent, color: "text-error" },
-    { label: "Half days", value: data.halfDays, color: "text-amber-800" },
-    { label: "Late days", value: data.lateDays, color: "text-amber-800" },
+    { label: tText("Present"), value: data.present, color: "text-emerald-800" },
+    { label: tText("Absent"), value: data.absent, color: "text-error" },
+    { label: tText("Half days"), value: data.halfDays, color: "text-amber-800" },
+    { label: tText("Late days"), value: data.lateDays, color: "text-amber-800" },
     {
-      label: "Worked",
+      label: tText("Worked"),
       value: formatMinutes(data.workMinutes),
       color: "text-primary",
     },
     {
-      label: "Overtime",
+      label: tText("Overtime"),
       value: formatMinutes(data.overtimeMinutes),
       color: "text-sky-700",
     },
@@ -308,6 +312,7 @@ function MonthCalendar({
   onSelect: (date: string) => void;
   allowMissing: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   const first = new Date(`${month}-01T12:00:00`);
   const count = new Date(
     first.getFullYear(),
@@ -330,10 +335,9 @@ function MonthCalendar({
       <div className="mb-4 flex items-center gap-2">
         <CalendarDays className="size-5 text-primary" />
         <div>
-          <h2 className="font-semibold">Monthly calendar</h2>
+          <h2 className="font-semibold">{tText("Monthly calendar")}</h2>
           <p className="text-xs text-outline">
-            Select a recorded day to inspect its evidence.
-          </p>
+            {tText("Select a recorded day to inspect its evidence.")}</p>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-outline">
@@ -398,7 +402,7 @@ function MonthCalendar({
                       tone?.className,
                     )}
                   >
-                    {tone?.label}
+                    {tone ? tText(tone.label) : null}
                   </span>
                   <span className="mt-2 block text-[10px] text-outline">
                     {formatMinutes(day.workMinutes)}
@@ -415,7 +419,7 @@ function MonthCalendar({
           return (
             <span key={status} className="inline-flex items-center gap-2">
               <span className={cn("size-2 rounded-full", tone.dot)} />
-              {tone.label}
+              {tText(tone.label)}
             </span>
           );
         })}
@@ -433,19 +437,19 @@ function DayEvidence({
   selectedDate: string;
   onCorrect?: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   if (!data)
     return (
       <Panel>
         <EmptyState
-          title="No evidence for this day"
+          title={tText("No evidence for this day")}
           body={`There is no finalized or open attendance record for ${selectedDate}.`}
         />
         {onCorrect && selectedDate <= localIsoDate() && (
           <div className="px-5 pb-5">
             <PrimaryButton className="w-full" onClick={onCorrect}>
               <PencilLine className="size-4" />
-              Mark attendance manually
-            </PrimaryButton>
+              {tText("Mark attendance manually")}</PrimaryButton>
           </div>
         )}
       </Panel>
@@ -457,8 +461,7 @@ function DayEvidence({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-outline">
-              Selected day
-            </p>
+              {tText("Selected day")}</p>
             <h2 className="mt-1 text-xl font-bold">
               {new Intl.DateTimeFormat("en", {
                 weekday: "long",
@@ -479,12 +482,12 @@ function DayEvidence({
             tone.className,
           )}
         >
-          {tone.label}
+          {tText(tone.label)}
         </span>
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <Mini label="Worked" value={formatMinutes(data.workMinutes)} />
-          <Mini label="Late" value={formatMinutes(data.lateMinutes)} />
-          <Mini label="Overtime" value={formatMinutes(data.overtimeMinutes)} />
+          <Mini label={tText("Worked")} value={formatMinutes(data.workMinutes)} />
+          <Mini label={tText("Late")} value={formatMinutes(data.lateMinutes)} />
+          <Mini label={tText("Overtime")} value={formatMinutes(data.overtimeMinutes)} />
         </div>
       </div>
       {data.exception && (
@@ -497,7 +500,7 @@ function DayEvidence({
       )}
       <div className="p-5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="font-semibold">Evidence timeline</h3>
+          <h3 className="font-semibold">{tText("Evidence timeline")}</h3>
           {onCorrect && !data.isLocked && (
             <button
               className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-container"
@@ -505,8 +508,8 @@ function DayEvidence({
             >
               <PencilLine className="size-4" />
               {data.status === "ABSENT"
-                ? "Mark present / Correct"
-                : "Correct attendance"}
+                ? tText("Mark present / Correct")
+                : tText("Correct attendance")}
             </button>
           )}
         </div>
@@ -520,8 +523,7 @@ function DayEvidence({
           ))}
           {!data.timeline.length && (
             <p className="text-sm text-outline">
-              Calculated without punch evidence.
-            </p>
+              {tText("Calculated without punch evidence.")}</p>
           )}
         </div>
       </div>
@@ -534,6 +536,7 @@ function CreateCorrectionDialog({
   employeeId,
   employeeName,
   selectedDate,
+  timezone,
   onClose,
   onCreated,
 }: {
@@ -541,9 +544,11 @@ function CreateCorrectionDialog({
   employeeId: string;
   employeeName: string;
   selectedDate: string;
+  timezone: string;
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
+  const { tText } = useTenantLocalization();
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [reason, setReason] = useState("");
@@ -554,16 +559,18 @@ function CreateCorrectionDialog({
   async function submit() {
     if (!data && (!checkin || !checkout)) {
       setError(
-        "Check-in and checkout are both required when marking an unrecorded day.",
+        tText("Check-in and checkout are both required when marking an unrecorded day."),
       );
       return;
     }
     if (!checkin && !checkout) {
-      setError("Enter a corrected check-in or checkout time.");
+      setError(tText("Enter a corrected check-in or checkout time."));
       return;
     }
     if (reason.trim().length < 5) {
-      setError("Add a short reason for the audit trail.");
+      setError(
+        `Correction reason must be at least 5 characters (currently ${reason.trim().length}).`,
+      );
       return;
     }
     setBusy(true);
@@ -575,10 +582,10 @@ function CreateCorrectionDialog({
           attendanceLogId: data?.id,
           attendanceDate: data ? undefined : selectedDate,
           requestedCheckin: checkin
-            ? correctedTimestamp(selectedDate, checkin)
+            ? correctedTimestamp(selectedDate, checkin, timezone)
             : undefined,
           requestedCheckout: checkout
-            ? correctedTimestamp(selectedDate, checkout)
+            ? correctedTimestamp(selectedDate, checkout, timezone)
             : undefined,
           reason: reason.trim(),
           idempotencyKey,
@@ -607,41 +614,38 @@ function CreateCorrectionDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id="create-correction-title" className="text-xl font-bold">
-              Correct attendance
-            </h2>
+              {tText("Correct attendance")}</h2>
             <p className="mt-1 text-sm text-on-surface-variant">
               {employeeName} · {selectedDate}
             </p>
           </div>
-          <button aria-label="Close correction dialog" onClick={onClose}>
+          <button aria-label={tText("Close correction dialog")} onClick={onClose}>
             <span className="text-2xl text-on-surface-variant">×</span>
           </button>
         </div>
         <p className="mt-4 rounded-xl bg-zinc-50 p-3 text-xs leading-5 text-on-surface-variant">
           {data
             ? `Recorded: ${formatClock(data.firstCheckin)} to ${formatClock(data.lastCheckout)}. `
-            : "No attendance was recorded for this day. "}
-          Enter the correct check-in and checkout. Saving applies the correction
-          immediately and records the reason in the audit history.
-        </p>
+            : tText("No attendance was recorded for this day.")}
+          {tText("Enter the correct check-in and checkout. Saving applies the correction immediately and records the reason in the audit history.")}</p>
         {error && (
           <div className="mt-4">
             <ErrorState message={error} />
           </div>
         )}
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Field label="Corrected check-in">
+          <Field label={tText("Corrected check-in")}>
             <input
-              aria-label="Corrected check-in"
+              aria-label={tText("Corrected check-in")}
               className={inputClass}
               type="time"
               value={checkin}
               onChange={(event) => setCheckin(event.target.value)}
             />
           </Field>
-          <Field label="Corrected checkout">
+          <Field label={tText("Corrected checkout")}>
             <input
-              aria-label="Corrected checkout"
+              aria-label={tText("Corrected checkout")}
               className={inputClass}
               type="time"
               value={checkout}
@@ -649,16 +653,31 @@ function CreateCorrectionDialog({
             />
           </Field>
         </div>
+        <p className="mt-2 text-xs text-outline">
+          {tText("Times are interpreted in the employee&apos;s attendance timezone:")}{" "}
+          <strong>{timezone}</strong>.
+        </p>
         <div className="mt-4">
-          <Field label="Reason">
+          <Field label={tText("Reason")}>
             <textarea
-              aria-label="Correction reason"
+              aria-label={tText("Correction reason")}
+              aria-describedby="correction-reason-help"
               className={`${inputClass} h-24 py-3`}
               maxLength={1000}
+              minLength={5}
+              placeholder={tText("Example: Employee could not check in because the office device was unavailable.")}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
           </Field>
+          <div
+            className="mt-2 flex items-center justify-between gap-3 text-xs text-outline"
+            id="correction-reason-help"
+          >
+            <span>
+              {tText("Minimum 5 characters. This reason is saved in the audit trail.")}</span>
+            <span>{reason.trim().length}/1000</span>
+          </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button
@@ -666,10 +685,9 @@ function CreateCorrectionDialog({
             disabled={busy}
             onClick={onClose}
           >
-            Cancel
-          </button>
+            {tText("Cancel")}</button>
           <PrimaryButton disabled={busy} onClick={submit}>
-            {busy ? "Saving…" : "Save correction"}
+            {busy ? tText("Saving…") : tText("Save correction")}
           </PrimaryButton>
         </div>
       </div>
@@ -677,8 +695,43 @@ function CreateCorrectionDialog({
   );
 }
 
-function correctedTimestamp(date: string, time: string) {
-  return new Date(`${date}T${time}:00`).toISOString();
+function correctedTimestamp(date: string, time: string, timezone: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  const target = Date.UTC(year, month - 1, day, hour, minute);
+  let instant = target;
+
+  // Resolve a wall-clock time in the tenant zone without using the browser zone.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(new Date(instant))
+      .reduce<Record<string, number>>((values, part) => {
+        if (part.type !== "literal") values[part.type] = Number(part.value);
+        return values;
+      }, {});
+    const represented = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second,
+    );
+    const adjustment = target - represented;
+    instant += adjustment;
+    if (adjustment === 0) break;
+  }
+
+  return new Date(instant).toISOString();
 }
 
 function correctionError(cause: unknown) {
@@ -696,6 +749,7 @@ function Timeline({
   event: AttendanceTimelineEvent;
   last: boolean;
 }) {
+  const { tText } = useTenantLocalization();
   const Icon =
     event.source === "MOBILE"
       ? Smartphone
@@ -730,13 +784,12 @@ function Timeline({
         </div>
         <p className="mt-1 text-[10px] uppercase tracking-wide text-outline">
           {event.source}
-          {event.isOfflineSync ? " · Offline sync" : ""}
+          {event.isOfflineSync ? tText("· Offline sync") : ""}
         </p>
         {event.timeSuspect && (
           <p className="mt-1 inline-flex items-center gap-1 text-[10px] text-error">
             <TriangleAlert className="size-3" />
-            Time requires review
-          </p>
+            {tText("Time requires review")}</p>
         )}
       </div>
     </div>

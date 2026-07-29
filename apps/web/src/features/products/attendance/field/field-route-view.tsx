@@ -1,11 +1,12 @@
 "use client";
 
 import { AlertTriangle, ArrowLeft, Clock3, Gauge, MapPin, Pause, Play, Route } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { AdminPage, ErrorState, LoadingState, Panel } from "@/shared/components/page-primitives";
 import { FieldMap } from "@/features/products/attendance/field/field-map";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type RouteData = {
   employeeId: string;
@@ -20,6 +21,7 @@ type RouteData = {
 };
 
 export function FieldRouteView({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [route, setRoute] = useState<RouteData>();
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export function FieldRouteView({ employeeId }: { employeeId: string }) {
       () => {
         if (!active) return;
         setRoute(undefined);
-        setError("No processed route is available for this employee and date.");
+        setError(tText("No processed route is available for this employee and date."));
         setLoading(false);
       },
     );
@@ -73,11 +75,11 @@ export function FieldRouteView({ employeeId }: { employeeId: string }) {
 
   return (
     <AdminPage
-      action={<input aria-label="Route date" className="h-11 rounded-xl border border-zinc-300 bg-white px-4 text-sm" max={new Date().toISOString().slice(0, 10)} onChange={(event) => { setLoading(true); setPlaying(false); setDate(event.target.value); }} type="date" value={date} />}
-      description="Daily route evidence, dwell stops, tracking gaps, and attendance markers."
-      title="Route Playback"
+      action={<input aria-label={tText("Route date")} className="h-11 rounded-xl border border-zinc-300 bg-white px-4 text-sm" max={new Date().toISOString().slice(0, 10)} onChange={(event) => { setLoading(true); setPlaying(false); setDate(event.target.value); }} type="date" value={date} />}
+      description={tText("Daily route evidence, dwell stops, tracking gaps, and attendance markers.")}
+      title={tText("Route Playback")}
     >
-      <Link className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-primary" href="/app/attendance/field"><ArrowLeft className="size-4" />Back to live board</Link>
+      <Link className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-primary" href="/app/attendance/field"><ArrowLeft className="size-4" />{tText("Back to live board")}</Link>
       {error && <div className="mb-4"><ErrorState message={error} /></div>}
       {loading ? <Panel className="p-5"><LoadingState /></Panel> : route && (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -85,24 +87,24 @@ export function FieldRouteView({ employeeId }: { employeeId: string }) {
             <FieldMap markers={markers} path={visiblePath} />
             <Panel className="flex items-center gap-4 p-4">
               <button aria-label={playing ? "Pause playback" : "Play route"} className="grid size-11 place-items-center rounded-full bg-primary text-white" onClick={togglePlayback} type="button">{playing ? <Pause className="size-5" /> : <Play className="size-5" />}</button>
-              <input aria-label="Playback position" className="h-2 flex-1 accent-primary" max="100" min="0" onChange={(event) => setProgress(Number(event.target.value))} type="range" value={progress} />
+              <input aria-label={tText("Playback position")} className="h-2 flex-1 accent-primary" max="100" min="0" onChange={(event) => setProgress(Number(event.target.value))} type="range" value={progress} />
               <span className="w-12 text-right text-xs font-bold">{progress}%</span>
             </Panel>
           </div>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <Metric icon={Route} label="Distance" value={`${(route.distanceMeters / 1000).toFixed(1)} km`} />
-              <Metric icon={MapPin} label="Pings" value={String(route.pingCount)} />
-              <Metric icon={Clock3} label="Stops" value={String(route.stops.length)} />
-              <Metric icon={AlertTriangle} label="Gap time" value={`${route.trackingGapMinutes}m`} />
+              <Metric icon={Route} label={tText("Distance")} value={`${(route.distanceMeters / 1000).toFixed(1)} km`} />
+              <Metric icon={MapPin} label={tText("Pings")} value={String(route.pingCount)} />
+              <Metric icon={Clock3} label={tText("Stops")} value={String(route.stops.length)} />
+              <Metric icon={AlertTriangle} label={tText("Gap time")} value={`${route.trackingGapMinutes}m`} />
             </div>
             <Panel className="overflow-hidden">
-              <div className="border-b border-surface-variant px-4 py-3 text-sm font-bold">Day timeline</div>
+              <div className="border-b border-surface-variant px-4 py-3 text-sm font-bold">{tText("Day timeline")}</div>
               <div className="max-h-[430px] space-y-1 overflow-y-auto p-3">
                 {route.punches.map((punch) => <TimelineRow icon={Gauge} key={punch.id} label={punch.eventType.replaceAll("_", " ")} time={time(punch.eventTime)} />)}
                 {route.stops.map((stop, index) => <TimelineRow icon={MapPin} key={`stop-${index}`} label={`Stopped for ${stop.dwellMinutes} minutes`} time={time(stop.startedAt)} />)}
                 {route.gaps.map((gap, index) => <TimelineRow icon={AlertTriangle} key={`gap-${index}`} label={`Tracking gap · ${gap.durationMinutes} minutes`} time={time(gap.startedAt)} tone="amber" />)}
-                {!route.punches.length && !route.stops.length && !route.gaps.length && <div className="p-6 text-center text-sm text-outline">No timeline annotations.</div>}
+                {!route.punches.length && !route.stops.length && !route.gaps.length && <div className="p-6 text-center text-sm text-outline">{tText("No timeline annotations.")}</div>}
               </div>
             </Panel>
           </div>

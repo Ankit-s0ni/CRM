@@ -11,6 +11,7 @@ export type AttendanceStatus =
   | "WORKING_DAY"
   | "UPCOMING"
   | "NOT_APPLICABLE";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 export type AttendanceTimelineEvent = {
   id: string;
@@ -79,84 +80,84 @@ export function statusTone(status: AttendanceStatus) {
     }
   > = {
     PRESENT_OPEN: {
-      label: "Working",
+      label: tenantMessage("Working"),
       className: "bg-emerald-100 text-emerald-800",
       dot: "bg-emerald-600",
       calendarBg: "#ecfdf3",
       calendarFg: "#166534",
     },
     PRESENT: {
-      label: "Present",
+      label: tenantMessage("Present"),
       className: "bg-emerald-100 text-emerald-800",
       dot: "bg-emerald-600",
       calendarBg: "#ecfdf3",
       calendarFg: "#166534",
     },
     HALF_DAY: {
-      label: "Half day",
+      label: tenantMessage("Half day"),
       className: "bg-amber-200 text-amber-800",
       dot: "bg-amber-500",
       calendarBg: "#fef3c7",
       calendarFg: "#92400e",
     },
     ABSENT: {
-      label: "Absent",
+      label: tenantMessage("Absent"),
       className: "bg-error-container text-error",
       dot: "bg-red-600",
       calendarBg: "#fee2e2",
       calendarFg: "#b91c1c",
     },
     ON_LEAVE: {
-      label: "On leave",
+      label: tenantMessage("On leave"),
       className: "bg-zinc-100 text-primary",
       dot: "bg-primary-container",
       calendarBg: "#eff6ff",
       calendarFg: "#1d4ed8",
     },
     HOLIDAY: {
-      label: "Holiday",
+      label: tenantMessage("Holiday"),
       className: "bg-sky-200 text-sky-700",
       dot: "bg-sky-600",
       calendarBg: "#e0f2fe",
       calendarFg: "#0369a1",
     },
     WEEKLY_OFF: {
-      label: "Weekly off",
+      label: tenantMessage("Weekly off"),
       className: "bg-zinc-100 text-on-surface-variant",
       dot: "bg-zinc-400",
       calendarBg: "#f4f4f5",
       calendarFg: "#52525b",
     },
     ON_DUTY: {
-      label: "On duty",
+      label: tenantMessage("On duty"),
       className: "bg-sky-100 text-cyan-800",
       dot: "bg-cyan-600",
       calendarBg: "#ecfeff",
       calendarFg: "#155e75",
     },
     LATE: {
-      label: "Late",
+      label: tenantMessage("Late"),
       className: "bg-amber-100 text-amber-800",
       dot: "bg-amber-500",
       calendarBg: "#fffbeb",
       calendarFg: "#92400e",
     },
     WORKING_DAY: {
-      label: "Working day",
+      label: tenantMessage("Working day"),
       className: "bg-blue-50 text-blue-800",
       dot: "bg-blue-600",
       calendarBg: "#eff6ff",
       calendarFg: "#1e40af",
     },
     UPCOMING: {
-      label: "Scheduled",
+      label: tenantMessage("Scheduled"),
       className: "bg-blue-50 text-blue-800",
       dot: "bg-blue-500",
       calendarBg: "#eff6ff",
       calendarFg: "#1e40af",
     },
     NOT_APPLICABLE: {
-      label: "Not applicable",
+      label: tenantMessage("Not applicable"),
       className: "bg-zinc-50 text-zinc-400",
       dot: "bg-zinc-300",
       calendarBg: "#fafafa",

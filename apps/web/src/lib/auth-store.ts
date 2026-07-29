@@ -10,6 +10,14 @@ export interface User {
   permissions?: string[];
   companyName?: string;
   logoUrl?: string | null;
+  localization?: {
+    defaultLanguage: "en" | "ar";
+    enabledLanguages: Array<"en" | "ar">;
+    catalogVersion: number;
+    allowUserPreference: boolean;
+    regionalArabicLocale: "ar" | "ar-OM" | "ar-AE";
+    currency: string;
+  };
 }
 
 interface PendingAuthContext {

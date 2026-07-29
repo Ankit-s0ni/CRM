@@ -35,7 +35,6 @@ export class EmployeeQuotaService {
     tenantId: string,
   ): Promise<EmployeeQuotaSnapshot> {
     const today = startOfUtcDay(new Date());
-        const curUser = await tx.$queryRaw`SELECT current_user, current_setting('app.tenant_id', true)`;   const raw = await tx.$queryRaw`SELECT * FROM tenant_subscriptions`;  
     const subscription = await tx.tenantSubscription.findFirst({
       where: {
         tenantId,
@@ -50,7 +49,7 @@ export class EmployeeQuotaService {
     if (!subscription) {
       throw new ForbiddenException({
         code: 'SUBSCRIPTION_REQUIRED',
-        message: 'A valid subscription is required to manage employees: ' + JSON.stringify({ curUser, raw }),
+        message: 'A valid subscription is required to manage employees',
       });
     }
 

@@ -1,4 +1,4 @@
-M// =====================================================================
+// =====================================================================
 // schema.prisma — v4 (matches erd-v4.puml)
 // Conventions: uuidv7 PKs; tenantId + createdAt + updatedAt on all
 // tenant-scoped models; every tenant index leads with tenantId.
@@ -105,6 +105,18 @@ enum BillingPeriod {
 enum PlatformRole {
   SUPER_ADMIN
   SUPPORT
+}
+
+enum LocaleDirection {
+  LTR
+  RTL
+}
+
+enum LocalizationStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
 }
 
 enum ModuleAvailability {
@@ -589,14 +601,16 @@ model Tenant {
   createdAt                 DateTime     @default(now())
   updatedAt                 DateTime     @updatedAt
 
-  settings       TenantSettings?
-  billingProfile TenantBillingProfile?
-  subscriptions  TenantSubscription[]
-  invoices       TenantInvoice[]
-  paymentMethods BillingPaymentMethod[]
-  deletionJobs   TenantDeletionJob[]
-  users          User[]
-  employees      Employee[]
+  settings             TenantSettings?
+  billingProfile       TenantBillingProfile?
+  subscriptions        TenantSubscription[]
+  invoices             TenantInvoice[]
+  paymentMethods       BillingPaymentMethod[]
+  deletionJobs         TenantDeletionJob[]
+  users                User[]
+  employees            Employee[]
+  localePolicy         TenantLocalePolicy?
+  translationOverrides TenantTranslationOverride[]
 
   @@index([status, createdAt])
   @@map("tenants")
@@ -1121,6 +1135,60 @@ model SystemAuditLog {
   @@map("system_audit_logs")
 }
 
+model LocalePack {
+  id           String              @id @default(uuid(7)) @db.Uuid
+  locale       String
+  parentLocale String?
+  displayName  String
+  nativeName   String
+  direction    LocaleDirection
+  status       LocalizationStatus  @default(DRAFT)
+  version      Int                 @default(1)
+  publishedAt  DateTime?
+  publishedBy  String?             @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  translations LocaleTranslation[]
+
+  @@unique([locale, version])
+  @@index([locale, status, version])
+  @@map("locale_packs")
+}
+
+model LocalizationKey {
+  id                String                      @id @default(uuid(7)) @db.Uuid
+  key               String                      @unique
+  namespace         String
+  defaultMessage    String
+  description       String?
+  placeholderSchema Json                        @default("{}")
+  isTenantEditable  Boolean                     @default(false)
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  translations      LocaleTranslation[]
+  tenantOverrides   TenantTranslationOverride[]
+
+  @@index([namespace, key])
+  @@map("localization_keys")
+}
+
+model LocaleTranslation {
+  localePackId String             @db.Uuid
+  keyId        String             @db.Uuid
+  value        String
+  status       LocalizationStatus @default(DRAFT)
+  reviewedBy   String?            @db.Uuid
+  reviewedAt   DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  localePack   LocalePack         @relation(fields: [localePackId], references: [id], onDelete: Cascade)
+  key          LocalizationKey    @relation(fields: [keyId], references: [id], onDelete: Cascade)
+
+  @@id([localePackId, keyId])
+  @@index([keyId, status])
+  @@map("locale_translations")
+}
+
 // ---------------- IDENTITY & ACCESS ----------------
 model User {
   id                      String                   @id @default(uuid(7)) @db.Uuid
@@ -1462,6 +1530,43 @@ model TenantSettings {
   tenant                   Tenant   @relation(fields: [tenantId], references: [id])
 
   @@map("tenant_settings")
+}
+
+model TenantLocalePolicy {
+  tenantId               String   @id @db.Uuid
+  defaultLocale          String   @default("en")
+  regionalLocale         String   @default("ar")
+  regionalOverrideReason String?
+  enabledLocales         String[] @default(["en"])
+  allowUserPreference    Boolean  @default(false)
+  allowTenantOverrides   Boolean  @default(false)
+  catalogVersion         Int      @default(1)
+  updatedBy              String?  @db.Uuid
+  updatedAt              DateTime @updatedAt
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_locale_policies")
+}
+
+model TenantTranslationOverride {
+  id          String             @id @default(uuid(7)) @db.Uuid
+  tenantId    String             @db.Uuid
+  locale      String
+  keyId       String             @db.Uuid
+  value       String
+  status      LocalizationStatus @default(DRAFT)
+  reason      String
+  version     Int                @default(1)
+  publishedBy String?            @db.Uuid
+  publishedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key         LocalizationKey    @relation(fields: [keyId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, locale, keyId, version])
+  @@index([tenantId, locale, status])
+  @@map("tenant_translation_overrides")
 }
 
 model OfficeLocation {

@@ -1,8 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { JobStatus, ReportType } from '@prisma/client';
+import { JobStatus, ReportFormat, ReportType } from '@prisma/client';
 import { createHash } from 'node:crypto';
+import { DateTime } from 'luxon';
 import { PrismaService } from '../../../shared/database/prisma.service';
 import { PrivateObjectStorageService } from '../../../shared/storage/private-object-storage.service';
+import {
+  calendarDisplayStatus,
+  databaseDate,
+  exceptionLeaveFractionForDate,
+  isConfiguredWeeklyOff,
+} from '../core/application/attendance-runtime.service';
+import { createAttendanceWorkbook } from './attendance-workbook';
 import { createCsv } from './report-csv';
 
 export type ReportTask = { tenantId: string; reportId: string };
@@ -38,15 +46,19 @@ export class ReportingProcessor {
         task.tenantId,
         report.reportType,
         report.filters,
+        report.format,
       );
       const checksum = createHash('sha256')
         .update(generated.body)
         .digest('hex');
+      const isWorkbook = report.format === ReportFormat.XLSX;
       const objectKey = await this.storage.putReport(
         task.tenantId,
         report.id,
-        'csv',
-        'text/csv; charset=utf-8',
+        isWorkbook ? 'xlsx' : 'csv',
+        isWorkbook
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'text/csv; charset=utf-8',
         generated.body,
       );
       const completedAt = new Date();
@@ -84,9 +96,11 @@ export class ReportingProcessor {
     tenantId: string,
     type: ReportType,
     rawFilters: unknown,
+    format: ReportFormat,
   ) {
     const filters = rawFilters as ReportFilters;
-    if (type === ReportType.MUSTER) return this.muster(tenantId, filters);
+    if (type === ReportType.MUSTER)
+      return this.muster(tenantId, filters, format);
     if (type === ReportType.PAYROLL) return this.payroll(tenantId, filters);
     if (type === ReportType.LATE_OT) return this.lateOt(tenantId, filters);
     if (type === ReportType.VIOLATIONS)
@@ -94,60 +108,303 @@ export class ReportingProcessor {
     return this.fieldDistance(tenantId, filters);
   }
 
-  private async muster(tenantId: string, filters: ReportFilters) {
+  private async muster(
+    tenantId: string,
+    filters: ReportFilters,
+    format: ReportFormat,
+  ) {
     const { start, end } = reportRange(filters);
-    const employees = await this.prisma.forAdmin((tx) =>
-      tx.employee.findMany({
-        where: employeeWhere(tenantId, filters),
-        select: {
-          id: true,
-          employeeCode: true,
-          fullName: true,
-          department: { select: { name: true } },
-          attendanceDays: {
-            where: { attendanceDate: { gte: start, lte: end } },
-            orderBy: { attendanceDate: 'asc' },
+    const reportData = await this.prisma.forAdmin(async (tx) => {
+      const [employees, settings] = await Promise.all([
+        tx.employee.findMany({
+          where: employeeWhere(tenantId, filters),
+          select: {
+            id: true,
+            employeeCode: true,
+            fullName: true,
+            dateOfJoining: true,
+            dateOfExit: true,
+            deptId: true,
+            department: { select: { name: true } },
+            designation: { select: { name: true } },
+            defaultShift: { select: { name: true } },
+            officeAssignments: {
+              where: { isPrimary: true },
+              take: 1,
+              select: {
+                office: {
+                  select: {
+                    id: true,
+                    officeName: true,
+                    timezone: true,
+                  },
+                },
+              },
+            },
+            attendanceDays: {
+              where: { attendanceDate: { gte: start, lte: end } },
+              orderBy: { attendanceDate: 'asc' },
+              include: {
+                events: {
+                  select: {
+                    eventType: true,
+                    source: true,
+                    createdBy: true,
+                  },
+                  orderBy: { eventTime: 'asc' },
+                },
+              },
+            },
           },
-        },
-        orderBy: { employeeCode: 'asc' },
-      }),
-    );
+          orderBy: { employeeCode: 'asc' },
+        }),
+        tx.tenantSettings.findUniqueOrThrow({
+          where: { tenantId },
+          select: { timezone: true, weeklyOffs: true, updatedAt: true },
+        }),
+      ]);
+      const employeeIds = employees.map((employee) => employee.id);
+      const departmentIds = [
+        ...new Set(employees.map((employee) => employee.deptId)),
+      ];
+      const [assignments, holidays, exceptions, approvedLeaves, rosters] =
+        await Promise.all([
+          tx.policyAssignment.findMany({
+            where: {
+              tenantId,
+              OR: [
+                { scope: 'EMPLOYEE', employeeId: { in: employeeIds } },
+                { scope: 'DEPARTMENT', deptId: { in: departmentIds } },
+                { scope: 'TENANT_DEFAULT' },
+              ],
+            },
+            select: {
+              scope: true,
+              employeeId: true,
+              deptId: true,
+              policy: { select: { weeklyOffs: true, updatedAt: true } },
+            },
+          }),
+          tx.tenantHoliday.findMany({
+            where: {
+              tenantId,
+              holidayDate: { gte: start, lte: end },
+            },
+          }),
+          tx.attendanceException.findMany({
+            where: {
+              tenantId,
+              employeeId: { in: employeeIds },
+              startDate: { lte: end },
+              endDate: { gte: start },
+            },
+            include: {
+              leaveRequest: {
+                select: {
+                  status: true,
+                  policy: { select: { name: true } },
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          tx.leaveRequest.findMany({
+            where: {
+              tenantId,
+              employeeId: { in: employeeIds },
+              status: 'APPROVED',
+              startDate: { lte: end },
+              endDate: { gte: start },
+            },
+            include: { policy: { select: { name: true } } },
+            orderBy: { createdAt: 'desc' },
+          }),
+          tx.employeeShiftRoster.findMany({
+            where: {
+              tenantId,
+              employeeId: { in: employeeIds },
+              rosterDate: { gte: start, lte: end },
+            },
+            include: { shift: { select: { name: true } } },
+          }),
+        ]);
+      return {
+        employees,
+        settings,
+        assignments,
+        holidays,
+        exceptions,
+        approvedLeaves,
+        rosters,
+      };
+    });
+
     const days = dateColumns(start, end);
-    const rows = employees.map((employee) => {
-      const byDay = new Map(
+    const rowsByDate = new Map(days.map((date) => [date, [] as unknown[][]]));
+    const workingDates = new Set<string>();
+    const rows = reportData.employees.flatMap((employee) => {
+      const office = employee.officeAssignments[0]?.office;
+      const timezone = office?.timezone ?? reportData.settings.timezone;
+      const today = DateTime.now().setZone(timezone).toISODate()!;
+      const assignment =
+        reportData.assignments.find(
+          (item) =>
+            item.scope === 'EMPLOYEE' && item.employeeId === employee.id,
+        ) ??
+        reportData.assignments.find(
+          (item) =>
+            item.scope === 'DEPARTMENT' && item.deptId === employee.deptId,
+        ) ??
+        reportData.assignments.find((item) => item.scope === 'TENANT_DEFAULT');
+      const weeklyOffs =
+        assignment?.policy.weeklyOffs ?? reportData.settings.weeklyOffs;
+      const logsByDate = new Map(
         employee.attendanceDays.map((log) => [
-          isoDay(log.attendanceDate),
-          musterCode(log.attendanceStatus),
+          databaseDate(log.attendanceDate),
+          log,
         ]),
       );
-      const codes = days.map((day) => byDay.get(day) ?? 'A');
-      return [
-        employee.employeeCode,
-        employee.fullName,
-        employee.department.name,
-        ...codes,
-        codes.filter((code) => code === 'P').length,
-        codes.filter((code) => code === 'L').length,
-        codes.filter((code) => code === 'A').length,
-      ];
+      const holidaysByDate = new Map(
+        reportData.holidays
+          .filter(
+            (holiday) =>
+              holiday.officeLocationId === null ||
+              holiday.officeLocationId === office?.id,
+          )
+          .map((holiday) => [databaseDate(holiday.holidayDate), holiday]),
+      );
+      const rostersByDate = new Map(
+        reportData.rosters
+          .filter((roster) => roster.employeeId === employee.id)
+          .map((roster) => [databaseDate(roster.rosterDate), roster]),
+      );
+      const employeeExceptions = reportData.exceptions.filter(
+        (item) => item.employeeId === employee.id,
+      );
+      const employeeLeaves = reportData.approvedLeaves.filter(
+        (item) => item.employeeId === employee.id,
+      );
+
+      return days.map((date) => {
+        const log = logsByDate.get(date);
+        const holiday = holidaysByDate.get(date);
+        const roster = rostersByDate.get(date);
+        const exception = employeeExceptions.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
+        const approvedLeave = employeeLeaves.find(
+          (item) =>
+            databaseDate(item.startDate) <= date &&
+            databaseDate(item.endDate) >= date,
+        );
+        const leave =
+          (exception?.exceptionType === 'LEAVE' &&
+            (!exception.leaveRequest ||
+              exception.leaveRequest.status === 'APPROVED')) ||
+          !!approvedLeave;
+        const leaveRange = exception ?? approvedLeave;
+        const display = calendarDisplayStatus({
+          log,
+          holiday: !!holiday,
+          weeklyOff:
+            !roster && isConfiguredWeeklyOff(weeklyOffs, date, timezone),
+          leave,
+          halfDayLeave:
+            leave && leaveRange
+              ? exceptionLeaveFractionForDate(leaveRange, date) === 0.5
+              : false,
+          onDuty: exception?.exceptionType === 'ON_DUTY',
+          notApplicable:
+            date < databaseDate(employee.dateOfJoining) ||
+            (employee.dateOfExit !== null &&
+              date > databaseDate(employee.dateOfExit)),
+          isToday: date === today,
+          isFuture: date > today,
+        });
+        const label =
+          holiday?.holidayName ??
+          (leave
+            ? (exception?.leaveRequest?.policy.name ??
+              approvedLeave?.policy.name ??
+              'Approved leave')
+            : '');
+
+        const row = [
+          employee.employeeCode,
+          employee.fullName,
+          employee.department.name,
+          employee.designation?.name,
+          office?.officeName,
+          date,
+          attendanceStatusLabel(display.status),
+          label,
+          display.source,
+          attendanceProvenance(log),
+          roster?.shift.name ?? employee.defaultShift?.name,
+          timezone,
+          localClock(log?.firstCheckin ?? null, timezone),
+          localClock(log?.lastCheckout ?? null, timezone),
+          duration(log?.totalWorkMinutes ?? 0),
+          log?.totalWorkMinutes ?? 0,
+          log?.breakMinutes ?? 0,
+          log?.lateMinutes ?? 0,
+          log?.earlyLeaveMinutes ?? 0,
+          log?.overtimeMinutes ?? 0,
+          log ? (log.finalizedAt ? 'Finalized' : 'Open') : 'Derived',
+        ];
+        if (display.isWorkingDay) workingDates.add(date);
+        rowsByDate.get(date)?.push(row);
+        return row;
+      });
     });
-    return generated(
-      createCsv(
-        [
-          'Employee code',
-          'Employee name',
-          'Department',
-          ...days,
-          'Present',
-          'Leave',
-          'Absent',
-        ],
-        rows,
-      ),
-      employees.flatMap((employee) =>
+
+    const headers = [
+      'Employee code',
+      'Employee name',
+      'Department',
+      'Designation',
+      'Office',
+      'Attendance date',
+      'Status',
+      'Day label',
+      'Status source',
+      'Marked by',
+      'Shift',
+      'Timezone',
+      'Check-in',
+      'Checkout',
+      'Worked (HH:MM)',
+      'Worked minutes',
+      'Break minutes',
+      'Late minutes',
+      'Early leave minutes',
+      'Overtime minutes',
+      'Record state',
+    ];
+    const body =
+      format === ReportFormat.XLSX
+        ? await createAttendanceWorkbook(
+            headers,
+            days
+              .filter((date) => workingDates.has(date))
+              .map((date) => ({
+                date,
+                rows: rowsByDate.get(date) ?? [],
+              })),
+          )
+        : createCsv(headers, rows);
+
+    return generated(body, [
+      reportData.settings.updatedAt,
+      ...reportData.assignments.map((item) => item.policy.updatedAt),
+      ...reportData.exceptions.map((item) => item.updatedAt),
+      ...reportData.approvedLeaves.map((item) => item.updatedAt),
+      ...reportData.employees.flatMap((employee) =>
         employee.attendanceDays.map((log) => log.updatedAt),
       ),
-    );
+    ]);
   }
 
   private async payroll(tenantId: string, filters: ReportFilters) {
@@ -403,21 +660,65 @@ function isoDay(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function musterCode(status: string) {
+function attendanceStatusLabel(status: string) {
   return (
     (
       {
-        PRESENT: 'P',
-        PRESENT_OPEN: 'P',
-        HALF_DAY: 'HD',
-        ON_LEAVE: 'L',
-        HOLIDAY: 'H',
-        WEEKLY_OFF: 'WO',
-        ON_DUTY: 'OD',
-        ABSENT: 'A',
+        PRESENT: 'Present',
+        PRESENT_OPEN: 'Present - checkout pending',
+        HALF_DAY: 'Half day',
+        ON_LEAVE: 'On leave',
+        HOLIDAY: 'Holiday',
+        WEEKLY_OFF: 'Weekly off',
+        ON_DUTY: 'On duty',
+        ABSENT: 'Absent',
+        LATE: 'Late',
+        UPCOMING: 'Upcoming',
+        WORKING_DAY: 'Working day',
+        NOT_APPLICABLE: 'Not applicable',
       } as Record<string, string>
-    )[status] ?? 'A'
+    )[status] ?? status.replaceAll('_', ' ')
   );
+}
+
+function attendanceProvenance(
+  log:
+    | {
+        events: Array<{
+          eventType: string;
+          source: string;
+          createdBy: string | null;
+        }>;
+      }
+    | undefined,
+) {
+  if (!log?.events.length) return 'System derived';
+  if (
+    log.events.some(
+      (event) =>
+        event.source === 'REGULARIZED' ||
+        event.eventType === 'REGULARIZED_CHECKIN' ||
+        event.eventType === 'REGULARIZED_CHECKOUT',
+    )
+  ) {
+    return 'Marked by HR';
+  }
+  return 'Self marked';
+}
+
+function localClock(value: Date | null, timezone: string) {
+  return value
+    ? DateTime.fromJSDate(value, { zone: 'utc' })
+        .setZone(timezone)
+        .toFormat('HH:mm:ss')
+    : '';
+}
+
+function duration(minutes: number) {
+  const safeMinutes = Math.max(0, minutes);
+  return `${Math.floor(safeMinutes / 60)
+    .toString()
+    .padStart(2, '0')}:${(safeMinutes % 60).toString().padStart(2, '0')}`;
 }
 
 function payableFraction(status: string) {

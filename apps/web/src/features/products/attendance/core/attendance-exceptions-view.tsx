@@ -13,7 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import type { AxiosError } from "axios";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
@@ -28,6 +29,7 @@ import {
   PrimaryButton,
   inputClass,
 } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 type ExceptionType = "ON_DUTY" | "WFH" | "OTHER";
 type Employee = { id: string; employeeCode: string; fullName: string };
@@ -62,6 +64,7 @@ const emptyForm: FormState = {
 };
 
 export function AttendanceExceptionsView() {
+  const { tText } = useTenantLocalization();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -105,7 +108,7 @@ export function AttendanceExceptionsView() {
       if (employeeResult) setEmployees(employeeResult.data.data);
       setError("");
     } catch {
-      setError("OD and WFH exceptions could not be loaded.");
+      setError(tText("OD and WFH exceptions could not be loaded."));
     }
   }
   useEffect(() => {
@@ -125,7 +128,7 @@ export function AttendanceExceptionsView() {
         setError("");
       })
       .catch(() => {
-        if (active) setError("OD and WFH exceptions could not be loaded.");
+        if (active) setError(tText("OD and WFH exceptions could not be loaded."));
       });
     return () => {
       active = false;
@@ -194,7 +197,7 @@ export function AttendanceExceptionsView() {
       await load();
     } catch {
       setError(
-        "This exception cannot be deleted because its attendance period is locked.",
+        tText("This exception cannot be deleted because its attendance period is locked."),
       );
     }
   }
@@ -204,34 +207,29 @@ export function AttendanceExceptionsView() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
-            Attendance operations
-          </p>
+            {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
-              OD & WFH Exceptions
-            </h1>
+              {tText("OD & WFH Exceptions")}</h1>
             <RouteFeatureInfo />
           </div>
           <p className="mt-1 text-sm text-outline">
-            Record approved on-duty and work-from-home periods before attendance
-            finalization.
-          </p>
+            {tText("Record approved on-duty and work-from-home periods before attendance finalization.")}</p>
         </div>
         {canManage && (
           <PrimaryButton onClick={openCreate}>
             <Plus className="size-4" />
-            Add exception
-          </PrimaryButton>
+            {tText("Add exception")}</PrimaryButton>
         )}
       </header>
       <section className="mb-5 grid gap-3 sm:grid-cols-3">
         <SummaryCard
-          label="All exceptions"
+          label={tText("All exceptions")}
           value={data?.pagination.total ?? 0}
           icon={CalendarRange}
         />
         <SummaryCard
-          label="On duty"
+          label={tText("On duty")}
           value={
             data?.data.filter((item) => item.exceptionType === "ON_DUTY")
               .length ?? 0
@@ -240,7 +238,7 @@ export function AttendanceExceptionsView() {
           tone="bg-zinc-100 text-primary"
         />
         <SummaryCard
-          label="Work from home"
+          label={tText("Work from home")}
           value={
             data?.data.filter((item) => item.exceptionType === "WFH").length ??
             0
@@ -250,12 +248,12 @@ export function AttendanceExceptionsView() {
         />
       </section>
       <Panel className="mb-4 flex flex-wrap items-center gap-2 p-3">
-        <span className="mr-2 text-xs font-semibold text-outline">Show</span>
+        <span className="mr-2 text-xs font-semibold text-outline">{tText("Show")}</span>
         {[
-          { value: "", label: "All" },
-          { value: "ON_DUTY", label: "On duty" },
-          { value: "WFH", label: "Work from home" },
-          { value: "OTHER", label: "Other" },
+          { value: "", label: tText("All") },
+          { value: "ON_DUTY", label: tText("On duty") },
+          { value: "WFH", label: tText("Work from home") },
+          { value: "OTHER", label: tText("Other") },
         ].map((option) => (
           <button
             aria-pressed={type === option.value}
@@ -291,8 +289,8 @@ export function AttendanceExceptionsView() {
       ) : (
         <Panel>
           <EmptyState
-            title="No exceptions recorded"
-            body="Approved on-duty and work-from-home periods will appear here."
+            title={tText("No exceptions recorded")}
+            body={tText("Approved on-duty and work-from-home periods will appear here.")}
           />
         </Panel>
       )}
@@ -352,16 +350,17 @@ function ExceptionTable({
   onEdit: (item: AttendanceException) => void;
   onDelete: (item: AttendanceException) => void;
 }) {
+  const { tText } = useTenantLocalization();
   return (
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[850px] text-left">
         <thead>
           <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
-            <Th>Employee</Th>
-            <Th>Type</Th>
-            <Th>Date range</Th>
-            <Th>Reason</Th>
-            <Th>Updated</Th>
+            <Th>{tText("Employee")}</Th>
+            <Th>{tText("Type")}</Th>
+            <Th>{tText("Date range")}</Th>
+            <Th>{tText("Reason")}</Th>
+            <Th>{tText("Updated")}</Th>
             <Th />
           </tr>
         </thead>
@@ -373,7 +372,7 @@ function ExceptionTable({
             >
               <Td>
                 <strong className="block text-sm">
-                  {item.employee?.fullName ?? "Unknown employee"}
+                  {item.employee?.fullName ?? tText("Unknown employee")}
                 </strong>
                 <span className="text-xs text-outline">
                   {item.employee?.employeeCode}
@@ -404,14 +403,14 @@ function ExceptionTable({
                 {canManage && (
                   <div className="flex gap-2">
                     <button
-                      aria-label="Edit exception"
+                      aria-label={tText("Edit exception")}
                       onClick={() => onEdit(item)}
                       className="grid size-8 place-items-center rounded-lg bg-zinc-50 text-primary"
                     >
                       <Pencil className="size-3.5" />
                     </button>
                     <button
-                      aria-label="Delete exception"
+                      aria-label={tText("Delete exception")}
                       onClick={() => onDelete(item)}
                       className="grid size-8 place-items-center rounded-lg bg-error-container text-error"
                     >
@@ -447,6 +446,7 @@ function ExceptionEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   const ready =
     form.employeeId &&
     form.startDate &&
@@ -464,14 +464,13 @@ function ExceptionEditor({
         <div className="mb-6 flex items-start justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-primary-container">
-              Attendance exception
-            </p>
+              {tText("Attendance exception")}</p>
             <h2 id="exception-title" className="mt-1 text-xl font-bold">
-              {editing ? "Edit approved period" : "Add approved period"}
+              {editing ? tText("Edit approved period") : tText("Add approved period")}
             </h2>
           </div>
           <button
-            aria-label="Close"
+            aria-label={tText("Close")}
             onClick={onClose}
             className="grid size-9 place-items-center rounded-lg bg-zinc-50"
           >
@@ -479,7 +478,7 @@ function ExceptionEditor({
           </button>
         </div>
         <div className="grid gap-4">
-          <Field label="Employee">
+          <Field label={tText("Employee")}>
             <select
               autoFocus
               className={inputClass}
@@ -488,7 +487,7 @@ function ExceptionEditor({
                 onChange({ ...form, employeeId: event.target.value })
               }
             >
-              <option value="">Select employee</option>
+              <option value="">{tText("Select employee")}</option>
               {employees.map((employee) => (
                 <option key={employee.id} value={employee.id}>
                   {employee.fullName} · {employee.employeeCode}
@@ -496,7 +495,7 @@ function ExceptionEditor({
               ))}
             </select>
           </Field>
-          <Field label="Exception type">
+          <Field label={tText("Exception type")}>
             <div className="grid grid-cols-3 gap-2">
               {(["ON_DUTY", "WFH", "OTHER"] as ExceptionType[]).map((value) => (
                 <button
@@ -516,7 +515,7 @@ function ExceptionEditor({
             </div>
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Start date">
+            <Field label={tText("Start date")}>
               <input
                 type="date"
                 className={inputClass}
@@ -526,7 +525,7 @@ function ExceptionEditor({
                 }
               />
             </Field>
-            <Field label="End date">
+            <Field label={tText("End date")}>
               <input
                 type="date"
                 min={form.startDate}
@@ -540,12 +539,12 @@ function ExceptionEditor({
           </div>
           {overlap && (
             <div className="rounded-xl border border-red-300 bg-error-container p-3 text-xs text-on-error-container">
-              This overlaps an existing{" "}
-              {label(overlap.exceptionType).toLowerCase()} exception from{" "}
-              {overlap.startDate} to {overlap.endDate}.
+              {tText("This overlaps an existing")}{" "}
+              {label(overlap.exceptionType).toLowerCase()} {tText("exception from")}{" "}
+              {overlap.startDate} {tText("to")}{overlap.endDate}.
             </div>
           )}
-          <Field label="Approval reason">
+          <Field label={tText("Approval reason")}>
             <textarea
               className="min-h-24 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
               maxLength={500}
@@ -553,16 +552,14 @@ function ExceptionEditor({
               onChange={(event) =>
                 onChange({ ...form, reason: event.target.value })
               }
-              placeholder="Add the approved business reason"
+              placeholder={tText("Add the approved business reason")}
             />
           </Field>
           <div className="rounded-xl bg-zinc-50 p-3 text-xs text-on-surface-variant">
             <ShieldCheck className="mr-2 inline size-4 text-primary" />
-            Changes are audited and cannot alter payroll-locked attendance
-            periods.
-          </div>
+            {tText("Changes are audited and cannot alter payroll-locked attendance periods.")}</div>
           <PrimaryButton disabled={!ready || saving} onClick={onSave}>
-            {saving ? "Saving…" : editing ? "Save changes" : "Create exception"}
+            {saving ? tText("Saving…") : editing ? tText("Save changes") : tText("Create exception")}
           </PrimaryButton>
         </div>
       </div>

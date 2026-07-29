@@ -6,6 +6,7 @@ import { PlatformModulesModule } from './modules/platform-modules.module';
 import { PlatformOperationsModule } from './operations/platform-operations.module';
 import { PlatformAuthModule } from './platform-auth/platform-auth.module';
 import { PlatformTenantsModule } from './tenants/platform-tenants.module';
+import { PlatformLocalizationModule } from './localization/platform-localization.module';
 
 const CONTROL_PLANE_MODULES = [
   PlatformAuthModule,
@@ -15,6 +16,7 @@ const CONTROL_PLANE_MODULES = [
   PlatformOperationsModule,
   PlatformBillingModule,
   TenantAuditModule,
+  PlatformLocalizationModule,
 ];
 
 @Module({

@@ -1,12 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { APP_DOMAIN } from "@/lib/app-domain";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { isAppLanguage } from "@/i18n/routing";
+import { resolveTenantLoginDestination } from "@/lib/tenant-routes";
+
+const subscribeToHostname = () => () => undefined;
+
+function resolveHostnameWorkspace() {
+  if (typeof window === "undefined") return null;
+
+  const host = window.location.hostname;
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
+  if (
+    !appDomain ||
+    host === appDomain ||
+    host === `www.${appDomain}` ||
+    !host.endsWith(`.${appDomain}`)
+  ) {
+    return null;
+  }
+
+  const subdomain = host.slice(0, host.length - appDomain.length - 1);
+  return subdomain && subdomain !== "api" && subdomain !== "www"
+    ? subdomain
+    : null;
+}
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -15,21 +39,11 @@ export function LoginForm() {
   const clearPendingAuth = useAuthStore((state) => state.clearPendingAuth);
   const workspaceParam = searchParams.get("workspace");
 
-  // Auto-detect workspace from subdomain (e.g. delttech.blufield.cloud → "delttech")
-  const [hostnameWorkspace, setHostnameWorkspace] = useState<string | null>(null);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const host = window.location.hostname;
-      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
-      // Extract subdomain: host = "delttech.blufield.cloud", appDomain = "blufield.cloud"
-      if (appDomain && host !== appDomain && host !== `www.${appDomain}` && host.endsWith(`.${appDomain}`)) {
-        const sub = host.slice(0, host.length - appDomain.length - 1);
-        if (sub && sub !== "api" && sub !== "www") {
-          setHostnameWorkspace(sub);
-        }
-      }
-    }
-  }, []);
+  const hostnameWorkspace = useSyncExternalStore(
+    subscribeToHostname,
+    resolveHostnameWorkspace,
+    () => null,
+  );
 
   const workspace = workspaceParam ?? hostnameWorkspace ?? pendingAuth.workspace ?? "";
   const suppliedTenantId = searchParams.get("tenantId") ??
@@ -44,6 +58,31 @@ export function LoginForm() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
   const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+
+  useEffect(() => {
+    if (!workspace || APP_DOMAIN === "your-domain.com") return;
+
+    const currentUrl = new URL(window.location.href);
+    const sharedLoginHosts = new Set([
+      APP_DOMAIN,
+      `www.${APP_DOMAIN}`,
+      `app.${APP_DOMAIN}`,
+    ]);
+    if (!sharedLoginHosts.has(currentUrl.hostname)) return;
+
+    currentUrl.protocol = "https:";
+    currentUrl.hostname = `${workspace}.${APP_DOMAIN}`;
+    currentUrl.port = "";
+    currentUrl.searchParams.set("workspace", workspace);
+    if (suppliedTenantId)
+      currentUrl.searchParams.set("tenantId", suppliedTenantId);
+    if (initialEmail) currentUrl.searchParams.set("email", initialEmail);
+
+    // Cross-origin storage is isolated, so carry the pending auth context in
+    // the URL when moving from the shared login host to the tenant host.
+    window.location.replace(currentUrl.toString());
+  }, [initialEmail, suppliedTenantId, workspace]);
+
   const forgotPasswordHref = useMemo(() => {
     const params = new URLSearchParams();
     if (tenantId) params.set("tenantId", tenantId);
@@ -110,7 +149,27 @@ export function LoginForm() {
       
       setAuth(user, accessToken, refreshToken);
       clearPendingAuth();
-      router.push("/app/onboarding");
+      if (workspace) {
+        document.cookie = `deltcrm-workspace=${workspace}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      }
+      const defaultLanguage = isAppLanguage(user.defaultLanguage)
+        ? user.defaultLanguage
+        : "en";
+      const enabledLanguages = Array.isArray(user.enabledLanguages)
+        ? user.enabledLanguages.filter(isAppLanguage)
+        : [defaultLanguage];
+      const savedLanguage = document.cookie
+        .split("; ")
+        .find((item) => item.startsWith("deltcrm-language="))
+        ?.split("=")[1];
+      router.push(
+        resolveTenantLoginDestination({
+          nextPath: searchParams.get("next"),
+          savedLanguage,
+          defaultLanguage,
+          enabledLanguages,
+        }),
+      );
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Invalid email or password");
 

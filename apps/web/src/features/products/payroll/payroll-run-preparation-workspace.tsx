@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 import {
   AdminPage,
   ErrorState,
@@ -24,6 +25,7 @@ import {
 const today = new Date().toISOString().slice(0, 10);
 
 export function PayrollRunPreparationWorkspace() {
+  const { tText } = useTenantLocalization();
   const [runs, setRuns] = useState<Array<Record<string, unknown>>>([]);
   const [activeRunId, setActiveRunId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,12 +50,12 @@ export function PayrollRunPreparationWorkspace() {
 
   return (
     <AdminPage
-      title="Payroll run preparation"
-      description="Collect and validate immutable payroll inputs before calculation."
+      title={tText("Payroll run preparation")}
+      description={tText("Collect and validate immutable payroll inputs before calculation.")}
       action={
         <PrimaryButton onClick={refresh}>
           <RefreshCw className="size-4" />
-          Refresh
+          {tText("Refresh")}
         </PrimaryButton>
       }
     >
@@ -72,7 +74,7 @@ export function PayrollRunPreparationWorkspace() {
           <div className="border-b border-zinc-100 p-5">
             <div className="flex items-center gap-3">
               <PlayCircle className="size-5 text-primary" />
-              <h2 className="text-lg font-semibold">Runs</h2>
+              <h2 className="text-lg font-semibold">{tText("Runs")}</h2>
             </div>
           </div>
           {loading ? (
@@ -85,15 +87,15 @@ export function PayrollRunPreparationWorkspace() {
                 <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
                   <tr>
                     {[
-                      "period",
-                      "pay group",
-                      "status",
-                      "source",
-                      "blockers",
-                      "actions",
+                      "Period",
+                      "Pay group",
+                      "Status",
+                      "Source",
+                      "Blockers",
+                      "Actions",
                     ].map((item) => (
                       <th className="px-4 py-3" key={item}>
-                        {item}
+                        {tText(item)}
                       </th>
                     ))}
                   </tr>
@@ -118,7 +120,7 @@ export function PayrollRunPreparationWorkspace() {
                           onClick={() => setActiveRunId(String(run.id))}
                           type="button"
                         >
-                          Select
+                          {tText("Select")}
                         </button>
                       </td>
                     </tr>
@@ -142,10 +144,10 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
   });
   return (
     <Panel className="p-5">
-      <h2 className="text-base font-semibold">Create run</h2>
+      <h2 className="text-base font-semibold">{tText("Create run")}</h2>
       <div className="mt-4 grid gap-4">
         {Object.keys(form).map((key) => (
-          <Field key={key} label={label(key)}>
+          <Field key={key} label={tText(label(key))}>
             <input
               className={inputClass}
               onChange={(event) =>
@@ -167,7 +169,7 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
             onCreated(String(response.data?.data?.id ?? ""));
           }}
         >
-          Create run
+          {tText("Create run")}
         </PrimaryButton>
       </div>
     </Panel>
@@ -203,14 +205,14 @@ function RunActionForms({
   };
   return (
     <Panel className="p-5">
-      <h2 className="text-base font-semibold">Prepare selected run</h2>
+      <h2 className="text-base font-semibold">{tText("Prepare selected run")}</h2>
       <div className="mt-4 grid gap-4">
         {message && (
           <div className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
             {message}
           </div>
         )}
-        <Field label="Run ID">
+        <Field label={tText("Run ID")}>
           <input
             className={inputClass}
             onChange={(event) => void event}
@@ -218,7 +220,7 @@ function RunActionForms({
             value={activeRunId}
           />
         </Field>
-        <Field label="Employee ID">
+        <Field label={tText("Employee ID")}>
           <input
             className={inputClass}
             onChange={(event) => setEmployeeId(event.target.value)}
@@ -247,7 +249,7 @@ function RunActionForms({
             onChanged();
           }}
         >
-          Import one-row snapshot
+          {tText("Import one-row snapshot")}
         </PrimaryButton>
         <PrimaryButton
           disabled={disabled}
@@ -261,7 +263,7 @@ function RunActionForms({
             onChanged();
           }}
         >
-          Add sample input
+          {tText("Add sample input")}
         </PrimaryButton>
         <PrimaryButton
           disabled={disabled}
@@ -274,21 +276,21 @@ function RunActionForms({
             onChanged();
           }}
         >
-          Validate readiness
+          {tText("Validate readiness")}
         </PrimaryButton>
         {readiness && (
           <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-700">
             <div className="font-semibold">
-              Readiness: {String(readiness.status ?? "")}
+              {tText("Readiness")}: {String(readiness.status ?? "")}
             </div>
-            <div>Ready: {String(readiness.ready ?? false)}</div>
-            <div>Issues: {rows(readiness.issues).length}</div>
+            <div>{tText("Ready")}: {String(readiness.ready ?? false)}</div>
+            <div>{tText("Issues")}: {rows(readiness.issues).length}</div>
           </div>
         )}
         <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">CSV inputs</h3>
+          <h3 className="text-sm font-semibold text-zinc-700">{tText("CSV inputs")}</h3>
           <div className="mt-3 grid gap-3">
-            <Field label="CSV text">
+            <Field label={tText("CSV text")}>
               <textarea
                 className={inputClass}
                 onChange={(event) => setCsvText(event.target.value)}
@@ -314,30 +316,30 @@ function RunActionForms({
                   );
                   onChanged();
                 }}
-              >
-                Preview CSV
-              </PrimaryButton>
-              <PrimaryButton
-                disabled={disabled || !csvImportId}
-                onClick={async () => {
-                  await submit(
-                    () =>
-                      apiClient.post(
-                        `/payroll/runs/${activeRunId}/input-imports/${csvImportId}/commit`,
-                        {},
-                      ),
-                    "CSV import committed.",
-                  );
-                  setCsvImportId("");
-                }}
-              >
-                Commit CSV
-              </PrimaryButton>
+                >
+                  {tText("Preview CSV")}
+                </PrimaryButton>
+                <PrimaryButton
+                  disabled={disabled || !csvImportId}
+                  onClick={async () => {
+                    await submit(
+                      () =>
+                        apiClient.post(
+                          `/payroll/runs/${activeRunId}/input-imports/${csvImportId}/commit`,
+                          {},
+                        ),
+                      tText("CSV import committed."),
+                    );
+                    setCsvImportId("");
+                  }}
+                >
+                  {tText("Commit CSV")}
+                </PrimaryButton>
             </div>
           </div>
         </div>
         <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">Process</h3>
+          <h3 className="text-sm font-semibold text-zinc-700">{tText("Process")}</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <PrimaryButton
               disabled={disabled}
@@ -348,12 +350,12 @@ function RunActionForms({
                       `/payroll/runs/${activeRunId}/calculate`,
                       {},
                     ),
-                  "Calculation completed.",
+                  tText("Calculation completed."),
                 )
               }
             >
               <PlayCircle className="size-4" />
-              Calculate
+              {tText("Calculate")}
             </PrimaryButton>
             <PrimaryButton
               disabled={disabled || reason.length < 10}
@@ -363,12 +365,12 @@ function RunActionForms({
                     apiClient.post(`/payroll/runs/${activeRunId}/review`, {
                       reason,
                     }),
-                  "Run reviewed.",
+                  tText("Run reviewed."),
                 )
               }
             >
               <CheckCircle2 className="size-4" />
-              Review
+              {tText("Review")}
             </PrimaryButton>
             <PrimaryButton
               disabled={disabled || reason.length < 10}
@@ -378,12 +380,12 @@ function RunActionForms({
                     apiClient.post(`/payroll/runs/${activeRunId}/approve`, {
                       reason,
                     }),
-                  "Run approved.",
+                  tText("Run approved."),
                 )
               }
             >
               <ShieldCheck className="size-4" />
-              Approve
+              {tText("Approve")}
             </PrimaryButton>
             <PrimaryButton
               disabled={disabled || reason.length < 10}
@@ -393,16 +395,16 @@ function RunActionForms({
                     apiClient.post(`/payroll/runs/${activeRunId}/finalize`, {
                       reason,
                     }),
-                  "Run finalized.",
+                  tText("Run finalized."),
                 )
               }
             >
               <ShieldCheck className="size-4" />
-              Finalize
+              {tText("Finalize")}
             </PrimaryButton>
           </div>
         </div>
-        <Field label="Reason">
+        <Field label={tText("Reason")}>
           <textarea
             className={inputClass}
             onChange={(event) => setReason(event.target.value)}
@@ -412,10 +414,10 @@ function RunActionForms({
         </Field>
         <div className="border-t border-zinc-100 pt-4">
           <h3 className="text-sm font-semibold text-zinc-700">
-            Outputs and payment
+            {tText("Outputs and payment")}
           </h3>
           <div className="mt-3 grid gap-3">
-            <Field label="Output kind">
+            <Field label={tText("Output kind")}>
               <select
                 className={inputClass}
                 onChange={(event) => setOutputKind(event.target.value)}
@@ -437,50 +439,50 @@ function RunActionForms({
               <PrimaryButton
                 disabled={disabled}
                 onClick={() =>
-                  submit(
-                    () =>
-                      apiClient.post(`/payroll/runs/${activeRunId}/outputs`, {
-                        kind: outputKind,
-                        adapterKey: "standard-json-v1",
-                      }),
-                    "Output generated.",
-                  )
-                }
-              >
-                <FileOutput className="size-4" />
-                Generate
-              </PrimaryButton>
-              <PrimaryButton
-                disabled={disabled}
-                onClick={() =>
-                  submit(
-                    () =>
-                      apiClient.post(
-                        `/payroll/runs/${activeRunId}/publish`,
-                        {},
-                      ),
-                    "Payslips published.",
-                  )
-                }
-              >
-                <Send className="size-4" />
-                Publish
-              </PrimaryButton>
-              <PrimaryButton
-                disabled={disabled}
-                onClick={() =>
-                  submit(
-                    () =>
-                      apiClient.post(`/payroll/runs/${activeRunId}/payments`, {
-                        status: "PAID",
-                        reference: `manual:${activeRunId.slice(0, 8)}`,
-                      }),
-                    "Payment marked paid.",
-                  )
-                }
-              >
-                <WalletCards className="size-4" />
-                Mark paid
+                    submit(
+                      () =>
+                        apiClient.post(`/payroll/runs/${activeRunId}/outputs`, {
+                          kind: outputKind,
+                          adapterKey: "standard-json-v1",
+                        }),
+                      tText("Output generated."),
+                    )
+                  }
+                >
+                  <FileOutput className="size-4" />
+                  {tText("Generate")}
+                </PrimaryButton>
+                <PrimaryButton
+                  disabled={disabled}
+                  onClick={() =>
+                    submit(
+                      () =>
+                        apiClient.post(
+                          `/payroll/runs/${activeRunId}/publish`,
+                          {},
+                        ),
+                      tText("Payslips published."),
+                    )
+                  }
+                >
+                  <Send className="size-4" />
+                  {tText("Publish")}
+                </PrimaryButton>
+                <PrimaryButton
+                  disabled={disabled}
+                  onClick={() =>
+                    submit(
+                      () =>
+                        apiClient.post(`/payroll/runs/${activeRunId}/payments`, {
+                          status: "PAID",
+                          reference: `manual:${activeRunId.slice(0, 8)}`,
+                        }),
+                      tText("Payment marked paid."),
+                    )
+                  }
+                >
+                  <WalletCards className="size-4" />
+                  {tText("Mark paid")}
               </PrimaryButton>
             </div>
           </div>

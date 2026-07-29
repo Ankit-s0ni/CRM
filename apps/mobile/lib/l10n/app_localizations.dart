@@ -1387,6 +1387,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You will need to enter your email and password to sign in again.'**
   String get logoutConfirmMessage;
+
+  /// No description provided for @mapView.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get mapView;
+
+  /// No description provided for @satelliteView.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite'**
+  String get satelliteView;
 }
 
 class _AppLocalizationsDelegate

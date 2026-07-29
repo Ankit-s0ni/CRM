@@ -8,6 +8,7 @@ import {
 } from "libphonenumber-js";
 import { useEffect, useRef, useState } from "react";
 import { inputClass } from "@/shared/components/page-primitives";
+import { useTenantLocalization } from "@/lib/tenant-localization";
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 const countries = getCountries()
@@ -35,13 +36,22 @@ export function InternationalPhoneInput({
   onChange: (value: string) => void;
   defaultCountry?: CountryCode;
 }) {
+  const { tText } = useTenantLocalization();
   const initial = parts(value, defaultCountry);
   const [country, setCountry] = useState<CountryCode>(initial.country);
   const [nationalNumber, setNationalNumber] = useState(initial.nationalNumber);
   const emittedValue = useRef(value);
+  const previousDefaultCountry = useRef(defaultCountry);
 
   useEffect(() => {
-    if (value === emittedValue.current) return;
+    const defaultChanged = previousDefaultCountry.current !== defaultCountry;
+    previousDefaultCountry.current = defaultCountry;
+    if (value === emittedValue.current && !defaultChanged) return;
+    if (!value && defaultChanged) {
+      setCountry(defaultCountry);
+      setNationalNumber("");
+      return;
+    }
     const next = parts(value, defaultCountry);
     setCountry(next.country);
     setNationalNumber(next.nationalNumber);
@@ -67,7 +77,7 @@ export function InternationalPhoneInput({
   return (
     <div className="grid grid-cols-[minmax(150px,0.8fr)_minmax(0,1.4fr)] gap-2">
       <select
-        aria-label="Country code"
+        aria-label={tText("Country code")}
         className={inputClass}
         value={country}
         onChange={(event) => {
@@ -83,7 +93,7 @@ export function InternationalPhoneInput({
         ))}
       </select>
       <input
-        aria-label="Phone number"
+        aria-label={tText("Phone number")}
         className={inputClass}
         inputMode="numeric"
         onChange={(event) => emit(country, event.target.value)}

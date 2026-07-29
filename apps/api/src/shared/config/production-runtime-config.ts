@@ -30,8 +30,22 @@ export function validateProductionRuntimeConfiguration(
   requireValue(errors, environment, 'OTEL_SERVICE_NAME');
   requireValue(errors, environment, 'RELEASE_VERSION');
   requireHttpsUrl(errors, environment, 'OBSERVABILITY_ALERT_WEBHOOK_URL');
-  requireHttpsUrl(errors, environment, 'EMAIL_GATEWAY_URL');
-  requireSecret(errors, environment, 'EMAIL_GATEWAY_TOKEN');
+  requireValue(errors, environment, 'MAIL_PROVIDER');
+  requireValue(errors, environment, 'MAIL_FROM_ADDRESS');
+  requireValue(errors, environment, 'MAIL_FROM_NAME');
+  requireValue(errors, environment, 'PUBLIC_BASE_DOMAIN');
+  if (environment.MAIL_PROVIDER === 'smtp') {
+    requireValue(errors, environment, 'SMTP_HOST');
+    requirePort(errors, environment, 'SMTP_PORT');
+    requireValue(errors, environment, 'SMTP_USERNAME');
+    requireSecret(errors, environment, 'SMTP_PASSWORD');
+    if (environment.SMTP_REQUIRE_TLS !== 'true') {
+      errors.push('SMTP_REQUIRE_TLS must be true in production');
+    }
+  } else {
+    requireHttpsUrl(errors, environment, 'EMAIL_GATEWAY_URL');
+    requireSecret(errors, environment, 'EMAIL_GATEWAY_TOKEN');
+  }
   requireHttpsUrl(errors, environment, 'RAZORPAY_CHARGE_URL');
   requireHttpsUrl(errors, environment, 'RAZORPAY_HEALTH_URL');
   requireSecret(errors, environment, 'RAZORPAY_API_KEY');
@@ -123,5 +137,16 @@ function requireSemver(
   const value = environment[name]?.trim();
   if (!value || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(value)) {
     errors.push(`${name} must be a semantic version`);
+  }
+}
+
+function requirePort(
+  errors: string[],
+  environment: RuntimeEnvironment,
+  name: string,
+) {
+  const port = Number(environment[name]);
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) {
+    errors.push(`${name} must be a valid TCP port`);
   }
 }
