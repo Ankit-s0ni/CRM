@@ -1,11 +1,26 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from "next-intl/plugin";
+import path from "node:path";
+
+const nextIntlRequestConfig = "./src/i18n/request.ts";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   distDir: ".next-build",
+  turbopack: {
+    resolveAlias: {
+      "next-intl/config": nextIntlRequestConfig,
+    },
+  },
+  webpack(config, context) {
+    config.resolve ??= {};
+    config.resolve.alias ??= {};
+    config.resolve.alias["next-intl/config"] = path.resolve(
+      context.dir,
+      nextIntlRequestConfig,
+    );
+
+    return config;
+  },
 };
 
-const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
-
-export default withNextIntl(nextConfig);
+export default nextConfig;
