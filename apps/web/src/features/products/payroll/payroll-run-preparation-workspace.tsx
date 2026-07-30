@@ -136,6 +136,7 @@ export function PayrollRunPreparationWorkspace() {
 }
 
 function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
+  const { tText } = useTenantLocalization();
   const [form, setForm] = useState({
     payGroupId: "",
     periodKey: today.slice(0, 7),
@@ -183,6 +184,7 @@ function RunActionForms({
   activeRunId: string;
   onChanged: () => void;
 }) {
+  const { tText } = useTenantLocalization();
   const [employeeId, setEmployeeId] = useState("");
   const [reason, setReason] = useState(
     "Reviewed and approved for payroll processing.",

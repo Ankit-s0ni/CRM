@@ -23,6 +23,7 @@ export function TenantLanguagePolicyGate({
 
   useEffect(() => {
     if (allowed) return;
+    document.cookie = `deltcrm-language=${defaultLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
     const query = searchParams.toString();
     router.replace(`${pathname}${query ? `?${query}` : ""}`, {
       locale: defaultLanguage,

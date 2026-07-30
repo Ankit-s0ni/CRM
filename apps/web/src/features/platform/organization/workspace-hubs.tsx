@@ -27,7 +27,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
-import { useAuthStore } from "@/lib/auth-store";
+import { EMPTY_PERMISSIONS, useAuthStore } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { canAccessAttendanceWorkspace } from "@/lib/attendance-navigation";
 import { useTenantLocalization } from "@/lib/tenant-localization";
@@ -130,7 +130,7 @@ function hasAnyPermission(
 export function ModulesHub() {
   const { tText } = useTenantLocalization();
   const permissions = new Set(
-    useAuthStore((state) => state.user?.permissions ?? []),
+    useAuthStore((state) => state.user?.permissions ?? EMPTY_PERMISSIONS),
   );
   const [modules, setModules] = useState<WorkspaceModule[] | null>(null);
   const [error, setError] = useState("");
@@ -313,7 +313,7 @@ export function AttendanceModuleHub() {
 export function SettingsHub() {
   const { tText } = useTenantLocalization();
   const permissions = new Set(
-    useAuthStore((state) => state.user?.permissions ?? []),
+    useAuthStore((state) => state.user?.permissions ?? EMPTY_PERMISSIONS),
   );
   const [moduleKeys, setModuleKeys] = useState<Set<string>>(new Set());
   const [health, setHealth] = useState<Record<string, SettingsHealthCategory>>(
@@ -779,7 +779,7 @@ export function ModuleSettingsView() {
 export function PayrollModuleHub() {
   const { tText } = useTenantLocalization();
   const permissions = new Set(
-    useAuthStore((state) => state.user?.permissions ?? []),
+    useAuthStore((state) => state.user?.permissions ?? EMPTY_PERMISSIONS),
   );
   const { health, error } = useModuleHealth("PAYROLL");
   const foundationPermissions = [

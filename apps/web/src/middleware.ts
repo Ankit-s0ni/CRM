@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const PUBLIC_LANGUAGES = new Set(["en", "ar"]);
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const firstSegment = pathname.split("/")[1];
   if (PUBLIC_LANGUAGES.has(firstSegment)) return NextResponse.next();

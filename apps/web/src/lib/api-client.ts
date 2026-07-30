@@ -24,6 +24,16 @@ apiClient.interceptors.request.use(
     } else if (pendingAuth.workspace) {
       config.headers['x-workspace-subdomain'] = pendingAuth.workspace;
     }
+    const locale =
+      user?.localization?.defaultLanguage ??
+      (typeof document !== 'undefined'
+        ? document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('deltcrm-language='))
+            ?.split('=')[1]
+        : undefined) ??
+      'en';
+    config.headers['Accept-Language'] = locale;
     return config;
   },
   (error) => Promise.reject(error)

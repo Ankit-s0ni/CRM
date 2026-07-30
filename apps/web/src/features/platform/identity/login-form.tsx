@@ -152,12 +152,19 @@ export function LoginForm() {
       if (workspace) {
         document.cookie = `deltcrm-workspace=${workspace}; Path=/; Max-Age=31536000; SameSite=Lax`;
       }
-      const defaultLanguage = isAppLanguage(user.defaultLanguage)
-        ? user.defaultLanguage
+      const rawDefaultLanguage =
+        (user as Record<string, unknown>).defaultLanguage ??
+        user.localization?.defaultLanguage;
+      const defaultLanguage = isAppLanguage(rawDefaultLanguage as string)
+        ? (rawDefaultLanguage as "en" | "ar")
         : "en";
-      const enabledLanguages = Array.isArray(user.enabledLanguages)
-        ? user.enabledLanguages.filter(isAppLanguage)
+      const rawEnabledLanguages =
+        (user as Record<string, unknown>).enabledLanguages ??
+        user.localization?.enabledLanguages;
+      const enabledLanguages = Array.isArray(rawEnabledLanguages)
+        ? rawEnabledLanguages.filter(isAppLanguage)
         : [defaultLanguage];
+      document.cookie = `deltcrm-language=${defaultLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
       const savedLanguage = document.cookie
         .split("; ")
         .find((item) => item.startsWith("deltcrm-language="))

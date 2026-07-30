@@ -4,7 +4,7 @@ import { ArrowRight, Search, Settings2, UserRound } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { FormEvent, useDeferredValue, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
-import { useAuthStore } from "@/lib/auth-store";
+import { EMPTY_PERMISSIONS, useAuthStore } from "@/lib/auth-store";
 import { useTenantLocalization as useLocalization } from "@/lib/tenant-localization";
 import { tenantMessage } from "@/i18n/tenant-message";
 
@@ -32,7 +32,9 @@ const destinations = [
 export function PortalSearch() {
   const router = useRouter();
   const { t } = useLocalization();
-  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const permissions = useAuthStore(
+    (state) => state.user?.permissions ?? EMPTY_PERMISSIONS,
+  );
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query.trim());
   const [employees, setEmployees] = useState<EmployeeResult[]>([]);

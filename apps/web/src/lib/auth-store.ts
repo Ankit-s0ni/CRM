@@ -20,6 +20,8 @@ export interface User {
   };
 }
 
+export const EMPTY_PERMISSIONS: string[] = [];
+
 interface PendingAuthContext {
   tenantId: string | null;
   workspace: string | null;
