@@ -660,7 +660,8 @@ function failureMessage(code: FailureCode) {
     CLOCK_TAMPER: 'Correct the device date and time and try again',
     GPS_ACCURACY_TOO_LOW: 'Improve GPS accuracy and try again',
     LOCATION_REQUIRED: 'Location is required by your attendance policy',
-    NO_OFFICE_ASSIGNED: 'No attendance office is assigned to your profile',
+    NO_OFFICE_ASSIGNED:
+      'Your attendance workplace has not been assigned. Contact HR to assign an office before checking in.',
     OUTSIDE_GEOFENCE: 'You are outside the approved attendance location',
     CONSENT_MISSING: 'Biometric consent is required by your attendance policy',
     FACE_NOT_ENROLLED: 'Complete face enrollment before recording attendance',

@@ -20,7 +20,22 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/onboarding/status", (route) =>
     route.fulfill({
       status: 200,
-      json: { data: { completed: true, currentStep: 4, steps: {} } },
+      json: {
+        data: {
+          completed: true,
+          currentStep: 6,
+          onboardingVersion: 2,
+          steps: {
+            company: true,
+            organization: true,
+            office: true,
+            workingDays: true,
+            attendancePolicy: true,
+            hrInvite: true,
+          },
+          missingSteps: [],
+        },
+      },
     }),
   );
   await page.route("**/auth/me", (route) =>
@@ -92,9 +107,7 @@ for (const viewport of [
       },
     ]) {
       await page.goto(screen.path);
-      await expect(
-        page.getByRole("heading", { name: screen.heading }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: screen.heading })).toBeVisible();
       await expectNoPageOverflow(page);
       await expectNoCollapsedContent(page);
       if (viewport.width !== 390) await compareWithStitch(page, screen.key);
@@ -102,63 +115,43 @@ for (const viewport of [
   });
 }
 
-test("register opens the selected employee evidence timeline", async ({
-  page,
-}) => {
+test("register opens the selected employee evidence timeline", async ({ page }) => {
   await page.goto("/app/attendance/register");
   await expect(page.getByText("Rajesh Kumar")).toBeVisible();
   await expect(page.getByText("WEB")).toBeVisible();
   await page.getByRole("link", { name: "View", exact: true }).click();
-  await expect(page).toHaveURL(
-    new RegExp(`/app/attendance/register/${employeeId}`),
-  );
+  await expect(page).toHaveURL(new RegExp(`/app/attendance/register/${employeeId}`));
   await expect(page.getByText("Evidence timeline")).toBeVisible();
   await expect(page.getByText("CHECKIN")).toBeVisible();
   await expect(page.getByText("10.0.0.1")).toBeHidden();
 });
 
-test("exception editor warns about an overlap before submission", async ({
-  page,
-}) => {
+test("exception editor warns about an overlap before submission", async ({ page }) => {
   await page.goto("/app/attendance/exceptions");
   await page.getByRole("button", { name: "Add exception" }).click();
-  await page
-    .getByRole("combobox", { name: /Employee/ })
-    .selectOption(employeeId);
+  await page.getByRole("combobox", { name: /Employee/ }).selectOption(employeeId);
   await page.getByLabel("Start date").fill(date);
   await page.getByLabel("End date").fill(date);
   await page.getByLabel("Approval reason").fill("Customer visit");
   await expect(page.getByText(/overlaps an existing/)).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Create exception" }),
-  ).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Create exception" })).toBeDisabled();
 });
 
-test("self punch card follows the server-confirmed transition", async ({
-  page,
-}) => {
+test("self punch card follows the server-confirmed transition", async ({ page }) => {
   let open = false;
-  await page.route("**/attendance/me/today", (route) =>
-    route.fulfill({ status: 200, json: todayResponse(open) }),
-  );
+  await page.route("**/attendance/me/today", (route) => route.fulfill({ status: 200, json: todayResponse(open) }));
   await page.route("**/attendance/check-in", (route) => {
     open = true;
     return route.fulfill({ status: 201, json: todayResponse(true) });
   });
   await page.goto("/app");
-  await expect(
-    page.getByRole("region", { name: "My attendance" }),
-  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "My attendance" })).toBeVisible();
   await page.getByRole("button", { name: "Check in" }).click();
   await expect(page.getByRole("button", { name: "Check out" })).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Break", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Break", exact: true })).toBeVisible();
 });
 
-test("register exposes loading, empty and API error states", async ({
-  page,
-}) => {
+test("register exposes loading, empty and API error states", async ({ page }) => {
   await page.route("**/attendance/register?*", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     return route.fulfill({
@@ -168,9 +161,7 @@ test("register exposes loading, empty and API error states", async ({
   });
   await page.goto("/app/attendance/register");
   await expect(page.locator(".animate-pulse").first()).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "No attendance records" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No attendance records" })).toBeVisible();
   await page.unroute("**/attendance/register?*");
   await page.route("**/attendance/register?*", (route) =>
     route.fulfill({ status: 403, json: { code: "PERMISSION_DENIED" } }),
@@ -196,25 +187,17 @@ async function login(page: Page) {
 }
 
 async function mockAttendance(page: Page) {
-  await page.route("**/attendance/register?*", (route) =>
-    route.fulfill({ status: 200, json: registerFixture() }),
-  );
+  await page.route("**/attendance/register?*", (route) => route.fulfill({ status: 200, json: registerFixture() }));
   await page.route("**/attendance/employees/*/month?*", (route) =>
     route.fulfill({ status: 200, json: monthFixture() }),
   );
-  await page.route("**/attendance/register/*/day?*", (route) =>
-    route.fulfill({ status: 200, json: dayFixture() }),
-  );
-  await page.route("**/attendance-exceptions?*", (route) =>
-    route.fulfill({ status: 200, json: exceptionFixture() }),
-  );
+  await page.route("**/attendance/register/*/day?*", (route) => route.fulfill({ status: 200, json: dayFixture() }));
+  await page.route("**/attendance-exceptions?*", (route) => route.fulfill({ status: 200, json: exceptionFixture() }));
   await page.route("**/employees?*", (route) =>
     route.fulfill({
       status: 200,
       json: {
-        data: [
-          { id: employeeId, employeeCode: "EMP-001", fullName: "Rajesh Kumar" },
-        ],
+        data: [{ id: employeeId, employeeCode: "EMP-001", fullName: "Rajesh Kumar" }],
       },
     }),
   );
@@ -404,19 +387,13 @@ function todayResponse(open: boolean) {
 }
 
 async function expectNoPageOverflow(page: Page) {
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    ),
-  ).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
 }
 
 async function expectNoCollapsedContent(page: Page) {
   const collapsed = await page.evaluate(
     () =>
-      Array.from(
-        document.querySelectorAll<HTMLElement>('[class*="max-w-"]'),
-      ).filter((element) => {
+      Array.from(document.querySelectorAll<HTMLElement>('[class*="max-w-"]')).filter((element) => {
         const rect = element.getBoundingClientRect();
         return (
           getComputedStyle(element).display !== "none" &&
@@ -436,19 +413,13 @@ async function compareWithStitch(page: Page, key: string) {
     fullPage: true,
   });
   const actual = PNG.sync.read(actualBuffer);
-  const reference = PNG.sync.read(
-    readFileSync(resolve(references, `${key}.png`)),
-  );
+  const reference = PNG.sync.read(readFileSync(resolve(references, `${key}.png`)));
   const scaledReference = resizeNearest(reference, actual.width, actual.height);
   const diff = new PNG({ width: actual.width, height: actual.height });
-  const different = pixelmatch(
-    actual.data,
-    scaledReference.data,
-    diff.data,
-    actual.width,
-    actual.height,
-    { threshold: 0.2, includeAA: false },
-  );
+  const different = pixelmatch(actual.data, scaledReference.data, diff.data, actual.width, actual.height, {
+    threshold: 0.2,
+    includeAA: false,
+  });
   const ratio = different / (actual.width * actual.height);
   test.info().annotations.push({
     type: "stitch-diff",
@@ -462,24 +433,15 @@ async function compareWithStitch(page: Page, key: string) {
     body: PNG.sync.write(diff),
     contentType: "image/png",
   });
-  expect(
-    ratio,
-    `${key} diverged materially from the archived Stitch composition`,
-  ).toBeLessThan(0.3);
+  expect(ratio, `${key} diverged materially from the archived Stitch composition`).toBeLessThan(0.3);
 }
 
 function resizeNearest(source: PNG, width: number, height: number) {
   const target = new PNG({ width, height });
   for (let y = 0; y < height; y += 1) {
-    const sourceY = Math.min(
-      source.height - 1,
-      Math.floor((y / height) * source.height),
-    );
+    const sourceY = Math.min(source.height - 1, Math.floor((y / height) * source.height));
     for (let x = 0; x < width; x += 1) {
-      const sourceX = Math.min(
-        source.width - 1,
-        Math.floor((x / width) * source.width),
-      );
+      const sourceX = Math.min(source.width - 1, Math.floor((x / width) * source.width));
       const from = (sourceY * source.width + sourceX) * 4;
       const to = (y * width + x) * 4;
       target.data[to] = source.data[from];

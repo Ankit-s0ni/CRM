@@ -1,5 +1,6 @@
 export const payrollWorkspacePaths = [
   "/app/modules/payroll",
+  "/app/modules/payroll/setup",
   "/app/modules/payroll/foundation",
   "/app/modules/payroll/runs",
   "/app/modules/payroll/processing",
@@ -17,6 +18,7 @@ export function isPayrollWorkspacePath(pathname: string) {
 
 export function payrollSectionForPath(pathname: string) {
   if (pathname === "/app/modules/payroll") return "overview";
+  if (pathname.startsWith("/app/modules/payroll/setup")) return "foundation";
   if (pathname.startsWith("/app/modules/payroll/foundation")) return "foundation";
   if (pathname.startsWith("/app/modules/payroll/runs")) return "runs";
   if (pathname.startsWith("/app/modules/payroll/processing")) return "processing";

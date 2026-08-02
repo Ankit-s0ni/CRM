@@ -1028,6 +1028,18 @@ abstract class AppLocalizations {
   /// **'Punch could not be completed'**
   String get punchFailed;
 
+  /// No description provided for @officeAssignmentRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workplace not assigned'**
+  String get officeAssignmentRequiredTitle;
+
+  /// No description provided for @officeAssignmentRequiredGuidance.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attendance workplace is not assigned. Contact HR to assign an office before checking in.'**
+  String get officeAssignmentRequiredGuidance;
+
   /// No description provided for @failureStates.
   ///
   /// In en, this message translates to:

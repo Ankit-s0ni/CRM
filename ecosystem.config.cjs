@@ -30,5 +30,15 @@ module.exports = {
       max_restarts: 10,
       restart_delay: 5000,
     },
+    {
+      name: "landing",
+      cwd: "/home/ubuntu/CRM",
+      script: "./scripts/pm2-run-landing.sh",
+      interpreter: "/bin/bash",
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 5000,
+    },
   ],
 };

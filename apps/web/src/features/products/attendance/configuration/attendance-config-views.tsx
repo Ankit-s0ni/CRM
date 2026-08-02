@@ -16,16 +16,13 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import timezoneLookup from "tz-lookup";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
-import {
-  FieldMap,
-  type MapCoordinate,
-} from "@/features/products/attendance/field/field-map";
+import { FieldMap, type MapCoordinate } from "@/features/products/attendance/field/field-map";
 import { TimezoneSelect } from "@/shared/components/timezone-select";
 import {
   AdminPage,
@@ -138,7 +135,15 @@ type OfficeRegion = {
   subdivisionCode?: string;
 };
 
-export function OfficesView() {
+export function OfficesView({
+  embedded = false,
+  defaultTimezone = "",
+  onReadinessChange,
+}: {
+  embedded?: boolean;
+  defaultTimezone?: string;
+  onReadinessChange?: (ready: boolean) => void;
+} = {}) {
   const { tText } = useTenantLocalization();
   const [data, setData] = useState<Office[] | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -153,25 +158,46 @@ export function OfficesView() {
     latitude: "",
     longitude: "",
     radiusMeters: "150",
-    timezone: "",
+    timezone: defaultTimezone,
     countryCode: "",
     subdivisionCode: "",
     egressIps: "",
     wifiSsids: "",
   });
-  const load = () =>
-    Promise.all([
-      apiClient.get("/offices"),
-      apiClient.get("/employees?limit=100"),
-    ])
-      .then(([offices, employeeResult]) => {
-        setData(offices.data.data);
-        setEmployees(employeeResult.data.data);
-      })
-      .catch(() => setError(tText("Office locations could not be loaded.")));
+  const onReadinessChangeRef = useRef(onReadinessChange);
+  useEffect(() => {
+    onReadinessChangeRef.current = onReadinessChange;
+  }, [onReadinessChange]);
+  const load = useCallback(
+    () =>
+      apiClient
+        .get("/offices")
+        .then(async (offices) => {
+          const nextOffices = offices.data.data as Office[];
+          setData(nextOffices);
+          if (!embedded) {
+            const employeeResult = await apiClient.get("/employees?limit=100");
+            setEmployees(employeeResult.data.data);
+          }
+          onReadinessChangeRef.current?.(
+            nextOffices.some(
+              (office) =>
+                Boolean(office.timezone && office.countryCode) &&
+                office.radiusMeters >= 25 &&
+                office.radiusMeters <= 10_000,
+            ),
+          );
+          setError("");
+        })
+        .catch(() => {
+          onReadinessChangeRef.current?.(false);
+          setError(tText("Office locations could not be loaded."));
+        }),
+    [embedded, tText],
+  );
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
   async function saveOffice() {
     setError("");
     const latitude = Number(form.latitude);
@@ -188,6 +214,7 @@ export function OfficesView() {
       longitude < -180 ||
       longitude > 180 ||
       !form.timezone ||
+      !form.countryCode ||
       !Number.isInteger(radiusMeters) ||
       radiusMeters < 25 ||
       radiusMeters > 10_000
@@ -205,32 +232,18 @@ export function OfficesView() {
       longitude,
       radiusMeters,
       timezone: form.timezone,
-      ...(form.countryCode
-        ? { countryCode: form.countryCode.toUpperCase() }
-        : {}),
-      ...(form.subdivisionCode
-        ? { subdivisionCode: form.subdivisionCode.toUpperCase() }
-        : {}),
+      countryCode: form.countryCode.toUpperCase(),
+      ...(form.subdivisionCode ? { subdivisionCode: form.subdivisionCode.toUpperCase() } : {}),
       egressIps: form.egressIps.split(",").map(trim).filter(Boolean),
       wifiSsids: form.wifiSsids.split(",").map(trim).filter(Boolean),
     };
-    await (
-      editing
-        ? apiClient.patch(`/offices/${editing.id}`, payload)
-        : apiClient.post("/offices", payload)
-    )
+    await (editing ? apiClient.patch(`/offices/${editing.id}`, payload) : apiClient.post("/offices", payload))
       .then(() => {
         setOpen(false);
         setEditing(null);
         load();
       })
-      .catch(() =>
-        setError(
-          tText(
-            "Office could not be saved. Check the geofence, network values, and references.",
-          ),
-        ),
-      );
+      .catch(() => setError(tText("Office could not be saved. Check the geofence, network values, and references.")));
   }
   function openCreate() {
     setError("");
@@ -240,7 +253,7 @@ export function OfficesView() {
       latitude: "",
       longitude: "",
       radiusMeters: "150",
-      timezone: "",
+      timezone: defaultTimezone,
       countryCode: "",
       subdivisionCode: "",
       egressIps: "",
@@ -256,10 +269,7 @@ export function OfficesView() {
       latitude: String(office.latitude),
       longitude: String(office.longitude),
       radiusMeters: String(office.radiusMeters),
-      timezone:
-        timezoneForCoordinate(office.latitude, office.longitude) ??
-        office.timezone ??
-        "",
+      timezone: timezoneForCoordinate(office.latitude, office.longitude) ?? office.timezone ?? "",
       countryCode: office.countryCode ?? "",
       subdivisionCode: office.subdivisionCode ?? "",
       egressIps: office.egressIps.join(", "),
@@ -280,11 +290,7 @@ export function OfficesView() {
     }
     setOpen(true);
   }
-  function updateOfficeCoordinate(
-    latitude: number,
-    longitude: number,
-    region?: OfficeRegion,
-  ) {
+  function updateOfficeCoordinate(latitude: number, longitude: number, region?: OfficeRegion) {
     setForm((current) => ({
       ...current,
       latitude: latitude.toFixed(6),
@@ -293,10 +299,6 @@ export function OfficesView() {
       countryCode: region?.countryCode ?? current.countryCode,
       subdivisionCode: region?.subdivisionCode ?? current.subdivisionCode,
     }));
-  }
-  function detectTimezoneFromInputs() {
-    const timezone = timezoneForCoordinate(form.latitude, form.longitude);
-    if (timezone) setForm((current) => ({ ...current, timezone }));
   }
   async function removeOffice() {
     if (!editing || !window.confirm(`Delete ${editing.officeName}?`)) return;
@@ -308,11 +310,7 @@ export function OfficesView() {
         load();
       })
       .catch(() =>
-        setError(
-          tText(
-            "Office cannot be deleted while assignments, holidays, or attendance evidence reference it.",
-          ),
-        ),
+        setError(tText("Office cannot be deleted while assignments, holidays, or attendance evidence reference it.")),
       );
   }
   async function openAssignments(office: Office) {
@@ -324,9 +322,7 @@ export function OfficesView() {
         isPrimary: boolean;
       }>;
       setAssignedIds(rows.map((row) => row.employeeId));
-      setPrimaryIds(
-        rows.filter((row) => row.isPrimary).map((row) => row.employeeId),
-      );
+      setPrimaryIds(rows.filter((row) => row.isPrimary).map((row) => row.employeeId));
       setAssigning(office);
     } catch {
       setError(tText("Office assignments could not be loaded."));
@@ -345,65 +341,48 @@ export function OfficesView() {
       setError(tText("Office assignments could not be saved."));
     }
   }
-  return (
-    <AdminPage
-      title={tText("Office Locations & Geofences")}
-      description={tText(
-        "Control where employees may securely record attendance.",
+  const firstOfficeSetup = embedded && data?.length === 0;
+  const content = (
+    <>
+      {error && !open && !firstOfficeSetup && <ErrorState message={error} />}
+      {!embedded && (
+        <Panel className="mb-5 p-5">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <h2 className="font-bold">{tText("How policy assignment works")}</h2>
+              <p className="mt-1 text-sm leading-6 text-zinc-500">
+                {tText(
+                  "DeltCRM resolves one effective policy for each employee. A direct employee assignment wins over a department assignment, and a department assignment wins over the tenant default.",
+                )}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-primary">
+              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Employee")}</span>
+              <span>{tText("overrides")}</span>
+              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Department")}</span>
+              <span>{tText("overrides")}</span>
+              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Tenant")}</span>
+            </div>
+          </div>
+        </Panel>
       )}
-      action={
-        <PrimaryButton onClick={openCreate}>
-          <Plus className="size-4" />
-          {tText("Add office")}
-        </PrimaryButton>
-      }
-    >
-      {error && <ErrorState message={error} />}
-      <Panel className="mb-5 p-5">
-        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <h2 className="font-bold">
-              {tText("How policy assignment works")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-zinc-500">
-              {tText(
-                "DeltCRM resolves one effective policy for each employee. A direct employee assignment wins over a department assignment, and a department assignment wins over the tenant default.",
-              )}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-primary">
-            <span className="rounded-full bg-zinc-100 px-3 py-2">
-              {tText("Employee")}
-            </span>
-            <span>{tText("overrides")}</span>
-            <span className="rounded-full bg-zinc-100 px-3 py-2">
-              {tText("Department")}
-            </span>
-            <span>{tText("overrides")}</span>
-            <span className="rounded-full bg-zinc-100 px-3 py-2">
-              {tText("Tenant")}
-            </span>
-          </div>
+      {!embedded && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-400 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+          <p>
+            <strong>{tText("Important:")}</strong>{" "}
+            {tText(
+              "Saving an office does not enforce its geofence by itself. Assign employees to the office and give them an attendance policy whose location rule is",
+            )}{" "}
+            <strong>{tText("Office geofence")}</strong>.
+          </p>
+          <Link className="font-bold text-primary" href="/app/attendance/policies">
+            {tText("Review attendance policies")}
+          </Link>
         </div>
-      </Panel>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-400 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-        <p>
-          <strong>{tText("Important:")}</strong>{" "}
-          {tText(
-            "Saving an office does not enforce its geofence by itself. Assign employees to the office and give them an attendance policy whose location rule is",
-          )}{" "}
-          <strong>{tText("Office geofence")}</strong>.
-        </p>
-        <Link
-          className="font-bold text-primary"
-          href="/app/attendance/policies"
-        >
-          {tText("Review attendance policies")}
-        </Link>
-      </div>
+      )}
       {!data ? (
         <LoadingState />
-      ) : (
+      ) : firstOfficeSetup ? null : (
         <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
           <Panel className="overflow-hidden">
             <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-surface-variant bg-zinc-50 px-6 py-3 text-xs font-bold uppercase tracking-wider text-outline">
@@ -424,30 +403,22 @@ export function OfficesView() {
                       {office.countryCode
                         ? `${office.countryCode}${office.subdivisionCode ? ` · ${office.subdivisionCode}` : ""}`
                         : tText("Holiday region not set")}{" "}
-                      · {office.timezone || tText("Tenant timezone")} ·{" "}
-                      {(office.egressIps as string[]).length}{" "}
+                      · {office.timezone || tText("Tenant timezone")} · {(office.egressIps as string[]).length}{" "}
                       {tText("trusted networks")}
                     </div>
-                    <div className="mt-1 text-xs text-outline">
-                      {Number(office.latitude).toFixed(6)},{" "}
-                      {Number(office.longitude).toFixed(6)}
-                    </div>
                   </div>
-                  <span className="text-sm">
-                    {office._count?.assignments ?? 0}
-                  </span>
+                  <span className="text-sm">{office._count?.assignments ?? 0}</span>
                   <span className="text-sm">{office.radiusMeters} m</span>
                   <div className="flex gap-3">
-                    <button
-                      className="text-left text-xs font-semibold text-primary"
-                      onClick={() => openAssignments(office)}
-                    >
-                      {tText("Assign")}
-                    </button>
-                    <button
-                      className="text-left text-xs font-semibold text-primary"
-                      onClick={() => openEdit(office)}
-                    >
+                    {!embedded && (
+                      <button
+                        className="text-left text-xs font-semibold text-primary"
+                        onClick={() => openAssignments(office)}
+                      >
+                        {tText("Assign")}
+                      </button>
+                    )}
+                    <button className="text-left text-xs font-semibold text-primary" onClick={() => openEdit(office)}>
                       {tText("Edit")}
                     </button>
                   </div>
@@ -456,20 +427,19 @@ export function OfficesView() {
             ) : (
               <EmptyState
                 title={tText("No offices yet")}
-                body={tText(
-                  "Add an office to configure its circular geofence and network allow-list.",
-                )}
+                body={tText("Add an office to configure its circular geofence and network allow-list.")}
               />
             )}
           </Panel>
           <OfficeMap offices={data} />
         </div>
       )}
-      {open && (
+      {(open || firstOfficeSetup) && (
         <Dialog
           error={error}
+          inline={firstOfficeSetup}
           wide
-          title={editing ? "Edit office" : "Add office"}
+          title={firstOfficeSetup ? tText("Office details") : editing ? tText("Edit office") : tText("Add office")}
           onClose={() => {
             setOpen(false);
             setEditing(null);
@@ -480,53 +450,22 @@ export function OfficesView() {
               latitude={form.latitude}
               longitude={form.longitude}
               radiusMeters={form.radiusMeters}
-              onChange={({ latitude, longitude }, region) =>
-                updateOfficeCoordinate(latitude, longitude, region)
-              }
+              onChange={({ latitude, longitude }, region) => updateOfficeCoordinate(latitude, longitude, region)}
             />
             <Field label={tText("Office name")}>
               <input
                 autoFocus
                 className={inputClass}
                 value={form.officeName}
-                onChange={(e) =>
-                  setForm({ ...form, officeName: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, officeName: e.target.value })}
               />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label={tText("Latitude")}>
-                <input
-                  className={inputClass}
-                  value={form.latitude}
-                  onBlur={detectTimezoneFromInputs}
-                  onChange={(e) =>
-                    setForm({ ...form, latitude: e.target.value })
-                  }
-                />
-              </Field>
-              <Field label={tText("Longitude")}>
-                <input
-                  className={inputClass}
-                  value={form.longitude}
-                  onBlur={detectTimezoneFromInputs}
-                  onChange={(e) =>
-                    setForm({ ...form, longitude: e.target.value })
-                  }
-                />
-              </Field>
-            </div>
-            <Field
-              label={tText("Radius in meters")}
-              helpKey="location-verification"
-            >
+            <Field label={tText("Radius in meters")} helpKey="location-verification">
               <input
                 type="number"
                 className={inputClass}
                 value={form.radiusMeters}
-                onChange={(e) =>
-                  setForm({ ...form, radiusMeters: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, radiusMeters: e.target.value })}
               />
             </Field>
             <Field label={tText("Timezone")}>
@@ -556,9 +495,7 @@ export function OfficesView() {
                     })
                   }
                 />
-                <p className="mt-1 text-xs text-outline">
-                  {tText("ISO country code detected from the office pin.")}
-                </p>
+                <p className="mt-1 text-xs text-outline">{tText("ISO country code detected from the office pin.")}</p>
               </Field>
               <Field label={tText("State or region")}>
                 <input
@@ -573,9 +510,7 @@ export function OfficesView() {
                     })
                   }
                 />
-                <p className="mt-1 text-xs text-outline">
-                  {tText("Optional ISO 3166-2 subdivision code.")}
-                </p>
+                <p className="mt-1 text-xs text-outline">{tText("Optional ISO 3166-2 subdivision code.")}</p>
               </Field>
             </div>
             <Field label={tText("Egress IPs or CIDRs")}>
@@ -583,18 +518,14 @@ export function OfficesView() {
                 className={inputClass}
                 placeholder="203.0.113.10, 10.0.0.0/24"
                 value={form.egressIps}
-                onChange={(e) =>
-                  setForm({ ...form, egressIps: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, egressIps: e.target.value })}
               />
             </Field>
             <Field label={tText("Advisory Wi-Fi SSIDs")}>
               <input
                 className={inputClass}
                 value={form.wifiSsids}
-                onChange={(e) =>
-                  setForm({ ...form, wifiSsids: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, wifiSsids: e.target.value })}
               />
             </Field>
             <div className="flex gap-3">
@@ -614,38 +545,24 @@ export function OfficesView() {
         </Dialog>
       )}
       {assigning && (
-        <Dialog
-          error={error}
-          title={`Assign employees · ${assigning.officeName}`}
-          onClose={() => setAssigning(null)}
-        >
+        <Dialog error={error} title={`Assign employees · ${assigning.officeName}`} onClose={() => setAssigning(null)}>
           <div className="grid max-h-96 gap-2 overflow-auto">
             {employees.map((employee) => (
-              <div
-                key={employee.id}
-                className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-zinc-50 p-3"
-              >
+              <div key={employee.id} className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-zinc-50 p-3">
                 <label className="flex items-center gap-3 text-sm">
                   <input
                     type="checkbox"
                     checked={assignedIds.includes(employee.id)}
                     onChange={(event) => {
                       setAssignedIds((current) =>
-                        event.target.checked
-                          ? [...current, employee.id]
-                          : current.filter((id) => id !== employee.id),
+                        event.target.checked ? [...current, employee.id] : current.filter((id) => id !== employee.id),
                       );
-                      if (!event.target.checked)
-                        setPrimaryIds((current) =>
-                          current.filter((id) => id !== employee.id),
-                        );
+                      if (!event.target.checked) setPrimaryIds((current) => current.filter((id) => id !== employee.id));
                     }}
                   />
                   <span>
                     <strong>{employee.fullName}</strong>
-                    <span className="block text-xs text-outline">
-                      {employee.employeeCode}
-                    </span>
+                    <span className="block text-xs text-outline">{employee.employeeCode}</span>
                   </span>
                 </label>
                 <label className="flex items-center gap-2 text-xs">
@@ -655,9 +572,7 @@ export function OfficesView() {
                     checked={primaryIds.includes(employee.id)}
                     onChange={(event) =>
                       setPrimaryIds((current) =>
-                        event.target.checked
-                          ? [...current, employee.id]
-                          : current.filter((id) => id !== employee.id),
+                        event.target.checked ? [...current, employee.id] : current.filter((id) => id !== employee.id),
                       )
                     }
                   />
@@ -671,6 +586,44 @@ export function OfficesView() {
           </PrimaryButton>
         </Dialog>
       )}
+    </>
+  );
+
+  const addOfficeAction = (
+    <PrimaryButton onClick={openCreate}>
+      <Plus className="size-4" />
+      {tText("Add office")}
+    </PrimaryButton>
+  );
+
+  if (embedded) {
+    return (
+      <section className="grid gap-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">
+              {firstOfficeSetup ? tText("Configure the office location") : tText("Office Locations & Geofences")}
+            </h2>
+            <p className="mt-1 text-sm text-on-surface-variant">
+              {firstOfficeSetup
+                ? tText("Pin the workplace entrance, confirm its region, and set the attendance boundary.")
+                : tText("Add at least one office and confirm its detected region before continuing.")}
+            </p>
+          </div>
+          {!firstOfficeSetup && addOfficeAction}
+        </div>
+        {content}
+      </section>
+    );
+  }
+
+  return (
+    <AdminPage
+      title={tText("Office Locations & Geofences")}
+      description={tText("Control where employees may securely record attendance.")}
+      action={addOfficeAction}
+    >
+      {content}
     </AdminPage>
   );
 }
@@ -739,13 +692,10 @@ export function PoliciesView() {
       apiClient.get("/attendance-policies"),
       apiClient.get("/departments"),
       apiClient.get("/employees?limit=100"),
-      permissions.includes("attendance.config.read") ||
-      permissions.includes("attendance.config.manage")
+      permissions.includes("attendance.config.read") || permissions.includes("attendance.config.manage")
         ? apiClient.get("/workspace/attendance-capabilities").catch(() => null)
         : Promise.resolve(null),
-      focusedEmployeeId
-        ? apiClient.get(`/employees/${focusedEmployeeId}`)
-        : Promise.resolve(null),
+      focusedEmployeeId ? apiClient.get(`/employees/${focusedEmployeeId}`) : Promise.resolve(null),
       focusedEmployeeId
         ? apiClient
             .get(
@@ -755,14 +705,7 @@ export function PoliciesView() {
         : Promise.resolve(null),
     ])
       .then(
-        ([
-          policies,
-          departmentResult,
-          employeeResult,
-          capabilityResult,
-          focusedEmployeeResult,
-          resolutionResult,
-        ]) => {
+        ([policies, departmentResult, employeeResult, capabilityResult, focusedEmployeeResult, resolutionResult]) => {
           const policyRows = policies.data.data as Policy[];
           setData(policyRows);
           setDepartments(departmentResult.data.data);
@@ -772,9 +715,7 @@ export function PoliciesView() {
             setFocusedEmployee(focusedEmployeeResult.data.data);
             const directPolicy = policyRows.find((policy) =>
               policy.assignments.some(
-                (assignment) =>
-                  assignment.scope === "EMPLOYEE" &&
-                  assignment.employeeId === focusedEmployeeId,
+                (assignment) => assignment.scope === "EMPLOYEE" && assignment.employeeId === focusedEmployeeId,
               ),
             );
             setFocusedPolicyId(directPolicy?.id ?? "");
@@ -810,10 +751,8 @@ export function PoliciesView() {
           ? { scope: "DEPARTMENT", deptId: assignmentForm.targetId }
           : { scope: "EMPLOYEE", employeeId: assignmentForm.targetId };
     const key = assignmentKey(next);
-    if (!assignmentForm.targetId && assignmentForm.scope !== "TENANT_DEFAULT")
-      return;
-    if (!assignments.some((item) => assignmentKey(item) === key))
-      setAssignments((current) => [...current, next]);
+    if (!assignmentForm.targetId && assignmentForm.scope !== "TENANT_DEFAULT") return;
+    if (!assignments.some((item) => assignmentKey(item) === key)) setAssignments((current) => [...current, next]);
   }
   async function saveAssignments() {
     if (!editing) return;
@@ -828,12 +767,7 @@ export function PoliciesView() {
       setEditing(null);
       await load();
     } catch (caught) {
-      setError(
-        requestErrorMessage(
-          caught,
-          "Policy assignments conflict with an existing scope or target.",
-        ),
-      );
+      setError(requestErrorMessage(caught, "Policy assignments conflict with an existing scope or target."));
     }
   }
   async function saveFocusedEmployeePolicy() {
@@ -841,18 +775,10 @@ export function PoliciesView() {
     setFocusedSaving(true);
     setFocusedError("");
     try {
-      await apiClient.put(
-        `/attendance-policies/employees/${focusedEmployeeId}`,
-        { policyId: focusedPolicyId || null },
-      );
+      await apiClient.put(`/attendance-policies/employees/${focusedEmployeeId}`, { policyId: focusedPolicyId || null });
       router.push(returnTo);
     } catch (caught) {
-      setFocusedError(
-        requestErrorMessage(
-          caught,
-          "This employee policy could not be updated.",
-        ),
-      );
+      setFocusedError(requestErrorMessage(caught, "This employee policy could not be updated."));
     } finally {
       setFocusedSaving(false);
     }
@@ -883,18 +809,11 @@ export function PoliciesView() {
     setRuleSaving(true);
     setError("");
     try {
-      if (
-        ruleForm.fieldTrackingEnabled &&
-        capabilities?.fieldTrackingEnabled === false
-      ) {
-        const capabilityResponse = await apiClient.patch(
-          "/workspace/attendance-capabilities",
-          {
-            fieldTrackingEnabled: true,
-            fieldTrackingIntervalMin:
-              capabilities.fieldTrackingIntervalMin || 15,
-          },
-        );
+      if (ruleForm.fieldTrackingEnabled && capabilities?.fieldTrackingEnabled === false) {
+        const capabilityResponse = await apiClient.patch("/workspace/attendance-capabilities", {
+          fieldTrackingEnabled: true,
+          fieldTrackingIntervalMin: capabilities.fieldTrackingIntervalMin || 15,
+        });
         setCapabilities(capabilityResponse.data.data);
       }
       await apiClient.patch(`/attendance-policies/${ruleEditing.id}`, ruleForm);
@@ -947,52 +866,26 @@ export function PoliciesView() {
                   <ShieldCheck />
                 </div>
                 <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
-                  {policyCoverage(policy.assignments, employees)}{" "}
-                  {tText("employees")}
+                  {policyCoverage(policy.assignments, employees)} {tText("employees")}
                 </span>
               </div>
               <h2 className="mt-5 text-xl font-semibold">{policy.name}</h2>
               <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                <Metric
-                  label={tText("Late after")}
-                  value={formatPolicyDuration(policy.lateAfterMinutes)}
-                />
-                <Metric
-                  label={tText("Half day")}
-                  value={formatPolicyDuration(policy.halfDayAfterMinutes)}
-                />
-                <Metric
-                  label={tText("Minimum work")}
-                  value={formatPolicyDuration(policy.minimumWorkMinutes)}
-                />
-                <Metric
-                  label={tText("Overtime")}
-                  value={formatPolicyDuration(policy.overtimeAfterMinutes)}
-                />
+                <Metric label={tText("Late after")} value={formatPolicyDuration(policy.lateAfterMinutes)} />
+                <Metric label={tText("Half day")} value={formatPolicyDuration(policy.halfDayAfterMinutes)} />
+                <Metric label={tText("Minimum work")} value={formatPolicyDuration(policy.minimumWorkMinutes)} />
+                <Metric label={tText("Overtime")} value={formatPolicyDuration(policy.overtimeAfterMinutes)} />
               </div>
               <div className="mt-5 flex flex-wrap gap-2 text-[11px]">
                 {policy.locationMode !== "NONE" && (
-                  <Tag>
-                    {policy.locationMode === "OFFICE_GEOFENCE"
-                      ? tText("Office geofence")
-                      : tText("Field GPS")}
-                  </Tag>
+                  <Tag>{policy.locationMode === "OFFICE_GEOFENCE" ? tText("Office geofence") : tText("Field GPS")}</Tag>
                 )}
-                {policy.requireRegisteredDevice && (
-                  <Tag>{tText("Registered device")}</Tag>
-                )}
-                {policy.selfieMode === "REQUIRED" && (
-                  <Tag>{tText("Selfie")}</Tag>
-                )}
-                {policy.fieldTrackingEnabled && (
-                  <Tag>{tText("Field tracking")}</Tag>
-                )}
+                {policy.requireRegisteredDevice && <Tag>{tText("Registered device")}</Tag>}
+                {policy.selfieMode === "REQUIRED" && <Tag>{tText("Selfie")}</Tag>}
+                {policy.fieldTrackingEnabled && <Tag>{tText("Field tracking")}</Tag>}
               </div>
               <div className="mt-5 flex gap-4">
-                <button
-                  className="text-sm font-semibold text-primary"
-                  onClick={() => openRuleEditor(policy)}
-                >
+                <button className="text-sm font-semibold text-primary" onClick={() => openRuleEditor(policy)}>
                   {tText("Edit rules")}
                 </button>
                 <button
@@ -1011,32 +904,19 @@ export function PoliciesView() {
             <Panel className="lg:col-span-2 xl:col-span-3">
               <EmptyState
                 title={tText("No policies")}
-                body={tText(
-                  "Create a policy and assign one tenant default before attendance begins.",
-                )}
+                body={tText("Create a policy and assign one tenant default before attendance begins.")}
               />
             </Panel>
           )}
         </div>
       )}
       {open && (
-        <Dialog
-          error={error}
-          title={tText("Create attendance policy")}
-          onClose={() => setOpen(false)}
-        >
+        <Dialog error={error} title={tText("Create attendance policy")} onClose={() => setOpen(false)}>
           <Field label={tText("Policy name")}>
-            <input
-              autoFocus
-              className={inputClass}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <input autoFocus className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
           <div className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-on-surface-variant">
-            {tText(
-              "New policies start with secure default thresholds and can be refined after creation.",
-            )}
+            {tText("New policies start with secure default thresholds and can be refined after creation.")}
           </div>
           <PrimaryButton className="mt-5 w-full" onClick={create}>
             {tText("Create policy")}
@@ -1044,19 +924,13 @@ export function PoliciesView() {
         </Dialog>
       )}
       {editing && (
-        <Dialog
-          error={error}
-          title={`Assignments · ${editing.name}`}
-          onClose={() => setEditing(null)}
-        >
+        <Dialog error={error} title={`Assignments · ${editing.name}`} onClose={() => setEditing(null)}>
           <div className="mb-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
             {tText(
               "Assign the broad tenant default first, use department assignments for team-specific rules, and use employee assignments only for approved exceptions. This policy currently resolves directly for approximately",
             )}
             {policyCoverage(assignments, employees)}{" "}
-            {tText(
-              "employees; a higher-priority assignment on another policy may override it.",
-            )}
+            {tText("employees; a higher-priority assignment on another policy may override it.")}
           </div>
           <div className="grid gap-3">
             {assignments.map((assignment) => (
@@ -1064,17 +938,12 @@ export function PoliciesView() {
                 key={assignmentKey(assignment)}
                 className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 text-sm"
               >
-                <span>
-                  {assignmentLabel(assignment, departments, employees)}
-                </span>
+                <span>{assignmentLabel(assignment, departments, employees)}</span>
                 <button
                   className="text-xs font-semibold text-error"
                   onClick={() =>
                     setAssignments((current) =>
-                      current.filter(
-                        (item) =>
-                          assignmentKey(item) !== assignmentKey(assignment),
-                      ),
+                      current.filter((item) => assignmentKey(item) !== assignmentKey(assignment)),
                     )
                   }
                 >
@@ -1095,9 +964,7 @@ export function PoliciesView() {
                   })
                 }
               >
-                <option value="TENANT_DEFAULT">
-                  {tText("Tenant default")}
-                </option>
+                <option value="TENANT_DEFAULT">{tText("Tenant default")}</option>
                 <option value="DEPARTMENT">{tText("Department")}</option>
                 <option value="EMPLOYEE">{tText("Employee")}</option>
               </select>
@@ -1157,10 +1024,7 @@ export function PoliciesView() {
         </Dialog>
       )}
       {focusedEmployeeId && focusedEmployee && data && (
-        <Dialog
-          title={`Attendance policy · ${focusedEmployee.fullName}`}
-          onClose={() => router.push(returnTo)}
-        >
+        <Dialog title={`Attendance policy · ${focusedEmployee.fullName}`} onClose={() => router.push(returnTo)}>
           {focusedError && <ErrorState message={focusedError} />}
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
             {tText(
@@ -1169,12 +1033,9 @@ export function PoliciesView() {
           </div>
           {focusedResolution && (
             <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-50 p-4 text-sm">
-              <span className="text-zinc-500">
-                {tText("Currently effective")}
-              </span>
+              <span className="text-zinc-500">{tText("Currently effective")}</span>
               <strong>
-                {focusedResolution.policyName} ·{" "}
-                {sentenceCase(focusedResolution.source)}
+                {focusedResolution.policyName} · {sentenceCase(focusedResolution.source)}
               </strong>
             </div>
           )}
@@ -1192,13 +1053,9 @@ export function PoliciesView() {
                 type="radio"
               />
               <span>
-                <strong className="block text-sm">
-                  {tText("Use inherited policy")}
-                </strong>
+                <strong className="block text-sm">{tText("Use inherited policy")}</strong>
                 <span className="mt-1 block text-xs leading-5 text-outline">
-                  {tText(
-                    "Use the employee&apos;s department policy, then tenant default.",
-                  )}
+                  {tText("Use the employee&apos;s department policy, then tenant default.")}
                 </span>
               </span>
             </label>
@@ -1217,96 +1074,61 @@ export function PoliciesView() {
                 <span>
                   <strong className="block text-sm">{policy.name}</strong>
                   <span className="mt-1 block text-xs leading-5 text-outline">
-                    {policy.locationMode.replaceAll("_", " ")}{" "}
-                    {tText("· Selfie")} {policy.selfieMode.toLowerCase()}{" "}
-                    {tText("· Device")}{" "}
-                    {policy.requireRegisteredDevice
-                      ? tText("required")
-                      : tText("optional")}
+                    {policy.locationMode.replaceAll("_", " ")} {tText("· Selfie")} {policy.selfieMode.toLowerCase()}{" "}
+                    {tText("· Device")} {policy.requireRegisteredDevice ? tText("required") : tText("optional")}
                   </span>
                 </span>
               </label>
             ))}
           </fieldset>
-          <PrimaryButton
-            className="mt-5 w-full"
-            disabled={focusedSaving}
-            onClick={saveFocusedEmployeePolicy}
-          >
-            {focusedSaving
-              ? tText("Saving policy…")
-              : tText("Save employee policy")}
+          <PrimaryButton className="mt-5 w-full" disabled={focusedSaving} onClick={saveFocusedEmployeePolicy}>
+            {focusedSaving ? tText("Saving policy…") : tText("Save employee policy")}
           </PrimaryButton>
         </Dialog>
       )}
       {ruleEditing && (
-        <Dialog
-          error={error}
-          title={tText("Edit policy rules")}
-          onClose={() => setRuleEditing(null)}
-          wide
-        >
+        <Dialog error={error} title={tText("Edit policy rules")} onClose={() => setRuleEditing(null)} wide>
           <div className="grid gap-4">
             <Field label={tText("Policy name")}>
               <input
                 className={inputClass}
                 value={ruleForm.name}
-                onChange={(event) =>
-                  setRuleForm({ ...ruleForm, name: event.target.value })
-                }
+                onChange={(event) => setRuleForm({ ...ruleForm, name: event.target.value })}
               />
             </Field>
             <div className="rounded-xl border border-surface-variant p-5">
               <h3 className="font-bold">{tText("Attendance calculation")}</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText(
-                  "Use hours and minutes to define how each completed attendance day is classified.",
-                )}
+                {tText("Use hours and minutes to define how each completed attendance day is classified.")}
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <DurationField
                   id="late-grace"
                   label={tText("Late grace period")}
-                  description={tText(
-                    "Time allowed after the shift starts before the employee is marked late.",
-                  )}
+                  description={tText("Time allowed after the shift starts before the employee is marked late.")}
                   value={ruleForm.lateAfterMinutes}
-                  onChange={(lateAfterMinutes) =>
-                    setRuleForm({ ...ruleForm, lateAfterMinutes })
-                  }
+                  onChange={(lateAfterMinutes) => setRuleForm({ ...ruleForm, lateAfterMinutes })}
                 />
                 <DurationField
                   id="half-day-late"
                   label={tText("Half-day when late by")}
-                  description={tText(
-                    "A later arrival reaches half-day status at this threshold.",
-                  )}
+                  description={tText("A later arrival reaches half-day status at this threshold.")}
                   value={ruleForm.halfDayAfterMinutes}
-                  onChange={(halfDayAfterMinutes) =>
-                    setRuleForm({ ...ruleForm, halfDayAfterMinutes })
-                  }
+                  onChange={(halfDayAfterMinutes) => setRuleForm({ ...ruleForm, halfDayAfterMinutes })}
                 />
                 <DurationField
                   id="minimum-work"
                   label={tText("Minimum work for a full day")}
-                  description={tText(
-                    "Worked time below this threshold is treated as a half-day.",
-                  )}
+                  description={tText("Worked time below this threshold is treated as a half-day.")}
                   value={ruleForm.minimumWorkMinutes}
-                  onChange={(minimumWorkMinutes) =>
-                    setRuleForm({ ...ruleForm, minimumWorkMinutes })
-                  }
+                  onChange={(minimumWorkMinutes) => setRuleForm({ ...ruleForm, minimumWorkMinutes })}
                 />
                 <DurationField
                   id="overtime-after"
                   label={tText("Overtime starts after")}
-                  description={tText(
-                    "Worked time beyond this threshold is counted as overtime.",
-                  )}
+                  description={tText("Worked time beyond this threshold is counted as overtime.")}
                   value={ruleForm.overtimeAfterMinutes}
-                  onChange={(overtimeAfterMinutes) =>
-                    setRuleForm({ ...ruleForm, overtimeAfterMinutes })
-                  }
+                  onChange={(overtimeAfterMinutes) => setRuleForm({ ...ruleForm, overtimeAfterMinutes })}
                 />
               </div>
               {ruleValidationError && (
@@ -1321,49 +1143,31 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-5">
               <h3 className="font-bold">{tText("Punch timing and breaks")}</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText(
-                  "Control punches outside the shift window and how recorded breaks affect worked time.",
-                )}
+                {tText("Control punches outside the shift window and how recorded breaks affect worked time.")}
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <PolicyToggle
                   checked={ruleForm.allowEarlyCheckin}
                   label={tText("Allow check-in before shift start")}
-                  description={tText(
-                    "Employees can begin attendance before their scheduled shift.",
-                  )}
-                  onChange={(allowEarlyCheckin) =>
-                    setRuleForm({ ...ruleForm, allowEarlyCheckin })
-                  }
+                  description={tText("Employees can begin attendance before their scheduled shift.")}
+                  onChange={(allowEarlyCheckin) => setRuleForm({ ...ruleForm, allowEarlyCheckin })}
                 />
                 <PolicyToggle
                   checked={ruleForm.allowEarlyCheckout}
                   label={tText("Allow checkout before shift end")}
-                  description={tText(
-                    "Employees can close attendance before their scheduled shift ends.",
-                  )}
-                  onChange={(allowEarlyCheckout) =>
-                    setRuleForm({ ...ruleForm, allowEarlyCheckout })
-                  }
+                  description={tText("Employees can close attendance before their scheduled shift ends.")}
+                  onChange={(allowEarlyCheckout) => setRuleForm({ ...ruleForm, allowEarlyCheckout })}
                 />
                 <PolicyToggle
                   checked={ruleForm.breakRules.paid}
                   label={tText("Count breaks as paid working time")}
-                  description={tText(
-                    "Recorded break minutes will not be deducted from total worked time.",
-                  )}
-                  onChange={(paid) =>
-                    setRuleForm({ ...ruleForm, breakRules: { paid } })
-                  }
+                  description={tText("Recorded break minutes will not be deducted from total worked time.")}
+                  onChange={(paid) => setRuleForm({ ...ruleForm, breakRules: { paid } })}
                 />
                 <div className="rounded-xl border border-dashed border-surface-variant p-4 text-sm text-on-surface-variant">
-                  <p className="font-semibold text-on-surface">
-                    {tText("Shift and weekly-off schedule")}
-                  </p>
+                  <p className="font-semibold text-on-surface">{tText("Shift and weekly-off schedule")}</p>
                   <p className="mt-1 text-xs leading-5">
-                    {tText(
-                      "Shift times, overnight shifts, rosters, and weekly offs are managed in Schedule.",
-                    )}
+                    {tText("Shift times, overnight shifts, rosters, and weekly offs are managed in Schedule.")}
                   </p>
                 </div>
               </div>
@@ -1371,15 +1175,10 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">{tText("Punch verification")}</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText(
-                  "Choose what the employee must verify during check-in and check-out.",
-                )}
+                {tText("Choose what the employee must verify during check-in and check-out.")}
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Field
-                  helpKey="location-verification"
-                  label={tText("Location verification")}
-                >
+                <Field helpKey="location-verification" label={tText("Location verification")}>
                   <select
                     className={inputClass}
                     value={ruleForm.locationMode}
@@ -1390,22 +1189,13 @@ export function PoliciesView() {
                       })
                     }
                   >
-                    <option value="NONE">
-                      {tText("No location required")}
-                    </option>
-                    <option value="OFFICE_GEOFENCE">
-                      {tText("Office geofence")}
-                    </option>
-                    <option value="FIELD_GPS">
-                      {tText("Current GPS location")}
-                    </option>
+                    <option value="NONE">{tText("No location required")}</option>
+                    <option value="OFFICE_GEOFENCE">{tText("Office geofence")}</option>
+                    <option value="FIELD_GPS">{tText("Current GPS location")}</option>
                   </select>
                 </Field>
                 {capabilities?.biometricEnforcementAvailable !== false && (
-                  <Field
-                    helpKey="selfie-verification"
-                    label={tText("Selfie verification")}
-                  >
+                  <Field helpKey="selfie-verification" label={tText("Selfie verification")}>
                     <select
                       className={inputClass}
                       value={ruleForm.selfieMode}
@@ -1414,9 +1204,7 @@ export function PoliciesView() {
                           ...ruleForm,
                           selfieMode: event.target.value as SelfieMode,
                           allowBiometricOptOut:
-                            event.target.value === "REQUIRED"
-                              ? ruleForm.allowBiometricOptOut
-                              : false,
+                            event.target.value === "REQUIRED" ? ruleForm.allowBiometricOptOut : false,
                         })
                       }
                     >
@@ -1425,42 +1213,36 @@ export function PoliciesView() {
                     </select>
                   </Field>
                 )}
-                {capabilities?.biometricEnforcementAvailable !== false &&
-                  ruleForm.selfieMode === "REQUIRED" && (
-                    <>
-                      <Field
-                        helpKey="selfie-verification"
-                        label={tText("Maximum face attempts")}
-                      >
-                        <input
-                          className={inputClass}
-                          max="10"
-                          min="1"
-                          type="number"
-                          value={ruleForm.maxFaceAttempts}
-                          onChange={(event) =>
-                            setRuleForm({
-                              ...ruleForm,
-                              maxFaceAttempts: Number(event.target.value),
-                            })
-                          }
-                        />
-                      </Field>
-                      <PolicyToggle
-                        checked={ruleForm.allowBiometricOptOut}
-                        label={tText("Allow biometric consent opt-out")}
-                        description={tText(
-                          "Employees without biometric consent may punch without a selfie.",
-                        )}
-                        onChange={(allowBiometricOptOut) =>
+                {capabilities?.biometricEnforcementAvailable !== false && ruleForm.selfieMode === "REQUIRED" && (
+                  <>
+                    <Field helpKey="selfie-verification" label={tText("Maximum face attempts")}>
+                      <input
+                        className={inputClass}
+                        max="10"
+                        min="1"
+                        type="number"
+                        value={ruleForm.maxFaceAttempts}
+                        onChange={(event) =>
                           setRuleForm({
                             ...ruleForm,
-                            allowBiometricOptOut,
+                            maxFaceAttempts: Number(event.target.value),
                           })
                         }
                       />
-                    </>
-                  )}
+                    </Field>
+                    <PolicyToggle
+                      checked={ruleForm.allowBiometricOptOut}
+                      label={tText("Allow biometric consent opt-out")}
+                      description={tText("Employees without biometric consent may punch without a selfie.")}
+                      onChange={(allowBiometricOptOut) =>
+                        setRuleForm({
+                          ...ruleForm,
+                          allowBiometricOptOut,
+                        })
+                      }
+                    />
+                  </>
+                )}
               </div>
               <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                 <label className="flex min-h-10 flex-1 items-center gap-3">
@@ -1482,9 +1264,7 @@ export function PoliciesView() {
             <div className="rounded-xl border border-surface-variant p-4">
               <h3 className="font-bold">{tText("Offline attendance")}</h3>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText(
-                  "Allow a stored punch to sync when the employee regains connectivity.",
-                )}
+                {tText("Allow a stored punch to sync when the employee regains connectivity.")}
               </p>
               <div className="mt-4 max-w-xs">
                 <Field label={tText("Maximum offline sync delay (hours)")}>
@@ -1506,13 +1286,9 @@ export function PoliciesView() {
             </div>
             {capabilities?.fieldTrackingEntitled !== false && (
               <div className="rounded-xl border border-surface-variant p-4">
-                <h3 className="font-bold">
-                  {tText("Field workforce tracking")}
-                </h3>
+                <h3 className="font-bold">{tText("Field workforce tracking")}</h3>
                 <p className="mt-1 text-xs leading-5 text-outline">
-                  {tText(
-                    "Optional continuous route tracking for eligible field employees.",
-                  )}
+                  {tText("Optional continuous route tracking for eligible field employees.")}
                 </p>
                 <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                   <label className="flex min-h-10 flex-1 items-center gap-3">
@@ -1523,18 +1299,13 @@ export function PoliciesView() {
                         setRuleForm({
                           ...ruleForm,
                           fieldTrackingEnabled: event.target.checked,
-                          allowHybridFieldTracking: event.target.checked
-                            ? ruleForm.allowHybridFieldTracking
-                            : false,
+                          allowHybridFieldTracking: event.target.checked ? ruleForm.allowHybridFieldTracking : false,
                         })
                       }
                     />
                     {tText("Enable field tracking for field employees")}
                   </label>
-                  <FeatureInfo
-                    className="ml-auto"
-                    helpKey="background-tracking"
-                  />
+                  <FeatureInfo className="ml-auto" helpKey="background-tracking" />
                 </div>
                 {ruleForm.fieldTrackingEnabled && (
                   <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
@@ -1554,9 +1325,7 @@ export function PoliciesView() {
               </div>
             )}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-                {tText("Employee app impact")}
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">{tText("Employee app impact")}</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
                 {tText("Employees using this policy will")}{" "}
                 {ruleForm.locationMode === "NONE"
@@ -1564,10 +1333,7 @@ export function PoliciesView() {
                   : ruleForm.locationMode === "OFFICE_GEOFENCE"
                     ? tText("verify an office geofence")
                     : tText("submit field GPS")}
-                ,{" "}
-                {ruleForm.selfieMode === "REQUIRED"
-                  ? tText("take a selfie")
-                  : tText("skip the selfie step")}
+                , {ruleForm.selfieMode === "REQUIRED" ? tText("take a selfie") : tText("skip the selfie step")}
                 {tText(", and")}{" "}
                 {ruleForm.fieldTrackingEnabled
                   ? tText("see field tracking when their work type allows it")
@@ -1581,36 +1347,20 @@ export function PoliciesView() {
               </p>
               <ul className="mt-2 space-y-1 text-sm leading-6 text-amber-900">
                 {ruleForm.locationMode === "OFFICE_GEOFENCE" && (
-                  <li>
-                    {tText(
-                      "- Every affected employee needs an assigned office.",
-                    )}
-                  </li>
+                  <li>{tText("- Every affected employee needs an assigned office.")}</li>
                 )}
                 {ruleForm.locationMode === "FIELD_GPS" && (
-                  <li>
-                    {tText(
-                      "- Employee devices must grant precise location access.",
-                    )}
-                  </li>
+                  <li>{tText("- Employee devices must grant precise location access.")}</li>
                 )}
                 {ruleForm.selfieMode === "REQUIRED" && (
-                  <li>
-                    {tText(
-                      "- Employees need active consent and face enrollment.",
-                    )}
-                  </li>
+                  <li>{tText("- Employees need active consent and face enrollment.")}</li>
                 )}
                 {ruleForm.requireRegisteredDevice && (
-                  <li>
-                    {tText("- HR must approve a registered employee device.")}
-                  </li>
+                  <li>{tText("- HR must approve a registered employee device.")}</li>
                 )}
                 {ruleForm.fieldTrackingEnabled && (
                   <li>
-                    {tText(
-                      "- Field tracking entitlement and background location permission must remain active.",
-                    )}
+                    {tText("- Field tracking entitlement and background location permission must remain active.")}
                   </li>
                 )}
                 {ruleForm.locationMode === "NONE" &&
@@ -1666,11 +1416,7 @@ export function ShiftsView() {
     void load();
   }, []);
   async function saveShift() {
-    await (
-      editing
-        ? apiClient.patch(`/shifts/${editing.id}`, form)
-        : apiClient.post("/shifts", form)
-    )
+    await (editing ? apiClient.patch(`/shifts/${editing.id}`, form) : apiClient.post("/shifts", form))
       .then(() => {
         setOpen(false);
         setEditing(null);
@@ -1701,20 +1447,12 @@ export function ShiftsView() {
         setEditing(null);
         load();
       })
-      .catch(() =>
-        setError(
-          tText(
-            "Shift is referenced by employees, rosters, or attendance records.",
-          ),
-        ),
-      );
+      .catch(() => setError(tText("Shift is referenced by employees, rosters, or attendance records.")));
   }
   return (
     <AdminPage
       title={tText("Shifts Management")}
-      description={tText(
-        "Create day and overnight shifts with deterministic date attribution.",
-      )}
+      description={tText("Create day and overnight shifts with deterministic date attribution.")}
       action={
         <PrimaryButton onClick={openCreate}>
           <Plus className="size-4" />
@@ -1745,10 +1483,7 @@ export function ShiftsView() {
                 <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-primary to-emerald-300" />
                 <strong className="text-2xl">{shift.endTime}</strong>
               </div>
-              <button
-                className="mt-5 text-sm font-semibold text-primary"
-                onClick={() => openEdit(shift)}
-              >
+              <button className="mt-5 text-sm font-semibold text-primary" onClick={() => openEdit(shift)}>
                 {tText("Edit shift")}
               </button>
             </Panel>
@@ -1778,9 +1513,7 @@ export function ShiftsView() {
                   type="time"
                   className={inputClass}
                   value={form.startTime}
-                  onChange={(e) =>
-                    setForm({ ...form, startTime: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, startTime: e.target.value })}
                 />
               </Field>
               <Field label={tText("Ends")}>
@@ -1788,9 +1521,7 @@ export function ShiftsView() {
                   type="time"
                   className={inputClass}
                   value={form.endTime}
-                  onChange={(e) =>
-                    setForm({ ...form, endTime: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, endTime: e.target.value })}
                 />
               </Field>
             </div>
@@ -1823,9 +1554,7 @@ export function RostersView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [settings, setSettings] = useState<TenantScheduleSettings | null>(null);
-  const [policyByEmployee, setPolicyByEmployee] = useState<
-    Record<string, ResolvedPolicy["policy"]>
-  >({});
+  const [policyByEmployee, setPolicyByEmployee] = useState<Record<string, ResolvedPolicy["policy"]>>({});
   const [error, setError] = useState("");
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkForm, setBulkForm] = useState({
@@ -1853,20 +1582,12 @@ export function RostersView() {
           return;
         }
         try {
-          const result = await apiClient.post(
-            "/attendance-policies/resolve/bulk",
-            {
-              employeeIds: loadedEmployees.map(({ id }) => id),
-              date: iso(today),
-            },
-          );
+          const result = await apiClient.post("/attendance-policies/resolve/bulk", {
+            employeeIds: loadedEmployees.map(({ id }) => id),
+            date: iso(today),
+          });
           setPolicyByEmployee(
-            Object.fromEntries(
-              (result.data.data as ResolvedPolicy[]).map((item) => [
-                item.employeeId,
-                item.policy,
-              ]),
-            ),
+            Object.fromEntries((result.data.data as ResolvedPolicy[]).map((item) => [item.employeeId, item.policy])),
           );
         } catch {
           // Tenant working-week settings remain the safe inherited fallback.
@@ -1897,12 +1618,7 @@ export function RostersView() {
     }
   }
   async function removeRoster(roster: Roster) {
-    if (
-      !window.confirm(
-        `Remove ${roster.shift.name} for ${roster.employee.fullName}?`,
-      )
-    )
-      return;
+    if (!window.confirm(`Remove ${roster.shift.name} for ${roster.employee.fullName}?`)) return;
     await apiClient
       .delete(`/rosters/${roster.id}`)
       .then(() => load())
@@ -1911,9 +1627,7 @@ export function RostersView() {
   return (
     <AdminPage
       title={tText("Roster Planner")}
-      description={tText(
-        "Plan the working week, bulk assign shifts and import validated CSV schedules.",
-      )}
+      description={tText("Plan the working week, bulk assign shifts and import validated CSV schedules.")}
       action={
         <div className="flex flex-wrap gap-3">
           <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold">
@@ -1923,10 +1637,7 @@ export function RostersView() {
               type="file"
               accept=".csv"
               className="hidden"
-              onChange={(event) =>
-                event.target.files?.[0] &&
-                uploadRoster(event.target.files[0], setError, load)
-              }
+              onChange={(event) => event.target.files?.[0] && uploadRoster(event.target.files[0], setError, load)}
             />
           </label>
           <PrimaryButton
@@ -1954,17 +1665,13 @@ export function RostersView() {
         <Panel className="overflow-auto">
           <div className="min-w-[850px]">
             <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-surface-variant bg-zinc-50">
-              <div className="p-4 text-xs font-bold uppercase text-outline">
-                {tText("Employee")}
-              </div>
+              <div className="p-4 text-xs font-bold uppercase text-outline">{tText("Employee")}</div>
               {dateRange(today, end).map((date) => (
                 <div
                   key={date.toISOString()}
                   className="border-l border-surface-variant p-4 text-center text-xs font-bold"
                 >
-                  <div>
-                    {date.toLocaleDateString("en", { weekday: "short" })}
-                  </div>
+                  <div>{date.toLocaleDateString("en", { weekday: "short" })}</div>
                   <div className="text-outline">{date.getDate()}</div>
                 </div>
               ))}
@@ -1976,25 +1683,17 @@ export function RostersView() {
               >
                 <div className="p-4">
                   <div className="font-semibold">{employee.fullName}</div>
-                  <div className="text-xs text-outline">
-                    {employee.employeeCode}
-                  </div>
+                  <div className="text-xs text-outline">{employee.employeeCode}</div>
                 </div>
                 {dateRange(today, end).map((date) => {
                   const roster = data.find(
                     (row) =>
-                      row.employee.employeeCode === employee.employeeCode &&
-                      row.rosterDate.slice(0, 10) === iso(date),
+                      row.employee.employeeCode === employee.employeeCode && row.rosterDate.slice(0, 10) === iso(date),
                   );
-                  const weeklyOffs =
-                    policyByEmployee[employee.id]?.weeklyOffs ??
-                    settings?.weeklyOffs;
-                  const weeklyOff =
-                    !roster && isWeeklyOffDate(weeklyOffs, date);
+                  const weeklyOffs = policyByEmployee[employee.id]?.weeklyOffs ?? settings?.weeklyOffs;
+                  const weeklyOff = !roster && isWeeklyOffDate(weeklyOffs, date);
                   const inheritedShift = employee.defaultShift;
-                  const inheritedHours =
-                    settings &&
-                    `${settings.workingDayStart}-${settings.workingDayEnd}`;
+                  const inheritedHours = settings && `${settings.workingDayStart}-${settings.workingDayEnd}`;
                   return (
                     <div
                       key={date.toISOString()}
@@ -2007,15 +1706,11 @@ export function RostersView() {
                           onClick={() => removeRoster(roster)}
                         >
                           <span className="block">{roster.shift.name}</span>
-                          <span className="block text-[10px] font-medium text-blue-500">
-                            {tText("Roster")}
-                          </span>
+                          <span className="block text-[10px] font-medium text-blue-500">{tText("Roster")}</span>
                         </button>
                       ) : (
                         <button
-                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${
-                            weeklyOff ? "bg-slate-50" : "bg-emerald-50/50"
-                          }`}
+                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${weeklyOff ? "bg-slate-50" : "bg-emerald-50/50"}`}
                           onClick={() => {
                             setBulkForm({
                               employeeIds: [employee.id],
@@ -2028,15 +1723,11 @@ export function RostersView() {
                           }}
                         >
                           {weeklyOff ? (
-                            <span className="text-xs font-semibold text-slate-500">
-                              {tText("Weekly off")}
-                            </span>
+                            <span className="text-xs font-semibold text-slate-500">{tText("Weekly off")}</span>
                           ) : (
                             <span className="text-xs font-semibold text-emerald-700">
                               <span className="block">
-                                {inheritedShift?.name ??
-                                  inheritedHours ??
-                                  tText("Working day")}
+                                {inheritedShift?.name ?? inheritedHours ?? tText("Working day")}
                               </span>
                               <span className="block text-[10px] font-medium text-emerald-500">
                                 {tText("Inherited")}
@@ -2053,28 +1744,20 @@ export function RostersView() {
             {!employees.length && (
               <EmptyState
                 title={tText("No employees")}
-                body={tText(
-                  "Create employees before assigning weekly rosters.",
-                )}
+                body={tText("Create employees before assigning weekly rosters.")}
               />
             )}
           </div>
         </Panel>
       )}
       {bulkOpen && (
-        <Dialog
-          error={error}
-          title={tText("Assign shift(s)")}
-          onClose={() => setBulkOpen(false)}
-        >
+        <Dialog error={error} title={tText("Assign shift(s)")} onClose={() => setBulkOpen(false)}>
           <div className="grid gap-4">
             <Field label={tText("Shift")}>
               <select
                 className={inputClass}
                 value={bulkForm.shiftId}
-                onChange={(event) =>
-                  setBulkForm({ ...bulkForm, shiftId: event.target.value })
-                }
+                onChange={(event) => setBulkForm({ ...bulkForm, shiftId: event.target.value })}
               >
                 <option value="">{tText("Select shift")}</option>
                 {shifts.map((shift) => (
@@ -2090,9 +1773,7 @@ export function RostersView() {
                   type="date"
                   className={inputClass}
                   value={bulkForm.startDate}
-                  onChange={(event) =>
-                    setBulkForm({ ...bulkForm, startDate: event.target.value })
-                  }
+                  onChange={(event) => setBulkForm({ ...bulkForm, startDate: event.target.value })}
                 />
               </Field>
               <Field label={tText("End date")}>
@@ -2100,21 +1781,14 @@ export function RostersView() {
                   type="date"
                   className={inputClass}
                   value={bulkForm.endDate}
-                  onChange={(event) =>
-                    setBulkForm({ ...bulkForm, endDate: event.target.value })
-                  }
+                  onChange={(event) => setBulkForm({ ...bulkForm, endDate: event.target.value })}
                 />
               </Field>
             </div>
             <fieldset className="grid max-h-64 gap-2 overflow-auto">
-              <legend className="mb-2 text-sm font-medium">
-                {tText("Employees")}
-              </legend>
+              <legend className="mb-2 text-sm font-medium">{tText("Employees")}</legend>
               {employees.map((employee) => (
-                <label
-                  key={employee.id}
-                  className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm"
-                >
+                <label key={employee.id} className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                   <input
                     type="checkbox"
                     checked={bulkForm.employeeIds.includes(employee.id)}
@@ -2123,9 +1797,7 @@ export function RostersView() {
                         ...current,
                         employeeIds: event.target.checked
                           ? [...current.employeeIds, employee.id]
-                          : current.employeeIds.filter(
-                              (id) => id !== employee.id,
-                            ),
+                          : current.employeeIds.filter((id) => id !== employee.id),
                       }))
                     }
                   />
@@ -2133,15 +1805,8 @@ export function RostersView() {
                 </label>
               ))}
             </fieldset>
-            {bulkResult && (
-              <div className="rounded-lg bg-emerald-100 p-3 text-sm text-emerald-900">
-                {bulkResult}
-              </div>
-            )}
-            <PrimaryButton
-              disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length}
-              onClick={bulkAssign}
-            >
+            {bulkResult && <div className="rounded-lg bg-emerald-100 p-3 text-sm text-emerald-900">{bulkResult}</div>}
+            <PrimaryButton disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length} onClick={bulkAssign}>
               {tText("Apply shift")}
             </PrimaryButton>
           </div>
@@ -2159,10 +1824,7 @@ export function HolidaysView() {
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
   const [visibleMonth, setVisibleMonth] = useState(
-    () =>
-      new Date(
-        Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1),
-      ),
+    () => new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)),
   );
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Holiday | null>(null);
@@ -2181,13 +1843,9 @@ export function HolidaysView() {
         setError("");
         if (!initialMonthSelected.current && loadedHolidays.length) {
           const today = new Date().toISOString().slice(0, 10);
-          const ordered = [...loadedHolidays].sort((left, right) =>
-            left.holidayDate.localeCompare(right.holidayDate),
-          );
+          const ordered = [...loadedHolidays].sort((left, right) => left.holidayDate.localeCompare(right.holidayDate));
           const nearest =
-            ordered.find(
-              ({ holidayDate }) => holidayDate.slice(0, 10) >= today,
-            ) ?? ordered[ordered.length - 1];
+            ordered.find(({ holidayDate }) => holidayDate.slice(0, 10) >= today) ?? ordered[ordered.length - 1];
           if (nearest) {
             setVisibleMonth(monthStart(nearest.holidayDate));
             initialMonthSelected.current = true;
@@ -2202,11 +1860,7 @@ export function HolidaysView() {
   useEffect(() => {
     let active = true;
     void load().then(async (result) => {
-      if (
-        !active ||
-        !result ||
-        !result.offices.some(({ countryCode }) => !countryCode)
-      ) {
+      if (!active || !result || !result.offices.some(({ countryCode }) => !countryCode)) {
         return;
       }
       setSyncing(true);
@@ -2217,11 +1871,7 @@ export function HolidaysView() {
         if (active) await load();
       } catch {
         if (active) {
-          setError(
-            tText(
-              "Office regions and public holidays could not be detected. Please retry.",
-            ),
-          );
+          setError(tText("Office regions and public holidays could not be detected. Please retry."));
         }
       } finally {
         if (active) setSyncing(false);
@@ -2235,23 +1885,15 @@ export function HolidaysView() {
     const payload = {
       holidayName: form.holidayName,
       holidayDate: form.holidayDate,
-      ...(form.officeLocationId
-        ? { officeLocationId: form.officeLocationId }
-        : {}),
+      ...(form.officeLocationId ? { officeLocationId: form.officeLocationId } : {}),
     };
-    await (
-      editing
-        ? apiClient.patch(`/holidays/${editing.id}`, payload)
-        : apiClient.post("/holidays", payload)
-    )
+    await (editing ? apiClient.patch(`/holidays/${editing.id}`, payload) : apiClient.post("/holidays", payload))
       .then(() => {
         setOpen(false);
         setEditing(null);
         load();
       })
-      .catch(() =>
-        setError(tText("Holiday already exists for this date and scope.")),
-      );
+      .catch(() => setError(tText("Holiday already exists for this date and scope.")));
   }
   function openCreate() {
     setEditing(null);
@@ -2286,13 +1928,8 @@ export function HolidaysView() {
       const { data: response } = await apiClient.post<{
         data: { results: HolidaySyncResult[] };
       }>("/holidays/sync", { year: visibleMonth.getUTCFullYear() });
-      const imported = response.data.results.reduce(
-        (total, result) => total + result.imported,
-        0,
-      );
-      const unavailable = response.data.results.filter(
-        ({ status }) => status !== "SYNCED",
-      );
+      const imported = response.data.results.reduce((total, result) => total + result.imported, 0);
+      const unavailable = response.data.results.filter(({ status }) => status !== "SYNCED");
       setSyncMessage(
         unavailable.length
           ? `${imported} holidays imported. ${unavailable.map(({ officeName, message }) => `${officeName}: ${message}`).join(" ")}`
@@ -2300,9 +1937,7 @@ export function HolidaysView() {
       );
       await load();
     } catch {
-      setError(
-        tText("Public holidays could not be synchronized. Please retry."),
-      );
+      setError(tText("Public holidays could not be synchronized. Please retry."));
     } finally {
       setSyncing(false);
     }
@@ -2324,20 +1959,11 @@ export function HolidaysView() {
     timeZone: "UTC",
   });
   const visibleMonthKey = visibleMonth.toISOString().slice(0, 7);
-  const visibleMonthHolidays = (data ?? []).filter(({ holidayDate }) =>
-    holidayDate.startsWith(visibleMonthKey),
-  );
-  const importedThisMonth = visibleMonthHolidays.filter(
-    ({ source }) => source === "PUBLIC_DATA",
-  ).length;
-  const manuallyAddedThisMonth =
-    visibleMonthHolidays.length - importedThisMonth;
-  const nextOutsideVisibleMonth = upcoming.find(
-    ({ holidayDate }) => !holidayDate.startsWith(visibleMonthKey),
-  );
-  const missingRegionOffices = offices.filter(
-    ({ countryCode }) => !countryCode,
-  );
+  const visibleMonthHolidays = (data ?? []).filter(({ holidayDate }) => holidayDate.startsWith(visibleMonthKey));
+  const importedThisMonth = visibleMonthHolidays.filter(({ source }) => source === "PUBLIC_DATA").length;
+  const manuallyAddedThisMonth = visibleMonthHolidays.length - importedThisMonth;
+  const nextOutsideVisibleMonth = upcoming.find(({ holidayDate }) => !holidayDate.startsWith(visibleMonthKey));
+  const missingRegionOffices = offices.filter(({ countryCode }) => !countryCode);
   function showHoliday(holiday: Holiday) {
     setVisibleMonth(monthStart(holiday.holidayDate));
     openEdit(holiday);
@@ -2375,24 +2001,16 @@ export function HolidaysView() {
       {missingRegionOffices.length > 0 && syncing && (
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
           <RefreshCw className="size-5 shrink-0 animate-spin" />
-          {tText(
-            "Detecting each office country from its saved location and importing public holidays…",
-          )}
+          {tText("Detecting each office country from its saved location and importing public holidays…")}
         </div>
       )}
       {missingRegionOffices.length > 0 && !syncing && (
         <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <Globe2 className="size-5 shrink-0" />
           <p>
-            {tText(
-              "We could not detect the country from the saved location for",
-            )}{" "}
-            {missingRegionOffices
-              .map(({ officeName }) => officeName)
-              .join(", ")}
-            {tText(
-              ". Check that each office pin is in the correct place, then retry.",
-            )}
+            {tText("We could not detect the country from the saved location for")}{" "}
+            {missingRegionOffices.map(({ officeName }) => officeName).join(", ")}
+            {tText(". Check that each office pin is in the correct place, then retry.")}
           </p>
           <Link
             className="ml-auto font-semibold text-amber-950 underline underline-offset-4"
@@ -2414,13 +2032,7 @@ export function HolidaysView() {
                   className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:-translate-x-0.5 hover:border-blue-300 hover:text-primary"
                   onClick={() =>
                     setVisibleMonth(
-                      new Date(
-                        Date.UTC(
-                          visibleMonth.getUTCFullYear(),
-                          visibleMonth.getUTCMonth() - 1,
-                          1,
-                        ),
-                      ),
+                      new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() - 1, 1)),
                     )
                   }
                   type="button"
@@ -2431,17 +2043,11 @@ export function HolidaysView() {
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
                     {tText("Holiday schedule")}
                   </p>
-                  <h2 className="mt-1 text-xl font-bold text-zinc-950">
-                    {monthLabel}
-                  </h2>
+                  <h2 className="mt-1 text-xl font-bold text-zinc-950">{monthLabel}</h2>
                   <p className="mt-1 text-xs text-outline">
                     {visibleMonthHolidays.length}{" "}
-                    {visibleMonthHolidays.length === 1
-                      ? tText("holiday")
-                      : tText("holidays")}{" "}
-                    {tText("across")}
-                    {offices.length}{" "}
-                    {offices.length === 1 ? tText("office") : tText("offices")}
+                    {visibleMonthHolidays.length === 1 ? tText("holiday") : tText("holidays")} {tText("across")}
+                    {offices.length} {offices.length === 1 ? tText("office") : tText("offices")}
                   </p>
                 </div>
                 <button
@@ -2449,13 +2055,7 @@ export function HolidaysView() {
                   className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:translate-x-0.5 hover:border-blue-300 hover:text-primary"
                   onClick={() =>
                     setVisibleMonth(
-                      new Date(
-                        Date.UTC(
-                          visibleMonth.getUTCFullYear(),
-                          visibleMonth.getUTCMonth() + 1,
-                          1,
-                        ),
-                      ),
+                      new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() + 1, 1)),
                     )
                   }
                   type="button"
@@ -2473,15 +2073,7 @@ export function HolidaysView() {
                 <button
                   className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-blue-300 hover:text-primary"
                   onClick={() =>
-                    setVisibleMonth(
-                      new Date(
-                        Date.UTC(
-                          new Date().getUTCFullYear(),
-                          new Date().getUTCMonth(),
-                          1,
-                        ),
-                      ),
-                    )
+                    setVisibleMonth(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)))
                   }
                   type="button"
                 >
@@ -2492,13 +2084,11 @@ export function HolidaysView() {
             <div className="overflow-x-auto p-4 sm:p-5">
               <div className="min-w-[760px]">
                 <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-wider text-outline">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                    (day) => (
-                      <div key={day} className="py-2">
-                        {day}
-                      </div>
-                    ),
-                  )}
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                    <div key={day} className="py-2">
+                      {day}
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-2 grid grid-cols-7 gap-2">
                   {days.map(({ date, day, inMonth, isWeekend }) => {
@@ -2564,11 +2154,7 @@ export function HolidaysView() {
                     {nextOutsideVisibleMonth && (
                       <button
                         className="font-semibold text-primary hover:underline"
-                        onClick={() =>
-                          setVisibleMonth(
-                            monthStart(nextOutsideVisibleMonth.holidayDate),
-                          )
-                        }
+                        onClick={() => setVisibleMonth(monthStart(nextOutsideVisibleMonth.holidayDate))}
                         type="button"
                       >
                         {tText("Go to")}
@@ -2586,9 +2172,7 @@ export function HolidaysView() {
                 <CalendarDays className="size-5 text-cyan-300" />
                 <h2 className="font-semibold">{tText("Upcoming holidays")}</h2>
               </div>
-              <p className="mt-1 text-xs text-zinc-400">
-                {tText("Select a holiday to open its month and details.")}
-              </p>
+              <p className="mt-1 text-xs text-zinc-400">{tText("Select a holiday to open its month and details.")}</p>
             </div>
             <div className="grid gap-2 p-4">
               {upcoming.map((holiday) => (
@@ -2600,41 +2184,30 @@ export function HolidaysView() {
                 >
                   <span className="grid w-12 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white text-center shadow-sm">
                     <span className="bg-blue-600 py-0.5 text-[9px] font-bold uppercase text-white">
-                      {new Date(holiday.holidayDate).toLocaleDateString(
-                        undefined,
-                        { month: "short", timeZone: "UTC" },
-                      )}
+                      {new Date(holiday.holidayDate).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" })}
                     </span>
                     <span className="py-1 text-lg font-black text-zinc-900">
                       {new Date(holiday.holidayDate).getUTCDate()}
                     </span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold">
-                      {holiday.holidayName}
-                    </span>
+                    <span className="block text-sm font-semibold">{holiday.holidayName}</span>
                     <span className="mt-0.5 block text-xs text-outline">
                       {holiday.office?.officeName ?? tText("All offices")}
                     </span>
                     <span
                       className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        holiday.source === "PUBLIC_DATA"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-amber-100 text-amber-800"
+                        holiday.source === "PUBLIC_DATA" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {holiday.source === "PUBLIC_DATA"
-                        ? tText("Public holiday")
-                        : tText("HR added")}
+                      {holiday.source === "PUBLIC_DATA" ? tText("Public holiday") : tText("HR added")}
                     </span>
                   </span>
                 </button>
               ))}
               {!upcoming.length && (
                 <p className="rounded-lg bg-zinc-50 p-4 text-sm text-outline">
-                  {tText(
-                    "No upcoming holidays. Sync a public calendar or add one manually.",
-                  )}
+                  {tText("No upcoming holidays. Sync a public calendar or add one manually.")}
                 </p>
               )}
             </div>
@@ -2658,12 +2231,7 @@ export function HolidaysView() {
                 {tText("date-holidays open dataset")}
               </a>{" "}
               {tText("where supported, or the keyless")}{" "}
-              <a
-                className="underline"
-                href="https://tallyfy.com/national-holidays/"
-                rel="noreferrer"
-                target="_blank"
-              >
+              <a className="underline" href="https://tallyfy.com/national-holidays/" rel="noreferrer" target="_blank">
                 {tText("Tallyfy fallback")}
               </a>
               {tText(". HR edits always take precedence.")}
@@ -2685,9 +2253,7 @@ export function HolidaysView() {
               <input
                 className={inputClass}
                 value={form.holidayName}
-                onChange={(e) =>
-                  setForm({ ...form, holidayName: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, holidayName: e.target.value })}
               />
             </Field>
             <Field label={tText("Date")}>
@@ -2695,18 +2261,14 @@ export function HolidaysView() {
                 type="date"
                 className={inputClass}
                 value={form.holidayDate}
-                onChange={(e) =>
-                  setForm({ ...form, holidayDate: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, holidayDate: e.target.value })}
               />
             </Field>
             <Field label={tText("Scope")}>
               <select
                 className={inputClass}
                 value={form.officeLocationId}
-                onChange={(e) =>
-                  setForm({ ...form, officeLocationId: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, officeLocationId: e.target.value })}
               >
                 <option value="">{tText("All offices")}</option>
                 {offices.map((office) => (
@@ -2803,14 +2365,67 @@ function OfficeLocationPicker({
   const [locating, setLocating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const [detectingRegion, setDetectingRegion] = useState(false);
+  const skipSuggestionFetch = useRef(false);
+  const suggestionListId = useId();
   const coordinate = validCoordinate(latitude, longitude);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (skipSuggestionFetch.current) {
+      skipSuggestionFetch.current = false;
+      return;
+    }
+    if (query.length < 3) {
+      setSuggestions([]);
+      setSuggestionsOpen(false);
+      setSuggestionsLoading(false);
+      setSuggestionError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setSuggestionsLoading(true);
+      setSuggestionError("");
+      try {
+        const response = await apiClient.get<LocationSuggestion[] | { data: LocationSuggestion[] }>(
+          "/offices/location-suggestions",
+          {
+            params: { q: query, limit: 6 },
+            signal: controller.signal,
+          },
+        );
+        const results = Array.isArray(response.data) ? response.data : response.data.data;
+        setSuggestions(results ?? []);
+        setSuggestionsOpen(true);
+        setActiveSuggestion(-1);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error(error);
+          setSuggestions([]);
+          setSuggestionsOpen(true);
+          setSuggestionError(tText("Search failed. Please try again."));
+        }
+      } finally {
+        if (!controller.signal.aborted) setSuggestionsLoading(false);
+      }
+    }, 450);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [searchQuery]);
 
   async function selectCoordinate(nextCoordinate: MapCoordinate) {
     setDetectingRegion(true);
-    const region = await reverseGeocodeRegion(nextCoordinate).catch(
-      () => undefined,
-    );
+    const region = await reverseGeocodeRegion(nextCoordinate).catch(() => undefined);
     onChange(nextCoordinate, region);
     setDetectingRegion(false);
   }
@@ -2861,9 +2476,40 @@ function OfficeLocationPicker({
     }
   }
 
-  const marker = coordinate
-    ? [{ id: "office", label: tText("Office pin"), ...coordinate }]
-    : [];
+  function selectSuggestion(place: LocationSuggestion) {
+    skipSuggestionFetch.current = true;
+    setSearchQuery(locationSuggestionLabel(place));
+    setSuggestions([]);
+    setSuggestionsOpen(false);
+    setActiveSuggestion(-1);
+    onChange(
+      { latitude: place.latitude, longitude: place.longitude },
+      place.countryCode ? { countryCode: place.countryCode } : undefined,
+    );
+  }
+
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!suggestionsOpen || suggestions.length === 0) {
+      if (event.key === "Escape") setSuggestionsOpen(false);
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveSuggestion((current) => (current + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveSuggestion((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
+    } else if (event.key === "Enter" && activeSuggestion >= 0) {
+      event.preventDefault();
+      selectSuggestion(suggestions[activeSuggestion]);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setSuggestionsOpen(false);
+      setActiveSuggestion(-1);
+    }
+  }
+
+  const marker = coordinate ? [{ id: "office", label: tText("Office pin"), ...coordinate }] : [];
   const geofence = coordinate
     ? [
         {
@@ -2878,9 +2524,7 @@ function OfficeLocationPicker({
     <div className="grid gap-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <div className="font-semibold">
-            {tText("Pin the office entrance")}
-          </div>
+          <div className="font-semibold">{tText("Pin the office entrance")}</div>
           <div className="text-xs text-outline">
             {tText(
               "Search for a location, click the map, or use your current location. The circle is the valid attendance area.",
@@ -2894,9 +2538,7 @@ function OfficeLocationPicker({
           type="button"
         >
           <Crosshair className="size-4" />
-          {locating || detectingRegion
-            ? tText("Locating…")
-            : tText("Use current location")}
+          {locating || detectingRegion ? tText("Locating…") : tText("Use current location")}
         </button>
       </div>
 
@@ -2907,13 +2549,69 @@ function OfficeLocationPicker({
           </div>
           <input
             type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls={suggestionListId}
+            aria-expanded={suggestionsOpen}
+            aria-activedescendant={activeSuggestion >= 0 ? `${suggestionListId}-${activeSuggestion}` : undefined}
             className="block w-full rounded-xl border border-outline-variant bg-white py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder={tText(
-              "Search for a location (e.g., city, street, landmark)...",
-            )}
+            placeholder={tText("Search for a location (e.g., city, street, landmark)...")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => {
+              const nextQuery = event.target.value;
+              setSearchQuery(nextQuery);
+              setSuggestionError("");
+              setSuggestionsOpen(nextQuery.trim().length >= 3);
+              if (nextQuery.trim().length < 3) {
+                setSuggestions([]);
+                setSuggestionsLoading(false);
+              }
+              setActiveSuggestion(-1);
+            }}
+            onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
+            onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 120)}
+            onKeyDown={handleSearchKeyDown}
           />
+          {suggestionsLoading && (
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-outline">
+              {tText("Searching...")}
+            </span>
+          )}
+          {suggestionsOpen && (suggestions.length > 0 || suggestionError) && (
+            <div
+              id={suggestionListId}
+              role="listbox"
+              className="absolute z-[1000] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-outline-variant bg-white p-1.5 shadow-xl"
+            >
+              {suggestionError && (
+                <div className="rounded-lg bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+                  {suggestionError}
+                </div>
+              )}
+              {suggestions.map((place, index) => {
+                const title = locationSuggestionTitle(place);
+                const detail = locationSuggestionDetail(place);
+                return (
+                  <button
+                    id={`${suggestionListId}-${index}`}
+                    key={place.id}
+                    type="button"
+                    role="option"
+                    aria-selected={activeSuggestion === index}
+                    className={`block w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
+                      activeSuggestion === index ? "bg-primary/10" : "hover:bg-stone-50"
+                    }`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveSuggestion(index)}
+                    onClick={() => selectSuggestion(place)}
+                  >
+                    <span className="block truncate text-sm font-semibold text-on-surface">{title}</span>
+                    {detail && <span className="mt-0.5 block truncate text-xs text-outline">{detail}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
         <button
           type="submit"
@@ -2931,9 +2629,7 @@ function OfficeLocationPicker({
         onMapClick={(nextCoordinate) => void selectCoordinate(nextCoordinate)}
       />
       {!coordinate && (
-        <p className="text-xs font-semibold text-amber-700">
-          {tText("No office location selected yet.")}
-        </p>
+        <p className="text-xs font-semibold text-amber-700">{tText("No office location selected yet.")}</p>
       )}
     </div>
   );
@@ -2945,6 +2641,50 @@ type NominatimPlace = {
   address?: Record<string, string | undefined>;
 };
 
+type LocationSuggestion = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  name?: string | null;
+  houseNumber?: string | null;
+  street?: string | null;
+  district?: string | null;
+  city?: string | null;
+  county?: string | null;
+  state?: string | null;
+  postcode?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
+};
+
+function locationSuggestionTitle(place: LocationSuggestion) {
+  return (
+    place.name ||
+    [place.houseNumber, place.street].filter(Boolean).join(" ") ||
+    place.city ||
+    place.state ||
+    place.country ||
+    "Location"
+  );
+}
+
+function locationSuggestionDetail(place: LocationSuggestion) {
+  const title = locationSuggestionTitle(place);
+  return Array.from(
+    new Set(
+      [place.street, place.district, place.city, place.county, place.state, place.postcode, place.country].filter(
+        Boolean,
+      ),
+    ),
+  )
+    .filter((part) => part !== title)
+    .join(", ");
+}
+
+function locationSuggestionLabel(place: LocationSuggestion) {
+  return [locationSuggestionTitle(place), locationSuggestionDetail(place)].filter(Boolean).join(", ");
+}
+
 async function reverseGeocodeRegion(coordinate: MapCoordinate) {
   const params = new URLSearchParams({
     format: "jsonv2",
@@ -2952,9 +2692,7 @@ async function reverseGeocodeRegion(coordinate: MapCoordinate) {
     lat: String(coordinate.latitude),
     lon: String(coordinate.longitude),
   });
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?${params}`,
-  );
+  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`);
   if (!response.ok) return undefined;
   return regionFromPlace((await response.json()) as NominatimPlace);
 }
@@ -2963,40 +2701,24 @@ function regionFromPlace(place: NominatimPlace): OfficeRegion | undefined {
   const countryCode = place.address?.country_code?.toUpperCase();
   if (!countryCode) return undefined;
   const subdivisionCode = Object.entries(place.address ?? {}).find(
-    ([key, value]) =>
-      key.startsWith("ISO3166-2") &&
-      typeof value === "string" &&
-      value.startsWith(`${countryCode}-`),
+    ([key, value]) => key.startsWith("ISO3166-2") && typeof value === "string" && value.startsWith(`${countryCode}-`),
   )?.[1];
   return { countryCode, subdivisionCode };
 }
 
-function validCoordinate(
-  latitude: string | number,
-  longitude: string | number,
-) {
+function validCoordinate(latitude: string | number, longitude: string | number) {
   if (String(latitude).trim() === "" || String(longitude).trim() === "") {
     return null;
   }
   const lat = Number(latitude);
   const lng = Number(longitude);
-  if (
-    !Number.isFinite(lat) ||
-    !Number.isFinite(lng) ||
-    lat < -90 ||
-    lat > 90 ||
-    lng < -180 ||
-    lng > 180
-  ) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return null;
   }
   return { latitude: lat, longitude: lng };
 }
 
-function timezoneForCoordinate(
-  latitude: string | number,
-  longitude: string | number,
-) {
+function timezoneForCoordinate(latitude: string | number, longitude: string | number) {
   const coordinate = validCoordinate(latitude, longitude);
   if (!coordinate) return null;
   try {
@@ -3023,22 +2745,15 @@ function DurationField({
   onChange: (value: number) => void;
 }) {
   const { tText } = useTenantLocalization();
-  const normalizedValue = Number.isFinite(value)
-    ? Math.min(1_440, Math.max(0, Math.round(value)))
-    : 0;
+  const normalizedValue = Number.isFinite(value) ? Math.min(1_440, Math.max(0, Math.round(value))) : 0;
   const hours = Math.floor(normalizedValue / 60);
   const minutes = normalizedValue % 60;
   const descriptionId = `${id}-description`;
 
   return (
     <fieldset className="rounded-xl border border-surface-variant bg-zinc-50/60 p-4">
-      <legend className="px-1 text-sm font-semibold text-on-surface">
-        {label}
-      </legend>
-      <p
-        className="mb-3 min-h-10 text-xs leading-5 text-outline"
-        id={descriptionId}
-      >
+      <legend className="px-1 text-sm font-semibold text-on-surface">{label}</legend>
+      <p className="mb-3 min-h-10 text-xs leading-5 text-outline" id={descriptionId}>
         {description}
       </p>
       <div className="grid grid-cols-2 gap-3">
@@ -3068,9 +2783,7 @@ function DurationField({
             className={inputClass}
             disabled={hours === 24}
             id={`${id}-minutes`}
-            onChange={(event) =>
-              onChange(hours * 60 + Number(event.target.value))
-            }
+            onChange={(event) => onChange(hours * 60 + Number(event.target.value))}
             value={minutes}
           >
             {policyDurationMinutes.map((minute) => (
@@ -3081,9 +2794,7 @@ function DurationField({
           </select>
         </label>
       </div>
-      <p className="mt-3 text-xs font-semibold text-primary">
-        {formatPolicyDuration(normalizedValue)}
-      </p>
+      <p className="mt-3 text-xs font-semibold text-primary">{formatPolicyDuration(normalizedValue)}</p>
     </fieldset>
   );
 }
@@ -3102,9 +2813,7 @@ function PolicyToggle({
   return (
     <label
       className={`flex min-h-28 cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-        checked
-          ? "border-primary/40 bg-primary/5"
-          : "border-surface-variant bg-white hover:bg-zinc-50"
+        checked ? "border-primary/40 bg-primary/5" : "border-surface-variant bg-white hover:bg-zinc-50"
       }`}
     >
       <input
@@ -3114,12 +2823,8 @@ function PolicyToggle({
         type="checkbox"
       />
       <span>
-        <span className="block text-sm font-semibold text-on-surface">
-          {label}
-        </span>
-        <span className="mt-1 block text-xs leading-5 text-outline">
-          {description}
-        </span>
+        <span className="block text-sm font-semibold text-on-surface">{label}</span>
+        <span className="mt-1 block text-xs leading-5 text-outline">{description}</span>
       </span>
     </label>
   );
@@ -3144,12 +2849,7 @@ function validatePolicyRuleForm(form: {
     form.minimumWorkMinutes,
     form.overtimeAfterMinutes,
   ];
-  if (
-    durations.some(
-      (duration) =>
-        !Number.isInteger(duration) || duration < 0 || duration > 1_440,
-    )
-  ) {
+  if (durations.some((duration) => !Number.isInteger(duration) || duration < 0 || duration > 1_440)) {
     return "Attendance durations must be between 0 and 24 hours.";
   }
   if (form.lateAfterMinutes > form.halfDayAfterMinutes) {
@@ -3158,27 +2858,17 @@ function validatePolicyRuleForm(form: {
   if (form.minimumWorkMinutes > form.overtimeAfterMinutes) {
     return "Minimum full-day work cannot be longer than the overtime threshold.";
   }
-  if (
-    !Number.isInteger(form.maxOfflineSyncHours) ||
-    form.maxOfflineSyncHours < 0 ||
-    form.maxOfflineSyncHours > 168
-  ) {
+  if (!Number.isInteger(form.maxOfflineSyncHours) || form.maxOfflineSyncHours < 0 || form.maxOfflineSyncHours > 168) {
     return "Offline sync delay must be between 0 and 168 hours.";
   }
-  if (
-    !Number.isInteger(form.maxFaceAttempts) ||
-    form.maxFaceAttempts < 1 ||
-    form.maxFaceAttempts > 10
-  ) {
+  if (!Number.isInteger(form.maxFaceAttempts) || form.maxFaceAttempts < 1 || form.maxFaceAttempts > 10) {
     return "Maximum face attempts must be between 1 and 10.";
   }
   return "";
 }
 
 function formatPolicyDuration(totalMinutes: number) {
-  const normalizedMinutes = Number.isFinite(totalMinutes)
-    ? Math.max(0, Math.round(totalMinutes))
-    : 0;
+  const normalizedMinutes = Number.isFinite(totalMinutes) ? Math.max(0, Math.round(totalMinutes)) : 0;
   const hours = Math.floor(normalizedMinutes / 60);
   const minutes = normalizedMinutes % 60;
   if (!hours) return `${minutes} min`;
@@ -3192,41 +2882,54 @@ function Dialog({
   children,
   wide = false,
   error,
+  inline = false,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
   error?: string;
+  inline?: boolean;
 }) {
   const { tText } = useTenantLocalization();
   useEffect(() => {
+    if (inline) return;
     clearStaleScrollLock();
     return clearStaleScrollLock;
-  }, []);
+  }, [inline]);
+  const panel = (
+    <div
+      data-testid="dialog-panel"
+      className={
+        inline
+          ? "w-full rounded-2xl border border-surface-variant bg-zinc-50/50 p-5 lg:p-7"
+          : `${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] w-full overflow-auto rounded-2xl bg-white p-7 shadow-2xl`
+      }
+    >
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        {!inline && (
+          <button onClick={onClose} className="text-outline">
+            {tText("Close")}
+          </button>
+        )}
+      </div>
+      {error && (
+        <div className="mb-5">
+          <ErrorState message={error} />
+        </div>
+      )}
+      {children}
+    </div>
+  );
+  if (inline) return panel;
   return createPortal(
     <div
       aria-modal="true"
       className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/45 p-4"
       role="dialog"
     >
-      <div
-        data-testid="dialog-panel"
-        className={`${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] w-full overflow-auto rounded-2xl bg-white p-7 shadow-2xl`}
-      >
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-outline">
-            {tText("Close")}
-          </button>
-        </div>
-        {error && (
-          <div className="mb-5">
-            <ErrorState message={error} />
-          </div>
-        )}
-        {children}
-      </div>
+      {panel}
     </div>,
     document.body,
   );
@@ -3271,9 +2974,7 @@ function requestErrorMessage(error: unknown, fallback: string) {
       response?: {
         data?: {
           message?: unknown;
-          details?:
-            | Array<{ field?: string; messages?: string[] }>
-            | Record<string, unknown>;
+          details?: Array<{ field?: string; messages?: string[] }> | Record<string, unknown>;
         };
       };
     }
@@ -3284,12 +2985,8 @@ function requestErrorMessage(error: unknown, fallback: string) {
 function assignmentKey(assignment: PolicyAssignment) {
   return `${assignment.scope}:${assignment.deptId ?? assignment.employeeId ?? "default"}`;
 }
-function policyCoverage(
-  assignments: PolicyAssignment[],
-  employees: Employee[],
-) {
-  if (assignments.some(({ scope }) => scope === "TENANT_DEFAULT"))
-    return employees.length;
+function policyCoverage(assignments: PolicyAssignment[], employees: Employee[]) {
+  if (assignments.some(({ scope }) => scope === "TENANT_DEFAULT")) return employees.length;
   const employeeIds = new Set<string>();
   for (const assignment of assignments) {
     if (assignment.employeeId) employeeIds.add(assignment.employeeId);
@@ -3301,11 +2998,7 @@ function policyCoverage(
   }
   return employeeIds.size;
 }
-function assignmentLabel(
-  assignment: PolicyAssignment,
-  departments: Department[],
-  employees: Employee[],
-) {
+function assignmentLabel(assignment: PolicyAssignment, departments: Department[], employees: Employee[]) {
   if (assignment.scope === "TENANT_DEFAULT") return "Tenant default";
   if (assignment.scope === "DEPARTMENT")
     return `Department · ${departments.find(({ id }) => id === assignment.deptId)?.name ?? "Unknown"}`;
@@ -3313,38 +3006,25 @@ function assignmentLabel(
 }
 function dateRange(start: Date, end: Date) {
   const result: Date[] = [];
-  for (
-    let cursor = new Date(start);
-    cursor <= end;
-    cursor = new Date(cursor.getTime() + 86_400_000)
-  )
+  for (let cursor = new Date(start); cursor <= end; cursor = new Date(cursor.getTime() + 86_400_000))
     result.push(cursor);
   return result;
 }
 function isWeeklyOffDate(value: unknown, date: Date) {
   if (!Array.isArray(value)) return false;
-  const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
-    date.getDay()
-  ];
+  const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][date.getDay()];
   const occurrence = Math.ceil(date.getDate() / 7);
   return value.some((entry) => {
     if (entry === weekday) return true;
-    if (!entry || typeof entry !== "object" || Array.isArray(entry))
-      return false;
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return false;
     const rule = entry as { weekday?: unknown; occurrences?: unknown };
     return (
       rule.weekday === weekday &&
-      (rule.occurrences === undefined ||
-        (Array.isArray(rule.occurrences) &&
-          rule.occurrences.includes(occurrence)))
+      (rule.occurrences === undefined || (Array.isArray(rule.occurrences) && rule.occurrences.includes(occurrence)))
     );
   });
 }
-async function uploadRoster(
-  file: File,
-  setError: (message: string) => void,
-  reload: () => void,
-) {
+async function uploadRoster(file: File, setError: (message: string) => void, reload: () => void) {
   try {
     const presign = await apiClient.post("/rosters/imports/presign", {
       filename: file.name,

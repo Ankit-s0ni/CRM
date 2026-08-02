@@ -37,6 +37,7 @@ import { UpdateHolidayHandler } from './holidays/application/commands/update-hol
 import { RemoveHolidayHandler } from './holidays/application/commands/remove-holiday.handler';
 import { ListHolidaysHandler } from './holidays/application/queries/list-holidays.handler';
 import { PublicHolidaySyncService } from './holidays/public-holiday-sync.service';
+import { LocationSearchService } from './offices/location-search.service';
 
 // Roster Handlers
 import { IRosterRepository } from './rosters/domain/roster.repository.interface';
@@ -117,6 +118,7 @@ const PolicyHandlers = [
     RosterImportsService,
     PolicyResolverCache,
     PublicHolidaySyncService,
+    LocationSearchService,
     {
       provide: IOfficeRepository,
       useClass: PrismaOfficeRepository,

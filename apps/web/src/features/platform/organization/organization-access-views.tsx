@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  AlertTriangle,
   Building2,
   CheckCircle2,
+  ClipboardCheck,
   Copy,
   Download,
   FileUp,
@@ -16,7 +18,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { phoneCountryForTenant } from "@/lib/phone-country";
@@ -24,12 +26,22 @@ import { InternationalPhoneInput } from "@/shared/components/international-phone
 import type { CountryCode } from "libphonenumber-js";
 import {
   AdminPage,
+  DataTable,
+  DataTableCell,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableRow,
   EmptyState,
   ErrorState,
   Field,
+  FilterField,
   LoadingState,
   Panel,
+  PaginationBar,
   PrimaryButton,
+  StepList,
+  StatusBadge,
+  Toolbar,
   inputClass,
 } from "@/shared/components/page-primitives";
 import { useTenantLocalization } from "@/lib/tenant-localization";
@@ -67,6 +79,24 @@ type EmployeePage = {
     totalPages: number;
   };
 };
+
+function employeeStatusTone(status: string) {
+  if (status === "ACTIVE") return "success";
+  if (status === "ON_NOTICE") return "warning";
+  if (status === "TERMINATED") return "neutral";
+  return "info";
+}
+
+function importStatusTone(status: string) {
+  const normalized = status.toUpperCase();
+  if (normalized.includes("COMPLETE") || normalized.includes("SUCCESS"))
+    return "success";
+  if (normalized.includes("FAIL") || normalized.includes("ERROR"))
+    return "danger";
+  if (normalized.includes("VALID") || normalized.includes("PROCESS"))
+    return "info";
+  return "neutral";
+}
 
 const EMPLOYEE_ONBOARDING_STEPS = [
   {
@@ -223,7 +253,13 @@ type EmployeeImportError = {
   errorMessage: string;
 };
 
-export function OrganizationView() {
+export function OrganizationView({
+  embedded = false,
+  onReadinessChange,
+}: {
+  embedded?: boolean;
+  onReadinessChange?: (ready: boolean) => void;
+} = {}) {
   const { tText } = useTenantLocalization();
   const [departments, setDepartments] = useState<Department[] | null>(null);
   const [designations, setDesignations] = useState<Designation[]>([]);
@@ -231,20 +267,35 @@ export function OrganizationView() {
   const [departmentName, setDepartmentName] = useState("");
   const [departmentParentId, setDepartmentParentId] = useState("");
   const [designationName, setDesignationName] = useState("");
-  const load = () =>
-    Promise.all([
-      apiClient.get("/departments?view=tree"),
-      apiClient.get("/designations?limit=100"),
-    ])
-      .then(([departmentResult, designationResult]) => {
-        setDepartments(departmentResult.data.data);
-        setDesignations(designationResult.data.data);
-        setError("");
-      })
-      .catch(() => setError(tText("Organization structure could not be loaded.")));
+  const onReadinessChangeRef = useRef(onReadinessChange);
+  useEffect(() => {
+    onReadinessChangeRef.current = onReadinessChange;
+  }, [onReadinessChange]);
+  const load = useCallback(
+    () =>
+      Promise.all([
+        apiClient.get("/departments?view=tree"),
+        apiClient.get("/designations?limit=100"),
+      ])
+        .then(([departmentResult, designationResult]) => {
+          const nextDepartments = departmentResult.data.data as Department[];
+          const nextDesignations = designationResult.data.data as Designation[];
+          setDepartments(nextDepartments);
+          setDesignations(nextDesignations);
+          onReadinessChangeRef.current?.(
+            nextDepartments.length > 0 && nextDesignations.length > 0,
+          );
+          setError("");
+        })
+        .catch(() => {
+          onReadinessChangeRef.current?.(false);
+          setError(tText("Organization structure could not be loaded."));
+        }),
+    [tText],
+  );
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
   async function addDepartment() {
     await apiClient
       .post("/departments", {
@@ -337,6 +388,7 @@ export function OrganizationView() {
       );
   }
   const departmentOptions = flattenDepartments(departments ?? []);
+  const showSetupHint = !embedded;
   return (
     <AdminPage
       title={tText("Organization Builder")}
@@ -347,22 +399,27 @@ export function OrganizationView() {
         <LoadingState />
       ) : (
         <div className="grid gap-6">
-          <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
-              <Info className="size-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="font-bold">
-                {tText("Organization comes before workplace setup")}</h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                {tText("Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.")}</p>
-            </div>
-            <Link
-              className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
-              href="/app/attendance/offices"
-            >
-              {tText("Continue to office setup")}</Link>
-          </Panel>
+          {showSetupHint && (
+            <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+                <Info className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-bold">
+                  {tText("Organization comes before workplace setup")}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  {tText("Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.")}
+                </p>
+              </div>
+              <Link
+                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
+                href="/app/attendance/offices"
+              >
+                {tText("Continue to office setup")}
+              </Link>
+            </Panel>
+          )}
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="p-7">
               <div className="mb-6 flex items-center justify-between">
@@ -537,7 +594,7 @@ function DepartmentNode({
             >
               {tText("Save")}</button>
             <button
-              className="text-xs text-outline"
+              className="text-xs text-muted-foreground"
               onClick={() => {
                 setName(department.name);
                 setEditing(false);
@@ -659,7 +716,7 @@ function DesignationRow({
           >
             {tText("Save")}</button>
           <button
-            className="text-xs text-outline"
+            className="text-xs text-muted-foreground"
             onClick={() => {
               setName(designation.name);
               setEditing(false);
@@ -765,17 +822,16 @@ export function EmployeesView() {
       ) : (
         <div>
           <Panel className="overflow-hidden">
-            <div className="border-b border-surface-variant bg-zinc-50/70 p-4">
-              <div className="grid items-end gap-3 lg:grid-cols-[minmax(360px,1fr)_180px_180px_132px]">
+            <Toolbar className="rounded-none border-x-0 border-t-0 shadow-none">
+              <div className="grid w-full items-end gap-3 lg:grid-cols-[minmax(360px,1fr)_180px_180px_132px]">
                 <form className="grid gap-1.5" onSubmit={submitSearch}>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Search employees")}</span>
+                  <FilterField label={tText("Search employees")}>
                   <div className="flex gap-2">
                     <div className="relative min-w-0 flex-1">
                       <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
                       <input
                         aria-label={tText("Search employees")}
-                        className="h-11 w-full rounded-xl border border-zinc-300 bg-white pl-10 pr-3 text-sm outline-none transition placeholder:text-zinc-400 focus:border-primary focus:ring-2 focus:ring-primary/15"
+                        className={`${inputClass} pl-10`}
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder={tText("Name, code, email, office or department")}
                         value={search}
@@ -787,13 +843,12 @@ export function EmployeesView() {
                     >
                       {tText("Search")}</button>
                   </div>
+                  </FilterField>
                 </form>
-                <label className="grid gap-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Status")}</span>
+                <FilterField label={tText("Status")}>
                   <select
                     aria-label={tText("Filter employee status")}
-                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    className={inputClass}
                     onChange={(event) =>
                       updateQuery({
                         status: event.target.value || null,
@@ -807,13 +862,11 @@ export function EmployeesView() {
                     <option value="ON_NOTICE">{tText("On notice")}</option>
                     <option value="TERMINATED">{tText("Terminated")}</option>
                   </select>
-                </label>
-                <label className="grid gap-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Sort by")}</span>
+                </FilterField>
+                <FilterField label={tText("Sort by")}>
                   <select
                     aria-label={tText("Sort employees")}
-                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    className={inputClass}
                     onChange={(event) =>
                       updateQuery({ sort: event.target.value, page: "1" })
                     }
@@ -824,13 +877,11 @@ export function EmployeesView() {
                     <option value="code_asc">{tText("Code ascending")}</option>
                     <option value="joined_desc">{tText("Newest joined")}</option>
                   </select>
-                </label>
-                <label className="grid gap-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Show")}</span>
+                </FilterField>
+                <FilterField label={tText("Show")}>
                   <select
                     aria-label={tText("Rows per page")}
-                    className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    className={inputClass}
                     onChange={(event) =>
                       updateQuery({ limit: event.target.value, page: "1" })
                     }
@@ -840,61 +891,58 @@ export function EmployeesView() {
                     <option value="50">{tText("50 rows")}</option>
                     <option value="100">{tText("100 rows")}</option>
                   </select>
-                </label>
+                </FilterField>
               </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1180px] text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-outline">
+            </Toolbar>
+            <DataTable className="rounded-none border-x-0 border-t-0 shadow-none" minWidth="1180px">
+                <DataTableHeader>
                   <tr>
-                    <th className="px-6 py-4">{tText("Employee")}</th>
-                    <th>{tText("Code")}</th>
-                    <th>{tText("Email")}</th>
-                    <th>{tText("Office")}</th>
-                    <th>{tText("Department")}</th>
-                    <th>{tText("Designation")}</th>
-                    <th>{tText("Manager")}</th>
-                    <th>{tText("Work type")}</th>
-                    <th>{tText("Status")}</th>
+                    <DataTableHeadCell>{tText("Employee")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Code")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Email")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Office")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Department")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Designation")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Manager")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Work type")}</DataTableHeadCell>
+                    <DataTableHeadCell>{tText("Status")}</DataTableHeadCell>
                   </tr>
-                </thead>
+                </DataTableHeader>
                 <tbody>
                   {data.map((employee) => (
-                    <tr
+                    <DataTableRow
                       key={employee.id}
-                      className="border-t border-surface-variant transition hover:bg-zinc-50"
                     >
-                      <td className="px-6 py-4">
+                      <DataTableCell>
                         <Link
                           href={`/app/employees/${employee.id}`}
                           className="font-semibold text-primary hover:underline"
                         >
                           {employee.fullName}
                         </Link>
-                        <div className="text-xs text-outline">
+                        <div className="text-xs text-muted-foreground">
                           {employee.phone || tText("No phone")}
                         </div>
-                      </td>
-                      <td>{employee.employeeCode}</td>
-                      <td>{employee.user?.email || "—"}</td>
-                      <td>
+                      </DataTableCell>
+                      <DataTableCell>{employee.employeeCode}</DataTableCell>
+                      <DataTableCell>{employee.user?.email || "-"}</DataTableCell>
+                      <DataTableCell>
                         {employee.officeAssignments?.[0]?.office.officeName ||
-                          "—"}
-                      </td>
-                      <td>{employee.department?.name || "—"}</td>
-                      <td>{employee.designation?.name || "—"}</td>
-                      <td>{employee.manager?.fullName || "—"}</td>
-                      <td>{employee.workType}</td>
-                      <td>
-                        <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                          "-"}
+                      </DataTableCell>
+                      <DataTableCell>{employee.department?.name || "-"}</DataTableCell>
+                      <DataTableCell>{employee.designation?.name || "-"}</DataTableCell>
+                      <DataTableCell>{employee.manager?.fullName || "-"}</DataTableCell>
+                      <DataTableCell>{employee.workType}</DataTableCell>
+                      <DataTableCell>
+                        <StatusBadge tone={employeeStatusTone(employee.status)}>
                           {employee.status}
-                        </span>
-                      </td>
-                    </tr>
+                        </StatusBadge>
+                      </DataTableCell>
+                    </DataTableRow>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
             {!data.length && (
               <EmptyState
                 title={tText("No employees")}
@@ -902,46 +950,32 @@ export function EmployeesView() {
               />
             )}
             {result && result.pagination.total > 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-surface-variant px-5 py-4">
-                <p className="text-sm text-outline">
-                  {tText("Showing")}{" "}
-                  {(result.pagination.page - 1) * result.pagination.limit + 1}–
-                  {Math.min(
-                    result.pagination.page * result.pagination.limit,
-                    result.pagination.total,
-                  )}{" "}
-                  {tText("of")}{result.pagination.total} {tText("employees")}</p>
-                <div className="flex items-center gap-2">
-                  <button
-                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
-                    disabled={result.pagination.page <= 1}
-                    onClick={() =>
-                      updateQuery({
-                        page: String(result.pagination.page - 1),
-                      })
-                    }
-                    type="button"
-                  >
-                    {tText("Previous")}</button>
-                  <span className="px-2 text-sm font-semibold">
-                    {tText("Page")}{result.pagination.page} {tText("of")}{" "}
-                    {result.pagination.totalPages}
-                  </span>
-                  <button
-                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
-                    disabled={
-                      result.pagination.page >= result.pagination.totalPages
-                    }
-                    onClick={() =>
-                      updateQuery({
-                        page: String(result.pagination.page + 1),
-                      })
-                    }
-                    type="button"
-                  >
-                    {tText("Next")}</button>
-                </div>
-              </div>
+              <PaginationBar
+                canNext={result.pagination.page < result.pagination.totalPages}
+                canPrevious={result.pagination.page > 1}
+                label={
+                  <>
+                    {tText("Showing")} {((result.pagination.page - 1) * result.pagination.limit) + 1}-
+                    {Math.min(
+                      result.pagination.page * result.pagination.limit,
+                      result.pagination.total,
+                    )} {tText("of")} {result.pagination.total} {tText("employees")}
+                  </>
+                }
+                nextLabel={tText("Next")}
+                onNext={() =>
+                  updateQuery({ page: String(result.pagination.page + 1) })
+                }
+                onPrevious={() =>
+                  updateQuery({ page: String(result.pagination.page - 1) })
+                }
+                pageLabel={
+                  <>
+                    {tText("Page")} {result.pagination.page} {tText("of")} {result.pagination.totalPages}
+                  </>
+                }
+                previousLabel={tText("Previous")}
+              />
             )}
           </Panel>
         </div>
@@ -1364,12 +1398,31 @@ export function EmployeeImportView() {
       setError(tText("Row errors could not be loaded."));
     }
   }
+  const importSteps = [
+    {
+      title: tText("Prepare CSV"),
+      body: tText("Download the template and keep the required columns."),
+    },
+    {
+      title: tText("Upload and validate"),
+      body: tText("The file is checked before employees are created."),
+    },
+    {
+      title: tText("Review results"),
+      body: tText("Fix row errors and retry only the corrected file."),
+    },
+  ];
   return (
     <AdminPage
       title={tText("Bulk Import")}
       description={tText("Upload employees with safe row-level validation and idempotent retries.")}
     >
       {error && <ErrorState message={error} />}
+      <StepList
+        className="mb-5"
+        currentStep={uploading ? 1 : 0}
+        steps={importSteps}
+      />
       <Panel className="mb-6 overflow-hidden">
         <div className="border-b border-surface-variant bg-zinc-50 p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -1384,20 +1437,6 @@ export function EmployeeImportView() {
               type="button"
             >
               <Download className="size-4" /> {tText("Download template")}</PrimaryButton>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {[
-              "Download and complete the template",
-              "Upload the CSV for validation",
-              "Review imported rows and errors",
-            ].map((step, index) => (
-              <div className="flex items-center gap-3 text-sm" key={step}>
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">
-                  {index + 1}
-                </span>
-                <span>{step}</span>
-              </div>
-            ))}
           </div>
         </div>
         {!schema ? (
@@ -1441,16 +1480,16 @@ export function EmployeeImportView() {
           </div>
         )}
       </Panel>
-      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-zinc-300 p-8 text-center">
-        <div>
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-zinc-100 text-primary">
-            <FileUp />
+      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center">
+        <div className="max-w-xl">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white text-primary shadow-sm">
+            <FileUp className="size-7" />
           </div>
           <h2 className="mt-5 text-xl font-semibold">
-            {tText("Drop your employee CSV here")}</h2>
+            {tText("Upload employee CSV")}</h2>
           <p className="mt-2 text-sm text-outline">
-            {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template.")}</p>
-          <label className="mt-5 inline-flex h-11 cursor-pointer items-center rounded-xl bg-primary px-5 text-sm font-semibold text-white">
+            {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template. Validation results will appear in the import history below.")}</p>
+          <label className="mt-5 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90">
             {uploading ? tText("Uploading...") : tText("Choose CSV")}
             <input
               type="file"
@@ -1460,6 +1499,16 @@ export function EmployeeImportView() {
               onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
             />
           </label>
+          <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
+              <ClipboardCheck className="size-3.5 text-emerald-700" />
+              {tText("Headers checked")}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
+              <AlertTriangle className="size-3.5 text-amber-700" />
+              {tText("Row errors reported")}
+            </span>
+          </div>
         </div>
       </Panel>
       <div className="mt-6">
@@ -1467,19 +1516,25 @@ export function EmployeeImportView() {
           <LoadingState />
         ) : (
           <Panel className="overflow-hidden">
+            <div className="border-b border-border bg-zinc-50 px-6 py-4">
+              <h2 className="font-semibold">{tText("Recent imports")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {tText("Track validation status, successful rows, and files that need correction.")}
+              </p>
+            </div>
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="flex flex-wrap items-center gap-4 border-b border-surface-variant px-6 py-4 last:border-0"
+                className="flex flex-wrap items-center gap-4 border-b border-surface-variant px-6 py-4 transition hover:bg-muted/40 last:border-0"
               >
                 <div className="min-w-52 flex-1">
                   <div className="font-semibold">{job.filename}</div>
-                  <div className="text-xs text-outline">
+                  <div className="text-xs text-muted-foreground">
                     {job.totalRows} {tText("rows")}</div>
                 </div>
-                <span className="min-w-24 text-sm font-medium">
+                <StatusBadge tone={importStatusTone(job.status)}>
                   {job.status}
-                </span>
+                </StatusBadge>
                 <div className="min-w-48 text-xs">
                   <span className="text-emerald-800">
                     {job.successRows} {tText("imported")}</span>{" "}
@@ -1523,20 +1578,30 @@ export function EmployeeImportView() {
               <LoadingState />
             </div>
           ) : rowErrors.length ? (
-            <div className="divide-y divide-surface-variant">
-              {rowErrors.map((row) => (
-                <div
-                  className="grid gap-1 px-6 py-4 text-sm md:grid-cols-[100px_160px_1fr]"
-                  key={`${row.rowNumber}-${row.errorCode}`}
-                >
-                  <strong>{tText("Row")}{row.rowNumber}</strong>
-                  <span>{row.employeeCode ?? tText("No employee code")}</span>
-                  <span className="text-on-error-container">
-                    {row.errorMessage}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <DataTable minWidth="680px">
+              <DataTableHeader>
+                <DataTableRow>
+                  <DataTableHeadCell>{tText("Row")}</DataTableHeadCell>
+                  <DataTableHeadCell>{tText("Employee code")}</DataTableHeadCell>
+                  <DataTableHeadCell>{tText("Issue")}</DataTableHeadCell>
+                </DataTableRow>
+              </DataTableHeader>
+              <tbody>
+                {rowErrors.map((row) => (
+                  <DataTableRow key={`${row.rowNumber}-${row.errorCode}`}>
+                    <DataTableCell>
+                      <strong>{row.rowNumber}</strong>
+                    </DataTableCell>
+                    <DataTableCell>
+                      {row.employeeCode ?? tText("No employee code")}
+                    </DataTableCell>
+                    <DataTableCell className="text-on-error-container">
+                      {row.errorMessage}
+                    </DataTableCell>
+                  </DataTableRow>
+                ))}
+              </tbody>
+            </DataTable>
           ) : (
             <EmptyState
               body={tText("This import does not have any row-level validation errors.")}
@@ -1709,7 +1774,7 @@ export function UsersRolesView() {
                     {user.employee && (
                       <div className="text-xs text-zinc-500">{user.email}</div>
                     )}
-                    <div className="text-xs text-outline">
+                    <div className="text-xs text-muted-foreground">
                       {user.roles.map((role) => role.name).join(", ") ||
                         tText("No role")}
                     </div>
@@ -1733,7 +1798,7 @@ export function UsersRolesView() {
                   >
                     <div>
                       <div className="font-semibold">{role.name}</div>
-                      <div className="text-xs text-outline">
+                      <div className="text-xs text-muted-foreground">
                         {role.isSystem ? tText("System role") : tText("Custom role")} ·{" "}
                         {role.assignedUsers ?? 0} {tText("users")}</div>
                       <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">

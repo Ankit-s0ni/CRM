@@ -31,6 +31,8 @@ class VerificationFailureCard extends StatelessWidget {
     'LOCATION_PERMISSION_DENIED',
   }.contains(code);
 
+  bool get _requiresHrAction => code == 'NO_OFFICE_ASSIGNED';
+
   bool get _canRegularize =>
       details['regularizationAllowed'] == true || code == 'OUTSIDE_GEOFENCE';
 
@@ -57,10 +59,13 @@ class VerificationFailureCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    _displayTitle(context),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 6),
                   Text(
-                    _guidance,
+                    _guidance(context),
                     style: const TextStyle(color: AppTheme.slate),
                   ),
                 ],
@@ -74,11 +79,12 @@ class VerificationFailureCard extends StatelessWidget {
         ],
         if (_isFaceFailure) ...[const SizedBox(height: 20), const _FaceTips()],
         const SizedBox(height: 20),
-        PrimaryButton(
-          label: _retryLabel(context),
-          icon: Icons.refresh_rounded,
-          onPressed: onRetry,
-        ),
+        if (!_requiresHrAction)
+          PrimaryButton(
+            label: _retryLabel(context),
+            icon: Icons.refresh_rounded,
+            onPressed: onRetry,
+          ),
         if (_canRegularize && onRegularization != null) ...[
           const SizedBox(height: 8),
           SizedBox(
@@ -107,6 +113,7 @@ class VerificationFailureCard extends StatelessWidget {
   IconData get _icon {
     if (_isFaceFailure) return Icons.face_retouching_off_rounded;
     if (code == 'MOCK_LOCATION') return Icons.gpp_bad_rounded;
+    if (_requiresHrAction) return Icons.business_rounded;
     if (_isLocationFailure) return Icons.location_off_rounded;
     if (code.startsWith('DEVICE_') || code == 'ROOTED_DEVICE') {
       return Icons.phonelink_erase_rounded;
@@ -114,7 +121,17 @@ class VerificationFailureCard extends StatelessWidget {
     return Icons.warning_amber_rounded;
   }
 
-  String get _guidance {
+  String _displayTitle(BuildContext context) {
+    if (_requiresHrAction) {
+      return context.l10n.officeAssignmentRequiredTitle;
+    }
+    return title;
+  }
+
+  String _guidance(BuildContext context) {
+    if (_requiresHrAction) {
+      return context.l10n.officeAssignmentRequiredGuidance;
+    }
     if (_isFaceFailure) {
       return 'Use a clear, well-lit view of your face and keep the camera at eye level.';
     }

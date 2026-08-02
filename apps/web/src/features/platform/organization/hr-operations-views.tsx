@@ -24,9 +24,12 @@ import {
   EmptyState,
   ErrorState,
   Field,
+  FilterField,
   LoadingState,
   Panel,
   PrimaryButton,
+  StatusBadge,
+  Toolbar,
   inputClass,
 } from "@/shared/components/page-primitives";
 
@@ -140,8 +143,6 @@ export function RegularizationQueueView() {
           apiError(reason, "Regularization requests could not be loaded."),
         );
       });
-  // Status is the only reactive input; load is also reused after mutations.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void load();
   }, [status]);
@@ -227,8 +228,6 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
       .catch(() =>
         setError(tText("This request is unavailable or outside your scope.")),
       );
-  // The route id is the only reactive input; load is also reused after decisions.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void load();
   }, [id]);
@@ -471,9 +470,8 @@ export function ReportsCenterView({
       }
     >
       {error && <ErrorState message={error} />}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-sm font-semibold">
-          {tText("Job status")}
+      <Toolbar className="mb-5">
+        <FilterField label={tText("Job status")} className="min-w-48">
           <select
             className={inputClass}
             value={status}
@@ -485,17 +483,23 @@ export function ReportsCenterView({
               ),
             )}
           </select>
-        </label>
-        <p className="text-xs text-outline">
+        </FilterField>
+        <p className="max-w-2xl text-xs leading-5 text-muted-foreground">
           {tText(
             "Jobs refresh automatically. Failed jobs can be generated again with the same period.",
           )}
         </p>
-      </div>
+      </Toolbar>
       {!jobs ? (
         <LoadingState />
       ) : (
         <Panel className="overflow-hidden">
+          <div className="border-b border-border bg-zinc-50 px-6 py-4">
+            <h2 className="font-semibold">{tText("Report history")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {tText("Download completed exports, retry failed jobs, and regenerate older attendance workbooks.")}
+            </p>
+          </div>
           {visibleJobs?.length ? (
             visibleJobs.map((job) => {
               const expired =
@@ -965,8 +969,6 @@ export function LeaveRequestsView({
         setError(apiError(reason, "Leave requests could not be loaded."));
       });
   };
-  // Query inputs identify the exact scoped queue; load is reused after decisions.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void load();
   }, [approvals, employeeId, page]);
@@ -1566,16 +1568,16 @@ function StatusPill({ value }: { value: string }) {
   const { tText } = useTenantLocalization();
   const tone =
     value === "APPROVED" || value === "COMPLETED" || value === "LOCKED"
-      ? "bg-emerald-100 text-emerald-900"
-      : value === "REJECTED" || value === "FAILED"
-        ? "bg-error-container text-on-error-container"
-        : value === "PENDING" || value === "RUNNING"
-          ? "bg-amber-100 text-amber-900"
-          : "bg-zinc-50 text-on-surface-variant";
+      ? "success"
+    : value === "REJECTED" || value === "FAILED"
+        ? "danger"
+    : value === "PENDING" || value === "RUNNING"
+          ? "warning"
+          : "neutral";
   return (
-    <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
+    <StatusBadge tone={tone}>
       {reportStatusLabel(value, tText)}
-    </span>
+    </StatusBadge>
   );
 }
 function Comparison({

@@ -158,6 +158,8 @@
   "consentUseTitle": "How it is used",
   "consentUseBody": "Attendance verification only. Deleted when your employment ends.",
   "punchFailed": "Punch could not be completed",
+  "officeAssignmentRequiredTitle": "Workplace not assigned",
+  "officeAssignmentRequiredGuidance": "Your attendance workplace is not assigned. Contact HR to assign an office before checking in.",
   "failureStates": "Verification help",
   "notifyBeforeShift": "Notify me shortly before my shift",
   "notifyShiftEnd": "Notify me near the end of my shift",

@@ -49,7 +49,7 @@ describe('production runtime configuration', () => {
     expect(() =>
       validateProductionRuntimeConfiguration({
         ...productionEnvironment,
-        S3_ENDPOINT: 'http://localhost:9000',
+        S3_ENDPOINT: 'not-a-url',
         S3_PRIVATE_BUCKET: '',
         S3_SECRET_KEY: 'minioadmin',
       }),
@@ -98,7 +98,7 @@ describe('production runtime configuration', () => {
     ).toBe(true);
   });
 
-  it('requires a valid mobile release policy and exposes safe local defaults', () => {
+  it('validates configured mobile release values and exposes safe defaults', () => {
     expect(() =>
       validateProductionRuntimeConfiguration({
         ...productionEnvironment,
@@ -120,6 +120,7 @@ describe('production runtime configuration', () => {
     expect(() =>
       validateProductionRuntimeConfiguration({
         ...productionEnvironment,
+        OBSERVABILITY_ENABLED: 'true',
         SENTRY_DSN: '',
         OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318/v1/traces',
         OTEL_SERVICE_NAME: '',
@@ -135,6 +136,7 @@ describe('production runtime configuration', () => {
     expect(() =>
       validateProductionRuntimeConfiguration({
         ...productionEnvironment,
+        RAZORPAY_ENABLED: 'true',
         RAZORPAY_API_KEY: '',
         RAZORPAY_WEBHOOK_SECRET: '',
       }),
@@ -149,5 +151,27 @@ describe('production runtime configuration', () => {
     ).toThrow(
       'STRIPE_CHARGE_URL must be an HTTPS URL; STRIPE_HEALTH_URL must be an HTTPS URL; STRIPE_API_KEY must be a non-placeholder secret; STRIPE_WEBHOOK_SECRET must be a non-placeholder secret',
     );
+  });
+
+  it('allows disabled optional integrations to remain unconfigured', () => {
+    const environment: NodeJS.ProcessEnv = { ...productionEnvironment };
+    delete environment.JWT_REFRESH_SECRET;
+    delete environment.S3_ENDPOINT;
+    delete environment.S3_PUBLIC_ENDPOINT;
+    delete environment.MOBILE_MINIMUM_VERSION;
+    delete environment.MOBILE_RECOMMENDED_VERSION;
+    delete environment.MOBILE_ANDROID_UPDATE_URL;
+    delete environment.MOBILE_IOS_UPDATE_URL;
+    delete environment.SENTRY_DSN;
+    delete environment.OTEL_EXPORTER_OTLP_ENDPOINT;
+    delete environment.OTEL_SERVICE_NAME;
+    delete environment.RELEASE_VERSION;
+    delete environment.OBSERVABILITY_ALERT_WEBHOOK_URL;
+    delete environment.RAZORPAY_CHARGE_URL;
+    delete environment.RAZORPAY_HEALTH_URL;
+    delete environment.RAZORPAY_API_KEY;
+    delete environment.RAZORPAY_WEBHOOK_SECRET;
+
+    expect(() => validateProductionRuntimeConfiguration(environment)).not.toThrow();
   });
 });

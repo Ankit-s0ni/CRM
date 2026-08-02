@@ -1526,6 +1526,7 @@ model TenantSettings {
   workingDayStart          String   @default("09:00")
   workingDayEnd            String   @default("18:00")
   onboardingStep           Int      @default(1)
+  onboardingVersion        Int      @default(1)
   updatedAt                DateTime @updatedAt
   tenant                   Tenant   @relation(fields: [tenantId], references: [id])
 

@@ -152,6 +152,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Turn off mock-location apps'), findsOneWidget);
     expect(find.text('Error: MOCK_LOCATION'), findsOneWidget);
+
+    await tester.pumpWidget(
+      _host(
+        VerificationFailureCard(
+          title: 'No attendance office is assigned to your profile',
+          code: 'NO_OFFICE_ASSIGNED',
+          onRetry: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Workplace not assigned'), findsOneWidget);
+    expect(
+      find.textContaining('Contact HR to assign an office'),
+      findsOneWidget,
+    );
+    expect(find.text('Retry'), findsNothing);
+    expect(find.text('Error: NO_OFFICE_ASSIGNED'), findsOneWidget);
   });
 }
 

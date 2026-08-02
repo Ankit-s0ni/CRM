@@ -171,6 +171,10 @@
       "value": "الاحالة"
     },
     {
+      "key": "tenant.ui.add.at.least.one.office.and.confirm.its.40ebaf17",
+      "value": "أضف مكتباً واحداً على الأقل وأكّد منطقته المكتشفة قبل المتابعة."
+    },
+    {
       "key": "tenant.ui.add.child.department.935582fe",
       "value": "إدارة الطفل"
     },
@@ -233,6 +237,10 @@
     {
       "key": "tenant.ui.add.the.approved.business.reason.284bfd86",
       "value": "يضاف سبب العمل المعتمد"
+    },
+    {
+      "key": "tenant.ui.add.your.first.office.bb6e5cd2",
+      "value": "أضف مكتبك الأول"
     },
     {
       "key": "tenant.ui.additional.access.6893ffab",
@@ -535,6 +543,10 @@
       "value": "سياسات الحضور"
     },
     {
+      "key": "tenant.ui.attendance.policy.933a3274",
+      "value": "سياسة الحضور"
+    },
+    {
       "key": "tenant.ui.attendance.priorities.could.not.be.loaded.try.refreshing.1afd410a",
       "value": "ولا يمكن تحميل أولويات الحضور. حاول إعادة تجديد مكان العمل."
     },
@@ -661,6 +673,10 @@
     {
       "key": "tenant.ui.build.department.hierarchy.and.maintain.reusable.designations.ffd84a71",
       "value": "بناء الهيكل الهرمي للإدارات والحفاظ على تعيينات قابلة لإعادة الاستخدام."
+    },
+    {
+      "key": "tenant.ui.build.your.organization.b6732413",
+      "value": "أنشئ هيكل مؤسستك"
     },
     {
       "key": "tenant.ui.built.in.role.3145749d",
@@ -987,6 +1003,10 @@
       "value": "قم بتكوين الإعدادات والتقويمات ومجموعات الدفع والسياسات والمكونات وهياكل الرواتب وملفات تعريف كشوف مرتبات الموظفين والتفاصيل المحمية والموافقات والتعيينات المحاسبية وأدلة التدقيق."
     },
     {
+      "key": "tenant.ui.configure.the.office.location.59520d10",
+      "value": "إعداد موقع المكتب"
+    },
+    {
       "key": "tenant.ui.confirm.a.completed.export.before.locking.attendance.for.ffbdf9d5",
       "value": "تأكيد التصدير المكتمل قبل القيد على المرتبات."
     },
@@ -1113,6 +1133,10 @@
     {
       "key": "tenant.ui.create.approval.policy.3e3c43b7",
       "value": "إنشاء سياسة الموافقة"
+    },
+    {
+      "key": "tenant.ui.create.at.least.one.department.and.designation.before.7eb4d824",
+      "value": "أنشئ قسماً ومسمى وظيفياً واحداً على الأقل قبل المتابعة."
     },
     {
       "key": "tenant.ui.create.attendance.policy.6f724a40",
@@ -1573,6 +1597,10 @@
     {
       "key": "tenant.ui.edit.exception.f1c92312",
       "value": "استثناء إديت"
+    },
+    {
+      "key": "tenant.ui.edit.office.011e37a0",
+      "value": "تعديل المكتب"
     },
     {
       "key": "tenant.ui.edit.or.transfer.06f137f2",
@@ -2391,6 +2419,10 @@
       "value": "ادعُ المسؤولين وموظفي الموارد البشرية والمديرين، وراجع صلاحيات الوصول المرتفعة."
     },
     {
+      "key": "tenant.ui.invite.hr.aa6ab08f",
+      "value": "دعوة مسؤول الموارد البشرية"
+    },
+    {
       "key": "tenant.ui.invite.the.employee.and.approve.a.device.when.dca07113",
       "value": "دعوة الموظف والموافقة على جهاز عندما تتطلبه السياسة."
     },
@@ -2469,10 +2501,6 @@
     {
       "key": "tenant.ui.late.ot.fc85ef21",
       "value": "متأخر/متأخر"
-    },
-    {
-      "key": "tenant.ui.latitude.ced3905e",
-      "value": "خط العرض"
     },
     {
       "key": "tenant.ui.leave.7e3520a9",
@@ -2613,10 +2641,6 @@
     {
       "key": "tenant.ui.logo.uploaded.1a3b73c7",
       "value": "تم تحميلها"
-    },
-    {
-      "key": "tenant.ui.longitude.6f9f011c",
-      "value": "الطول"
     },
     {
       "key": "tenant.ui.make.a.manual.correction.only.when.hr.needs.7ef28be7",
@@ -3175,6 +3199,10 @@
       "value": "ولا يمكن إنقاذ المكتب. تحقق من الجيوفنس و قيم الشبكة و الإشارات."
     },
     {
+      "key": "tenant.ui.office.details.fc649dfd",
+      "value": "تفاصيل المكتب"
+    },
+    {
       "key": "tenant.ui.office.e6427457",
       "value": "مكتب"
     },
@@ -3325,6 +3353,10 @@
     {
       "key": "tenant.ui.optionally.invite.your.first.hr.administrator.when.you.0c2d1549",
       "value": "دعوة اختيارية لك أول مدير الموارد البشرية. عندما تنتهي من الإعداد، سوف نرسل لهم وصلة آمنة للانضمام إلى حيز العمل الخاص بك ووضع كلمة السر الخاصة بهم."
+    },
+    {
+      "key": "tenant.ui.organization.519255ae",
+      "value": "المؤسسة"
     },
     {
       "key": "tenant.ui.organization.builder.045c4467",
@@ -3537,6 +3569,10 @@
     {
       "key": "tenant.ui.pin.the.office.entrance.96a3de82",
       "value": "مدخل المكتب"
+    },
+    {
+      "key": "tenant.ui.pin.the.workplace.entrance.confirm.its.region.and.47004507",
+      "value": "حدّد مدخل مكان العمل، وأكّد منطقته، واضبط نطاق الحضور."
     },
     {
       "key": "tenant.ui.pings.02acd3bd",
@@ -5121,6 +5157,10 @@
     {
       "key": "tenant.ui.working.day.starts.5418a610",
       "value": "يوم العمل يبدأ"
+    },
+    {
+      "key": "tenant.ui.working.days.d5392584",
+      "value": "أيام العمل"
     },
     {
       "key": "tenant.ui.working.days.weekly.offs.approved.leave.and.attendance.7c45f0b0",

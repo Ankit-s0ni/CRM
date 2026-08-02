@@ -114,6 +114,11 @@ describe('AttendanceVerificationService check matrix', () => {
       expectedCode: 'LOCATION_REQUIRED',
     },
     {
+      name: 'fails with an actionable code when no office is assigned',
+      locationMode: 'OFFICE_GEOFENCE',
+      expectedCode: 'NO_OFFICE_ASSIGNED',
+    },
+    {
       name: 'fails mandatory field GPS accuracy',
       workType: WorkType.FIELD,
       accuracyMeters: 101,

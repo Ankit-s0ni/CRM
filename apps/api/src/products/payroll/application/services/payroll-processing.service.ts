@@ -307,7 +307,7 @@ export class PayrollProcessingService {
         employeeCount: updated.employeeResults.length,
         resultChecksum,
       });
-      return { data: updated };
+      return { data: serializeBigInt(updated) };
     });
   }
 
@@ -414,7 +414,7 @@ export class PayrollProcessingService {
           reason: dto.reason,
         },
       );
-      return { data: updated };
+      return { data: serializeBigInt(updated) };
     });
   }
 
@@ -573,7 +573,7 @@ export class PayrollProcessingService {
         },
       });
       await timeline(tx, actor, run.id, 'payroll.payslips.published', {});
-      return { data: updated };
+      return { data: serializeBigInt(updated) };
     });
   }
 
@@ -591,7 +591,7 @@ export class PayrollProcessingService {
             reference: dto.reference,
           },
         });
-        if (existing) return { data: { run, batch: existing } };
+        if (existing) return { data: { run: serializeBigInt(run), batch: existing } };
       }
       const job = await startJob(
         tx,
@@ -627,7 +627,7 @@ export class PayrollProcessingService {
         status: dto.status,
         reference: dto.reference,
       });
-      return { data: { run: updated, batch } };
+      return { data: { run: serializeBigInt(updated), batch } };
     });
   }
 
@@ -641,12 +641,14 @@ export class PayrollProcessingService {
   }
 
   listPayslips(tenantId: string, runId: string) {
-    return this.prisma.forTenant(async (tx) => ({
-      data: await tx.payrollPayslip.findMany({
-        where: { tenantId, payrollRunId: runId },
-        orderBy: { payslipNumber: 'asc' },
+    return this.prisma.forTenant(async (tx) =>
+      serializeBigInt({
+        data: await tx.payrollPayslip.findMany({
+          where: { tenantId, payrollRunId: runId },
+          orderBy: { payslipNumber: 'asc' },
+        }),
       }),
-    }));
+    );
   }
 
   downloadPayslip(actor: Actor, payslipId: string) {
@@ -723,7 +725,7 @@ export class PayrollProcessingService {
       });
       if (!employee)
         notFound('EMPLOYEE_SELF_PROFILE_NOT_FOUND', 'Employee profile');
-      return {
+      return serializeBigInt({
         data: await tx.payrollPayslip.findMany({
           where: {
             tenantId: actor.tenantId,
@@ -732,7 +734,7 @@ export class PayrollProcessingService {
           },
           orderBy: { createdAt: 'desc' },
         }),
-      };
+      });
     });
   }
 
@@ -770,7 +772,7 @@ export class PayrollProcessingService {
       },
     });
     await timeline(tx, actor, run.id, action, payload);
-    return { data: updated };
+    return { data: serializeBigInt(updated) };
   }
 }
 
@@ -1191,4 +1193,11 @@ function notFound(code: string, name: string): never {
 
 function invalidState(message: string): never {
   throw new ConflictException({ code: 'PAYROLL_RUN_STATE_INVALID', message });
+}
+
+function serializeBigInt<T>(value: T): T {
+  const serialized = JSON.stringify(value, (_key: string, item: unknown) =>
+    typeof item === 'bigint' ? item.toString() : item,
+  );
+  return JSON.parse(serialized) as T;
 }

@@ -1,5 +1,5 @@
-import { PayrollRunPreparationWorkspace } from "@/features/products/payroll/payroll-run-preparation-workspace";
+import { PayrollPayslipsWorkspace } from "@/features/products/payroll/payroll-payslips-workspace";
 
 export default function PayrollPayslipsPage() {
-  return <PayrollRunPreparationWorkspace />;
+  return <PayrollPayslipsWorkspace />;
 }

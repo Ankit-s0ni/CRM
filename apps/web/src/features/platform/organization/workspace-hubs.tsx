@@ -811,9 +811,9 @@ export function PayrollModuleHub() {
     hasAnyPermission(permissions, foundationPermissions) && {
       description:
         "Configure settings, calendars, pay groups, policies, components, salary structures, employee payroll profiles, protected details, approvals, accounting mappings, and audit evidence.",
-      href: "/app/modules/payroll/foundation",
+      href: "/app/modules/payroll/setup",
       icon: WalletCards,
-      title: "Payroll foundation",
+      title: "Payroll setup",
     },
     hasAnyPermission(permissions, runPermissions) && {
       description:
@@ -1102,7 +1102,7 @@ function ModuleReadiness({
   health: ModuleHealth;
   compact?: boolean;
 }) {
-  const { tText } = useTenantLocalization();
+  const { t, tText } = useTenantLocalization();
   return (
     <div
       className={cn(
@@ -1123,7 +1123,7 @@ function ModuleReadiness({
             className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-semibold text-on-surface-variant"
             key={label}
           >
-            {label.replaceAll(/([A-Z])/g, " $1")}: {value}
+            {configurationLabel(label, t)}: {value}
           </span>
         ))}
       </div>
@@ -1134,7 +1134,7 @@ function ModuleReadiness({
           key={issue.code}
         >
           <CircleAlert className="mt-0.5 size-4 shrink-0" />
-          <span>{issue.message}</span>
+          <span>{healthIssueMessage(issue.message, t)}</span>
           <ChevronRight className="ml-auto size-4 shrink-0" />
         </Link>
       ))}
@@ -1171,6 +1171,7 @@ function WorkflowLink({
 }
 
 function HealthPill({ value }: { value: string }) {
+  const { t } = useTenantLocalization();
   const ready = ["READY", "CONFIGURED", "AVAILABLE"].includes(value);
   const blocked = ["BLOCKED", "NEEDS_CONFIGURATION"].includes(value);
   const neutral = ["NOT_ENABLED", "NOT_CONFIGURED", "CHECKING"].includes(value);
@@ -1187,9 +1188,88 @@ function HealthPill({ value }: { value: string }) {
               : "bg-amber-100 text-amber-900",
       )}
     >
-      {value.replaceAll("_", " ")}
+      {healthStatusLabel(value, t)}
     </span>
   );
+}
+
+function healthStatusLabel(
+  value: string,
+  t: (key: string, fallback: string) => string,
+) {
+  const labels: Record<string, { key: string; fallback: string }> = {
+    READY: { key: "tenant.health.ready", fallback: "Ready" },
+    CONFIGURED: { key: "tenant.health.configured", fallback: "Configured" },
+    AVAILABLE: { key: "tenant.health.available", fallback: "Available" },
+    BLOCKED: { key: "tenant.health.blocked", fallback: "Blocked" },
+    NEEDS_CONFIGURATION: {
+      key: "tenant.health.needsConfiguration",
+      fallback: "Needs configuration",
+    },
+    NEEDS_SETUP: { key: "tenant.health.needsSetup", fallback: "Needs setup" },
+    NOT_ENABLED: { key: "tenant.health.notEnabled", fallback: "Not enabled" },
+    NOT_CONFIGURED: {
+      key: "tenant.health.notConfigured",
+      fallback: "Not configured",
+    },
+    CHECKING: { key: "tenant.health.checking", fallback: "Checking" },
+  };
+  const label = labels[value];
+  return label ? t(label.key, label.fallback) : value.replaceAll("_", " ");
+}
+
+function configurationLabel(
+  label: string,
+  t: (key: string, fallback: string) => string,
+) {
+  const labels: Record<string, { key: string; fallback: string }> = {
+    completedExports: {
+      key: "tenant.health.completedExports",
+      fallback: "Completed exports",
+    },
+    lockedPeriods: {
+      key: "tenant.health.lockedPeriods",
+      fallback: "Locked periods",
+    },
+    activeEmployees: {
+      key: "tenant.health.activeEmployees",
+      fallback: "Active employees",
+    },
+    assignedPolicies: {
+      key: "tenant.health.assignedPolicies",
+      fallback: "Assigned policies",
+    },
+    configuredOffices: {
+      key: "tenant.health.configuredOffices",
+      fallback: "Configured offices",
+    },
+    configuredShifts: {
+      key: "tenant.health.configuredShifts",
+      fallback: "Configured shifts",
+    },
+  };
+  const value = labels[label];
+  return value ? t(value.key, value.fallback) : label.replaceAll(/([A-Z])/g, " $1").trim();
+}
+
+function healthIssueMessage(
+  message: string,
+  t: (key: string, fallback: string) => string,
+) {
+  const messages: Record<string, { key: string; fallback: string }> = {
+    "Generate a payroll export before closing a period.":
+      {
+        key: "tenant.health.generatePayrollExportBeforeClosing",
+        fallback: "Generate a payroll export before closing a period.",
+      },
+    "Generate a payroll export before locking the first month.":
+      {
+        key: "tenant.health.generatePayrollExportBeforeLocking",
+        fallback: "Generate a payroll export before locking the first month.",
+      },
+  };
+  const value = messages[message];
+  return value ? t(value.key, value.fallback) : message;
 }
 
 function localizedModuleName(

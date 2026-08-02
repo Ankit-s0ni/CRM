@@ -493,6 +493,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get punchFailed => 'Punch could not be completed';
 
   @override
+  String get officeAssignmentRequiredTitle => 'Workplace not assigned';
+
+  @override
+  String get officeAssignmentRequiredGuidance =>
+      'Your attendance workplace is not assigned. Contact HR to assign an office before checking in.';
+
+  @override
   String get failureStates => 'Verification help';
 
   @override

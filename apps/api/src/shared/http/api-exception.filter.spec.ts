@@ -1,8 +1,43 @@
-import type { ArgumentsHost } from '@nestjs/common';
+import { BadRequestException, type ArgumentsHost } from '@nestjs/common';
 import type { ErrorReporter } from '../observability/observability.port';
 import { ApiExceptionFilter } from './api-exception.filter';
 
 describe('ApiExceptionFilter observability safety', () => {
+  it('preserves structured error details in the public API envelope', () => {
+    const response = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      setHeader: jest.fn(),
+    };
+    const host = {
+      switchToHttp: () => ({
+        getRequest: () => ({
+          headers: {},
+          path: '/onboarding/complete',
+          originalUrl: '/onboarding/complete',
+        }),
+        getResponse: () => response,
+      }),
+    } as unknown as ArgumentsHost;
+
+    new ApiExceptionFilter({ captureException: jest.fn() }).catch(
+      new BadRequestException({
+        code: 'ONBOARDING_INCOMPLETE',
+        message: 'Complete workspace setup',
+        details: { missingSteps: ['organization', 'office'] },
+      }),
+      host,
+    );
+
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        code: 'ONBOARDING_INCOMPLETE',
+        details: { missingSteps: ['organization', 'office'] },
+      }),
+    );
+  });
+
   it('reports server errors using a route template without query data', () => {
     const captureException: jest.MockedFunction<
       ErrorReporter['captureException']

@@ -74,8 +74,14 @@ export class UpdateTenantSettingsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(4)
+  @Max(6)
   onboardingStep?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(2)
+  onboardingVersion?: number;
 }
 
 export class LogoPresignDto {

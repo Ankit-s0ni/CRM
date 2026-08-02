@@ -158,6 +158,8 @@
   "consentUseTitle": "كيفية استخدامه",
   "consentUseBody": "للتحقق من الحضور فقط، ويتم حذفه عند انتهاء التوظيف.",
   "punchFailed": "تعذر إكمال عملية الحضور",
+  "officeAssignmentRequiredTitle": "لم يتم تعيين موقع العمل",
+  "officeAssignmentRequiredGuidance": "لم يتم تعيين موقع عمل الحضور الخاص بك. تواصل مع الموارد البشرية لتعيين مكتب قبل تسجيل الحضور.",
   "failureStates": "مساعدة التحقق",
   "notifyBeforeShift": "إشعاري قبل بدء المناوبة بقليل",
   "notifyShiftEnd": "إشعاري قرب نهاية المناوبة",

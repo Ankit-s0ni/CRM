@@ -266,26 +266,39 @@ export class PayrollAdministrationService {
 
   createPolicy(actor: Actor, dto: CreatePayrollPolicyDto) {
     return this.prisma.forTenant(async (tx) => {
-      const item = await tx.payrollPolicy.create({
-        data: {
-          tenantId: actor.tenantId,
-          code: dto.code.toUpperCase(),
-          name: dto.name,
-          category: dto.category,
-          createdBy: actor.userId,
-        },
-      });
-      await this.record(
-        tx,
-        actor,
-        'payroll.policy.created',
-        'PayrollPolicy',
-        item.id,
-        {
-          code: item.code,
-        },
-      );
-      return { data: { id: item.id } };
+      try {
+        const item = await tx.payrollPolicy.create({
+          data: {
+            tenantId: actor.tenantId,
+            code: dto.code.toUpperCase(),
+            name: dto.name,
+            category: dto.category,
+            createdBy: actor.userId,
+          },
+        });
+        await this.record(
+          tx,
+          actor,
+          'payroll.policy.created',
+          'PayrollPolicy',
+          item.id,
+          {
+            code: item.code,
+          },
+        );
+        return { data: { id: item.id } };
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new ConflictException({
+            code: 'POLICY_CODE_EXISTS',
+            message: `A policy with code "${dto.code.toUpperCase()}" already exists.`,
+          });
+        }
+        throw error;
+      }
     });
   }
 
@@ -568,22 +581,36 @@ export class PayrollAdministrationService {
 
   createApprovalPolicy(actor: Actor, dto: CreatePayrollApprovalPolicyDto) {
     return this.prisma.forTenant(async (tx) => {
-      const item = await tx.payrollApprovalPolicy.create({
-        data: {
-          tenantId: actor.tenantId,
-          name: dto.name,
-          createdBy: actor.userId,
-        },
-      });
-      await this.record(
-        tx,
-        actor,
-        'payroll.approval_policy.created',
-        'PayrollApprovalPolicy',
-        item.id,
-        { name: item.name },
-      );
-      return { data: { id: item.id } };
+      try {
+        const item = await tx.payrollApprovalPolicy.create({
+          data: {
+            tenantId: actor.tenantId,
+            name: dto.name,
+            createdBy: actor.userId,
+          },
+        });
+        await this.record(
+          tx,
+          actor,
+          'payroll.approval_policy.created',
+          'PayrollApprovalPolicy',
+          item.id,
+          { name: item.name },
+        );
+        return { data: { id: item.id } };
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new ConflictException({
+            code: 'APPROVAL_POLICY_EXISTS',
+            message:
+              'Only one approval policy is allowed per workspace. Use the existing one or edit it.',
+          });
+        }
+        throw error;
+      }
     });
   }
 

@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PayrollInputKind, Prisma } from '@prisma/client';
@@ -22,16 +23,20 @@ type Actor = { tenantId: string; userId: string };
 
 @Injectable()
 export class PayrollRunPreparationService {
+  private readonly logger = new Logger(PayrollRunPreparationService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   listRuns(tenantId: string) {
-    return this.prisma.forTenant(async (tx) => ({
-      data: await tx.payrollRun.findMany({
-        where: { tenantId },
-        include: { payGroup: true, blockers: true },
-        orderBy: { createdAt: 'desc' },
+    return this.prisma.forTenant(async (tx) =>
+      serializeBigInt({
+        data: await tx.payrollRun.findMany({
+          where: { tenantId },
+          include: { payGroup: true, blockers: true },
+          orderBy: { createdAt: 'desc' },
+        }),
       }),
-    }));
+    );
   }
 
   getRun(tenantId: string, id: string) {
@@ -53,7 +58,7 @@ export class PayrollRunPreparationService {
         },
       });
       if (!run) notFound('PAYROLL_RUN_NOT_FOUND', 'Payroll run');
-      return { data: run };
+      return { data: serializeBigInt(run) };
     });
   }
 
@@ -66,7 +71,7 @@ export class PayrollRunPreparationService {
             idempotencyKey: dto.idempotencyKey,
           },
         });
-        if (existing) return { data: existing };
+        if (existing) return { data: serializeBigInt(existing) };
       }
       const payGroup = await tx.payGroup.findFirst({
         where: { tenantId: actor.tenantId, id: dto.payGroupId },
@@ -80,22 +85,41 @@ export class PayrollRunPreparationService {
         },
       });
       if (duplicate) duplicateRun();
-      const run = await tx.payrollRun.create({
-        data: {
-          tenantId: actor.tenantId,
-          payGroupId: dto.payGroupId,
-          periodKey: dto.periodKey,
-          periodStart: parseDateOnly(dto.periodStart),
-          periodEnd: parseDateOnly(dto.periodEnd),
-          idempotencyKey: dto.idempotencyKey,
-          createdBy: actor.userId,
-        },
-      });
-      await timeline(tx, actor, run.id, 'payroll.run.created', {
-        periodKey: run.periodKey,
-        payGroupId: run.payGroupId,
-      });
-      return { data: run };
+      try {
+        const run = await tx.payrollRun.create({
+          data: {
+            tenantId: actor.tenantId,
+            payGroupId: dto.payGroupId,
+            periodKey: dto.periodKey,
+            periodStart: parseDateOnly(dto.periodStart),
+            periodEnd: parseDateOnly(dto.periodEnd),
+            idempotencyKey: dto.idempotencyKey,
+            createdBy: actor.userId,
+          },
+        });
+        await timeline(tx, actor, run.id, 'payroll.run.created', {
+          periodKey: run.periodKey,
+          payGroupId: run.payGroupId,
+        });
+        return { data: serializeBigInt(run) };
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError
+        ) {
+          if (error.code === 'P2002') duplicateRun();
+          if (error.code === 'P2003') {
+            throw new NotFoundException({
+              code: 'PAY_GROUP_NOT_FOUND',
+              message: 'The selected pay group does not exist.',
+            });
+          }
+        }
+        this.logger.error(
+          `Failed to create payroll run for payGroup=${dto.payGroupId} period=${dto.periodKey}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+        throw error;
+      }
     });
   }
 
@@ -148,7 +172,7 @@ export class PayrollRunPreparationService {
           rowCount: dto.rows.length,
         },
       );
-      return { data: updated };
+      return { data: serializeBigInt(updated) };
     });
   }
 
@@ -163,7 +187,7 @@ export class PayrollRunPreparationService {
             idempotencyKey: dto.idempotencyKey,
           },
         });
-        if (existing) return { data: existing };
+        if (existing) return { data: serializeBigInt(existing) };
       }
       const input = await tx.payrollRunInput.create({
         data: {
@@ -192,7 +216,7 @@ export class PayrollRunPreparationService {
         code: input.code,
         employeeId: input.employeeId,
       });
-      return { data: input };
+      return { data: serializeBigInt(input) };
     });
   }
 
@@ -459,7 +483,7 @@ export class PayrollRunPreparationService {
         status: nextStatus,
         blockerCount: blockers.length,
       });
-      return { data: updated };
+      return { data: serializeBigInt(updated) };
     });
   }
 
@@ -702,4 +726,11 @@ function duplicateRun(): never {
     code: 'PAYROLL_RUN_ALREADY_EXISTS',
     message: 'A Payroll run already exists for this pay group and period.',
   });
+}
+
+function serializeBigInt<T>(value: T): T {
+  const serialized = JSON.stringify(value, (_key: string, item: unknown) =>
+    typeof item === 'bigint' ? item.toString() : item,
+  );
+  return JSON.parse(serialized) as T;
 }

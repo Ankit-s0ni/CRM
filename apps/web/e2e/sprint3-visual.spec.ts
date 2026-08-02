@@ -43,19 +43,63 @@ const tenantAdminPermissions = [
 ] as const;
 
 const screens = [
-  { key: 'B1-onboarding', path: '/app/onboarding', heading: "Let's build your workspace" },
-  { key: 'B2-company-settings', path: '/app/settings/company', heading: 'Company Settings' },
-  { key: 'B3-organization', path: '/app/organization', heading: 'Organization Builder' },
+  {
+    key: 'B1-onboarding',
+    path: '/app/onboarding',
+    heading: "Let's build your workspace",
+  },
+  {
+    key: 'B2-company-settings',
+    path: '/app/settings/company',
+    heading: 'Company Settings',
+  },
+  {
+    key: 'B3-organization',
+    path: '/app/organization',
+    heading: 'Organization Builder',
+  },
   { key: 'B4-employees', path: '/app/employees', heading: 'Employees' },
-  { key: 'B5-employee-editor', path: '/app/employees/new', heading: 'Add Employee' },
-  { key: 'B6-employee-import', path: '/app/imports/employees', heading: 'Bulk Import' },
+  {
+    key: 'B5-employee-editor',
+    path: '/app/employees/new',
+    heading: 'Add Employee',
+  },
+  {
+    key: 'B6-employee-import',
+    path: '/app/imports/employees',
+    heading: 'Bulk Import',
+  },
   { key: 'B7-users-roles', path: '/app/access', heading: 'Users & Roles' },
-  { key: 'B9-attendance-defaults', path: '/app/settings/attendance', heading: 'Master Attendance & Security Policies' },
-  { key: 'H4-offices-geofences', path: '/app/attendance/offices', heading: 'Office Locations & Geofences' },
-  { key: 'H5-policies', path: '/app/attendance/policies', heading: 'Attendance Policies' },
-  { key: 'H6-shifts', path: '/app/attendance/shifts', heading: 'Shifts Management' },
-  { key: 'H7-rosters', path: '/app/attendance/rosters', heading: 'Roster Planner' },
-  { key: 'H8-holidays', path: '/app/attendance/holidays', heading: 'Holiday Calendar' },
+  {
+    key: 'B9-attendance-defaults',
+    path: '/app/settings/attendance',
+    heading: 'Master Attendance & Security Policies',
+  },
+  {
+    key: 'H4-offices-geofences',
+    path: '/app/attendance/offices',
+    heading: 'Office Locations & Geofences',
+  },
+  {
+    key: 'H5-policies',
+    path: '/app/attendance/policies',
+    heading: 'Attendance Policies',
+  },
+  {
+    key: 'H6-shifts',
+    path: '/app/attendance/shifts',
+    heading: 'Shifts Management',
+  },
+  {
+    key: 'H7-rosters',
+    path: '/app/attendance/rosters',
+    heading: 'Roster Planner',
+  },
+  {
+    key: 'H8-holidays',
+    path: '/app/attendance/holidays',
+    heading: 'Holiday Calendar',
+  },
 ];
 
 test.beforeEach(async ({ page }) => login(page));
@@ -80,7 +124,11 @@ for (const viewport of [
       const roleHref = await page.locator('a[href^="/app/access/roles/"]').first().getAttribute('href');
       expect(roleHref).toBeTruthy();
       await page.goto(roleHref!);
-      await expect(page.getByText('Technical permission names are hidden by default.', { exact: false })).toBeVisible();
+      await expect(
+        page.getByText('Technical permission names are hidden by default.', {
+          exact: false,
+        }),
+      ).toBeVisible();
       await expectNoOverflow(page);
       await expectNoCollapsedContent(page);
       await compareWithStitch(page, 'B8-role-editor');
@@ -120,6 +168,42 @@ test.describe('Sprint 3 screen behavior and states', () => {
 
   test.use({ viewport: { width: 1024, height: 900 } });
 
+  test('shows and selects office location suggestions while typing', async ({ page }) => {
+    await page.route('**/offices/location-suggestions?*', (route) =>
+      route.fulfill({
+        status: 200,
+        json: [
+          {
+            id: 'W-42',
+            latitude: 23.5893,
+            longitude: 58.4129,
+            name: 'Muscat Grand Mall',
+            district: 'Al Khuwair',
+            city: 'Muscat',
+            country: 'Oman',
+            countryCode: 'OM',
+          },
+        ],
+      }),
+    );
+    await page.route('http://localhost:4001/offices', (route) =>
+      route.fulfill({ status: 200, json: { data: [] } }),
+    );
+    await page.route('**/employees?limit=100', (route) =>
+      route.fulfill({ status: 200, json: { data: [] } }),
+    );
+
+    await page.goto('/en/app/attendance/offices');
+    await page.getByRole('button', { name: 'Add office' }).click();
+    await expect(page.getByLabel('Latitude')).toHaveCount(0);
+    await expect(page.getByLabel('Longitude')).toHaveCount(0);
+    const locationSearch = page.getByPlaceholder(/Search for a location/);
+    await locationSearch.fill('Muscat Grand');
+    await expect(page.getByRole('option', { name: /Muscat Grand Mall/ })).toBeVisible();
+    await page.getByRole('option', { name: /Muscat Grand Mall/ }).click();
+    await expect(locationSearch).toHaveValue('Muscat Grand Mall, Al Khuwair, Muscat, Oman');
+  });
+
   test('resolves a workspace-only login and toggles password visibility', async ({ page }) => {
     await page.evaluate(() => localStorage.clear());
     await page.goto('/login?workspace=acme');
@@ -139,10 +223,26 @@ test.describe('Sprint 3 screen behavior and states', () => {
 
   test('continues onboarding through the employee creation entry point', async ({ page }) => {
     let latestSettingsUpdate: Record<string, unknown> | undefined;
+    let onboardingCompleted = false;
     await page.route('**/onboarding/status', (route) =>
       route.fulfill({
         status: 200,
-        json: { data: { completed: false, currentStep: 1, steps: {} } },
+        json: {
+          data: {
+            completed: onboardingCompleted,
+            currentStep: 1,
+            onboardingVersion: 2,
+            steps: {
+              company: true,
+              organization: true,
+              office: true,
+              workingDays: true,
+              attendancePolicy: true,
+              hrInvite: true,
+            },
+            missingSteps: [],
+          },
+        },
       }),
     );
     await page.route('**/tenant-settings', (route) => {
@@ -156,6 +256,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
               workingDayStart: '09:00',
               workingDayEnd: '18:00',
               onboardingStep: 1,
+              onboardingVersion: 2,
             },
           },
         });
@@ -164,14 +265,69 @@ test.describe('Sprint 3 screen behavior and states', () => {
       return route.fulfill({ status: 200, json: { data: {} } });
     });
     await page.route('**/roles', (route) =>
-      route.fulfill({ status: 200, json: { data: [{ id: 'hr-role', name: 'HR_ADMIN' }] } }),
+      route.fulfill({
+        status: 200,
+        json: { data: [{ id: 'hr-role', name: 'HR_ADMIN' }] },
+      }),
     );
-    await page.route('**/onboarding/complete', (route) =>
-      route.fulfill({ status: 201, json: { data: { completed: true } } }),
+    await page.route('**/departments?view=tree', (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          data: [
+            {
+              id: 'department-1',
+              name: 'Operations',
+              children: [],
+              _count: { employees: 0 },
+            },
+          ],
+        },
+      }),
     );
+    await page.route('**/designations?limit=100', (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          data: [{ id: 'designation-1', name: 'Team Member', employeeCount: 0 }],
+        },
+      }),
+    );
+    await page.route('**/offices', (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          data: [
+            {
+              id: 'office-1',
+              officeName: 'Muscat HQ',
+              latitude: '23.588000',
+              longitude: '58.382900',
+              radiusMeters: 150,
+              timezone: 'Asia/Muscat',
+              countryCode: 'OM',
+              egressIps: [],
+              wifiSsids: [],
+              _count: { assignments: 0, holidays: 0 },
+            },
+          ],
+        },
+      }),
+    );
+    await page.route('**/onboarding/complete', (route) => {
+      onboardingCompleted = true;
+      return route.fulfill({ status: 201, json: { data: { completed: true } } });
+    });
 
     await page.goto('/app/onboarding');
     await expect(page.getByRole('heading', { name: "Let's build your workspace" })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByRole('heading', { name: 'Build your organization' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Organization Builder' })).toBeVisible();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByRole('heading', { name: 'Add your first office' })).toBeVisible();
+    await expect(page.getByText('Muscat HQ')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Assign' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByRole('heading', { name: 'Define your working week' })).toBeVisible();
     await page.getByRole('button', { name: 'Friday + Saturday' }).click();
@@ -179,15 +335,27 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await page.getByRole('button', { name: 'Continue' }).click();
     expect(latestSettingsUpdate).toMatchObject({
       weeklyOffs: [{ weekday: 'FRI' }, { weekday: 'SAT' }],
+      onboardingStep: 5,
+      onboardingVersion: 2,
     });
-    await expect(page.getByRole('heading', { name: 'Set verification defaults' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Define attendance policy' })).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByRole('heading', { name: 'Invite your HR team' })).toBeVisible();
     await page.getByRole('button', { name: 'Finish setup' }).click();
-    await page.waitForURL('**/app');
+    await page.waitForURL(/\/app\/settings$/);
 
-    await page.goto('/app/employees');
-    await page.getByRole('button', { name: 'Add employee' }).click();
+    await page.route('**/employees?*', (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          data: [],
+          pagination: { page: 1, limit: 25, total: 0, totalPages: 1 },
+        },
+      }),
+    );
+    await page.getByRole('link', { name: 'Employees' }).click();
+    await page.waitForURL(/\/app\/employees$/);
+    await page.getByRole('link', { name: 'Add employee' }).click();
     await expect(page.getByRole('heading', { name: 'Add Employee' })).toBeVisible();
   });
 
@@ -201,24 +369,21 @@ test.describe('Sprint 3 screen behavior and states', () => {
     const picker = page.locator('[data-map-provider="openstreetmap"]').last();
     const pickerBounds = await picker.boundingBox();
     expect(pickerBounds).toBeTruthy();
-    await page.mouse.move(
-      pickerBounds!.x + pickerBounds!.width / 2,
-      pickerBounds!.y + pickerBounds!.height / 2,
-    );
+    await page.mouse.move(pickerBounds!.x + pickerBounds!.width / 2, pickerBounds!.y + pickerBounds!.height / 2);
     await page.mouse.wheel(0, 500);
     await expect.poll(() => dialogPanel.evaluate((panel) => panel.scrollTop)).toBeGreaterThan(0);
-    expect(await dialogPanel.evaluate((panel) => {
-      const bounds = panel.getBoundingClientRect();
-      const topmost = document.elementFromPoint(bounds.right - 12, bounds.top + 180);
-      return topmost ? panel.contains(topmost) : false;
-    })).toBe(true);
+    expect(
+      await dialogPanel.evaluate((panel) => {
+        const bounds = panel.getBoundingClientRect();
+        const topmost = document.elementFromPoint(bounds.right - 12, bounds.top + 180);
+        return topmost ? panel.contains(topmost) : false;
+      }),
+    ).toBe(true);
     await page.getByRole('button', { name: 'Save office' }).click();
     await expect(
       dialogPanel.getByText('Choose the office on the map and enter a geofence radius between 25 and 10,000 meters.'),
     ).toBeVisible();
     await picker.click({ position: { x: 220, y: 140 } });
-    await expect(page.getByLabel('Latitude')).not.toHaveValue('');
-    await expect(page.getByLabel('Longitude')).not.toHaveValue('');
 
     await page.goto('/app/attendance/policies');
     await page.getByRole('button', { name: 'Create policy' }).click();
@@ -244,8 +409,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
   test('shows loading, API error, forbidden, and invalid form states', async ({ page }) => {
     let releaseOffices: (() => Promise<void>) | undefined;
     await page.route('http://localhost:4001/offices', (route) => {
-      releaseOffices = () =>
-        route.fulfill({ status: 500, json: { code: 'TEST_FAILURE' } });
+      releaseOffices = () => route.fulfill({ status: 500, json: { code: 'TEST_FAILURE' } });
     });
     await page.goto('/app/attendance/offices');
     await expect.poll(() => Boolean(releaseOffices)).toBe(true);
@@ -352,11 +516,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await page.getByRole('button', { name: 'Save changes' }).last().click();
 
     expect(savedSettings).toMatchObject({
-      weeklyOffs: [
-        { weekday: 'FRI', occurrences: [2] },
-        { weekday: 'SAT' },
-        { weekday: 'SUN' },
-      ],
+      weeklyOffs: [{ weekday: 'FRI', occurrences: [2] }, { weekday: 'SAT' }, { weekday: 'SUN' }],
     });
   });
 
@@ -380,10 +540,7 @@ test.describe('Sprint 3 screen behavior and states', () => {
     await page.route('**/auth/me', (route) =>
       route.fulfill({
         status: 200,
-        json: authMeFixture([
-          'attendance.records.read',
-          'organization.employees.read',
-        ], ['HR_ADMIN']),
+        json: authMeFixture(['attendance.records.read', 'organization.employees.read'], ['HR_ADMIN']),
       }),
     );
     for (const path of ['**/employees/quota', '**/users']) {
@@ -413,10 +570,46 @@ test.describe('Sprint 3 screen behavior and states', () => {
 });
 
 async function login(page: Page) {
+  await page.route('**/auth/login', (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        accessToken: 'sprint3-access-token',
+        refreshToken: 'sprint3-refresh-token',
+        user: {
+          id: 'admin-user',
+          email: 'admin@acme.com',
+          tenantId,
+          workspace: 'acme',
+          companyName: 'Acme Technologies',
+          roles: ['BUSINESS_ADMIN'],
+          permissions: tenantAdminPermissions,
+          defaultLanguage: 'en',
+          enabledLanguages: ['en', 'ar'],
+          logoUrl: null,
+        },
+      },
+    }),
+  );
   await page.route('**/onboarding/status', (route) =>
     route.fulfill({
       status: 200,
-      json: { data: { completed: false, currentStep: 1, steps: {} } },
+      json: {
+        data: {
+          completed: false,
+          currentStep: 1,
+          onboardingVersion: 2,
+          steps: {
+            company: true,
+            organization: false,
+            office: false,
+            workingDays: true,
+            attendancePolicy: true,
+            hrInvite: true,
+          },
+          missingSteps: ['organization', 'office'],
+        },
+      },
     }),
   );
   await page.route('**/auth/me', (route) =>
@@ -445,6 +638,26 @@ async function login(page: Page) {
       },
     }),
   );
+  await page.route('**/workspace/settings/health', (route) =>
+    route.fulfill({ status: 200, json: { data: { categories: [] } } }),
+  );
+  await page.route('**/roles', (route) =>
+    route.fulfill({ status: 200, json: { data: [] } }),
+  );
+  await page.route('**/tenant-settings', (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        data: {
+          settings: {
+            timezone: 'Asia/Muscat',
+            onboardingStep: 1,
+            onboardingVersion: 2,
+          },
+        },
+      },
+    }),
+  );
   await page.goto(`/login?tenantId=${tenantId}&workspace=acme`);
   await page.getByLabel('Email Address').fill('admin@acme.com');
   await page.locator('#password').fill('TenantAdmin123!');
@@ -460,39 +673,70 @@ async function mockDashboard(page: Page, includeOwnerMocks = true) {
         data: {
           date: '2026-07-17',
           timezone: 'Asia/Muscat',
-          summary: { present: 142, late: 11, absent: 9, onField: 34, onBreak: 6, notYetIn: 18 },
+          summary: {
+            present: 142,
+            late: 11,
+            absent: 9,
+            onField: 34,
+            onBreak: 6,
+            notYetIn: 18,
+          },
           employees: [
             {
-              id: 'employee-1', employeeCode: 'EMP-001', fullName: 'Rajesh Kumar',
-              designation: 'Senior Logistics Analyst', department: { id: 'department-1', name: 'Operations' },
-              workType: 'OFFICE', status: 'CLOCKED_IN', lateMinutes: 0,
-              checkinTime: '2026-07-17T05:14:00.000Z', office: { id: 'office-1', officeName: 'Muscat HQ' },
+              id: 'employee-1',
+              employeeCode: 'EMP-001',
+              fullName: 'Rajesh Kumar',
+              designation: 'Senior Logistics Analyst',
+              department: { id: 'department-1', name: 'Operations' },
+              workType: 'OFFICE',
+              status: 'CLOCKED_IN',
+              lateMinutes: 0,
+              checkinTime: '2026-07-17T05:14:00.000Z',
+              office: { id: 'office-1', officeName: 'Muscat HQ' },
               shift: { id: 'shift-1', name: 'Day' },
             },
           ],
-          attention: { pendingRegularizations: 3, openSecurityViolations: 2, absenteeAlerts: 5 },
-          updatedAt: new Date().toISOString(), nextCursor: null,
+          attention: {
+            pendingRegularizations: 3,
+            openSecurityViolations: 2,
+            absenteeAlerts: 5,
+          },
+          updatedAt: new Date().toISOString(),
+          nextCursor: null,
         },
       },
     }),
   );
   if (includeOwnerMocks) {
-    await page.route('**/employees/quota', (route) => route.fulfill({ status: 200, json: { data: { used: 190, limit: 200, percentage: 95 } } }));
-    await page.route('**/users', (route) => route.fulfill({ status: 200, json: { data: [{ id: 'user-1' }, { id: 'user-2' }] } }));
+    await page.route('**/employees/quota', (route) =>
+      route.fulfill({
+        status: 200,
+        json: { data: { used: 190, limit: 200, percentage: 95 } },
+      }),
+    );
+    await page.route('**/users', (route) =>
+      route.fulfill({
+        status: 200,
+        json: { data: [{ id: 'user-1' }, { id: 'user-2' }] },
+      }),
+    );
   }
 }
 
 function authMeFixture(permissions: string[], roles: string[]) {
   return {
     user: { id: 'admin-user', email: 'admin@acme.com', roles, permissions },
-    workspace: { id: tenantId, companyName: 'Acme Technologies', subdomain: 'acme', status: 'ACTIVE' },
+    workspace: {
+      id: tenantId,
+      companyName: 'Acme Technologies',
+      subdomain: 'acme',
+      status: 'ACTIVE',
+    },
   };
 }
 
 async function expectNoOverflow(page: Page) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
@@ -525,14 +769,10 @@ async function compareWithStitch(page: Page, key: string) {
   const reference = PNG.sync.read(readFileSync(resolve(references, `${key}.png`)));
   const scaledReference = resizeNearest(reference, actual.width, actual.height);
   const diff = new PNG({ width: actual.width, height: actual.height });
-  const different = pixelmatch(
-    actual.data,
-    scaledReference.data,
-    diff.data,
-    actual.width,
-    actual.height,
-    { threshold: 0.2, includeAA: false },
-  );
+  const different = pixelmatch(actual.data, scaledReference.data, diff.data, actual.width, actual.height, {
+    threshold: 0.2,
+    includeAA: false,
+  });
   const ratio = different / (actual.width * actual.height);
   test.info().annotations.push({
     type: 'stitch-diff',
@@ -552,15 +792,9 @@ async function compareWithStitch(page: Page, key: string) {
 function resizeNearest(source: PNG, width: number, height: number) {
   const target = new PNG({ width, height });
   for (let y = 0; y < height; y += 1) {
-    const sourceY = Math.min(
-      source.height - 1,
-      Math.floor((y / height) * source.height),
-    );
+    const sourceY = Math.min(source.height - 1, Math.floor((y / height) * source.height));
     for (let x = 0; x < width; x += 1) {
-      const sourceX = Math.min(
-        source.width - 1,
-        Math.floor((x / width) * source.width),
-      );
+      const sourceX = Math.min(source.width - 1, Math.floor((x / width) * source.width));
       const from = (sourceY * source.width + sourceX) * 4;
       const to = (y * width + x) * 4;
       target.data[to] = source.data[from];

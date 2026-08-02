@@ -71,6 +71,21 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
       tenantId: adminA.tenantId,
       name: `Operations ${stamp}`,
     });
+    await factory.createDesignation({
+      tenantId: adminA.tenantId,
+      name: `Team Member ${stamp}`,
+    });
+    await prisma.officeLocation.create({
+      data: {
+        tenantId: adminA.tenantId,
+        officeName: `Onboarding Office ${stamp}`,
+        latitude: 23.588,
+        longitude: 58.3829,
+        radiusMeters: 150,
+        timezone: 'Asia/Muscat',
+        countryCode: 'OM',
+      },
+    });
     departmentA = department.id;
     employeeA = (
       await factory.createEmployee({
@@ -100,6 +115,37 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
   });
 
   it('updates settings and completes onboarding idempotently with audit/outbox evidence', async () => {
+    await api(adminB)
+      .get('/onboarding/status')
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          data: {
+            completed: false,
+            currentStep: 1,
+            onboardingVersion: 1,
+            steps: {
+              company: true,
+              organization: false,
+              office: false,
+              workingDays: true,
+              attendancePolicy: true,
+              hrInvite: true,
+            },
+            missingSteps: ['organization', 'office'],
+          },
+        });
+      });
+    await api(adminB)
+      .post('/onboarding/complete')
+      .send({ progress: { completedSteps: 6 } })
+      .expect(400)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'ONBOARDING_INCOMPLETE',
+          details: { missingSteps: ['organization', 'office'] },
+        });
+      });
     await api(adminA)
       .patch('/tenant-settings')
       .send({
@@ -107,8 +153,31 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         weeklyOffs: [{ weekday: 'SAT', occurrences: [2, 4] }, 'SUN'],
         workingDayStart: '09:00',
         workingDayEnd: '18:00',
+        onboardingStep: 6,
+        onboardingVersion: 2,
       })
       .expect(200);
+    await api(adminA)
+      .get('/onboarding/status')
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          data: {
+            completed: false,
+            currentStep: 6,
+            onboardingVersion: 2,
+            steps: {
+              company: true,
+              organization: true,
+              office: true,
+              workingDays: true,
+              attendancePolicy: true,
+              hrInvite: true,
+            },
+            missingSteps: [],
+          },
+        });
+      });
     await api(adminA)
       .patch('/tenant-settings')
       .send({ timezone: 'Mumbai/Office' })
@@ -123,21 +192,29 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         contentType: 'image/png',
         fileSize: 1024,
       })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     expect(
       (logo.body as DataBody<{ objectKey: string }>).data.objectKey,
     ).toMatch(new RegExp(`^${adminA.tenantId}/branding/`));
     const first = await api(adminA)
       .post('/onboarding/complete')
-      .send({ progress: { completedSteps: 4 } })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .send({ progress: { completedSteps: 6, onboardingVersion: 2 } })
+      .expect(201);
     const replay = await api(adminA)
       .post('/onboarding/complete')
-      .send({ progress: { completedSteps: 4 } })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .send({ progress: { completedSteps: 6, onboardingVersion: 2 } })
+      .expect(201);
     const firstBody = first.body as DataBody<{ completedAt: string }>;
     const replayBody = replay.body as DataBody<{ completedAt: string }>;
     expect(replayBody.data.completedAt).toBe(firstBody.data.completedAt);
+    await api(adminA)
+      .get('/onboarding/status')
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          data: { completed: true, currentStep: 6, missingSteps: [] },
+        });
+      });
     expect(
       await prisma.tenantAuditLog.count({
         where: {
@@ -186,7 +263,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         egressIps: ['203.0.113.10', '10.0.0.0/24'],
         wifiSsids: ['Mumbai-HR'],
       })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const officeId = (created.body as IdBody).data.id;
     await api(adminA)
       .post('/offices')
@@ -295,11 +372,11 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const day = await api(adminA)
       .post('/shifts')
       .send({ name: 'Day 09-18', startTime: '09:00', endTime: '18:00' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const night = await api(adminA)
       .post('/shifts')
       .send({ name: 'Night 22-06', startTime: '22:00', endTime: '06:00' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const dayBody = day.body as ShiftBody;
     const nightBody = night.body as ShiftBody;
     expect(nightBody.data.isOvernight).toBe(true);
@@ -310,7 +387,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         shiftId: dayBody.data.id,
         rosterDate: '2026-08-01',
       })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     await api(adminA)
       .post('/rosters')
       .send({
@@ -329,7 +406,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     await api(adminA)
       .post('/holidays')
       .send({ holidayName: 'Foundation Day', holidayDate: '2026-08-15' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     await api(adminA)
       .post('/holidays')
       .send({ holidayName: 'Duplicate Scope', holidayDate: '2026-08-15' })
@@ -356,7 +433,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
         startDate: '2026-08-15',
         endDate: '2026-08-15',
       })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     expect(holidayBulk.body).toMatchObject({
       data: {
         inserted: 0,
@@ -381,13 +458,13 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const shift = await api(adminA)
       .post('/shifts')
       .send({ name: 'Import Day', startTime: '10:00', endTime: '19:00' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const shiftBody = shift.body as ShiftBody;
     expect(shiftBody.data.id).toBeTruthy();
     const presigned = await api(adminA)
       .post('/rosters/imports/presign')
       .send({ filename: 'acceptance-roster.csv', contentType: 'text/csv' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const csv = acceptanceRosterCsv(`S3-A-${stamp}`);
     const presignedBody = presigned.body as { objectKey: string };
     storage.putTestObject(presignedBody.objectKey, csv);
@@ -399,7 +476,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const imported = await api(adminA)
       .post('/rosters/imports')
       .send(payload)
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const importedBody = imported.body as ImportBody;
     expect(importedBody.data).toMatchObject({
       totalRows: 60,
@@ -416,7 +493,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const replay = await api(adminA)
       .post('/rosters/imports')
       .send(payload)
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const replayImportBody = replay.body as ImportBody;
     expect(replayImportBody.data.id).toBe(importedBody.data.id);
     expect(
@@ -471,14 +548,14 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const policies = await api(adminA)
       .post('/attendance-policies/resolve/bulk')
       .send({ employeeIds, date: '2026-10-01' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const policyDuration = performance.now() - policyStartedAt;
 
     const shiftStartedAt = performance.now();
     const shifts = await api(adminA)
       .post('/shifts/resolve/bulk')
       .send({ employeeIds, date: '2026-10-01' })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     const shiftDuration = performance.now() - shiftStartedAt;
 
     expect((policies.body as DataBody<unknown[]>).data).toHaveLength(500);
@@ -522,7 +599,7 @@ describe('Sprint 3 attendance configuration (e2e)', () => {
     const response = await api(adminA)
       .post('/attendance-policies')
       .send({ name })
-      .expect((res) => { if (res.status !== 201) console.error(res.body); }).expect(201);
+      .expect(201);
     return (response.body as IdBody).data.id;
   }
 

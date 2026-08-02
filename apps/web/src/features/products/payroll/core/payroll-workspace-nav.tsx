@@ -2,7 +2,6 @@
 
 import {
   Calculator,
-  ChevronRight,
   FileSpreadsheet,
   Home,
   LayoutDashboard,
@@ -32,8 +31,8 @@ const payrollNavItems = [
   },
   {
     section: "foundation" as const,
-    label: "Foundation",
-    href: "/app/modules/payroll/foundation",
+    label: "Setup",
+    href: "/app/modules/payroll/setup",
     icon: WalletCards,
   },
   {

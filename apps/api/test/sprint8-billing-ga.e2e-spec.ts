@@ -235,6 +235,15 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
         where: { tenantId: journeyTenantId },
       });
       await prisma.shift.deleteMany({ where: { tenantId: journeyTenantId } });
+      await prisma.officeLocation.deleteMany({
+        where: { tenantId: journeyTenantId },
+      });
+      await prisma.designation.deleteMany({
+        where: { tenantId: journeyTenantId },
+      });
+      await prisma.department.deleteMany({
+        where: { tenantId: journeyTenantId },
+      });
       await prisma.tenantSettings.deleteMany({
         where: { tenantId: journeyTenantId },
       });
@@ -269,6 +278,30 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
     });
     journeyTenantId = signup.tenantId;
 
+    await prisma.department.create({
+      data: {
+        tenantId: journeyTenantId,
+        name: `Operations ${stamp}`,
+      },
+    });
+    await prisma.designation.create({
+      data: {
+        tenantId: journeyTenantId,
+        name: `Team Member ${stamp}`,
+      },
+    });
+    await prisma.officeLocation.create({
+      data: {
+        tenantId: journeyTenantId,
+        officeName: `Release Office ${stamp}`,
+        latitude: 19.076,
+        longitude: 72.8777,
+        radiusMeters: 150,
+        timezone: 'Asia/Kolkata',
+        countryCode: 'IN',
+      },
+    });
+
     const login = await request(app.getHttpServer())
       .post('/auth/login')
       .set('x-workspace-subdomain', subdomain)
@@ -283,7 +316,7 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
     await request(app.getHttpServer())
       .post('/onboarding/complete')
       .set(tenantHeaders)
-      .send({ progress: { source: 'sprint8-ga-acceptance', step: 4 } })
+      .send({ progress: { source: 'sprint8-ga-acceptance', step: 6 } })
       .expect(201)
       .expect((response) => {
         expect(response.body).toMatchObject({ data: { completed: true } });

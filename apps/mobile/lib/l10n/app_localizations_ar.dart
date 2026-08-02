@@ -489,6 +489,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get punchFailed => 'تعذر إكمال عملية الحضور';
 
   @override
+  String get officeAssignmentRequiredTitle => 'لم يتم تعيين موقع العمل';
+
+  @override
+  String get officeAssignmentRequiredGuidance =>
+      'لم يتم تعيين موقع عمل الحضور الخاص بك. تواصل مع الموارد البشرية لتعيين مكتب قبل تسجيل الحضور.';
+
+  @override
   String get failureStates => 'مساعدة التحقق';
 
   @override

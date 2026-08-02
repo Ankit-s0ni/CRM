@@ -1,5 +1,4 @@
 import {
-  Blocks,
   Building2,
   ClipboardCheck,
   FileBarChart,
@@ -12,6 +11,7 @@ import {
   UsersRound,
   WalletCards,
 } from "lucide-react";
+import { attendanceWorkspaceAccessPermissions } from "@/lib/attendance-navigation";
 
 export type TenantNavItem = {
   label: string;
@@ -45,11 +45,24 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
     ],
   },
   {
-    label: "Modules",
-    localizationKey: "tenant.navigation.modules",
-    href: "/app/modules",
-    icon: Blocks,
-    permission: "workspace.modules.read",
+    label: "Attendance",
+    localizationKey: "tenant.navigation.attendance",
+    href: "/app/modules/attendance",
+    icon: ClipboardCheck,
+    moduleKey: "ATTENDANCE",
+    anyPermissions: [...attendanceWorkspaceAccessPermissions],
+  },
+  {
+    label: "Payroll",
+    localizationKey: "tenant.navigation.payroll",
+    href: "/app/modules/payroll",
+    icon: WalletCards,
+    moduleKey: "PAYROLL",
+    anyPermissions: [
+      "attendance.reports.read",
+      "attendance.reports.generate",
+      "attendance.payroll-lock.manage",
+    ],
   },
   {
     label: "Reports",
@@ -122,11 +135,7 @@ export const tenantContextNavigation: Record<
       href: "/app/modules/attendance",
       icon: ClipboardCheck,
       moduleKey: "ATTENDANCE",
-      anyPermissions: [
-        "attendance.records.read",
-        "attendance.config.read",
-        "attendance.approvals.manage",
-      ],
+      anyPermissions: [...attendanceWorkspaceAccessPermissions],
     },
     {
       label: "Payroll",
@@ -141,6 +150,7 @@ export const tenantContextNavigation: Record<
         "payroll.structures.read",
         "payroll.compensation.read",
         "payroll.accounting.read",
+        "attendance.payroll-lock.manage",
       ],
     },
   ],
@@ -296,7 +306,14 @@ export function tenantTopLevelActive(pathname: string, href: string) {
   if (href === "/app") return pathname === href;
   const context = tenantNavigationContext(pathname);
   if (href === "/app/employees") return context === "employees";
-  if (href === "/app/modules") return context === "modules";
+  if (href === "/app/modules/attendance")
+    return (
+      pathname === href ||
+      pathname.startsWith("/app/attendance") ||
+      pathname.startsWith("/app/modules/leave") ||
+      pathname.startsWith("/app/leave")
+    );
+  if (href === "/app/modules/payroll") return pathname.startsWith(href);
   if (href === "/app/reports") return context === "reports";
   if (href === "/app/settings") return context === "settings";
   return false;

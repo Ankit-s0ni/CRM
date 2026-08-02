@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { apiClient } from "@/lib/api-client";
+import { publicApiClient } from "@/lib/api-client";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 import { publicLinks } from "@/lib/public-links";
-import { APP_DOMAIN } from "@/lib/app-domain";
+import { APP_DOMAIN, buildWorkspaceLoginUrl } from "@/lib/app-domain";
 
 const employeeBands = [
   { label: "Select range", value: "" },
@@ -68,7 +68,7 @@ export function SignupForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await apiClient.post("/auth/signup", {
+      const response = await publicApiClient.post("/auth/signup", {
         companyName,
         workEmail,
         password,
@@ -82,19 +82,20 @@ export function SignupForm() {
         tenantId: string;
       };
 
-      const params = new URLSearchParams({
-        email: payload.email,
-        workspace: payload.subdomain,
-        tenantId: payload.tenantId,
-      });
-
       setPendingAuth({
         tenantId: payload.tenantId,
         workspace: payload.subdomain,
         email: payload.email,
       });
       window.location.assign(
-        `${window.location.protocol}//${payload.subdomain}.${appDomain}/login?${params.toString()}`,
+        buildWorkspaceLoginUrl({
+          workspace: payload.subdomain,
+          email: payload.email,
+          tenantId: payload.tenantId,
+          origin: window.location.origin,
+          hostname: window.location.hostname,
+          protocol: window.location.protocol,
+        }),
       );
     } catch (error: unknown) {
       setError(getApiErrorMessage(error, "We couldn't create your workspace right now."));

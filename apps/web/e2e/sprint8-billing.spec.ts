@@ -84,32 +84,48 @@ for (const viewport of [
   test.describe(`Sprint 8 billing at ${viewport.width}px`, () => {
     test.use({ viewport });
 
-    test("completes the A2/A3 self-serve signup and verification screens", async ({
+    test("redirects a new signup to its own workspace", async ({
       page,
     }) => {
-      await page.route("http://localhost:4001/auth/signup", (route) =>
-        route.fulfill({
+      await page.addInitScript(() => {
+        localStorage.setItem(
+          "auth-storage",
+          JSON.stringify({
+            state: {
+              user: {
+                id: "old-user",
+                tenantId: "old-tenant",
+                workspace: "delttech",
+                email: "admin@delttech.com",
+              },
+              accessToken: "stale-access-token",
+              refreshToken: null,
+              pendingAuth: {
+                tenantId: "old-tenant",
+                workspace: "delttech",
+                email: "admin@delttech.com",
+              },
+            },
+            version: 0,
+          }),
+        );
+      });
+      await page.route("http://localhost:4001/auth/signup", (route) => {
+        const headers = route.request().headers();
+        expect(headers.authorization).toBeUndefined();
+        expect(headers["x-tenant-id"]).toBeUndefined();
+        expect(headers["x-workspace-subdomain"]).toBeUndefined();
+        return route.fulfill({
           status: 201,
           json: {
-            message: "Workspace created. Verify your email to continue.",
-            nextStep: "EMAIL_VERIFY",
+            message: "Workspace created. Sign in to continue.",
+            nextStep: "LOGIN",
             tenantId,
             email: "owner@harbour.example",
             subdomain: "harbour",
-            emailDelivery: "SENT",
           },
-        }),
-      );
-      await page.route("http://localhost:4001/auth/verify", (route) =>
-        route.fulfill({
-          status: 200,
-          json: {
-            message: "Token verified successfully",
-            purpose: "EMAIL_VERIFY",
-            email: "owner@harbour.example",
-          },
-        }),
-      );
+        });
+      });
 
       await page.goto("/signup");
       await expect(
@@ -122,13 +138,13 @@ for (const viewport of [
       await page.getByLabel(/By creating a workspace/).check();
       await page.getByRole("button", { name: "Create workspace" }).click();
 
-      await expect(page).toHaveURL(/\/verify-email\?/);
+      await expect(page).toHaveURL(/\/login\?.*workspace=harbour/);
+      await expect(page.getByLabel("Email Address")).toHaveValue(
+        "owner@harbour.example",
+      );
       await expect(
-        page.getByRole("heading", { name: "Verify your email" }),
+        page.getByText("Workspace: harbour.your-domain.com"),
       ).toBeVisible();
-      await page.locator("#verification-code").fill("123456");
-      await page.getByRole("button", { name: "Verify", exact: true }).click();
-      await expect(page).toHaveURL(/\/login\?/);
       await expectNoHorizontalOverflow(page);
     });
 

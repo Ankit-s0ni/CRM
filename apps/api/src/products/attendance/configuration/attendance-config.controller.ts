@@ -64,6 +64,7 @@ import { UpdateHolidayCommand } from './holidays/application/commands/update-hol
 import { RemoveHolidayCommand } from './holidays/application/commands/remove-holiday.command';
 import { ListHolidaysQuery } from './holidays/application/queries/list-holidays.query';
 import { PublicHolidaySyncService } from './holidays/public-holiday-sync.service';
+import { LocationSearchService } from './offices/location-search.service';
 
 // Roster Commands & Queries
 import { CreateRosterCommand } from './rosters/application/commands/create-roster.command';
@@ -95,6 +96,7 @@ export class AttendanceConfigController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     private readonly publicHolidaySync: PublicHolidaySyncService,
+    private readonly locationSearch: LocationSearchService,
   ) {}
 
   @Get('offices')
@@ -104,6 +106,17 @@ export class AttendanceConfigController {
   })
   listOffices(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListOfficesQuery(user.tenantId));
+  }
+
+  @Get('offices/location-suggestions')
+  @RequirePermissions(PERMISSIONS.ATTENDANCE_OFFICES_READ)
+  @ApiOperation({ summary: 'Search office location suggestions' })
+  searchOfficeLocations(
+    @Query('q') query: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
+    return this.locationSearch.search(query ?? '', parsedLimit);
   }
 
   @Post('offices')

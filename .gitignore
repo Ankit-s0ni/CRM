@@ -5,12 +5,12 @@ dist/
 build/
 .next/
 .next-build/
-<<<<<<< HEAD
 apps/web/.next-build/
-=======
->>>>>>> f47ba7d96fee363515a35751e3d064647f64ec6d
+.next-dev/
+apps/web/.next-dev/
 coverage/
 *.log
+*.tsbuildinfo
 .turbo/
 .pnpm-store/
 apps/api/node_modules/

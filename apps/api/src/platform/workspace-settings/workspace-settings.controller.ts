@@ -10,13 +10,17 @@ import {
   UpdateTenantSettingsDto,
 } from './dto/workspace-settings.dto';
 import { WorkspaceSettingsService } from './workspace-settings.service';
+import { WorkspaceOnboardingService } from './workspace-onboarding.service';
 
 @ApiTags('Tenant settings')
 @ApiBearerAuth()
 @UseGuards(JwtTenantGuard, PermissionsGuard)
 @Controller()
 export class WorkspaceSettingsController {
-  constructor(private readonly service: WorkspaceSettingsService) {}
+  constructor(
+    private readonly service: WorkspaceSettingsService,
+    private readonly onboarding: WorkspaceOnboardingService,
+  ) {}
 
   @Get('tenant-settings')
   @RequirePermissions(PERMISSIONS.SETTINGS_READ)
@@ -45,13 +49,13 @@ export class WorkspaceSettingsController {
   @RequirePermissions(PERMISSIONS.SETTINGS_READ)
   @ApiOperation({ summary: 'Get resumable onboarding progress' })
   onboardingStatus() {
-    return this.service.status();
+    return this.onboarding.status();
   }
 
   @Post('onboarding/complete')
   @RequirePermissions(PERMISSIONS.SETTINGS_UPDATE)
   @ApiOperation({ summary: 'Idempotently complete workspace onboarding' })
   completeOnboarding(@Body() dto: CompleteOnboardingDto) {
-    return this.service.complete(dto);
+    return this.onboarding.complete(dto);
   }
 }

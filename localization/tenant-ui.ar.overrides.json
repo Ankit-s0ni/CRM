@@ -278,7 +278,11 @@
     "Time allowed after the shift starts before the employee is marked late.": "الوقت المسموح بعد بدء الوردية قبل اعتبار الموظف متأخرًا.",
     "Use hours and minutes to define how each completed attendance day is classified.": "استخدم الساعات والدقائق لتحديد كيفية تصنيف كل يوم حضور مكتمل.",
     "Worked time below this threshold is treated as a half-day.": "يُحتسب وقت العمل الأقل من هذه المدة كنصف يوم.",
-    "Worked time beyond this threshold is counted as overtime.": "يُحتسب وقت العمل الذي يتجاوز هذه المدة كعمل إضافي."
+    "Worked time beyond this threshold is counted as overtime.": "يُحتسب وقت العمل الذي يتجاوز هذه المدة كعمل إضافي.",
+    "Office details": "تفاصيل المكتب",
+    "Edit office": "تعديل المكتب",
+    "Configure the office location": "إعداد موقع المكتب",
+    "Pin the workplace entrance, confirm its region, and set the attendance boundary.": "حدّد مدخل مكان العمل، وأكّد منطقته، واضبط نطاق الحضور."
   },
   "intentionallyUntranslated": [
     "DeltCRM",

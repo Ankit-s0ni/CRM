@@ -131,7 +131,13 @@ export class PrismaPayrollFoundationRepository implements PayrollFoundationRepos
         where: { id, tenantId },
         include: {
           versions: {
-            include: { components: { include: { componentVersion: true } } },
+            include: {
+              components: {
+                include: {
+                  componentVersion: { include: { component: true } },
+                },
+              },
+            },
             orderBy: { version: 'desc' },
           },
         },
@@ -155,7 +161,19 @@ export class PrismaPayrollFoundationRepository implements PayrollFoundationRepos
     return this.run(tx, (client) =>
       client.salaryStructure.findMany({
         where: { tenantId },
-        include: { versions: { orderBy: { version: 'desc' }, take: 1 } },
+        include: {
+          versions: {
+            include: {
+              components: {
+                include: {
+                  componentVersion: { include: { component: true } },
+                },
+              },
+            },
+            orderBy: { version: 'desc' },
+            take: 1,
+          },
+        },
         orderBy: { code: 'asc' },
       }),
     );
@@ -169,7 +187,13 @@ export class PrismaPayrollFoundationRepository implements PayrollFoundationRepos
     return this.run(tx, (client) =>
       client.salaryStructureVersion.findMany({
         where: { tenantId, structureId },
-        include: { components: { include: { componentVersion: true } } },
+        include: {
+          components: {
+            include: {
+              componentVersion: { include: { component: true } },
+            },
+          },
+        },
         orderBy: { version: 'desc' },
       }),
     );

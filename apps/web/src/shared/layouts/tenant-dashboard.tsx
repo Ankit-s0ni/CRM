@@ -7,14 +7,17 @@ import {
   CalendarClock,
   CheckCircle2,
   CircleDot,
+  FileBarChart,
   LayoutGrid,
   List,
   MapPin,
   Search,
+  Settings2,
   ShieldAlert,
   Smartphone,
   Umbrella,
   UsersRound,
+  WalletCards,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
@@ -24,8 +27,12 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useTenantLocalization as useLocalization } from "@/lib/tenant-localization";
 import { cn } from "@/lib/utils";
 import {
+  EmptyState,
   ErrorState,
   LoadingState,
+  StatusBadge,
+  Toolbar,
+  inputClass,
 } from "@/shared/components/page-primitives";
 
 type DashboardStatus =
@@ -231,6 +238,10 @@ export function TenantDashboard() {
           t("tenant.shell.workspaceUser", "Workspace user")
         }
       />
+      <RoleFocusStrip
+        canReadOwnerOverview={canReadOwnerOverview}
+        permissions={permissions}
+      />
       {error && (
         <div className="mb-5">
           <ErrorState
@@ -248,17 +259,13 @@ export function TenantDashboard() {
           <SelfAttendanceCard compact />
         </div>
       )}
-      {canReadOwnerOverview && <OwnerOverviewPanel data={hrSummary} />}
-      {hrSummary?.workforce && (
-        <WorkforceOverview workforce={hrSummary.workforce} />
-      )}
       {!data ? (
-        <LoadingState />
+        <LoadingState rows={5} />
       ) : (
         <>
           <SummaryStrip summary={data.summary} />
-          <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-            <section className="min-w-0">
+          <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <section className="min-w-0 rounded-lg border border-border bg-white p-4 shadow-sm">
               <DashboardToolbar
                 onSearch={setSearch}
                 onStatus={setStatus}
@@ -274,10 +281,150 @@ export function TenantDashboard() {
               queues={hrSummary?.queues ?? null}
             />
           </div>
+          {canReadOwnerOverview && <OwnerOverviewPanel data={hrSummary} />}
+          {hrSummary?.workforce && (
+            <WorkforceOverview workforce={hrSummary.workforce} />
+          )}
         </>
       )}
     </div>
   );
+}
+
+function RoleFocusStrip({
+  canReadOwnerOverview,
+  permissions,
+}: {
+  canReadOwnerOverview: boolean | undefined;
+  permissions: string[];
+}) {
+  const { t } = useLocalization();
+  const has = (permission: string) => permissions.includes(permission);
+  const focus = canReadOwnerOverview
+    ? {
+        label: t("tenant.dashboard.role.owner", "Owner command center"),
+        body: t(
+          "tenant.dashboard.role.ownerBody",
+          "Prioritize setup health, access, modules, and reporting.",
+        ),
+        icon: Settings2,
+        actions: [
+          {
+            label: t("tenant.dashboard.role.modules", "Modules"),
+            href: "/app/settings/modules",
+          },
+          {
+            label: t("tenant.dashboard.role.access", "Roles and access"),
+            href: "/app/settings/access",
+          },
+          {
+            label: t("tenant.dashboard.role.reports", "Reports"),
+            href: "/app/reports",
+          },
+        ],
+      }
+    : has("attendance.regularizations.manage") || has("leave.requests.approve")
+      ? {
+          label: t("tenant.dashboard.role.manager", "Manager review queue"),
+          body: t(
+            "tenant.dashboard.role.managerBody",
+            "Review attendance exceptions, leave approvals, and daily status.",
+          ),
+          icon: ClipboardQueueIcon,
+          actions: [
+            {
+              label: t("tenant.dashboard.role.regularizations", "Regularizations"),
+              href: "/app/attendance/regularizations",
+            },
+            {
+              label: t("tenant.dashboard.role.leaveApprovals", "Leave approvals"),
+              href: "/app/attendance/leave/approvals",
+            },
+            {
+              label: t("tenant.dashboard.role.register", "Attendance register"),
+              href: "/app/attendance/register",
+            },
+          ],
+        }
+      : has("payroll.runs.read") || has("payroll.settings.read")
+        ? {
+            label: t("tenant.dashboard.role.payroll", "Payroll workspace"),
+            body: t(
+              "tenant.dashboard.role.payrollBody",
+              "Move from workforce signals into payroll runs, exports, and reports.",
+            ),
+            icon: WalletCards,
+            actions: [
+              {
+                label: t("tenant.dashboard.role.payrollRuns", "Payroll runs"),
+                href: "/app/modules/payroll/runs",
+              },
+              {
+                label: t("tenant.dashboard.role.exports", "Exports"),
+                href: "/app/modules/payroll/exports",
+              },
+              {
+                label: t("tenant.dashboard.role.payrollReports", "Payroll reports"),
+                href: "/app/reports/payroll",
+              },
+            ],
+          }
+        : {
+            label: t("tenant.dashboard.role.hr", "HR operations"),
+            body: t(
+              "tenant.dashboard.role.hrBody",
+              "Use employee records, attendance, and leave queues from one place.",
+            ),
+            icon: UsersRound,
+            actions: [
+              {
+                label: t("tenant.dashboard.role.employees", "Employees"),
+                href: "/app/employees",
+              },
+              {
+                label: t("tenant.dashboard.role.attendance", "Attendance"),
+                href: "/app/attendance/register",
+              },
+              {
+                label: t("tenant.dashboard.role.leave", "Leave"),
+                href: "/app/attendance/leave",
+              },
+            ],
+          };
+  const Icon = focus.icon;
+  return (
+    <section className="mb-5 rounded-lg border border-border bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-semibold">{focus.label}</h2>
+            <StatusBadge tone="info">
+              {t("tenant.dashboard.role.roleAware", "Role-aware")}
+            </StatusBadge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{focus.body}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {focus.actions.map((action) => (
+            <Link
+              className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:text-primary"
+              href={action.href}
+              key={action.href}
+            >
+              {action.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ClipboardQueueIcon({ className }: { className?: string }) {
+  return <FileBarChart className={className} />;
 }
 
 function DashboardHeader({
@@ -308,18 +455,18 @@ function DashboardHeader({
     : 0;
   const stale = seconds > 120;
   return (
-    <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
+    <header className="mb-5 flex flex-wrap items-start justify-between gap-4 rounded-lg border border-border bg-white p-5 shadow-sm">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-container">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
           {t(
             "tenant.dashboard.header.eyebrow",
             "Workspace operations",
           )}
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
           {t("tenant.dashboard.header.title", "HR operations")}
         </h1>
-        <p className="mt-1 text-sm text-outline">
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           {t(
             "tenant.dashboard.header.welcome",
             "Welcome, {name}. Review today's workforce and every queue that needs action.",
@@ -327,14 +474,7 @@ function DashboardHeader({
           )}
         </p>
       </div>
-      <div
-        className={cn(
-          "rounded-full border px-4 py-2 text-xs font-bold",
-          stale
-            ? "border-[#f2c078] bg-amber-100 text-amber-800"
-            : "border-emerald-200 bg-emerald-50 text-emerald-800",
-        )}
-      >
+      <StatusBadge tone={stale ? "warning" : "success"} className="min-h-8">
         <span
           className={cn(
             "me-2 inline-block size-2 rounded-full",
@@ -359,7 +499,7 @@ function DashboardHeader({
             "Connecting live board...",
           )
         )}
-      </div>
+      </StatusBadge>
     </header>
   );
 }
@@ -469,7 +609,7 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
         "tenant.dashboard.overview.aria",
         "Business Admin overview",
       )}
-      className="mb-5 rounded-2xl border border-zinc-200 bg-gradient-to-r from-surface-variant via-white to-[#eefbf3] p-4 rtl:bg-gradient-to-l"
+      className="mt-5 rounded-lg border border-border bg-white p-4 shadow-sm"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
@@ -486,14 +626,14 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
             )}
           </p>
         </div>
-        <span className="rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+        <StatusBadge tone="info">
           {t("tenant.dashboard.overview.ownerView", "Owner view")}
-        </span>
+        </StatusBadge>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ label, value, detail, href, icon: Icon }) => (
           <Link
-            className="group rounded-xl border border-white bg-white/85 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400"
+            className="group rounded-lg border border-border bg-muted/30 p-4 transition hover:border-primary/40 hover:bg-white"
             href={href}
             key={label}
           >
@@ -505,7 +645,7 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
             <div className="text-xs font-semibold text-on-surface-variant">
               {label}
             </div>
-            <p className="mt-1 truncate text-[11px] text-outline">{detail}</p>
+            <p className="mt-1 truncate text-[11px] text-muted-foreground">{detail}</p>
           </Link>
         ))}
       </div>
@@ -558,14 +698,14 @@ function WorkforceOverview({
         "tenant.dashboard.workforce.summary",
         "Workforce summary",
       )}
-      className="mb-5"
+      className="mt-5"
     >
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <h2 className="font-semibold">
             {t("tenant.dashboard.workforce.title", "Workforce")}
           </h2>
-          <p className="text-xs text-outline">
+          <p className="text-xs text-muted-foreground">
             {t(
               "tenant.dashboard.workforce.scope",
               "Counts follow your employee reporting scope",
@@ -582,7 +722,7 @@ function WorkforceOverview({
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {cards.map((card) => (
           <Link
-            className="group rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-primary-container"
+            className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:border-primary/40"
             href={card.href}
             key={card.label}
           >
@@ -590,7 +730,7 @@ function WorkforceOverview({
               <strong className="text-2xl">{formatNumber(card.value)}</strong>
               <ArrowRight className="directional-icon size-4 text-zinc-400 group-hover:text-primary" />
             </div>
-            <span className="mt-1 block text-xs font-semibold text-on-surface-variant">
+            <span className="mt-1 block text-xs font-semibold text-muted-foreground">
               {card.label}
             </span>
           </Link>
@@ -656,12 +796,12 @@ function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
     >
       {cards.map((card) => (
         <Link
-          className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:border-primary-container"
+          className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40"
           href={card.href}
           key={card.label}
         >
-          <div className={cn("mb-3 size-2 rounded-full", card.accent)} />
-          <p className="text-xs font-medium text-outline">{card.label}</p>
+          <div className={cn("mb-3 h-1.5 w-10 rounded-full", card.accent)} />
+          <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
           <p className={cn("mt-1 text-2xl font-bold", card.tone)}>
             {formatNumber(card.value)}
           </p>
@@ -688,7 +828,7 @@ function DashboardToolbar({
 }) {
   const { t } = useLocalization();
   return (
-    <div className="mb-4 rounded-xl border border-surface-variant bg-white p-3 shadow-sm">
+    <Toolbar className="mb-4 border-0 bg-muted/40 shadow-none">
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative min-w-56 flex-1">
           <span className="sr-only">
@@ -699,7 +839,7 @@ function DashboardToolbar({
           </span>
           <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
           <input
-            className="h-9 w-full rounded-lg bg-zinc-50 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-primary-container"
+            className={cn(inputClass, "pe-3 ps-9")}
             onChange={(event) => onSearch(event.target.value)}
             placeholder={t(
               "tenant.dashboard.search.placeholder",
@@ -708,13 +848,13 @@ function DashboardToolbar({
             value={search}
           />
         </label>
-        <div className="ms-auto flex rounded-lg bg-zinc-50 p-1">
+        <div className="ms-auto flex rounded-lg bg-white p-1 shadow-sm">
           <button
             aria-label={t("tenant.dashboard.view.grid", "Grid view")}
             aria-pressed={view === "grid"}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "grid" && "bg-white text-primary shadow-sm",
+              view === "grid" && "bg-muted text-primary shadow-sm",
             )}
             onClick={() => onView("grid")}
             type="button"
@@ -726,7 +866,7 @@ function DashboardToolbar({
             aria-pressed={view === "list"}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "list" && "bg-white text-primary shadow-sm",
+              view === "list" && "bg-muted text-primary shadow-sm",
             )}
             onClick={() => onView("list")}
             type="button"
@@ -743,7 +883,7 @@ function DashboardToolbar({
               "shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
               status === filter
                 ? "border-primary bg-primary text-white"
-                : "border-zinc-200 bg-white text-on-surface-variant hover:border-zinc-400",
+                : "border-border bg-white text-muted-foreground hover:border-primary/40",
             )}
             key={filter}
             onClick={() => onStatus(filter)}
@@ -753,7 +893,7 @@ function DashboardToolbar({
           </button>
         ))}
       </div>
-    </div>
+    </Toolbar>
   );
 }
 
@@ -767,23 +907,16 @@ function EmployeeBoard({
   const { t } = useLocalization();
   if (!employees.length) {
     return (
-      <div className="grid min-h-72 place-items-center rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center">
-        <div>
-          <UsersRound className="mx-auto size-9 text-zinc-400" />
-          <h2 className="mt-3 font-semibold">
-            {t(
-              "tenant.dashboard.empty.title",
-              "No employees match this view",
-            )}
-          </h2>
-          <p className="mt-1 text-sm text-outline">
-            {t(
-              "tenant.dashboard.empty.body",
-              "Try another status or clear the search.",
-            )}
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        title={t(
+          "tenant.dashboard.empty.title",
+          "No employees match this view",
+        )}
+        body={t(
+          "tenant.dashboard.empty.body",
+          "Try another status or clear the search.",
+        )}
+      />
     );
   }
   return (
@@ -822,13 +955,13 @@ function EmployeeCard({
         { name: employee.fullName },
       )}
       className={cn(
-        "block cursor-pointer rounded-xl border border-surface-variant bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+        "block cursor-pointer rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         compact && "flex flex-wrap items-center gap-4",
       )}
       href={`/app/employees/${employee.id}`}
     >
       <div className="flex items-start gap-3">
-        <div className="relative grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-sm font-bold text-primary rtl:bg-gradient-to-bl">
+        <div className="relative grid size-12 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold text-primary">
           <bdi>{initials(employee.fullName)}</bdi>
           <span
             className={cn(
@@ -841,7 +974,7 @@ function EmployeeCard({
           <h3 className="truncate text-sm font-semibold">
             {employee.fullName}
           </h3>
-          <p className="truncate text-xs text-outline">
+          <p className="truncate text-xs text-muted-foreground">
             <bdi>{employee.designation || employee.employeeCode}</bdi>
             {" · "}
             {employee.department.name}
@@ -854,15 +987,10 @@ function EmployeeCard({
           compact && "ms-auto mt-0",
         )}
       >
-        <span
-          className={cn(
-            "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-            presentation.badge,
-          )}
-        >
+        <StatusBadge tone={presentation.tone}>
           {presentation.label}
-        </span>
-        <span className="text-[11px] text-on-surface-variant">
+        </StatusBadge>
+        <span className="text-[11px] text-muted-foreground">
           {employee.checkinTime
             ? t(
                 "tenant.dashboard.employee.checkedInAt",
@@ -876,7 +1004,7 @@ function EmployeeCard({
         </span>
       </div>
       {!compact && (
-        <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3 text-[11px] text-outline">
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-[11px] text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">
             <MapPin className="size-3 shrink-0" />
             <span className="truncate">
@@ -994,13 +1122,13 @@ function NeedsAttention({
     });
   }
   return (
-    <aside className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm xl:sticky xl:top-20">
+    <aside className="rounded-lg border border-border bg-white p-4 shadow-sm xl:sticky xl:top-20">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-semibold">
             {t("tenant.dashboard.attention.title", "Needs attention")}
           </h2>
-          <p className="text-xs text-outline">
+          <p className="text-xs text-muted-foreground">
             {t(
               "tenant.dashboard.attention.subtitle",
               "Live operational queues",
@@ -1012,7 +1140,7 @@ function NeedsAttention({
       <div className="mt-4 grid gap-3">
         {items.map(({ label, count, body, href, icon: Icon, tone }) => (
           <Link
-            className="group rounded-xl border border-zinc-100 p-4 transition hover:border-zinc-400"
+            className="group rounded-lg border border-border p-4 transition hover:border-primary/40 hover:bg-muted/40"
             href={href}
             key={label}
           >
@@ -1030,14 +1158,14 @@ function NeedsAttention({
                   <strong className="text-xl">{formatNumber(count)}</strong>
                   <span className="text-xs font-semibold">{label}</span>
                 </div>
-                <p className="mt-1 text-[11px] text-outline">{body}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{body}</p>
               </div>
               <ArrowRight className="directional-icon ms-auto mt-2 size-4 text-zinc-400 transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
             </div>
           </Link>
         ))}
         {!items.length && (
-          <p className="rounded-xl bg-zinc-50 p-4 text-sm text-outline">
+          <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
             {t(
               "tenant.dashboard.attention.none",
               "No authorized action queues are waiting for you.",
@@ -1046,7 +1174,7 @@ function NeedsAttention({
         )}
       </div>
       <Link
-        className="mt-4 flex h-10 items-center justify-center gap-2 rounded-lg border border-zinc-300 text-xs font-semibold text-primary"
+        className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border text-xs font-semibold text-primary transition hover:border-primary/40 hover:bg-primary/5"
         href="/app/attendance/register"
       >
         {t(
@@ -1076,41 +1204,45 @@ function statusLabel(status: DashboardStatus | "ALL", t: Translate) {
 function statusPresentation(status: DashboardStatus, t: Translate) {
   const values: Record<
     DashboardStatus,
-    { label: string; badge: string; dot: string }
+    {
+      label: string;
+      tone: "neutral" | "info" | "success" | "warning" | "danger" | "pending";
+      dot: string;
+    }
   > = {
     CLOCKED_IN: {
       label: t("attendance.status.clockedIn", "Clocked in"),
-      badge: "bg-emerald-100 text-emerald-800",
+      tone: "success",
       dot: "bg-emerald-600",
     },
     LATE: {
       label: t("attendance.status.late", "Late"),
-      badge: "bg-amber-200 text-amber-800",
+      tone: "warning",
       dot: "bg-amber-500",
     },
     ABSENT: {
       label: t("attendance.status.absent", "Absent"),
-      badge: "bg-error-container text-error",
+      tone: "danger",
       dot: "bg-red-600",
     },
     ON_FIELD: {
       label: t("attendance.status.onField", "On field"),
-      badge: "bg-sky-200 text-sky-700",
+      tone: "info",
       dot: "bg-sky-600",
     },
     ON_BREAK: {
       label: t("attendance.status.onBreak", "On break"),
-      badge: "bg-amber-200 text-amber-900",
+      tone: "warning",
       dot: "bg-amber-600",
     },
     NOT_YET_IN: {
       label: t("attendance.status.notYetIn", "Not yet in"),
-      badge: "bg-zinc-100 text-on-surface-variant",
+      tone: "neutral",
       dot: "bg-zinc-400",
     },
     OFF: {
       label: t("attendance.status.off", "Off"),
-      badge: "bg-zinc-100 text-on-surface-variant",
+      tone: "neutral",
       dot: "bg-zinc-400",
     },
   };

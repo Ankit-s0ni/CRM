@@ -15,21 +15,15 @@ export function validateProductionRuntimeConfiguration(
 
   const errors: string[] = [];
   requireSecret(errors, environment, 'JWT_SECRET');
-  requireSecret(errors, environment, 'JWT_REFRESH_SECRET');
-  requireHttpsUrl(errors, environment, 'S3_ENDPOINT');
-  requireHttpsUrl(errors, environment, 'S3_PUBLIC_ENDPOINT');
+  optionalHttpsUrl(errors, environment, 'S3_ENDPOINT');
+  optionalHttpsUrl(errors, environment, 'S3_PUBLIC_ENDPOINT');
   requireValue(errors, environment, 'S3_PRIVATE_BUCKET');
   requireSecret(errors, environment, 'S3_ACCESS_KEY');
   requireSecret(errors, environment, 'S3_SECRET_KEY');
-  requireSemver(errors, environment, 'MOBILE_MINIMUM_VERSION');
-  requireSemver(errors, environment, 'MOBILE_RECOMMENDED_VERSION');
-  requireHttpsUrl(errors, environment, 'MOBILE_ANDROID_UPDATE_URL');
-  requireHttpsUrl(errors, environment, 'MOBILE_IOS_UPDATE_URL');
-  requireHttpsUrl(errors, environment, 'SENTRY_DSN');
-  requireHttpsUrl(errors, environment, 'OTEL_EXPORTER_OTLP_ENDPOINT');
-  requireValue(errors, environment, 'OTEL_SERVICE_NAME');
-  requireValue(errors, environment, 'RELEASE_VERSION');
-  requireHttpsUrl(errors, environment, 'OBSERVABILITY_ALERT_WEBHOOK_URL');
+  optionalSemver(errors, environment, 'MOBILE_MINIMUM_VERSION');
+  optionalSemver(errors, environment, 'MOBILE_RECOMMENDED_VERSION');
+  optionalHttpsUrl(errors, environment, 'MOBILE_ANDROID_UPDATE_URL');
+  optionalHttpsUrl(errors, environment, 'MOBILE_IOS_UPDATE_URL');
   requireValue(errors, environment, 'MAIL_PROVIDER');
   requireValue(errors, environment, 'MAIL_FROM_ADDRESS');
   requireValue(errors, environment, 'MAIL_FROM_NAME');
@@ -46,10 +40,20 @@ export function validateProductionRuntimeConfiguration(
     requireHttpsUrl(errors, environment, 'EMAIL_GATEWAY_URL');
     requireSecret(errors, environment, 'EMAIL_GATEWAY_TOKEN');
   }
-  requireHttpsUrl(errors, environment, 'RAZORPAY_CHARGE_URL');
-  requireHttpsUrl(errors, environment, 'RAZORPAY_HEALTH_URL');
-  requireSecret(errors, environment, 'RAZORPAY_API_KEY');
-  requireSecret(errors, environment, 'RAZORPAY_WEBHOOK_SECRET');
+  if (environment.OBSERVABILITY_ENABLED === 'true') {
+    requireHttpsUrl(errors, environment, 'SENTRY_DSN');
+    requireHttpsUrl(errors, environment, 'OTEL_EXPORTER_OTLP_ENDPOINT');
+    requireValue(errors, environment, 'OTEL_SERVICE_NAME');
+    requireValue(errors, environment, 'RELEASE_VERSION');
+    requireHttpsUrl(errors, environment, 'OBSERVABILITY_ALERT_WEBHOOK_URL');
+  }
+
+  if (environment.RAZORPAY_ENABLED === 'true') {
+    requireHttpsUrl(errors, environment, 'RAZORPAY_CHARGE_URL');
+    requireHttpsUrl(errors, environment, 'RAZORPAY_HEALTH_URL');
+    requireSecret(errors, environment, 'RAZORPAY_API_KEY');
+    requireSecret(errors, environment, 'RAZORPAY_WEBHOOK_SECRET');
+  }
 
   if (environment.STRIPE_ENABLED === 'true') {
     requireHttpsUrl(errors, environment, 'STRIPE_CHARGE_URL');
@@ -129,6 +133,14 @@ function requireHttpsUrl(
   }
 }
 
+function optionalHttpsUrl(
+  errors: string[],
+  environment: RuntimeEnvironment,
+  name: string,
+) {
+  if (environment[name]?.trim()) requireHttpsUrl(errors, environment, name);
+}
+
 function requireSemver(
   errors: string[],
   environment: RuntimeEnvironment,
@@ -138,6 +150,14 @@ function requireSemver(
   if (!value || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(value)) {
     errors.push(`${name} must be a semantic version`);
   }
+}
+
+function optionalSemver(
+  errors: string[],
+  environment: RuntimeEnvironment,
+  name: string,
+) {
+  if (environment[name]?.trim()) requireSemver(errors, environment, name);
 }
 
 function requirePort(

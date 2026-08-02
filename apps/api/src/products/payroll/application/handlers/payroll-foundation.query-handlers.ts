@@ -146,7 +146,11 @@ export class ListSalaryStructuresHandler implements IQueryHandler<ListSalaryStru
   ) {}
 
   async execute(query: ListSalaryStructuresQuery) {
-    return { data: await this.repo.listSalaryStructures(query.tenantId) };
+    return {
+      data: serializeBigInt(
+        await this.repo.listSalaryStructures(query.tenantId),
+      ),
+    };
   }
 }
 
