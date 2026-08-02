@@ -131,17 +131,24 @@ export function ScrollExperience() {
         .to(".hero-transition-caption", { opacity: 0, y: -12 }, 0.72)
         .to(".hero-transition-wipe", { scale: 24 }, 0.73)
         .to(".hero-transition-mark", { opacity: 0, scale: 15 }, 0.75)
-        .to(".site-header", { yPercent: 0 }, 0.9);
+        .to(".site-header", { yPercent: 0 }, 0.9)
+        .set(".hero", { backgroundColor: "#f26444" }, 1.22)
+        .set(".hero-transition", { autoAlpha: 0 }, 1.24);
 
       const fragments = gsap.utils.toArray<HTMLElement>(".fragment");
       const convergence = gsap.timeline({
         scrollTrigger: {
           trigger: ".fragmentation",
-          start: "top 78%",
-          end: "bottom 28%",
+          start: "top top",
+          end: "+=150%",
+          pin: true,
           scrub: 1,
+          anticipatePin: 1,
         },
       });
+
+      // Let the complete fragmented scene settle before it starts converging.
+      convergence.to({}, { duration: 0.32 });
 
       fragments.forEach((fragment, index) => {
         convergence.to(
@@ -154,17 +161,22 @@ export function ScrollExperience() {
             rotation: index % 2 === 0 ? 10 : -10,
             scale: 0.5,
             opacity: 0,
+            duration: 0.6,
           },
-          0,
+          0.32,
         );
       });
       convergence
-        .to(".fragment-copy", { yPercent: -10, opacity: 0.28 }, 0.05)
+        .to(
+          ".fragment-copy",
+          { yPercent: -10, opacity: 0.28, duration: 0.55 },
+          0.38,
+        )
         .fromTo(
           ".fragment-convergence",
           { scale: 0.25, opacity: 0, rotation: -20 },
-          { scale: 1, opacity: 1, rotation: 0 },
-          0.28,
+          { scale: 1, opacity: 1, rotation: 0, duration: 0.45 },
+          0.78,
         );
 
       const services = gsap.utils.toArray<HTMLElement>(".service-ring span");

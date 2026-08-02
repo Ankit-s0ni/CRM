@@ -149,6 +149,7 @@ h1, h2, h3 { font-family: var(--font-display), sans-serif; }
   display: grid;
   overflow: hidden;
   padding: 8.5rem 5vw 5rem;
+  z-index: 1;
 }
 
 .hero::after {
@@ -319,6 +320,8 @@ h1 span { color: var(--cobalt); display: block; font-size: 0.68em; margin-top: 0
   display: grid;
   gap: 8vw;
   grid-template-columns: 0.9fr 1.1fr;
+  isolation: isolate;
+  z-index: 2;
 }
 .fragment-copy h2, .platform-heading h2, .domains-heading h2, .intelligence-panel h2 {
   font-size: clamp(3rem, 6vw, 6.5rem);
