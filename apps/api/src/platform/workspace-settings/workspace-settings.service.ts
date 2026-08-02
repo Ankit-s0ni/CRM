@@ -4,7 +4,6 @@ import { PrismaService } from '../../shared/database/prisma.service';
 import { OutboxService } from '../../shared/events/outbox.service';
 import { TenantContextService } from '../tenancy/public';
 import {
-  CompleteOnboardingDto,
   LogoPresignDto,
   UpdateTenantSettingsDto,
 } from './dto/workspace-settings.dto';
@@ -123,67 +122,6 @@ export class WorkspaceSettingsService {
     );
     await this.updateLogoKey(result.objectKey);
     return { data: result };
-  }
-
-  status() {
-    const tenantId = this.tenantId();
-    return this.prisma.forTenant(async (tx) => {
-      const [tenant, settings, departments, employees] = await Promise.all([
-        tx.tenant.findUnique({
-          where: { id: tenantId },
-          select: { onboardingCompletedAt: true },
-        }),
-        tx.tenantSettings.findUnique({ where: { tenantId } }),
-        tx.department.count(),
-        tx.employee.count(),
-      ]);
-      return {
-        data: {
-          completed: Boolean(tenant?.onboardingCompletedAt),
-          currentStep: settings?.onboardingStep ?? 1,
-          steps: {
-            company: Boolean(settings),
-            organization: departments > 0,
-            employees: employees > 0,
-          },
-        },
-      };
-    });
-  }
-
-  complete(dto: CompleteOnboardingDto) {
-    const tenantId = this.tenantId();
-    return this.prisma.forTenant(async (tx) => {
-      const tenant = await tx.tenant.findUnique({ where: { id: tenantId } });
-      if (!tenant)
-        throw new BadRequestException({
-          code: 'WORKSPACE_NOT_FOUND',
-          message: 'Workspace not found',
-        });
-      if (tenant.onboardingCompletedAt)
-        return {
-          data: { completed: true, completedAt: tenant.onboardingCompletedAt },
-        };
-      const completedAt = new Date();
-      await tx.tenant.update({
-        where: { id: tenantId },
-        data: { onboardingCompletedAt: completedAt },
-      });
-      await this.audit.append(tx, {
-        tenantId,
-        action: 'workspace.onboarding.completed',
-        module: 'WORKSPACE',
-        entityType: 'Tenant',
-        entityId: tenantId,
-        newValue: { completedAt, progress: dto.progress },
-      });
-      await this.outbox.append(tx, {
-        tenantId,
-        eventKey: 'workspace.onboarding.completed',
-        payload: { tenantId, completedAt: completedAt.toISOString() },
-      });
-      return { data: { completed: true, completedAt } };
-    });
   }
 
   private updateLogoKey(companyLogoKey: string) {

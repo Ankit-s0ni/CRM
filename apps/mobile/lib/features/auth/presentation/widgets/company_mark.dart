@@ -9,20 +9,28 @@ class CompanyMark extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brand = ref.watch(tenantControllerProvider).branding;
+    final fallbackLogo = Image.asset(
+      'assets/branding/deltcrm-logo.png',
+      fit: BoxFit.contain,
+    );
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: brand.primaryColor,
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: const Icon(
-            Icons.workspaces_outline,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(13),
+          child: Container(
+            width: 44,
+            height: 44,
+            padding: const EdgeInsets.all(3),
             color: Colors.white,
-            size: 22,
+            child: brand.logoUrl == null
+                ? fallbackLogo
+                : Image.network(
+                    brand.logoUrl!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => fallbackLogo,
+                  ),
           ),
         ),
         const SizedBox(width: 12),

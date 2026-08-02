@@ -25,11 +25,12 @@ const adminPermissions = new Set([
   "notifications.self",
 ]);
 
-test("keeps the tenant portal organized into five primary workspaces", () => {
+test("promotes enabled product modules into primary navigation", () => {
   expect(tenantPrimaryNavigation.map(({ label }) => label)).toEqual([
     "Dashboard",
     "Employees",
-    "Modules",
+    "Attendance",
+    "Payroll",
     "Reports",
     "Settings",
   ]);
@@ -43,9 +44,18 @@ test("keeps the tenant portal organized into five primary workspaces", () => {
   expect(tenantTopLevelActive("/app/reports/attendance", "/app/reports")).toBe(
     true,
   );
+  expect(
+    tenantTopLevelActive(
+      "/app/attendance/register",
+      "/app/modules/attendance",
+    ),
+  ).toBe(true);
+  expect(
+    tenantTopLevelActive("/app/modules/payroll", "/app/modules/payroll"),
+  ).toBe(true);
 });
 
-test("filters contextual navigation by permission and module entitlement", () => {
+test("keeps settings contextual navigation separate from product modules", () => {
   const moduleKeys = new Set(["ATTENDANCE", "LEAVE", "PAYROLL"]);
   const visibleSettings = tenantContextNavigation.settings
     .filter((item) => canViewTenantNavItem(item, adminPermissions, moduleKeys))
@@ -54,12 +64,7 @@ test("filters contextual navigation by permission and module entitlement", () =>
   expect(visibleSettings).toEqual([
     "Settings home",
     "Company",
-    "Organization",
-    "Users & roles",
-    "Modules",
-    "Attendance",
-    "Leave",
-    "Payroll",
+    "Admin access",
     "Security",
     "Notifications",
     "Integrations",
@@ -67,27 +72,54 @@ test("filters contextual navigation by permission and module entitlement", () =>
     "Billing",
   ]);
 
-  const noAttendance = new Set(["LEAVE"]);
-  expect(
-    tenantContextNavigation.modules
-      .filter((item) =>
-        canViewTenantNavItem(item, adminPermissions, noAttendance),
-      )
-      .map(({ label }) => label),
-  ).toEqual(["All modules", "Leave"]);
+  expect(tenantContextNavigation.modules).toEqual([]);
 });
 
-test("keeps modules available when a non-Attendance module is entitled", () => {
-  const moduleItem = tenantPrimaryNavigation.find(
-    ({ href }) => href === "/app/modules",
+test("shows each primary module only when its entitlement is enabled", () => {
+  const attendanceItem = tenantPrimaryNavigation.find(
+    ({ href }) => href === "/app/modules/attendance",
+  )!;
+  const payrollItem = tenantPrimaryNavigation.find(
+    ({ href }) => href === "/app/modules/payroll",
   )!;
 
   expect(
-    canViewTenantNavItem(moduleItem, adminPermissions, new Set(["LEAVE"])),
+    canViewTenantNavItem(
+      attendanceItem,
+      adminPermissions,
+      new Set(["ATTENDANCE"]),
+    ),
   ).toBe(true);
-  expect(canViewTenantNavItem(moduleItem, adminPermissions, new Set())).toBe(
-    false,
-  );
+  expect(
+    canViewTenantNavItem(attendanceItem, adminPermissions, new Set(["PAYROLL"])),
+  ).toBe(false);
+  expect(
+    canViewTenantNavItem(payrollItem, adminPermissions, new Set(["PAYROLL"])),
+  ).toBe(true);
+  expect(
+    canViewTenantNavItem(payrollItem, adminPermissions, new Set()),
+  ).toBe(false);
+});
+
+test("keeps module routes independently highlighted", () => {
+  expect(
+    tenantTopLevelActive(
+      "/app/modules/attendance",
+      "/app/modules/attendance",
+    ),
+  ).toBe(true);
+  expect(
+    tenantTopLevelActive(
+      "/app/modules/attendance",
+      "/app/modules/payroll",
+    ),
+  ).toBe(false);
+  expect(
+    tenantTopLevelActive(
+      "/app/attendance/leave",
+      "/app/modules/attendance",
+    ),
+  ).toBe(true);
 });
 
 test("connects every major portal area to plain-language contextual help", () => {

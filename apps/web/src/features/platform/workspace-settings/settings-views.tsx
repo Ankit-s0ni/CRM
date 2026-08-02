@@ -1,14 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- Blob previews cannot use the image optimizer. */
 
-import {
-  BellRing,
-  Building2,
-  Check,
-  ChevronRight,
-  ShieldCheck,
-  UploadCloud,
-} from "lucide-react";
+import { BellRing, Building2, Check, ChevronRight, ShieldCheck, UploadCloud } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
@@ -27,6 +20,8 @@ import { TimezoneSelect } from "@/shared/components/timezone-select";
 import { FeatureInfo } from "@/features/platform/help/feature-info";
 import type { AttendanceHelpKey } from "@/content/attendance-help";
 import { useTenantLocalization } from "@/lib/tenant-localization";
+import { OrganizationView } from "@/features/platform/organization/organization-access-views";
+import { OfficesView } from "@/features/products/attendance/configuration/attendance-config-views";
 
 type Settings = {
   timezone: string;
@@ -42,6 +37,7 @@ type Settings = {
   checkoutReminderMinutes: number;
   absenteeAlertTime: string;
   onboardingStep: number;
+  onboardingVersion: number;
   companyLogoKey?: string;
   logoUrl?: string | null;
 };
@@ -68,13 +64,22 @@ const defaultSettings: Settings = {
   checkoutReminderMinutes: 15,
   absenteeAlertTime: "10:00",
   onboardingStep: 1,
+  onboardingVersion: 2,
+};
+
+type OnboardingStepKey = "company" | "organization" | "office" | "workingDays" | "attendancePolicy" | "hrInvite";
+
+type OnboardingStatus = {
+  completed: boolean;
+  currentStep: number;
+  onboardingVersion: number;
+  steps: Record<OnboardingStepKey, boolean>;
+  missingSteps: OnboardingStepKey[];
 };
 
 export function NotificationPreferencesView() {
   const { tText } = useTenantLocalization();
-  const [preferences, setPreferences] = useState<
-    NotificationPreference[] | null
-  >(null);
+  const [preferences, setPreferences] = useState<NotificationPreference[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -113,20 +118,21 @@ export function NotificationPreferencesView() {
     }
   }
 
-  const events = preferences
-    ? Array.from(new Set(preferences.map(({ eventKey }) => eventKey)))
-    : [];
+  const events = preferences ? Array.from(new Set(preferences.map(({ eventKey }) => eventKey))) : [];
 
   return (
     <AdminPage
       title={tText("My notification preferences")}
-      description={tText("Choose how DeltCRM sends optional notices to your account. Mandatory security and decision notices stay enabled.")}
+      description={tText(
+        "Choose how DeltCRM sends optional notices to your account. Mandatory security and decision notices stay enabled.",
+      )}
       action={
         <Link
           className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary"
           href="/app/notifications"
         >
-          <BellRing className="size-4" /> {tText("Open inbox")}</Link>
+          <BellRing className="size-4" /> {tText("Open inbox")}
+        </Link>
       }
     >
       {error && <ErrorState message={error} />}
@@ -141,9 +147,7 @@ export function NotificationPreferencesView() {
             <span className="text-center">{tText("Push")}</span>
           </div>
           {events.map((eventKey) => {
-            const rows = preferences.filter(
-              (preference) => preference.eventKey === eventKey,
-            );
+            const rows = preferences.filter((preference) => preference.eventKey === eventKey);
             return (
               <div
                 className="grid grid-cols-[1fr_repeat(3,92px)] items-center border-b border-surface-variant px-5 py-4 last:border-0"
@@ -153,15 +157,11 @@ export function NotificationPreferencesView() {
                   <div className="font-semibold">{rows[0]?.label}</div>
                   <div className="text-xs text-outline">
                     {eventKey}
-                    {rows.some(({ mandatory }) => mandatory)
-                      ? tText("· Required")
-                      : ""}
+                    {rows.some(({ mandatory }) => mandatory) ? tText("· Required") : ""}
                   </div>
                 </div>
                 {(["IN_APP", "EMAIL", "PUSH"] as const).map((channel) => {
-                  const preference = rows.find(
-                    (row) => row.channel === channel,
-                  );
+                  const preference = rows.find((row) => row.channel === channel);
                   const key = `${eventKey}:${channel}`;
                   return (
                     <div className="grid place-items-center" key={channel}>
@@ -191,7 +191,8 @@ export function NotificationPreferencesView() {
         </Panel>
       )}
       <p className="mt-4 text-sm text-zinc-500">
-        {tText("These preferences apply only to your signed-in account, not to every employee in the company.")}</p>
+        {tText("These preferences apply only to your signed-in account, not to every employee in the company.")}
+      </p>
     </AdminPage>
   );
 }
@@ -211,6 +212,7 @@ function writableSettings(settings: Settings) {
     checkoutReminderMinutes,
     absenteeAlertTime,
     onboardingStep,
+    onboardingVersion,
   } = settings;
 
   return {
@@ -227,6 +229,7 @@ function writableSettings(settings: Settings) {
     checkoutReminderMinutes,
     absenteeAlertTime,
     onboardingStep,
+    onboardingVersion,
   };
 }
 
@@ -242,18 +245,24 @@ export function OnboardingWizard() {
   const [logoPreview, setLogoPreview] = useState("");
   const [roles, setRoles] = useState<Array<{ id: string; name: string }>>([]);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [readiness, setReadiness] = useState<Record<OnboardingStepKey, boolean>>({
+    company: true,
+    organization: false,
+    office: false,
+    workingDays: true,
+    attendancePolicy: true,
+    hrInvite: true,
+  });
 
   useEffect(() => {
     if (hasHydrated && !accessToken) router.replace("/login");
     if (!accessToken) return;
-    Promise.all([
-      apiClient.get("/onboarding/status"),
-      apiClient.get("/tenant-settings"),
-      apiClient.get("/roles"),
-    ])
+    Promise.all([apiClient.get("/onboarding/status"), apiClient.get("/tenant-settings"), apiClient.get("/roles")])
       .then(([status, current, roleResult]) => {
-        if (status.data.data.completed) router.replace("/app");
-        setStep(status.data.data.currentStep || 1);
+        const onboardingStatus = status.data.data as OnboardingStatus;
+        if (onboardingStatus.completed) router.replace("/app");
+        setStep(onboardingStatus.currentStep || 1);
+        setReadiness(onboardingStatus.steps);
         if (current.data.data) {
           setSettings({ ...defaultSettings, ...current.data.data });
           setLogoPreview(current.data.data.logoUrl ?? "");
@@ -268,7 +277,7 @@ export function OnboardingWizard() {
     setSaving(true);
     setError("");
     try {
-      if (step === 4) {
+      if (step === 6) {
         if (inviteEmail) {
           const hrRole = roles.find(({ name }) => name === "HR_ADMIN");
           if (!hrRole) throw new Error("HR role unavailable");
@@ -278,7 +287,7 @@ export function OnboardingWizard() {
           });
         }
         await apiClient.post("/onboarding/complete", {
-          progress: { completedSteps: 4 },
+          progress: { completedSteps: 6, onboardingVersion: 2 },
         });
         router.replace("/app/settings");
         return;
@@ -287,7 +296,13 @@ export function OnboardingWizard() {
       await apiClient.patch("/tenant-settings", {
         ...writableSettings(settings),
         onboardingStep: next,
+        onboardingVersion: 2,
       });
+      setSettings((current) => ({
+        ...current,
+        onboardingStep: next,
+        onboardingVersion: 2,
+      }));
       setStep(next);
     } catch {
       setError(tText("Your progress could not be saved. Please try again."));
@@ -317,6 +332,18 @@ export function OnboardingWizard() {
         <LoadingState />
       </div>
     );
+  const stepDefinitions: Array<{ key: OnboardingStepKey; label: string }> = [
+    { key: "company", label: tText("Company profile") },
+    { key: "organization", label: tText("Organization") },
+    { key: "office", label: tText("Office") },
+    { key: "workingDays", label: tText("Working days") },
+    { key: "attendancePolicy", label: tText("Attendance policy") },
+    { key: "hrInvite", label: tText("Invite HR") },
+  ];
+  const currentStepKey = stepDefinitions[step - 1]?.key ?? "company";
+  const currentStepReady = readiness[currentStepKey];
+  const embeddedSetupStep = step === 2 || step === 3;
+
   return (
     <div className="min-h-screen bg-surface text-zinc-900">
       <header className="flex h-20 items-center justify-between border-b border-surface-variant bg-white px-8">
@@ -328,13 +355,8 @@ export function OnboardingWizard() {
         <span className="text-sm text-outline">{tText("Support")}</span>
       </header>
       <main className="mx-auto max-w-[1440px] px-6 py-12">
-        <div className="mx-auto mb-12 flex max-w-[800px] items-start">
-          {[
-            "Company profile",
-            "Working days",
-            "Attendance policy",
-            "Invite HR",
-          ].map((label, index) => (
+        <div className="mx-auto mb-12 flex max-w-[1080px] items-start overflow-x-auto pb-2">
+          {stepDefinitions.map(({ label }, index) => (
             <div key={label} className="flex flex-1 items-start last:flex-none">
               <div className="grid justify-items-center gap-2">
                 <div
@@ -348,10 +370,8 @@ export function OnboardingWizard() {
                   {label}
                 </span>
               </div>
-              {index < 3 && (
-                <div
-                  className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-primary" : "bg-surface-variant"}`}
-                />
+              {index < stepDefinitions.length - 1 && (
+                <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-primary" : "bg-surface-variant"}`} />
               )}
             </div>
           ))}
@@ -361,20 +381,27 @@ export function OnboardingWizard() {
             <ErrorState message={error} />
           </div>
         )}
-        <div className="mx-auto grid min-h-[600px] max-w-[1200px] overflow-hidden rounded-xl border border-surface-variant bg-white shadow-xl lg:grid-cols-[1.1fr_.9fr]">
-          <section className="p-8 lg:p-16">
-            <div className="mx-auto max-w-xl">
+        <div
+          className={`mx-auto grid min-h-[600px] max-w-[1320px] overflow-hidden rounded-xl border border-surface-variant bg-white shadow-xl ${embeddedSetupStep ? "" : "lg:grid-cols-[1.1fr_.9fr]"}`}
+        >
+          <section className={embeddedSetupStep ? "p-6 lg:p-10" : "p-8 lg:p-16"}>
+            <div className={embeddedSetupStep ? "mx-auto max-w-[1180px]" : "mx-auto max-w-xl"}>
               <h1 className="text-3xl font-bold">
                 {step === 1
                   ? tText("Let's build your workspace")
                   : step === 2
-                    ? tText("Define your working week")
+                    ? tText("Build your organization")
                     : step === 3
-                      ? tText("Define attendance policy")
-                      : tText("Invite your HR team")}
+                      ? tText("Add your first office")
+                      : step === 4
+                        ? tText("Define your working week")
+                        : step === 5
+                          ? tText("Define attendance policy")
+                          : tText("Invite your HR team")}
               </h1>
               <p className="mb-8 mt-2 text-on-surface-variant">
-                {tText("Your progress is saved after every step, so you can safely return later.")}</p>
+                {tText("Your progress is saved after every step, so you can safely return later.")}
+              </p>
               {step === 1 && (
                 <div className="grid gap-6">
                   <label className="flex cursor-pointer items-center gap-5 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-5">
@@ -391,21 +418,16 @@ export function OnboardingWizard() {
                     </div>
                     <div>
                       <strong>{tText("Upload your company logo")}</strong>
-                      <p className="text-sm text-outline">
-                        {tText("PNG, JPEG or WebP, up to 2 MB")}</p>
+                      <p className="text-sm text-outline">{tText("PNG, JPEG or WebP, up to 2 MB")}</p>
                       {settings.companyLogoKey && (
-                        <p className="mt-1 text-xs font-semibold text-emerald-800">
-                          {tText("Logo uploaded")}</p>
+                        <p className="mt-1 text-xs font-semibold text-emerald-800">{tText("Logo uploaded")}</p>
                       )}
                     </div>
                     <input
                       className="hidden"
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
-                      onChange={(event) =>
-                        event.target.files?.[0] &&
-                        uploadLogo(event.target.files[0])
-                      }
+                      onChange={(event) => event.target.files?.[0] && uploadLogo(event.target.files[0])}
                     />
                   </label>
                   <Field label={tText("Timezone")}>
@@ -422,6 +444,19 @@ export function OnboardingWizard() {
                 </div>
               )}
               {step === 2 && (
+                <OrganizationView
+                  embedded
+                  onReadinessChange={(organization) => setReadiness((current) => ({ ...current, organization }))}
+                />
+              )}
+              {step === 3 && (
+                <OfficesView
+                  embedded
+                  defaultTimezone={settings.timezone}
+                  onReadinessChange={(office) => setReadiness((current) => ({ ...current, office }))}
+                />
+              )}
+              {step === 4 && (
                 <div className="grid gap-6 sm:grid-cols-2">
                   <Field label={tText("Working day starts")}>
                     <input
@@ -453,14 +488,12 @@ export function OnboardingWizard() {
                     <WeeklyOffEditor
                       mode="compact"
                       value={settings.weeklyOffs}
-                      onChange={(weeklyOffs) =>
-                        setSettings({ ...settings, weeklyOffs })
-                      }
+                      onChange={(weeklyOffs) => setSettings({ ...settings, weeklyOffs })}
                     />
                   </div>
                 </div>
               )}
-              {step === 3 && (
+              {step === 5 && (
                 <div className="grid gap-6">
                   <Toggle
                     helpKey="selfie-verification"
@@ -505,10 +538,7 @@ export function OnboardingWizard() {
                     }
                   />
                   {settings.fieldTrackingEnabled && (
-                    <Field
-                      helpKey="background-tracking"
-                      label={tText("Field tracking interval (minutes)")}
-                    >
+                    <Field helpKey="background-tracking" label={tText("Field tracking interval (minutes)")}>
                       <input
                         type="number"
                         className={inputClass}
@@ -548,14 +578,17 @@ export function OnboardingWizard() {
                   </Field>
                 </div>
               )}
-              {step === 4 && (
+              {step === 6 && (
                 <div className="grid gap-5 rounded-xl border border-zinc-300 p-6">
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="text-primary" />
                     <strong>{tText("Business Admin is ready")}</strong>
                   </div>
                   <p className="text-sm text-on-surface-variant">
-                    {tText("Optionally invite your first HR administrator. When you finish setup, we'll email them a secure link to join your workspace and set up their password.")}</p>
+                    {tText(
+                      "Optionally invite your first HR administrator. When you finish setup, we'll email them a secure link to join your workspace and set up their password.",
+                    )}
+                  </p>
                   <Field label={tText("HR administrator email (optional)")}>
                     <input
                       type="email"
@@ -565,42 +598,51 @@ export function OnboardingWizard() {
                       onChange={(event) => setInviteEmail(event.target.value)}
                     />
                   </Field>
+                  <div className="grid gap-2 border-t border-surface-variant pt-4 text-sm">
+                    {stepDefinitions.slice(0, 5).map(({ key, label }) => (
+                      <div className="flex items-center justify-between" key={key}>
+                        <span>{label}</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-800">
+                          <Check className="size-4" /> {tText("Ready")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               <div className="mt-10 flex items-center justify-between">
-                <button
-                  className="text-sm font-medium text-outline"
-                  onClick={() => step > 1 && setStep(step - 1)}
-                >
-                  {tText("Back")}</button>
-                <PrimaryButton disabled={saving} onClick={continueSetup}>
-                  {saving
-                    ? tText("Saving...")
-                    : step === 4
-                      ? tText("Finish setup")
-                      : tText("Continue")}
+                <button className="text-sm font-medium text-outline" onClick={() => step > 1 && setStep(step - 1)}>
+                  {tText("Back")}
+                </button>
+                <PrimaryButton disabled={saving || !currentStepReady} onClick={continueSetup}>
+                  {saving ? tText("Saving...") : step === 6 ? tText("Finish setup") : tText("Continue")}
                   <ChevronRight className="size-4" />
                 </PrimaryButton>
               </div>
             </div>
           </section>
-          <aside className="hidden items-center justify-center bg-zinc-50 p-12 lg:flex">
-            <div className="w-full rounded-3xl border border-white bg-white/70 p-10 shadow-2xl">
-              <div className={`grid aspect-video place-items-center rounded-2xl ${logoPreview ? 'bg-white p-4 border border-zinc-200' : 'bg-gradient-to-br from-primary to-emerald-300'}`}>
-                {logoPreview ? (
-                  <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain" />
-                ) : (
-                  <Building2 className="size-24 text-white" />
-                )}
+          {!embeddedSetupStep && (
+            <aside className="hidden items-center justify-center bg-zinc-50 p-12 lg:flex">
+              <div className="w-full rounded-3xl border border-white bg-white/70 p-10 shadow-2xl">
+                <div
+                  className={`grid aspect-video place-items-center rounded-2xl ${logoPreview ? "bg-white p-4 border border-zinc-200" : "bg-gradient-to-br from-primary to-emerald-300"}`}
+                >
+                  {logoPreview ? (
+                    <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain" />
+                  ) : (
+                    <Building2 className="size-24 text-white" />
+                  )}
+                </div>
+                <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-primary">
+                  {tText("Enterprise grade")}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold">{tText("Ready to scale with you.")}</h2>
+                <p className="mt-3 text-on-surface-variant">
+                  {tText("Configure attendance once, then apply it consistently across every team and office.")}
+                </p>
               </div>
-              <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-primary">
-                {tText("Enterprise grade")}</p>
-              <h2 className="mt-2 text-2xl font-semibold">
-                {tText("Ready to scale with you.")}</h2>
-              <p className="mt-3 text-on-surface-variant">
-                {tText("Configure attendance once, then apply it consistently across every team and office.")}</p>
-            </div>
-          </aside>
+            </aside>
+          )}
         </div>
       </main>
     </div>
@@ -664,7 +706,8 @@ export function CompanySettingsView() {
       description={tText("Manage your workspace identity, timezone and working-week defaults.")}
       action={
         <PrimaryButton disabled={!dirty} onClick={save}>
-          {tText("Save changes")}</PrimaryButton>
+          {tText("Save changes")}
+        </PrimaryButton>
       }
     >
       {error && <ErrorState message={error} />}
@@ -676,19 +719,14 @@ export function CompanySettingsView() {
             <Panel className="p-7">
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field label={tText("Timezone")}>
-                  <TimezoneSelect
-                    value={settings.timezone}
-                    onChange={(timezone) => change({ timezone })}
-                  />
+                  <TimezoneSelect value={settings.timezone} onChange={(timezone) => change({ timezone })} />
                 </Field>
                 <Field label={tText("Absentee alert time")}>
                   <input
                     type="time"
                     className={inputClass}
                     value={settings.absenteeAlertTime}
-                    onChange={(e) =>
-                      change({ absenteeAlertTime: e.target.value })
-                    }
+                    onChange={(e) => change({ absenteeAlertTime: e.target.value })}
                   />
                 </Field>
                 <Field label={tText("Working day start")}>
@@ -696,9 +734,7 @@ export function CompanySettingsView() {
                     type="time"
                     className={inputClass}
                     value={settings.workingDayStart}
-                    onChange={(e) =>
-                      change({ workingDayStart: e.target.value })
-                    }
+                    onChange={(e) => change({ workingDayStart: e.target.value })}
                   />
                 </Field>
                 <Field label={tText("Working day end")}>
@@ -717,22 +753,16 @@ export function CompanySettingsView() {
                   onChange={(weeklyOffs) => change({ weeklyOffs })}
                 />
               </div>
-              {saved && (
-                <p className="mt-4 text-sm font-medium text-emerald-800">
-                  {tText("Settings saved.")}</p>
-              )}
+              {saved && <p className="mt-4 text-sm font-medium text-emerald-800">{tText("Settings saved.")}</p>}
             </Panel>
             <Panel className="p-7">
               <h2 className="font-semibold">{tText("Company logo")}</h2>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText("Employees see this tenant identity after signing in. Public login remains DeltCRM branded.")}</p>
+                {tText("Employees see this tenant identity after signing in. Public login remains DeltCRM branded.")}
+              </p>
               <label className="mt-5 grid aspect-square max-h-56 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50">
                 {logoPreview ? (
-                  <img
-                    src={logoPreview}
-                    alt={tText("Company logo preview")}
-                    className="size-full object-contain p-4"
-                  />
+                  <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain p-4" />
                 ) : (
                   <UploadCloud className="size-10 text-primary" />
                 )}
@@ -741,9 +771,7 @@ export function CompanySettingsView() {
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   disabled={uploading}
-                  onChange={(event) =>
-                    event.target.files?.[0] && upload(event.target.files[0])
-                  }
+                  onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])}
                 />
               </label>
               <p className="mt-4 text-xs text-outline">
@@ -757,8 +785,7 @@ export function CompanySettingsView() {
           </div>
           {dirty && (
             <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">
-              <p className="text-sm font-medium text-on-surface-variant">
-                {tText("Unsaved changes detected")}</p>
+              <p className="text-sm font-medium text-on-surface-variant">{tText("Unsaved changes detected")}</p>
               <PrimaryButton onClick={save}>{tText("Save changes")}</PrimaryButton>
             </div>
           )}
@@ -802,7 +829,8 @@ export function AttendanceDefaultsView() {
       description={tText("Set tenant-wide defaults inherited by new attendance policies.")}
       action={
         <PrimaryButton disabled={!dirty} onClick={save}>
-          {tText("Save policy")}</PrimaryButton>
+          {tText("Save policy")}
+        </PrimaryButton>
       }
     >
       {error && <ErrorState message={error} />}
@@ -812,30 +840,22 @@ export function AttendanceDefaultsView() {
         <>
           <div className="grid gap-6 lg:grid-cols-2">
             <Panel className="p-7">
-              <h2 className="mb-6 text-xl font-semibold">
-                {tText("Identity verification")}</h2>
+              <h2 className="mb-6 text-xl font-semibold">{tText("Identity verification")}</h2>
               <div className="grid gap-5">
                 <Toggle
                   helpKey="selfie-verification"
                   label={tText("Require facial recognition")}
                   checked={settings.requireFacialRecognition}
-                  onChange={(checked) =>
-                    change({ requireFacialRecognition: checked })
-                  }
+                  onChange={(checked) => change({ requireFacialRecognition: checked })}
                 />
-                <Field
-                  helpKey="selfie-verification"
-                  label={`Face match threshold · ${settings.faceMatchThreshold}%`}
-                >
+                <Field helpKey="selfie-verification" label={`Face match threshold · ${settings.faceMatchThreshold}%`}>
                   <input
                     type="range"
                     min="0"
                     max="100"
                     className="accent-primary"
                     value={settings.faceMatchThreshold}
-                    onChange={(e) =>
-                      change({ faceMatchThreshold: Number(e.target.value) })
-                    }
+                    onChange={(e) => change({ faceMatchThreshold: Number(e.target.value) })}
                   />
                 </Field>
               </div>
@@ -843,10 +863,7 @@ export function AttendanceDefaultsView() {
             <Panel className="p-7">
               <h2 className="mb-6 text-xl font-semibold">{tText("Automation")}</h2>
               <div className="grid gap-5">
-                <Field
-                  helpKey="background-tracking"
-                  label={tText("Field tracking interval (minutes)")}
-                >
+                <Field helpKey="background-tracking" label={tText("Field tracking interval (minutes)")}>
                   <input
                     type="number"
                     className={inputClass}
@@ -861,16 +878,13 @@ export function AttendanceDefaultsView() {
                 <Toggle
                   label={tText("Check-in reminders")}
                   checked={settings.checkinReminderEnabled}
-                  onChange={(checked) =>
-                    change({ checkinReminderEnabled: checked })
-                  }
+                  onChange={(checked) => change({ checkinReminderEnabled: checked })}
                 />
               </div>
             </Panel>
           </div>
           {saved && (
-            <p className="mt-4 text-sm font-semibold text-emerald-800">
-              {tText("Attendance defaults saved.")}</p>
+            <p className="mt-4 text-sm font-semibold text-emerald-800">{tText("Attendance defaults saved.")}</p>
           )}
           {dirty && (
             <div className="sticky bottom-4 mt-6 flex items-center justify-between rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">

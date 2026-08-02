@@ -1,8 +1,18 @@
 import axios from 'axios';
 import { useAuthStore } from './auth-store';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+
+// Public identity requests must never inherit a previously signed-in tenant.
+export const publicApiClient = axios.create({
+  baseURL: apiBaseUrl,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001',
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },

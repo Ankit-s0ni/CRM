@@ -58,20 +58,25 @@ function OpenStreetMapFieldMap({
     BaseMapLayer,
     import("leaflet").TileLayer
   > | null>(null);
+  const featureLayer = useRef<import("leaflet").LayerGroup | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [baseLayer, setBaseLayer] = useState<BaseMapLayer>("map");
   const [failed, setFailed] = useState(false);
   const { tText } = useTenantLocalization();
   const emitMapClick = useEffectEvent((coordinate: MapCoordinate) => {
     onMapClick?.(coordinate);
   });
+  const emitMarkerSelect = useEffectEvent((id: string) => {
+    onMarkerSelect?.(id);
+  });
   const changeBaseLayer = (nextLayer: BaseMapLayer) => {
     setBaseLayer(nextLayer);
     const map = mapInstance.current;
     const layers = baseLayers.current;
     if (!map || !layers) return;
-    map.removeLayer(layers.map);
-    map.removeLayer(layers.satellite);
-    layers[nextLayer].addTo(map);
+    if (map.hasLayer(layers.map)) map.removeLayer(layers.map);
+    if (map.hasLayer(layers.satellite)) map.removeLayer(layers.satellite);
+    if (!map.hasLayer(layers[nextLayer])) layers[nextLayer].addTo(map);
   };
 
   useEffect(() => {
@@ -80,12 +85,11 @@ function OpenStreetMapFieldMap({
     void import("leaflet")
       .then((leaflet) => {
         if (!active || !container.current) return;
-        const points = [...markers, ...path, ...geofences];
-        const center = points[0] ?? { latitude: 23.588, longitude: 58.3829 };
+        const center = { latitude: 23.588, longitude: 58.3829 };
         const initializedMap = leaflet.map(container.current, {
           center: [center.latitude, center.longitude],
           scrollWheelZoom: true,
-          zoom: points.length ? 14 : 10,
+          zoom: 10,
         });
         map = initializedMap;
         mapInstance.current = initializedMap;
@@ -115,61 +119,95 @@ function OpenStreetMapFieldMap({
           map: streetLayer,
           satellite: satelliteLayer,
         };
-        (baseLayer === "satellite" ? satelliteLayer : streetLayer).addTo(
-          initializedMap,
-        );
-        const bounds = leaflet.latLngBounds([]);
-        points.forEach((point) =>
-          bounds.extend([point.latitude, point.longitude]),
-        );
-        if (points.length > 1) {
-          initializedMap.fitBounds(bounds, { padding: [52, 52] });
-        }
-        geofences.forEach(
-          (office) =>
-            leaflet.circle([office.latitude, office.longitude], {
-              fillColor: "#434343",
-              fillOpacity: 0.08,
-              radius: office.radiusMeters,
-              color: "#434343",
-              opacity: 0.8,
-              weight: 2,
-            }).addTo(initializedMap),
-        );
-        if (path.length > 1) {
-          leaflet.polyline(
-            path.map(({ latitude, longitude }) => [latitude, longitude]),
-            {
-              color: "#27272a",
-              opacity: 0.95,
-              weight: 5,
-            },
-          ).addTo(initializedMap);
-        }
-        markers.forEach((marker) => {
-          const pin = leaflet.marker([marker.latitude, marker.longitude], {
-            icon: leaflet.divIcon({
-              className: "field-map-marker",
-              html: `<span class="field-map-marker__pin field-map-marker__pin--${marker.tone ?? "default"} ${marker.id === selectedId ? "field-map-marker__pin--selected" : ""}"></span>`,
-              iconAnchor: [15, 30],
-              iconSize: [30, 30],
-            }),
-            title: marker.label ?? "Field employee",
-          });
-          pin.on("click", () => onMarkerSelect?.(marker.id));
-          pin.addTo(initializedMap);
-        });
+        streetLayer.addTo(initializedMap);
+        setMapReady(true);
       })
       .catch(() => {
         if (active) setFailed(true);
       });
     return () => {
       active = false;
+      featureLayer.current = null;
       map?.remove();
       mapInstance.current = null;
       baseLayers.current = null;
     };
-  }, [geofences, markers, onMarkerSelect, path, selectedId]);
+  }, []);
+
+  useEffect(() => {
+    if (!mapReady || !mapInstance.current) return;
+    let active = true;
+    void import("leaflet").then((leaflet) => {
+      const map = mapInstance.current;
+      if (!active || !map) return;
+
+      featureLayer.current?.remove();
+      const nextFeatureLayer = leaflet.layerGroup().addTo(map);
+      featureLayer.current = nextFeatureLayer;
+
+      geofences.forEach((office) => {
+        leaflet.circle([office.latitude, office.longitude], {
+          fillColor: "#434343",
+          fillOpacity: 0.08,
+          radius: office.radiusMeters,
+          color: "#434343",
+          opacity: 0.8,
+          weight: 2,
+        }).addTo(nextFeatureLayer);
+      });
+      if (path.length > 1) {
+        leaflet.polyline(
+          path.map(({ latitude, longitude }) => [latitude, longitude]),
+          { color: "#27272a", opacity: 0.95, weight: 5 },
+        ).addTo(nextFeatureLayer);
+      }
+      markers.forEach((marker) => {
+        const pin = leaflet.marker([marker.latitude, marker.longitude], {
+          icon: leaflet.divIcon({
+            className: "field-map-marker",
+            html: `<span class="field-map-marker__pin field-map-marker__pin--${marker.tone ?? "default"} ${marker.id === selectedId ? "field-map-marker__pin--selected" : ""}"></span>`,
+            iconAnchor: [15, 30],
+            iconSize: [30, 30],
+          }),
+          title: marker.label ?? "Field employee",
+        });
+        pin.on("click", () => emitMarkerSelect(marker.id));
+        pin.addTo(nextFeatureLayer);
+      });
+
+      const uniquePoints = Array.from(
+        new Map(
+          [...markers, ...path, ...geofences].map((point) => [
+            `${point.latitude}:${point.longitude}`,
+            point,
+          ]),
+        ).values(),
+      );
+      if (uniquePoints.length === 1) {
+        map.setView(
+          [uniquePoints[0].latitude, uniquePoints[0].longitude],
+          14,
+          { animate: false },
+        );
+      } else if (uniquePoints.length > 1) {
+        const bounds = leaflet.latLngBounds(
+          uniquePoints.map((point) => [point.latitude, point.longitude]),
+        );
+        map.fitBounds(bounds, { animate: false, padding: [52, 52] });
+      }
+      requestAnimationFrame(() => {
+        if (active && mapInstance.current === map) {
+          map.invalidateSize({ animate: false });
+        }
+      });
+    }).catch(() => {
+      if (active) setFailed(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [geofences, mapReady, markers, path, selectedId]);
 
   if (failed) {
     return (

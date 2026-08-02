@@ -19,6 +19,7 @@
   --color-secondary-container: #d4d4d8;
   
   --font-sans: var(--font-source-sans), sans-serif;
+  --font-arabic: var(--font-noto-arabic), sans-serif;
   --font-headline-md: var(--font-lexend), sans-serif;
   --font-body-md: var(--font-source-sans), sans-serif;
   --font-label-md: var(--font-source-sans), sans-serif;
@@ -31,6 +32,7 @@ body {
   margin: 0;
 }
 
+[lang="ar"],
 html[dir="rtl"] body {
   font-family: var(--font-noto-arabic), sans-serif;
 }

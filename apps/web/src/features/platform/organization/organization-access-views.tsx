@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { phoneCountryForTenant } from "@/lib/phone-country";
@@ -101,10 +101,8 @@ type User = {
 };
 
 const SYSTEM_ROLE_SUMMARIES: Record<string, string> = {
-  BUSINESS_ADMIN:
-    "Full workspace, access, billing, settings and module administration.",
-  HR_ADMIN:
-    "Employee, organization, attendance, leave, device and report operations.",
+  BUSINESS_ADMIN: "Full workspace, access, billing, settings and module administration.",
+  HR_ADMIN: "Employee, organization, attendance, leave, device and report operations.",
   MANAGER: "Reporting-team visibility, attendance reviews and leave approvals.",
 };
 
@@ -116,10 +114,7 @@ function apiErrorMessage(error: unknown, fallback: string) {
   return Array.isArray(message) ? message.join(" ") : message || fallback;
 }
 
-function flattenDepartments(
-  departments: Department[],
-  depth = 0,
-): Array<Department & { depth: number }> {
+function flattenDepartments(departments: Department[], depth = 0): Array<Department & { depth: number }> {
   return departments.flatMap((department) => [
     { ...department, depth },
     ...flattenDepartments(department.children ?? [], depth + 1),
@@ -223,7 +218,13 @@ type EmployeeImportError = {
   errorMessage: string;
 };
 
-export function OrganizationView() {
+export function OrganizationView({
+  embedded = false,
+  onReadinessChange,
+}: {
+  embedded?: boolean;
+  onReadinessChange?: (ready: boolean) => void;
+} = {}) {
   const { tText } = useTenantLocalization();
   const [departments, setDepartments] = useState<Department[] | null>(null);
   const [designations, setDesignations] = useState<Designation[]>([]);
@@ -231,20 +232,30 @@ export function OrganizationView() {
   const [departmentName, setDepartmentName] = useState("");
   const [departmentParentId, setDepartmentParentId] = useState("");
   const [designationName, setDesignationName] = useState("");
-  const load = () =>
-    Promise.all([
-      apiClient.get("/departments?view=tree"),
-      apiClient.get("/designations?limit=100"),
-    ])
-      .then(([departmentResult, designationResult]) => {
-        setDepartments(departmentResult.data.data);
-        setDesignations(designationResult.data.data);
-        setError("");
-      })
-      .catch(() => setError(tText("Organization structure could not be loaded.")));
+  const onReadinessChangeRef = useRef(onReadinessChange);
+  useEffect(() => {
+    onReadinessChangeRef.current = onReadinessChange;
+  }, [onReadinessChange]);
+  const load = useCallback(
+    () =>
+      Promise.all([apiClient.get("/departments?view=tree"), apiClient.get("/designations?limit=100")])
+        .then(([departmentResult, designationResult]) => {
+          const nextDepartments = departmentResult.data.data as Department[];
+          const nextDesignations = designationResult.data.data as Designation[];
+          setDepartments(nextDepartments);
+          setDesignations(nextDesignations);
+          onReadinessChangeRef.current?.(nextDepartments.length > 0 && nextDesignations.length > 0);
+          setError("");
+        })
+        .catch(() => {
+          onReadinessChangeRef.current?.(false);
+          setError(tText("Organization structure could not be loaded."));
+        }),
+    [tText],
+  );
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
   async function addDepartment() {
     await apiClient
       .post("/departments", {
@@ -256,14 +267,7 @@ export function OrganizationView() {
         setDepartmentParentId("");
         return load();
       })
-      .catch((caught) =>
-        setError(
-          apiErrorMessage(
-            caught,
-            "Department could not be created at this level.",
-          ),
-        ),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Department could not be created at this level.")));
   }
   async function addDesignation() {
     await apiClient
@@ -272,97 +276,75 @@ export function OrganizationView() {
         setDesignationName("");
         return load();
       })
-      .catch((caught) =>
-        setError(apiErrorMessage(caught, "Designation could not be created.")),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Designation could not be created.")));
   }
   async function renameDepartment(id: string, name: string) {
     await apiClient
       .patch(`/departments/${id}`, { name })
       .then(() => load())
-      .catch((caught) =>
-        setError(apiErrorMessage(caught, "Department could not be renamed.")),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Department could not be renamed.")));
   }
   async function moveDepartment(id: string, parentDeptId: string | null) {
     await apiClient
       .patch(`/departments/${id}`, { parentDeptId })
       .then(() => load())
-      .catch((caught) =>
-        setError(apiErrorMessage(caught, "Department could not be moved.")),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Department could not be moved.")));
   }
   async function addChildDepartment(parentDeptId: string, name: string) {
     await apiClient
       .post("/departments", { name, parentDeptId })
       .then(() => load())
-      .catch((caught) =>
-        setError(
-          apiErrorMessage(caught, "Child department could not be created."),
-        ),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Child department could not be created.")));
   }
   async function deleteDepartment(id: string) {
     await apiClient
       .delete(`/departments/${id}`)
       .then(() => load())
       .catch((caught) =>
-        setError(
-          apiErrorMessage(
-            caught,
-            "Move employees and child departments before deleting this department.",
-          ),
-        ),
+        setError(apiErrorMessage(caught, "Move employees and child departments before deleting this department.")),
       );
   }
   async function renameDesignation(id: string, name: string) {
     await apiClient
       .patch(`/designations/${id}`, { name })
       .then(() => load())
-      .catch((caught) =>
-        setError(apiErrorMessage(caught, "Designation could not be renamed.")),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Designation could not be renamed.")));
   }
   async function deleteDesignation(id: string) {
     await apiClient
       .delete(`/designations/${id}`)
       .then(() => load())
-      .catch((caught) =>
-        setError(
-          apiErrorMessage(
-            caught,
-            "Reassign employees before deleting this designation.",
-          ),
-        ),
-      );
+      .catch((caught) => setError(apiErrorMessage(caught, "Reassign employees before deleting this designation.")));
   }
   const departmentOptions = flattenDepartments(departments ?? []);
-  return (
-    <AdminPage
-      title={tText("Organization Builder")}
-      description={tText("Build department hierarchy and maintain reusable designations.")}
-    >
+  const content = (
+    <>
       {error && <ErrorState message={error} />}
       {!departments ? (
         <LoadingState />
       ) : (
         <div className="grid gap-6">
-          <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
-              <Info className="size-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="font-bold">
-                {tText("Organization comes before workplace setup")}</h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                {tText("Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.")}</p>
-            </div>
-            <Link
-              className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
-              href="/app/attendance/offices"
-            >
-              {tText("Continue to office setup")}</Link>
-          </Panel>
+          {!embedded && (
+            <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+                <Info className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-bold">{tText("Organization comes before workplace setup")}</h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  {tText(
+                    "Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.",
+                  )}
+                </p>
+              </div>
+              <Link
+                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
+                href="/app/attendance/offices"
+              >
+                {tText("Continue to office setup")}
+              </Link>
+            </Panel>
+          )}
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="p-7">
               <div className="mb-6 flex items-center justify-between">
@@ -379,9 +361,7 @@ export function OrganizationView() {
                 <select
                   aria-label={tText("Parent department")}
                   className={inputClass}
-                  onChange={(event) =>
-                    setDepartmentParentId(event.target.value)
-                  }
+                  onChange={(event) => setDepartmentParentId(event.target.value)}
                   value={departmentParentId}
                 >
                   <option value="">{tText("Top-level department")}</option>
@@ -392,12 +372,10 @@ export function OrganizationView() {
                     </option>
                   ))}
                 </select>
-                <PrimaryButton
-                  disabled={departmentName.trim().length < 2}
-                  onClick={addDepartment}
-                >
+                <PrimaryButton disabled={departmentName.trim().length < 2} onClick={addDepartment}>
                   <Plus className="size-4" />
-                  {tText("Add")}</PrimaryButton>
+                  {tText("Add")}
+                </PrimaryButton>
               </div>
               <div className="grid gap-3">
                 {departments.map((department) => (
@@ -428,12 +406,10 @@ export function OrganizationView() {
                   value={designationName}
                   onChange={(e) => setDesignationName(e.target.value)}
                 />
-                <PrimaryButton
-                  disabled={designationName.trim().length < 2}
-                  onClick={addDesignation}
-                >
+                <PrimaryButton disabled={designationName.trim().length < 2} onClick={addDesignation}>
                   <Plus className="size-4" />
-                  {tText("Add")}</PrimaryButton>
+                  {tText("Add")}
+                </PrimaryButton>
               </div>
               <div className="grid gap-2">
                 {designations.map((designation) => (
@@ -455,6 +431,29 @@ export function OrganizationView() {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <section className="grid gap-5">
+        <div>
+          <h2 className="text-2xl font-bold">{tText("Organization Builder")}</h2>
+          <p className="mt-1 text-sm text-on-surface-variant">
+            {tText("Create at least one department and designation before continuing.")}
+          </p>
+        </div>
+        {content}
+      </section>
+    );
+  }
+
+  return (
+    <AdminPage
+      title={tText("Organization Builder")}
+      description={tText("Build department hierarchy and maintain reusable designations.")}
+    >
+      {content}
     </AdminPage>
   );
 }
@@ -481,9 +480,7 @@ function DepartmentNode({
   const [name, setName] = useState(department.name);
   const [addingChild, setAddingChild] = useState(false);
   const [childName, setChildName] = useState("");
-  const descendants = new Set(
-    flattenDepartments(department.children ?? []).map(({ id }) => id),
-  );
+  const descendants = new Set(flattenDepartments(department.children ?? []).map(({ id }) => id));
   return (
     <div>
       <div
@@ -509,16 +506,12 @@ function DepartmentNode({
             <select
               aria-label={`Parent for ${department.name}`}
               className="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-xs"
-              onChange={(event) =>
-                void onMove(department.id, event.target.value || null)
-              }
+              onChange={(event) => void onMove(department.id, event.target.value || null)}
               value={department.parentDeptId ?? ""}
             >
               <option value="">{tText("Top level")}</option>
               {allDepartments
-                .filter(
-                  ({ id }) => id !== department.id && !descendants.has(id),
-                )
+                .filter(({ id }) => id !== department.id && !descendants.has(id))
                 .map((option) => (
                   <option key={option.id} value={option.id}>
                     {"— ".repeat(option.depth)}
@@ -535,7 +528,8 @@ function DepartmentNode({
               }}
               type="button"
             >
-              {tText("Save")}</button>
+              {tText("Save")}
+            </button>
             <button
               className="text-xs text-outline"
               onClick={() => {
@@ -544,7 +538,8 @@ function DepartmentNode({
               }}
               type="button"
             >
-              {tText("Cancel")}</button>
+              {tText("Cancel")}
+            </button>
           </>
         ) : (
           <>
@@ -580,10 +575,7 @@ function DepartmentNode({
         )}
       </div>
       {addingChild && (
-        <div
-          className="mt-2 flex gap-2 rounded-lg bg-zinc-50 p-3"
-          style={{ marginLeft: (depth + 1) * 24 }}
-        >
+        <div className="mt-2 flex gap-2 rounded-lg bg-zinc-50 p-3" style={{ marginLeft: (depth + 1) * 24 }}>
           <input
             aria-label={`New department under ${department.name}`}
             autoFocus
@@ -600,7 +592,8 @@ function DepartmentNode({
               setAddingChild(false);
             }}
           >
-            {tText("Add")}</PrimaryButton>
+            {tText("Add")}
+          </PrimaryButton>
         </div>
       )}
       {department.children?.map((child) => (
@@ -645,7 +638,8 @@ function DesignationRow({
         <span className="flex-1 text-sm font-medium">{designation.name}</span>
       )}
       <span className="whitespace-nowrap text-xs text-outline">
-        {designation.employeeCount ?? 0} {tText("employees")}</span>
+        {designation.employeeCount ?? 0} {tText("employees")}
+      </span>
       {editing ? (
         <>
           <button
@@ -657,7 +651,8 @@ function DesignationRow({
             }}
             type="button"
           >
-            {tText("Save")}</button>
+            {tText("Save")}
+          </button>
           <button
             className="text-xs text-outline"
             onClick={() => {
@@ -666,7 +661,8 @@ function DesignationRow({
             }}
             type="button"
           >
-            {tText("Cancel")}</button>
+            {tText("Cancel")}
+          </button>
         </>
       ) : (
         <>
@@ -750,11 +746,13 @@ export function EmployeesView() {
             href="/app/imports/employees"
           >
             <FileUp className="mr-2 size-4" />
-            {tText("Import employees")}</Link>
+            {tText("Import employees")}
+          </Link>
           <Link href="/app/employees/new">
             <PrimaryButton>
               <UserRoundPlus className="size-4" />
-              {tText("Add employee")}</PrimaryButton>
+              {tText("Add employee")}
+            </PrimaryButton>
           </Link>
         </div>
       }
@@ -769,7 +767,8 @@ export function EmployeesView() {
               <div className="grid items-end gap-3 lg:grid-cols-[minmax(360px,1fr)_180px_180px_132px]">
                 <form className="grid gap-1.5" onSubmit={submitSearch}>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Search employees")}</span>
+                    {tText("Search employees")}
+                  </span>
                   <div className="flex gap-2">
                     <div className="relative min-w-0 flex-1">
                       <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
@@ -785,12 +784,14 @@ export function EmployeesView() {
                       className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-95"
                       type="submit"
                     >
-                      {tText("Search")}</button>
+                      {tText("Search")}
+                    </button>
                   </div>
                 </form>
                 <label className="grid gap-1.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Status")}</span>
+                    {tText("Status")}
+                  </span>
                   <select
                     aria-label={tText("Filter employee status")}
                     className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
@@ -810,13 +811,12 @@ export function EmployeesView() {
                 </label>
                 <label className="grid gap-1.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Sort by")}</span>
+                    {tText("Sort by")}
+                  </span>
                   <select
                     aria-label={tText("Sort employees")}
                     className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-                    onChange={(event) =>
-                      updateQuery({ sort: event.target.value, page: "1" })
-                    }
+                    onChange={(event) => updateQuery({ sort: event.target.value, page: "1" })}
                     value={searchParams.get("sort") ?? "name_asc"}
                   >
                     <option value="name_asc">{tText("Name A–Z")}</option>
@@ -826,14 +826,11 @@ export function EmployeesView() {
                   </select>
                 </label>
                 <label className="grid gap-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                    {tText("Show")}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{tText("Show")}</span>
                   <select
                     aria-label={tText("Rows per page")}
                     className="h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-                    onChange={(event) =>
-                      updateQuery({ limit: event.target.value, page: "1" })
-                    }
+                    onChange={(event) => updateQuery({ limit: event.target.value, page: "1" })}
                     value={searchParams.get("limit") ?? "25"}
                   >
                     <option value="25">{tText("25 rows")}</option>
@@ -860,10 +857,7 @@ export function EmployeesView() {
                 </thead>
                 <tbody>
                   {data.map((employee) => (
-                    <tr
-                      key={employee.id}
-                      className="border-t border-surface-variant transition hover:bg-zinc-50"
-                    >
+                    <tr key={employee.id} className="border-t border-surface-variant transition hover:bg-zinc-50">
                       <td className="px-6 py-4">
                         <Link
                           href={`/app/employees/${employee.id}`}
@@ -871,16 +865,11 @@ export function EmployeesView() {
                         >
                           {employee.fullName}
                         </Link>
-                        <div className="text-xs text-outline">
-                          {employee.phone || tText("No phone")}
-                        </div>
+                        <div className="text-xs text-outline">{employee.phone || tText("No phone")}</div>
                       </td>
                       <td>{employee.employeeCode}</td>
                       <td>{employee.user?.email || "—"}</td>
-                      <td>
-                        {employee.officeAssignments?.[0]?.office.officeName ||
-                          "—"}
-                      </td>
+                      <td>{employee.officeAssignments?.[0]?.office.officeName || "—"}</td>
                       <td>{employee.department?.name || "—"}</td>
                       <td>{employee.designation?.name || "—"}</td>
                       <td>{employee.manager?.fullName || "—"}</td>
@@ -904,13 +893,10 @@ export function EmployeesView() {
             {result && result.pagination.total > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-surface-variant px-5 py-4">
                 <p className="text-sm text-outline">
-                  {tText("Showing")}{" "}
-                  {(result.pagination.page - 1) * result.pagination.limit + 1}–
-                  {Math.min(
-                    result.pagination.page * result.pagination.limit,
-                    result.pagination.total,
-                  )}{" "}
-                  {tText("of")}{result.pagination.total} {tText("employees")}</p>
+                  {tText("Showing")} {(result.pagination.page - 1) * result.pagination.limit + 1}–
+                  {Math.min(result.pagination.page * result.pagination.limit, result.pagination.total)} {tText("of")}
+                  {result.pagination.total} {tText("employees")}
+                </p>
                 <div className="flex items-center gap-2">
                   <button
                     className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
@@ -922,16 +908,15 @@ export function EmployeesView() {
                     }
                     type="button"
                   >
-                    {tText("Previous")}</button>
+                    {tText("Previous")}
+                  </button>
                   <span className="px-2 text-sm font-semibold">
-                    {tText("Page")}{result.pagination.page} {tText("of")}{" "}
-                    {result.pagination.totalPages}
+                    {tText("Page")}
+                    {result.pagination.page} {tText("of")} {result.pagination.totalPages}
                   </span>
                   <button
                     className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:opacity-40"
-                    disabled={
-                      result.pagination.page >= result.pagination.totalPages
-                    }
+                    disabled={result.pagination.page >= result.pagination.totalPages}
                     onClick={() =>
                       updateQuery({
                         page: String(result.pagination.page + 1),
@@ -939,7 +924,8 @@ export function EmployeesView() {
                     }
                     type="button"
                   >
-                    {tText("Next")}</button>
+                    {tText("Next")}
+                  </button>
                 </div>
               </div>
             )}
@@ -947,24 +933,16 @@ export function EmployeesView() {
         </div>
       )}
       {onboardingOpen && (
-        <AccessDialog
-          title={tText("How employee onboarding works")}
-          onClose={() => setOnboardingOpen(false)}
-        >
+        <AccessDialog title={tText("How employee onboarding works")} onClose={() => setOnboardingOpen(false)}>
           <ol className="grid gap-3">
             {EMPLOYEE_ONBOARDING_STEPS.map(({ number, title, body }) => (
-              <li
-                className="flex gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4"
-                key={number}
-              >
+              <li className="flex gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4" key={number}>
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
                   {number}
                 </span>
                 <span>
                   <strong className="block text-sm">{tText(title)}</strong>
-                  <span className="mt-1 block text-xs leading-5 text-outline">
-                    {tText(body)}
-                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-outline">{tText(body)}</span>
                 </span>
               </li>
             ))}
@@ -973,7 +951,8 @@ export function EmployeesView() {
             className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white"
             href="/app/employees/new"
           >
-            {tText("Add an employee")}</Link>
+            {tText("Add an employee")}
+          </Link>
         </AccessDialog>
       )}
     </AdminPage>
@@ -985,8 +964,7 @@ export function EmployeeEditorView() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [designations, setDesignations] = useState<Designation[]>([]);
-  const [defaultPhoneCountry, setDefaultPhoneCountry] =
-    useState<CountryCode>("IN");
+  const [defaultPhoneCountry, setDefaultPhoneCountry] = useState<CountryCode>("IN");
   const [error, setError] = useState("");
   const [createdAccount, setCreatedAccount] = useState<{
     employeeId: string;
@@ -1010,34 +988,22 @@ export function EmployeeEditorView() {
       apiClient.get("/departments"),
       apiClient.get("/designations?limit=100"),
       apiClient.get("/employees/next-code"),
-      apiClient
-        .get("/tenant-settings")
-        .catch(() => ({ data: { data: null } })),
+      apiClient.get("/tenant-settings").catch(() => ({ data: { data: null } })),
     ])
-      .then(
-        ([
-          departmentResult,
-          designationResult,
-          codeResult,
-          settingsResult,
-        ]) => {
-          setDepartments(departmentResult.data.data);
-          setDesignations(designationResult.data.data);
-          setDefaultPhoneCountry(
-            phoneCountryForTenant({
-              timezone: settingsResult.data.data?.timezone,
-              locale: settingsResult.data.data?.locale,
-            }),
-          );
-          setForm((value) => ({
-            ...value,
-            employeeCode:
-              codeResult.data.data?.employeeCode ??
-              codeResult.data.employeeCode ??
-              "",
-          }));
-        },
-      )
+      .then(([departmentResult, designationResult, codeResult, settingsResult]) => {
+        setDepartments(departmentResult.data.data);
+        setDesignations(designationResult.data.data);
+        setDefaultPhoneCountry(
+          phoneCountryForTenant({
+            timezone: settingsResult.data.data?.timezone,
+            locale: settingsResult.data.data?.locale,
+          }),
+        );
+        setForm((value) => ({
+          ...value,
+          employeeCode: codeResult.data.data?.employeeCode ?? codeResult.data.employeeCode ?? "",
+        }));
+      })
       .catch(() => setError(tText("Employee form options could not be loaded.")));
   }, []);
   async function save() {
@@ -1050,9 +1016,7 @@ export function EmployeeEditorView() {
       !form.dateOfBirth ||
       !form.deptId
     ) {
-      setError(
-        tText("Employee code, full name, work email, phone, date of birth and department are required."),
-      );
+      setError(tText("Employee code, full name, work email, phone, date of birth and department are required."));
       return;
     }
     await apiClient
@@ -1068,17 +1032,9 @@ export function EmployeeEditorView() {
           setCreatedAccount({ employeeId, ...credentials });
           return;
         }
-        router.push(
-          employeeId
-            ? `/app/employees/${employeeId}?setup=1`
-            : "/app/employees",
-        );
+        router.push(employeeId ? `/app/employees/${employeeId}?setup=1` : "/app/employees");
       })
-      .catch(() =>
-        setError(
-          tText("Employee could not be created. Review code, phone and organization fields."),
-        ),
-      );
+      .catch(() => setError(tText("Employee could not be created. Review code, phone and organization fields.")));
   }
   return (
     <AdminPage
@@ -1094,9 +1050,7 @@ export function EmployeeEditorView() {
               <input
                 className={inputClass}
                 value={form.employeeCode}
-                onChange={(e) =>
-                  setForm({ ...form, employeeCode: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, employeeCode: e.target.value })}
               />
             </Field>
             <Field label={tText("Full name")}>
@@ -1114,7 +1068,8 @@ export function EmployeeEditorView() {
                 onChange={(phone) => setForm({ ...form, phone })}
               />
               <p className="mt-2 text-xs leading-5 text-outline">
-                {tText("Select the country code, then enter the local mobile number.")}</p>
+                {tText("Select the country code, then enter the local mobile number.")}
+              </p>
             </Field>
             <Field label={tText("Work email")}>
               <input
@@ -1126,16 +1081,15 @@ export function EmployeeEditorView() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
               <p className="mt-2 text-xs leading-5 text-outline">
-                {tText("This becomes the employee&apos;s app login email.")}</p>
+                {tText("This becomes the employee&apos;s app login email.")}
+              </p>
             </Field>
             <Field label={tText("Date of joining")}>
               <input
                 type="date"
                 className={inputClass}
                 value={form.dateOfJoining}
-                onChange={(e) =>
-                  setForm({ ...form, dateOfJoining: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, dateOfJoining: e.target.value })}
               />
             </Field>
             <Field label={tText("Date of birth")}>
@@ -1145,9 +1099,7 @@ export function EmployeeEditorView() {
                 required
                 max={new Date().toISOString().slice(0, 10)}
                 value={form.dateOfBirth}
-                onChange={(e) =>
-                  setForm({ ...form, dateOfBirth: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
               />
             </Field>
             <Field label={tText("Department")}>
@@ -1168,9 +1120,7 @@ export function EmployeeEditorView() {
               <select
                 className={inputClass}
                 value={form.designationId}
-                onChange={(e) =>
-                  setForm({ ...form, designationId: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, designationId: e.target.value })}
               >
                 <option value="">{tText("No designation")}</option>
                 {designations.map((designation) => (
@@ -1192,10 +1142,16 @@ export function EmployeeEditorView() {
               </select>
               <p className="mt-2 text-xs leading-5 text-outline">
                 {form.workType === "OFFICE"
-                  ? tText("Office employees normally check in at an assigned workplace and do not use continuous field tracking.")
+                  ? tText(
+                      "Office employees normally check in at an assigned workplace and do not use continuous field tracking.",
+                    )
                   : form.workType === "FIELD"
-                    ? tText("Field employees can use field GPS and route tracking when those Attendance features are enabled.")
-                    : tText("Hybrid employees can use office or field attendance rules based on their assigned policy and schedule.")}
+                    ? tText(
+                        "Field employees can use field GPS and route tracking when those Attendance features are enabled.",
+                      )
+                    : tText(
+                        "Hybrid employees can use office or field attendance rules based on their assigned policy and schedule.",
+                      )}
               </p>
             </Field>
           </div>
@@ -1206,43 +1162,40 @@ export function EmployeeEditorView() {
           </div>
           <h2 className="mt-5 text-lg font-semibold">{tText("What happens next?")}</h2>
           <p className="mt-2 text-sm leading-6 text-outline">
-            {tText("The employee profile and app login are created together. You will receive a temporary password to share securely.")}</p>
+            {tText(
+              "The employee profile and app login are created together. You will receive a temporary password to share securely.",
+            )}
+          </p>
           <ol className="mt-5 grid gap-3 text-sm">
-            {[
-              "Assign an office, shift and attendance policy",
-              "Approve their registered device if required",
-            ].map((step, index) => (
-              <li className="flex items-start gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-primary">
-                  {index + 2}
-                </span>
-                <span className="pt-0.5 text-zinc-600">{step}</span>
-              </li>
-            ))}
+            {["Assign an office, shift and attendance policy", "Approve their registered device if required"].map(
+              (step, index) => (
+                <li className="flex items-start gap-3" key={step}>
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-primary">
+                    {index + 2}
+                  </span>
+                  <span className="pt-0.5 text-zinc-600">{step}</span>
+                </li>
+              ),
+            )}
           </ol>
         </Panel>
       </div>
       {createdAccount && (
         <AccessDialog
-          onClose={() =>
-            router.push(`/app/employees/${createdAccount.employeeId}?setup=1`)
-          }
+          onClose={() => router.push(`/app/employees/${createdAccount.employeeId}?setup=1`)}
           title={tText("Employee login created")}
         >
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-            {tText("The Employee self-service role is already assigned. No role setup is required.")}</div>
+            {tText("The Employee self-service role is already assigned. No role setup is required.")}
+          </div>
           <div className="mt-4 grid gap-4 rounded-xl border border-zinc-200 p-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-outline">
-                {tText("Login email")}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-outline">{tText("Login email")}</p>
               <p className="mt-1 font-semibold">{createdAccount.email}</p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-outline">
-                {tText("Temporary password")}</p>
-              <p className="mt-1 break-all font-mono font-semibold">
-                {createdAccount.password}
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wide text-outline">{tText("Temporary password")}</p>
+              <p className="mt-1 break-all font-mono font-semibold">{createdAccount.password}</p>
             </div>
             <button
               className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 text-sm font-bold text-primary"
@@ -1254,17 +1207,15 @@ export function EmployeeEditorView() {
               }}
               type="button"
             >
-              <Copy className="size-4" />{" "}
-              {copied ? tText("Copied") : tText("Copy login details")}
+              <Copy className="size-4" /> {copied ? tText("Copied") : tText("Copy login details")}
             </button>
           </div>
           <PrimaryButton
             className="mt-5 w-full justify-center"
-            onClick={() =>
-              router.push(`/app/employees/${createdAccount.employeeId}?setup=1`)
-            }
+            onClick={() => router.push(`/app/employees/${createdAccount.employeeId}?setup=1`)}
           >
-            {tText("Continue employee setup")}</PrimaryButton>
+            {tText("Continue employee setup")}
+          </PrimaryButton>
         </AccessDialog>
       )}
     </AdminPage>
@@ -1283,9 +1234,7 @@ export function EmployeeImportView() {
     errorRows: number;
   }> | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [rowErrors, setRowErrors] = useState<EmployeeImportError[] | null>(
-    null,
-  );
+  const [rowErrors, setRowErrors] = useState<EmployeeImportError[] | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const load = () =>
@@ -1302,9 +1251,7 @@ export function EmployeeImportView() {
   }, []);
   async function upload(file: File) {
     if (!file.name.toLowerCase().endsWith(".csv")) {
-      setError(
-        tText("Choose a CSV file. Excel files must be saved as CSV UTF-8 first."),
-      );
+      setError(tText("Choose a CSV file. Excel files must be saved as CSV UTF-8 first."));
       return;
     }
     if (schema && file.size > schema.maxFileSizeBytes) {
@@ -1341,9 +1288,7 @@ export function EmployeeImportView() {
 
   function downloadTemplate() {
     if (!schema) return;
-    const url = URL.createObjectURL(
-      new Blob([schema.templateCsv], { type: "text/csv;charset=utf-8" }),
-    );
+    const url = URL.createObjectURL(new Blob([schema.templateCsv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "deltcrm-employee-import-template.csv";
@@ -1356,9 +1301,7 @@ export function EmployeeImportView() {
     setRowErrors(null);
     setError("");
     try {
-      const response = await apiClient.get<{ data: EmployeeImportError[] }>(
-        `/employee-imports/${jobId}/errors`,
-      );
+      const response = await apiClient.get<{ data: EmployeeImportError[] }>(`/employee-imports/${jobId}/errors`);
       setRowErrors(response.data.data);
     } catch {
       setError(tText("Row errors could not be loaded."));
@@ -1376,14 +1319,14 @@ export function EmployeeImportView() {
             <div>
               <h2 className="text-lg font-bold">{tText("Prepare your file")}</h2>
               <p className="mt-1 text-sm text-zinc-500">
-                {tText("Use the provided columns in the same order. Excel users can open the template and save it as CSV UTF-8.")}</p>
+                {tText(
+                  "Use the provided columns in the same order. Excel users can open the template and save it as CSV UTF-8.",
+                )}
+              </p>
             </div>
-            <PrimaryButton
-              disabled={!schema}
-              onClick={downloadTemplate}
-              type="button"
-            >
-              <Download className="size-4" /> {tText("Download template")}</PrimaryButton>
+            <PrimaryButton disabled={!schema} onClick={downloadTemplate} type="button">
+              <Download className="size-4" /> {tText("Download template")}
+            </PrimaryButton>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {[
@@ -1417,27 +1360,22 @@ export function EmployeeImportView() {
               </thead>
               <tbody>
                 {schema.fields.map((field) => (
-                  <tr
-                    className="border-t border-surface-variant"
-                    key={field.key}
-                  >
+                  <tr className="border-t border-surface-variant" key={field.key}>
                     <td className="px-5 py-3">
                       <div className="font-semibold">{field.label}</div>
                       <code className="text-xs text-zinc-500">{field.key}</code>
                     </td>
-                    <td className="px-5 py-3">
-                      {field.required ? tText("Yes") : tText("No")}
-                    </td>
+                    <td className="px-5 py-3">{field.required ? tText("Yes") : tText("No")}</td>
                     <td className="px-5 py-3 text-zinc-500">{field.format}</td>
-                    <td className="px-5 py-3 font-mono text-xs">
-                      {field.example}
-                    </td>
+                    <td className="px-5 py-3 font-mono text-xs">{field.example}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className="border-t border-surface-variant bg-amber-50 px-5 py-4 text-sm text-zinc-500">
-              {schema.notes.join(" ")} {tText("Maximum")}{schema.maxRows} {tText("employee rows.")}</div>
+              {schema.notes.join(" ")} {tText("Maximum")}
+              {schema.maxRows} {tText("employee rows.")}
+            </div>
           </div>
         )}
       </Panel>
@@ -1446,10 +1384,10 @@ export function EmployeeImportView() {
           <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-zinc-100 text-primary">
             <FileUp />
           </div>
-          <h2 className="mt-5 text-xl font-semibold">
-            {tText("Drop your employee CSV here")}</h2>
+          <h2 className="mt-5 text-xl font-semibold">{tText("Drop your employee CSV here")}</h2>
           <p className="mt-2 text-sm text-outline">
-            {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template.")}</p>
+            {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template.")}
+          </p>
           <label className="mt-5 inline-flex h-11 cursor-pointer items-center rounded-xl bg-primary px-5 text-sm font-semibold text-white">
             {uploading ? tText("Uploading...") : tText("Choose CSV")}
             <input
@@ -1475,15 +1413,18 @@ export function EmployeeImportView() {
                 <div className="min-w-52 flex-1">
                   <div className="font-semibold">{job.filename}</div>
                   <div className="text-xs text-outline">
-                    {job.totalRows} {tText("rows")}</div>
+                    {job.totalRows} {tText("rows")}
+                  </div>
                 </div>
-                <span className="min-w-24 text-sm font-medium">
-                  {job.status}
-                </span>
+                <span className="min-w-24 text-sm font-medium">{job.status}</span>
                 <div className="min-w-48 text-xs">
                   <span className="text-emerald-800">
-                    {job.successRows} {tText("imported")}</span>{" "}
-                  · <span className="text-error">{job.errorRows} {tText("errors")}</span>
+                    {job.successRows} {tText("imported")}
+                  </span>{" "}
+                  ·{" "}
+                  <span className="text-error">
+                    {job.errorRows} {tText("errors")}
+                  </span>
                 </div>
                 {job.errorRows > 0 && (
                   <button
@@ -1491,7 +1432,8 @@ export function EmployeeImportView() {
                     onClick={() => void showErrors(job.id)}
                     type="button"
                   >
-                    {tText("View errors")}</button>
+                    {tText("View errors")}
+                  </button>
                 )}
               </div>
             ))}
@@ -1516,7 +1458,8 @@ export function EmployeeImportView() {
               }}
               type="button"
             >
-              {tText("Close")}</button>
+              {tText("Close")}
+            </button>
           </div>
           {!rowErrors ? (
             <div className="p-6">
@@ -1529,11 +1472,12 @@ export function EmployeeImportView() {
                   className="grid gap-1 px-6 py-4 text-sm md:grid-cols-[100px_160px_1fr]"
                   key={`${row.rowNumber}-${row.errorCode}`}
                 >
-                  <strong>{tText("Row")}{row.rowNumber}</strong>
+                  <strong>
+                    {tText("Row")}
+                    {row.rowNumber}
+                  </strong>
                   <span>{row.employeeCode ?? tText("No employee code")}</span>
-                  <span className="text-on-error-container">
-                    {row.errorMessage}
-                  </span>
+                  <span className="text-on-error-container">{row.errorMessage}</span>
                 </div>
               ))}
             </div>
@@ -1589,9 +1533,7 @@ export function UsersRolesView() {
       setInviteEmail("");
       setInviteRoleIds([]);
     } catch {
-      setError(
-        tText("Invitation could not be sent. Check the email, role, or an existing pending invitation."),
-      );
+      setError(tText("Invitation could not be sent. Check the email, role, or an existing pending invitation."));
     }
   }
   function openUserAccess(user: User) {
@@ -1604,9 +1546,7 @@ export function UsersRolesView() {
     setBusy(true);
     setError("");
     try {
-      const employeeRoleIds = editingUser.roles
-        .filter(({ name }) => name === "EMPLOYEE")
-        .map(({ id }) => id);
+      const employeeRoleIds = editingUser.roles.filter(({ name }) => name === "EMPLOYEE").map(({ id }) => id);
       await apiClient.patch(`/users/${editingUser.id}/roles`, {
         roleIds: [...new Set([...employeeRoleIds, ...editingRoleIds])],
       });
@@ -1648,7 +1588,9 @@ export function UsersRolesView() {
   return (
     <AdminPage
       title={tText("Administrators & access")}
-      description={tText("Manage Business Admin, HR and Manager access. Employee login access is managed from each employee profile.")}
+      description={tText(
+        "Manage Business Admin, HR and Manager access. Employee login access is managed from each employee profile.",
+      )}
       action={
         <div className="flex flex-wrap gap-2">
           {canCreateRoles && (
@@ -1658,7 +1600,8 @@ export function UsersRolesView() {
               type="button"
             >
               <ShieldCheck className="mr-2 size-4" />
-              {tText("Create custom role")}</button>
+              {tText("Create custom role")}
+            </button>
           )}
           {canManageUsers && (
             <PrimaryButton
@@ -1668,7 +1611,8 @@ export function UsersRolesView() {
               }}
             >
               <Plus className="size-4" />
-              {tText("Invite administrator")}</PrimaryButton>
+              {tText("Invite administrator")}
+            </PrimaryButton>
           )}
         </div>
       }
@@ -1682,18 +1626,20 @@ export function UsersRolesView() {
             <div>
               <p className="font-bold text-zinc-800">{tText("Employee app accounts")}</p>
               <p className="mt-1 text-sm text-outline">
-                {tText("Create and invite employees from the employee directory. Their Employee self-service role is assigned automatically.")}</p>
+                {tText(
+                  "Create and invite employees from the employee directory. Their Employee self-service role is assigned automatically.",
+                )}
+              </p>
             </div>
-            <Link
-              className="text-sm font-bold text-primary"
-              href="/app/employees"
-            >
-              {tText("Open employees →")}</Link>
+            <Link className="text-sm font-bold text-primary" href="/app/employees">
+              {tText("Open employees →")}
+            </Link>
           </div>
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="overflow-hidden">
               <div className="border-b border-surface-variant bg-zinc-50 px-6 py-4 font-semibold">
-                {tText("Workspace login accounts")}</div>
+                {tText("Workspace login accounts")}
+              </div>
               {users.map((user) => (
                 <button
                   key={user.id}
@@ -1703,15 +1649,10 @@ export function UsersRolesView() {
                   type="button"
                 >
                   <div>
-                    <div className="font-semibold">
-                      {user.employee?.fullName || user.email}
-                    </div>
-                    {user.employee && (
-                      <div className="text-xs text-zinc-500">{user.email}</div>
-                    )}
+                    <div className="font-semibold">{user.employee?.fullName || user.email}</div>
+                    {user.employee && <div className="text-xs text-zinc-500">{user.email}</div>}
                     <div className="text-xs text-outline">
-                      {user.roles.map((role) => role.name).join(", ") ||
-                        tText("No role")}
+                      {user.roles.map((role) => role.name).join(", ") || tText("No role")}
                     </div>
                   </div>
                   <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
@@ -1723,7 +1664,10 @@ export function UsersRolesView() {
             <Panel className="p-6">
               <h2 className="mb-1 font-semibold">{tText("Elevated roles")}</h2>
               <p className="mb-4 text-xs leading-5 text-outline">
-                {tText("These roles are for people who manage the workspace or approve work. Employee self-service is intentionally not configured here.")}</p>
+                {tText(
+                  "These roles are for people who manage the workspace or approve work. Employee self-service is intentionally not configured here.",
+                )}
+              </p>
               <div className="grid gap-3">
                 {elevatedRoles.map((role) => (
                   <Link
@@ -1734,8 +1678,9 @@ export function UsersRolesView() {
                     <div>
                       <div className="font-semibold">{role.name}</div>
                       <div className="text-xs text-outline">
-                        {role.isSystem ? tText("System role") : tText("Custom role")} ·{" "}
-                        {role.assignedUsers ?? 0} {tText("users")}</div>
+                        {role.isSystem ? tText("System role") : tText("Custom role")} · {role.assignedUsers ?? 0}{" "}
+                        {tText("users")}
+                      </div>
                       <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">
                         {SYSTEM_ROLE_SUMMARIES[role.name] ??
                           `${role.permissionKeys?.length ?? 0} configured capabilities.`}
@@ -1750,13 +1695,11 @@ export function UsersRolesView() {
         </div>
       )}
       {inviteOpen && (
-        <AccessDialog
-          title={tText("Invite administrator")}
-          onClose={() => setInviteOpen(false)}
-        >
+        <AccessDialog title={tText("Invite administrator")} onClose={() => setInviteOpen(false)}>
           {sent ? (
             <div className="rounded-xl bg-emerald-100 p-5 text-sm text-emerald-900">
-              {tText("Invitation created successfully. Delivery is handled by the configured notification provider.")}</div>
+              {tText("Invitation created successfully. Delivery is handled by the configured notification provider.")}
+            </div>
           ) : (
             <div className="grid gap-4">
               <Field label={tText("Work email")}>
@@ -1770,18 +1713,13 @@ export function UsersRolesView() {
               <fieldset className="grid gap-2">
                 <legend className="mb-2 text-sm font-medium">{tText("Roles")}</legend>
                 {elevatedRoles.map((role) => (
-                  <label
-                    key={role.id}
-                    className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm"
-                  >
+                  <label key={role.id} className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
                     <input
                       type="checkbox"
                       checked={inviteRoleIds.includes(role.id)}
                       onChange={(event) =>
                         setInviteRoleIds((current) =>
-                          event.target.checked
-                            ? [...current, role.id]
-                            : current.filter((id) => id !== role.id),
+                          event.target.checked ? [...current, role.id] : current.filter((id) => id !== role.id),
                         )
                       }
                     />
@@ -1789,11 +1727,9 @@ export function UsersRolesView() {
                   </label>
                 ))}
               </fieldset>
-              <PrimaryButton
-                disabled={!inviteEmail || !inviteRoleIds.length}
-                onClick={invite}
-              >
-                {tText("Send invitation")}</PrimaryButton>
+              <PrimaryButton disabled={!inviteEmail || !inviteRoleIds.length} onClick={invite}>
+                {tText("Send invitation")}
+              </PrimaryButton>
             </div>
           )}
         </AccessDialog>
@@ -1807,22 +1743,18 @@ export function UsersRolesView() {
             <div>
               <p className="text-sm font-semibold">{tText("Elevated roles")}</p>
               <p className="mt-1 text-xs leading-5 text-outline">
-                {tText("Employee self-service access is retained automatically.")}</p>
+                {tText("Employee self-service access is retained automatically.")}
+              </p>
             </div>
             <div className="grid gap-2">
               {elevatedRoles.map((role) => (
-                <label
-                  className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4"
-                  key={role.id}
-                >
+                <label className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4" key={role.id}>
                   <input
                     checked={editingRoleIds.includes(role.id)}
                     className="mt-1 accent-primary"
                     onChange={(event) =>
                       setEditingRoleIds((current) =>
-                        event.target.checked
-                          ? [...current, role.id]
-                          : current.filter((id) => id !== role.id),
+                        event.target.checked ? [...current, role.id] : current.filter((id) => id !== role.id),
                       )
                     }
                     type="checkbox"
@@ -1855,10 +1787,7 @@ export function UsersRolesView() {
         </AccessDialog>
       )}
       {createRoleOpen && (
-        <AccessDialog
-          title={tText("Create custom role")}
-          onClose={() => setCreateRoleOpen(false)}
-        >
+        <AccessDialog title={tText("Create custom role")} onClose={() => setCreateRoleOpen(false)}>
           <div className="grid gap-5">
             <Field label={tText("Role name")}>
               <input
@@ -1882,11 +1811,11 @@ export function UsersRolesView() {
               </select>
             </Field>
             <p className="text-xs leading-5 text-outline">
-              {tText("The role opens in the permission editor after creation so its access can be reviewed before assignment.")}</p>
-            <PrimaryButton
-              disabled={busy || customRoleName.trim().length < 2}
-              onClick={createCustomRole}
-            >
+              {tText(
+                "The role opens in the permission editor after creation so its access can be reviewed before assignment.",
+              )}
+            </p>
+            <PrimaryButton disabled={busy || customRoleName.trim().length < 2} onClick={createCustomRole}>
               {busy ? tText("Creating...") : tText("Create and configure")}
             </PrimaryButton>
           </div>
@@ -1899,18 +1828,13 @@ export function UsersRolesView() {
 export function RoleEditorView({ roleId }: { roleId: string }) {
   const { tText } = useTenantLocalization();
   const [role, setRole] = useState<Role | null>(null);
-  const [catalog, setCatalog] = useState<
-    Array<{ module: string; keys: string[] }>
-  >([]);
+  const [catalog, setCatalog] = useState<Array<{ module: string; keys: string[] }>>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [showTechnical, setShowTechnical] = useState(false);
   useEffect(() => {
-    Promise.all([
-      apiClient.get(`/roles/${roleId}`),
-      apiClient.get("/permissions"),
-    ])
+    Promise.all([apiClient.get(`/roles/${roleId}`), apiClient.get("/permissions")])
       .then(([roleResult, catalogResult]) => {
         const value = roleResult.data.data as Role;
         setRole(value);
@@ -1940,9 +1864,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
       title={role?.name || "Role Editor"}
       description={tText("Choose what people with this role can do. Technical permission names are hidden by default.")}
       action={
-        role && !role.isSystem ? (
-          <PrimaryButton onClick={save}>{tText("Save role access")}</PrimaryButton>
-        ) : undefined
+        role && !role.isSystem ? <PrimaryButton onClick={save}>{tText("Save role access")}</PrimaryButton> : undefined
       }
     >
       {error && <ErrorState message={error} />}
@@ -1955,14 +1877,19 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             <div>
               <strong className="text-zinc-800">{tText("Built-in role")}</strong>
               <p className="mt-1 leading-6">
-                {tText("DeltCRM assigns and maintains this role automatically. It cannot be edited because changing its technical permissions could break essential product flows.")}</p>
+                {tText(
+                  "DeltCRM assigns and maintains this role automatically. It cannot be edited because changing its technical permissions could break essential product flows.",
+                )}
+              </p>
             </div>
           </div>
           <Panel className="p-6">
             <h2 className="text-lg font-bold">{tText("What this role is for")}</h2>
             <p className="mt-2 text-sm leading-6 text-outline">
               {role.name === "EMPLOYEE"
-                ? tText("Employee self-service for the mobile app, attendance, leave and personal requests. Assign it by inviting an employee from their profile.")
+                ? tText(
+                    "Employee self-service for the mobile app, attendance, leave and personal requests. Assign it by inviting an employee from their profile.",
+                  )
                 : role.name === "HR_ADMIN"
                   ? tText("Day-to-day employee, attendance, leave and policy administration.")
                   : role.name === "MANAGER"
@@ -1970,13 +1897,12 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                     : tText("Full business administration for this tenant workspace.")}
             </p>
             <p className="mt-4 text-sm font-semibold text-zinc-600">
-              {selected.size} {tText("protected capabilities included")}</p>
+              {selected.size} {tText("protected capabilities included")}
+            </p>
             {role.name === "EMPLOYEE" && (
-              <Link
-                className="mt-5 inline-flex text-sm font-bold text-primary"
-                href="/app/employees"
-              >
-                {tText("Manage employee accounts →")}</Link>
+              <Link className="mt-5 inline-flex text-sm font-bold text-primary" href="/app/employees">
+                {tText("Manage employee accounts →")}
+              </Link>
             )}
           </Panel>
         </div>
@@ -1985,7 +1911,8 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
           <Panel className="p-6">
             <h2 className="text-lg font-bold">{tText("Start with a common role")}</h2>
             <p className="mt-1 text-sm text-outline">
-              {tText("A preset replaces the current selection. You can adjust it before saving.")}</p>
+              {tText("A preset replaces the current selection. You can adjust it before saving.")}
+            </p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {ROLE_PRESETS.map((preset) => (
                 <button
@@ -1997,9 +1924,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                   <strong className="text-sm">
                     {tText("Use")} {tText(preset.name)}
                   </strong>
-                  <p className="mt-1 text-xs leading-5 text-outline">
-                    {tText(preset.description)}
-                  </p>
+                  <p className="mt-1 text-xs leading-5 text-outline">{tText(preset.description)}</p>
                 </button>
               ))}
             </div>
@@ -2007,7 +1932,8 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-semibold text-zinc-600">
-              {selected.size} {tText("capabilities enabled")}</p>
+              {selected.size} {tText("capabilities enabled")}
+            </p>
             <label className="flex items-center gap-2 text-sm text-zinc-500">
               <input
                 checked={showTechnical}
@@ -2015,31 +1941,27 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                 onChange={(event) => setShowTechnical(event.target.checked)}
                 type="checkbox"
               />
-              {tText("Show technical names")}</label>
+              {tText("Show technical names")}
+            </label>
           </div>
           {saved && (
             <div className="flex items-center gap-2 rounded-xl bg-emerald-100 p-4 text-sm font-semibold text-emerald-900">
-              <CheckCircle2 className="size-5" /> {tText("Role access saved.")}</div>
+              <CheckCircle2 className="size-5" /> {tText("Role access saved.")}
+            </div>
           )}
           <Panel className="overflow-hidden">
             {catalog.map((group) => (
-              <div
-                key={group.module}
-                className="border-b border-surface-variant p-6 last:border-0"
-              >
-                <h2 className="mb-1 text-base font-bold text-zinc-800">
-                  {sentenceCase(group.module)}
-                </h2>
+              <div key={group.module} className="border-b border-surface-variant p-6 last:border-0">
+                <h2 className="mb-1 text-base font-bold text-zinc-800">{sentenceCase(group.module)}</h2>
                 <p className="mb-4 text-sm text-outline">
-                  {tText("Access related to")}{group.module.replaceAll("-", " ")} {tText("work.")}</p>
+                  {tText("Access related to")}
+                  {group.module.replaceAll("-", " ")} {tText("work.")}
+                </p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {group.keys.map((key) => {
                     const presentation = describePermission(key);
                     return (
-                      <label
-                        key={key}
-                        className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-sm"
-                      >
+                      <label key={key} className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-sm">
                         <input
                           type="checkbox"
                           className="mt-1 accent-primary"
@@ -2059,13 +1981,9 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                           <strong className="block font-semibold text-zinc-800">
                             {sentenceCase(presentation.title)}
                           </strong>
-                          <span className="mt-1 block text-xs leading-5 text-outline">
-                            {presentation.description}
-                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-outline">{presentation.description}</span>
                           {showTechnical && (
-                            <code className="mt-2 block break-all text-[11px] text-outline">
-                              {key}
-                            </code>
+                            <code className="mt-2 block break-all text-[11px] text-outline">{key}</code>
                           )}
                         </span>
                       </label>
@@ -2081,15 +1999,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
   );
 }
 
-function AccessDialog({
-  title,
-  onClose,
-  children,
-}: {
-  title: string;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
+function AccessDialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   const { tText } = useTenantLocalization();
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
@@ -2097,7 +2007,8 @@ function AccessDialog({
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold">{title}</h2>
           <button onClick={onClose} className="text-sm text-outline">
-            {tText("Close")}</button>
+            {tText("Close")}
+          </button>
         </div>
         {children}
       </div>

@@ -200,7 +200,8 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
         ),
       );
       return false;
-    } catch (_) {
+    } catch (error, stack) {
+      AppLogger.error('attendance_verification_failed', error, stack);
       state = AsyncData(
         current.copyWith(
           failure: const PunchFailure(

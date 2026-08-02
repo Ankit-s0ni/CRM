@@ -4,7 +4,6 @@ import {
   Bell,
   Building2,
   ChevronDown,
-  Languages,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -42,6 +41,7 @@ import {
   AttendanceWorkspaceChrome,
 } from "@/features/products/attendance/core/attendance-workspace-nav";
 import { PortalSearch } from "@/shared/components/portal-search";
+import { LanguageToggle } from "@/shared/components/language-toggle";
 import { useTenantLocalization } from "@/lib/tenant-localization";
 import { localizedTenantPath } from "@/lib/tenant-routes";
 
@@ -204,9 +204,13 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-surface" />;
 
   const permissions = new Set(user.permissions ?? []);
-  const navigation = tenantPrimaryNavigation.filter((item) =>
-    canViewTenantNavItem(item, permissions, enabledModuleKeys),
-  );
+  const navigation = tenantPrimaryNavigation.filter((item) => {
+    if (!canViewTenantNavItem(item, permissions, enabledModuleKeys))
+      return false;
+    if (item.moduleKey === "ATTENDANCE")
+      return canAccessAttendanceWorkspace(permissions);
+    return true;
+  });
   const currentContext = tenantNavigationContext(pathname);
   const contextItems = currentContext
     ? tenantContextNavigation[currentContext].filter((item) => {
@@ -379,58 +383,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             <PortalSearch />
           </div>
           <div className="ms-auto flex items-center gap-3 text-on-surface-variant sm:gap-5">
-            {enabledLanguages.length > 1 && (
-              <button
-                aria-label={
-                  locale === "en"
-                    ? "Switch to Arabic"
-                    : "Switch to English"
-                }
-                className="group flex min-h-11 items-center gap-2 rounded-full border border-surface-variant bg-white px-2.5 text-xs font-bold shadow-sm transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                onClick={() => {
-                  const language: AppLanguage =
-                    locale === "en" ? "ar" : "en";
-                  const query = searchParams.toString();
-                  document.cookie = `deltcrm-language=${language}; Path=/; Max-Age=31536000; SameSite=Lax`;
-                  router.replace(
-                    `${pathname}${query ? `?${query}` : ""}`,
-                    { locale: language },
-                  );
-                }}
-                title={
-                  locale === "en"
-                    ? "Switch to Arabic"
-                    : "Switch to English"
-                }
-                type="button"
-              >
-                <Languages
-                  aria-hidden="true"
-                  className="size-4 text-primary"
-                />
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-1 transition-colors",
-                    locale === "en"
-                      ? "bg-primary text-white"
-                      : "text-on-surface-variant",
-                  )}
-                >
-                  EN
-                </span>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-1 transition-colors",
-                    locale === "ar"
-                      ? "bg-primary text-white"
-                      : "text-on-surface-variant",
-                  )}
-                  lang="ar"
-                >
-                  عربي
-                </span>
-              </button>
-            )}
+            <LanguageToggle />
             <Link
               aria-label={t(
                 "tenant.shell.notifications",

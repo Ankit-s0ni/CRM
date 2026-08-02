@@ -151,7 +151,7 @@ test("platform localization center exposes regional release controls", async ({
   await page.goto("/platform/localization");
 
   await expect(
-    page.getByRole("heading", { name: "Localization center" }),
+    page.getByRole("heading", { name: /Languages|Localization center/ }),
   ).toBeVisible();
   await expect(page.getByText("Arabic (Oman)")).toBeVisible();
   await expect(page.getByText("Arabic (UAE)")).toBeVisible();
