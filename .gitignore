@@ -7,6 +7,7 @@ build/
 .next-build/
 coverage/
 *.log
+*.tsbuildinfo
 .turbo/
 .pnpm-store/
 apps/api/node_modules/
