@@ -10,7 +10,10 @@ export interface ObservabilityLifecycle {
 export function startObservability(
   environment: NodeJS.ProcessEnv = process.env,
 ): ObservabilityLifecycle {
-  if (environment.NODE_ENV !== 'production') {
+  if (
+    environment.NODE_ENV !== 'production' ||
+    environment.OBSERVABILITY_ENABLED !== 'true'
+  ) {
     return { shutdown: () => Promise.resolve() };
   }
 
