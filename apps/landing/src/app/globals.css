@@ -212,6 +212,66 @@ h1 span { color: var(--cobalt); display: block; font-size: 0.68em; margin-top: 0
   z-index: 3;
 }
 
+.hero-transition {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  z-index: 5;
+}
+
+.hero-transition-mark {
+  opacity: 0;
+  position: relative;
+  transform-origin: center;
+  width: clamp(8rem, 12vw, 11rem);
+  z-index: 2;
+}
+
+.hero-transition-mark .brand-mark {
+  --mark-inner: var(--cobalt);
+  --mark-outer: var(--ink);
+  height: auto;
+  width: 100%;
+}
+
+.hero-transition-caption {
+  bottom: calc(50% - 9.5rem);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  left: 50%;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.hero-transition-caption span {
+  color: var(--ink);
+  display: block;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.45rem;
+  text-transform: none;
+}
+
+.hero-transition-wipe {
+  background: var(--tomato);
+  border-radius: 50%;
+  height: 10vmax;
+  position: absolute;
+  transform: scale(0);
+  width: 10vmax;
+  z-index: 1;
+}
+
 .product-bar {
   border-bottom: 1px solid var(--line);
   color: var(--muted);
@@ -388,6 +448,7 @@ footer > span:last-child { justify-self: end; }
   .hero { align-items: start; min-height: auto; padding-bottom: 4rem; }
   .hero-copy { max-width: 48rem; }
   .hero-product { bottom: auto; height: 34rem; margin-top: 4rem; opacity: 1; position: relative; right: auto; transform: none; width: 100%; }
+  .hero-transition { display: none; }
   .scroll-cue { display: none; }
   .fragmentation { grid-template-columns: 1fr; }
   .fragment-cloud { min-height: 26rem; }
@@ -429,5 +490,5 @@ footer > span:last-child { justify-self: end; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
   .scroll-progress, .ambient-field { display: none; }
-  .fragment-convergence { display: none; }
+  .fragment-convergence, .hero-transition { display: none; }
 }

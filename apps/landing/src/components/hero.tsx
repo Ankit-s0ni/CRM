@@ -84,6 +84,17 @@ export function Hero() {
         </div>
       </div>
 
+      <div className="hero-transition" aria-hidden="true">
+        <span className="hero-transition-wipe" />
+        <div className="hero-transition-mark">
+          <BrandMark />
+        </div>
+        <p className="hero-transition-caption">
+          <span>DeltCRM</span>
+          One connected operating system
+        </p>
+      </div>
+
       <a className="scroll-cue" href="#fragmentation">
         Scroll to connect
         <ArrowDown aria-hidden="true" size={16} />

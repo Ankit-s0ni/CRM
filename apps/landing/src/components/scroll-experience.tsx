@@ -71,31 +71,75 @@ export function ScrollExperience() {
         return;
       }
 
+      const heroProduct = document.querySelector<HTMLElement>(".hero-product");
       const hero = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: ".hero",
           start: "top top",
-          end: "bottom top",
-          scrub: 0.6,
+          end: "+=185%",
+          pin: true,
+          scrub: 0.85,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
         },
       });
 
-      // Keep the first impression readable while adding a small amount of depth.
+      const centerProductX = () => {
+        if (!heroProduct) return 0;
+        const bounds = heroProduct.getBoundingClientRect();
+        return window.innerWidth / 2 - (bounds.left + bounds.width / 2);
+      };
+      const centerProductY = () => {
+        if (!heroProduct) return 0;
+        const bounds = heroProduct.getBoundingClientRect();
+        return window.innerHeight / 2 - (bounds.top + bounds.height / 2);
+      };
+
+      // Preserve spatial continuity: the workspace becomes the DeltCRM mark,
+      // then the mark becomes the next section rather than fading between scenes.
       hero
-        .to(".hero-copy", { yPercent: -7 }, 0)
-        .to(".hero-product", { yPercent: -5, rotation: 0 }, 0)
-        .to(".scroll-cue", { y: 12 }, 0);
+        .to(".scroll-cue", { opacity: 0, y: 12 }, 0.06)
+        .to(".site-header", { yPercent: -150 }, 0.08)
+        .to(".hero-copy", { opacity: 0, yPercent: -14 }, 0.12)
+        .to(
+          ".hero-product",
+          {
+            borderRadius: "3.5rem",
+            boxShadow: "0 1rem 4rem rgb(25 29 26 / 10%)",
+            rotation: 0,
+            scale: 0.22,
+            x: centerProductX,
+            y: centerProductY,
+          },
+          0.14,
+        )
+        .fromTo(
+          ".hero-transition-mark",
+          { opacity: 0, rotation: -8, scale: 0.4 },
+          { opacity: 1, rotation: 0, scale: 1 },
+          0.4,
+        )
+        .to(".hero-product", { opacity: 0, scale: 0.16 }, 0.42)
+        .fromTo(
+          ".hero-transition-caption",
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0 },
+          0.5,
+        )
+        .to(".hero-transition-mark", { scale: 1.12 }, 0.58)
+        .to(".hero-transition-caption", { opacity: 0, y: -12 }, 0.72)
+        .to(".hero-transition-wipe", { scale: 24 }, 0.73)
+        .to(".hero-transition-mark", { opacity: 0, scale: 15 }, 0.75)
+        .to(".site-header", { yPercent: 0 }, 0.9);
 
       const fragments = gsap.utils.toArray<HTMLElement>(".fragment");
       const convergence = gsap.timeline({
         scrollTrigger: {
           trigger: ".fragmentation",
-          start: "top top",
-          end: "+=115%",
-          pin: true,
+          start: "top 78%",
+          end: "bottom 28%",
           scrub: 1,
-          anticipatePin: 1,
         },
       });
 
