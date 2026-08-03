@@ -72,6 +72,12 @@ export function ScrollExperience() {
       }
 
       const heroProduct = document.querySelector<HTMLElement>(".hero-product");
+      const productMark = document.querySelector<HTMLElement>(
+        ".hero-product .product-rail .brand-mark",
+      );
+      const transitionMark = document.querySelector<HTMLElement>(
+        ".hero-transition-mark",
+      );
       const hero = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
@@ -95,6 +101,20 @@ export function ScrollExperience() {
         const bounds = heroProduct.getBoundingClientRect();
         return window.innerHeight / 2 - (bounds.top + bounds.height / 2);
       };
+      const productMarkX = () => {
+        if (!productMark) return 0;
+        const bounds = productMark.getBoundingClientRect();
+        return bounds.left + bounds.width / 2 - window.innerWidth / 2;
+      };
+      const productMarkY = () => {
+        if (!productMark) return 0;
+        const bounds = productMark.getBoundingClientRect();
+        return bounds.top + bounds.height / 2 - window.innerHeight / 2;
+      };
+      const productMarkScale = () => {
+        if (!productMark || !transitionMark) return 0.15;
+        return productMark.getBoundingClientRect().width / transitionMark.offsetWidth;
+      };
 
       // Preserve spatial continuity: the workspace becomes the DeltCRM mark,
       // then the mark becomes the next section rather than fading between scenes.
@@ -116,11 +136,33 @@ export function ScrollExperience() {
         )
         .fromTo(
           ".hero-transition-mark",
-          { opacity: 0, rotation: -8, scale: 0.4 },
-          { opacity: 1, rotation: 0, scale: 1 },
-          0.4,
+          {
+            "--mark-inner": "#d8f052",
+            "--mark-outer": "#ffffff",
+            opacity: 1,
+            rotation: 1.5,
+            scale: productMarkScale,
+            x: productMarkX,
+            y: productMarkY,
+          },
+          {
+            "--mark-inner": "#2947f2",
+            "--mark-outer": "#191d1a",
+            duration: 0.5,
+            opacity: 1,
+            rotation: 0,
+            scale: 1,
+            x: 0,
+            y: 0,
+          },
+          0.14,
         )
-        .to(".hero-product", { opacity: 0, scale: 0.16 }, 0.42)
+        .to(
+          ".hero-product .product-rail .brand-mark",
+          { duration: 0.06, opacity: 0 },
+          0.14,
+        )
+        .to(".hero-product", { opacity: 0, scale: 0.16 }, 0.52)
         .fromTo(
           ".hero-transition-caption",
           { opacity: 0, y: 20 },
