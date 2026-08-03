@@ -137,8 +137,8 @@ export function ScrollExperience() {
         .fromTo(
           ".hero-transition-mark",
           {
-            "--mark-inner": "#d8f052",
-            "--mark-outer": "#ffffff",
+            "--mark-inner": "#2947f2",
+            "--mark-outer": "#191d1a",
             opacity: 1,
             rotation: 1.5,
             scale: productMarkScale,

@@ -1,4 +1,5 @@
 import { Hero } from "@/components/hero";
+import { MarketingFooter } from "@/components/marketing-footer";
 import { PlatformStory } from "@/components/platform-story";
 import { ScrollExperience } from "@/components/scroll-experience";
 import { SiteHeader } from "@/components/site-header";
@@ -10,11 +11,7 @@ export default function HomePage() {
       <SiteHeader />
       <Hero />
       <PlatformStory />
-      <footer>
-        <span>DeltCRM</span>
-        <p>One connected system for the business you are becoming.</p>
-        <span>© {new Date().getFullYear()}</span>
-      </footer>
+      <MarketingFooter />
     </main>
   );
 }

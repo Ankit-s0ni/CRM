@@ -1,6 +1,12 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Menu } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+
+const navigation = [
+  { href: "/hrms", label: "HRMS" },
+  { href: "/pos", label: "POS" },
+  { href: "/pricing", label: "Pricing" },
+] as const;
 
 export function SiteHeader() {
   return (
@@ -10,14 +16,25 @@ export function SiteHeader() {
         <span>DeltCRM</span>
       </Link>
       <nav aria-label="Primary navigation">
-        <Link href="#platform">Platform</Link>
-        <Link href="#domains">Ecosystem</Link>
-        <Link href="#intelligence">Intelligence</Link>
+        {navigation.map((item) => (
+          <Link href={item.href} key={item.href}>{item.label}</Link>
+        ))}
       </nav>
       <Link className="header-cta" href="https://blufield.cloud/signup">
-        Explore DeltCRM
+        Start workspace
         <ArrowUpRight aria-hidden="true" size={16} />
       </Link>
+      <details className="mobile-nav">
+        <summary aria-label="Open navigation">
+          <Menu aria-hidden="true" size={20} />
+        </summary>
+        <nav aria-label="Mobile navigation">
+          {navigation.map((item) => (
+            <Link href={item.href} key={item.href}>{item.label}</Link>
+          ))}
+          <Link href="https://blufield.cloud/signup">Start workspace</Link>
+        </nav>
+      </details>
     </header>
   );
 }
