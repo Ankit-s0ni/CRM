@@ -130,7 +130,7 @@
 |---|---|---|
 | 8.0 Billing domain and provider ports | Complete | Billing migrations/domain/provider tests; API build |
 | 8.1 Plans and subscriptions | Complete | `sprint8-billing-ga.e2e-spec.ts`; B10/S5-S6 Playwright |
-| 8.1R Product catalog and plan clarity | Not started | [`PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md`](../PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md) |
+| 8.1R Product catalog and plan clarity | Not started | [`PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md`](../plans/multi-product-platform/PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md) |
 | 8.2 Payments and invoices | Complete | Connected signup-to-paid-invoice e2e; signed webhook, concurrent invoice, PDF and S7-S8 tests |
 | 8.3 Dunning and platform enhancements | Complete | Suspension/recovery e2e; S1/S11 implementation |
 | 8.4 Self-serve signup GA | Complete | Email delivery integration; auth-flow e2e; A2/A3 responsive Playwright |

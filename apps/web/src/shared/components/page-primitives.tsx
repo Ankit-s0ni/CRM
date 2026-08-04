@@ -183,7 +183,7 @@ export function ErrorState({
 }) {
   return (
     <div
-      className="rounded-[6px] border p-4 text-sm shadow-[0_2px_8px_rgba(20,20,20,0.04)] dashboard-tone dashboard-tone-red"
+      className="rounded-[6px] border p-4 text-sm shadow-sm dashboard-tone dashboard-tone-red"
       role="alert"
     >
       <div>{message}</div>
@@ -235,7 +235,7 @@ export function Toolbar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-[6px] border border-border bg-card p-3 shadow-[0_2px_8px_rgba(20,20,20,0.04)]",
+        "flex flex-wrap items-center gap-2 rounded-[6px] border border-border bg-card p-3 shadow-sm",
         className,
       )}
     >

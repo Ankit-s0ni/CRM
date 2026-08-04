@@ -2,33 +2,34 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme inline {
-  --color-primary: var(--theme-primary, #151515);
+  --color-primary: var(--theme-primary, #2563eb);
   --color-primary-foreground: #ffffff;
-  --color-primary-container: var(--theme-primary-container, #2a2927);
+  --color-primary-container: var(--theme-primary-container, #1d4ed8);
   --color-on-primary: #ffffff;
-  --color-secondary: #f3efe6;
-  --color-secondary-foreground: #151515;
-  --color-surface: #fbfaf6;
-  --color-on-surface: #151515;
-  --color-surface-variant: #f3efe6;
-  --color-on-surface-variant: #5f6572;
-  --color-surface-container-lowest: #fffefa;
-  --color-surface-container-high: #ece5d8;
-  --color-background: #fbfaf6;
-  --color-foreground: #151515;
-  --color-card: #fffefa;
-  --color-card-foreground: #151515;
-  --color-popover: #fffefa;
-  --color-popover-foreground: #151515;
-  --color-muted: #f3efe6;
-  --color-muted-foreground: #5f6572;
-  --color-border: #beb8ad;
-  --color-input: #beb8ad;
-  --color-outline: #8c867c;
-  --color-outline-variant: #ded7ca;
-  --color-ring: #151515;
-  --color-accent: #059669;
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+  --color-surface: #ffffff;
+  --color-on-surface: #0a0a0a;
+  --color-surface-variant: #f4f4f5;
+  --color-on-surface-variant: #575757;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e6e6e6;
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0a;
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #575757;
+  --color-border: #d4d4d8;
+  --color-input: #a5a5a5;
+  --color-outline: #a5a5a5;
+  --color-outline-variant: #d4d4d8;
+  --color-ring: #2563eb;
+  --color-accent: #2563eb;
   --color-accent-foreground: #ffffff;
+  --color-on-tone: #ffffff;
   --color-destructive: #dc2626;
   --color-error: #ef4444;
   --color-error-container: #fee2e2;
@@ -41,10 +42,47 @@
   
   --font-sans: var(--font-source-sans), sans-serif;
   --font-arabic: var(--font-noto-arabic), sans-serif;
-  --font-headline-md: Georgia, "Times New Roman", serif;
+  --font-headline-md: var(--font-lexend), var(--font-source-sans), sans-serif;
   --font-body-md: var(--font-source-sans), sans-serif;
   --font-label-md: var(--font-source-sans), sans-serif;
   --font-label-sm: var(--font-source-sans), sans-serif;
+}
+
+:root {
+  --theme-primary: #2563eb;
+  --theme-primary-container: #1d4ed8;
+  --theme-sidebar: #172554;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #bfdbfe;
+  --theme-sidebar-active: #1e3a8a;
+  --semantic-success: #047857;
+  --semantic-warning: #b45309;
+  --semantic-danger: var(--color-destructive);
+  --semantic-info: var(--theme-primary);
+  --attendance-success-bg: #ecfdf3;
+  --attendance-success-fg: #166534;
+  --attendance-warning-bg: #fef3c7;
+  --attendance-warning-fg: #92400e;
+  --attendance-danger-bg: #fee2e2;
+  --attendance-danger-fg: #b91c1c;
+  --attendance-info-bg: #eff6ff;
+  --attendance-info-fg: #1d4ed8;
+  --attendance-sky-bg: #e0f2fe;
+  --attendance-sky-fg: #0369a1;
+  --attendance-neutral-bg: var(--color-muted);
+  --attendance-neutral-fg: var(--color-muted-foreground);
+  --attendance-duty-bg: #ecfeff;
+  --attendance-duty-fg: #155e75;
+  --map-geofence: var(--color-primary-container);
+  --map-route: var(--color-primary);
+  --map-grid: var(--color-border);
+  --map-terrain: var(--color-outline);
+  --map-pin-live: #138a55;
+  --map-pin-warning: #c06b18;
+  --map-pin-offline: var(--color-outline);
+  --map-pin-stop: #0d6e78;
+  --map-pin-punch: #a23063;
+  --map-pin-alert: var(--color-destructive);
 }
 
 body {
@@ -146,21 +184,82 @@ textarea {
 [data-theme="navy"] {
   --theme-primary: #0f172a;
   --theme-primary-container: #1e293b;
+  --theme-sidebar: #0f172a;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #cbd5e1;
+  --theme-sidebar-active: #334155;
+  --color-ring: #0f172a;
 }
 
 [data-theme="emerald"] {
   --theme-primary: #059669;
   --theme-primary-container: #047857;
+  --theme-sidebar: #064e3b;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #a7f3d0;
+  --theme-sidebar-active: #047857;
+  --color-ring: #059669;
 }
 
 [data-theme="teal"] {
   --theme-primary: #0d9488;
   --theme-primary-container: #0f766e;
+  --theme-sidebar: #134e4a;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #99f6e4;
+  --theme-sidebar-active: #0f766e;
+  --color-ring: #0d9488;
 }
 
 [data-theme="crimson"] {
   --theme-primary: #e11d48;
   --theme-primary-container: #be123c;
+  --theme-sidebar: #881337;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #fecdd3;
+  --theme-sidebar-active: #be123c;
+  --color-ring: #e11d48;
+}
+
+[data-theme="editorial"] {
+  --theme-primary: #151515;
+  --theme-primary-container: #2a2927;
+  --theme-sidebar: #2a2927;
+  --theme-sidebar-foreground: #fffefa;
+  --theme-sidebar-muted: #d6d0c5;
+  --theme-sidebar-active: #42403c;
+  --color-secondary: #f3efe6;
+  --color-secondary-foreground: #151515;
+  --color-surface: #fbfaf6;
+  --color-on-surface: #151515;
+  --color-surface-variant: #f3efe6;
+  --color-on-surface-variant: #5f6572;
+  --color-surface-container-lowest: #fffefa;
+  --color-surface-container-high: #ece5d8;
+  --color-background: #fbfaf6;
+  --color-foreground: #151515;
+  --color-card: #fffefa;
+  --color-card-foreground: #151515;
+  --color-popover: #fffefa;
+  --color-popover-foreground: #151515;
+  --color-muted: #f3efe6;
+  --color-muted-foreground: #5f6572;
+  --color-border: #beb8ad;
+  --color-input: #beb8ad;
+  --color-outline: #8c867c;
+  --color-outline-variant: #ded7ca;
+  --color-ring: #151515;
+  --color-accent: #059669;
+}
+
+[data-theme="charcoal"] {
+  --theme-primary: #27272a;
+  --theme-primary-container: #434343;
+  --theme-sidebar: #18181b;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #d4d4d8;
+  --theme-sidebar-active: #3f3f46;
+  --color-ring: #27272a;
 }
 
 [data-theme="monochrome"] {
@@ -168,6 +267,10 @@ textarea {
 
   --theme-primary: #000000;
   --theme-primary-container: #171717;
+  --theme-sidebar: #111111;
+  --theme-sidebar-foreground: #ffffff;
+  --theme-sidebar-muted: #a3a3a3;
+  --theme-sidebar-active: #2a2a2a;
 
   --color-primary: #000000;
   --color-primary-foreground: #ffffff;
@@ -227,9 +330,63 @@ textarea {
 }
 
 .app-sidebar {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  border-color: var(--color-border);
+  background-color: var(--theme-sidebar);
+  color: var(--theme-sidebar-foreground);
+  border-color: color-mix(in srgb, var(--theme-sidebar-foreground) 16%, transparent);
+}
+
+.app-sidebar .app-sidebar-brand,
+.app-sidebar .app-sidebar-title,
+.app-sidebar .sidebar-nav-item,
+.app-sidebar .sidebar-logout {
+  color: var(--theme-sidebar-foreground);
+}
+
+.app-sidebar .app-sidebar-subtitle,
+.app-sidebar .app-sidebar-section-label {
+  color: var(--theme-sidebar-muted);
+}
+
+.app-sidebar .sidebar-nav-item:hover,
+.app-sidebar .sidebar-nav-item-active,
+.app-sidebar .sidebar-logout:hover {
+  background: var(--theme-sidebar-active);
+  border-color: color-mix(in srgb, var(--theme-sidebar-foreground) 18%, transparent);
+  color: var(--theme-sidebar-foreground);
+}
+
+.app-sidebar .app-sidebar-divider {
+  border-color: color-mix(in srgb, var(--theme-sidebar-foreground) 16%, transparent);
+}
+
+.app-sidebar .app-sidebar-avatar {
+  background: var(--theme-sidebar-foreground);
+  border-color: color-mix(in srgb, var(--theme-sidebar-foreground) 35%, transparent);
+  color: var(--theme-sidebar);
+}
+
+.platform-sidebar {
+  background: var(--theme-sidebar);
+  color: var(--theme-sidebar-foreground);
+}
+
+.platform-sidebar-muted {
+  color: var(--theme-sidebar-muted);
+}
+
+.platform-sidebar-item-active,
+.platform-sidebar-item:hover {
+  background: var(--theme-sidebar-active);
+  color: var(--theme-sidebar-foreground);
+}
+
+.platform-header {
+  background: color-mix(in srgb, var(--color-background) 95%, transparent);
+}
+
+.platform-avatar {
+  background: var(--theme-primary-container);
+  color: var(--color-primary-foreground);
 }
 
 [data-theme="monochrome"] .app-sidebar {
@@ -476,45 +633,45 @@ textarea {
 }
 
 .theme-tone-emerald {
-  --theme-tone-bg: #ecfdf5;
-  --theme-tone-text: #047857;
-  --theme-tone-border: #a7f3d0;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-success) 10%, var(--color-card));
+  --theme-tone-text: var(--semantic-success);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-success) 28%, var(--color-border));
 }
 
 .theme-tone-violet {
-  --theme-tone-bg: #f5f3ff;
-  --theme-tone-text: #6d28d9;
-  --theme-tone-border: #ddd6fe;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-info) 9%, var(--color-card));
+  --theme-tone-text: var(--semantic-info);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-info) 26%, var(--color-border));
 }
 
 .theme-tone-amber {
-  --theme-tone-bg: #fffbeb;
-  --theme-tone-text: #b45309;
-  --theme-tone-border: #fde68a;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-warning) 10%, var(--color-card));
+  --theme-tone-text: var(--semantic-warning);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-warning) 28%, var(--color-border));
 }
 
 .theme-tone-blue {
-  --theme-tone-bg: #eff6ff;
-  --theme-tone-text: #0369a1;
-  --theme-tone-border: #bae6fd;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-info) 9%, var(--color-card));
+  --theme-tone-text: var(--semantic-info);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-info) 26%, var(--color-border));
 }
 
 .theme-tone-rose {
-  --theme-tone-bg: #fff1f2;
-  --theme-tone-text: #be123c;
-  --theme-tone-border: #fecdd3;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-danger) 9%, var(--color-card));
+  --theme-tone-text: var(--semantic-danger);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-danger) 26%, var(--color-border));
 }
 
 .theme-tone-teal {
-  --theme-tone-bg: #f0fdfa;
-  --theme-tone-text: #0f766e;
-  --theme-tone-border: #99f6e4;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-info) 9%, var(--color-card));
+  --theme-tone-text: var(--semantic-info);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-info) 26%, var(--color-border));
 }
 
 .theme-tone-red {
-  --theme-tone-bg: #fef2f2;
-  --theme-tone-text: #b91c1c;
-  --theme-tone-border: #fecaca;
+  --theme-tone-bg: color-mix(in srgb, var(--semantic-danger) 9%, var(--color-card));
+  --theme-tone-text: var(--semantic-danger);
+  --theme-tone-border: color-mix(in srgb, var(--semantic-danger) 26%, var(--color-border));
 }
 
 .theme-tone-neutral {

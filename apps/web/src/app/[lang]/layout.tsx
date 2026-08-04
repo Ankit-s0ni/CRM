@@ -59,8 +59,13 @@ export default async function LocalizedRootLayout({
           {`
               try {
                 var theme = localStorage.getItem('deltcrm-ui-theme');
-                if (theme === 'current' || theme === 'default') return;
-                document.documentElement.setAttribute('data-theme', 'monochrome');
+                if (theme === 'current') theme = 'editorial';
+                var themes = ['editorial', 'charcoal', 'navy', 'emerald', 'teal', 'crimson', 'monochrome'];
+                if (themes.indexOf(theme) >= 0) {
+                  document.documentElement.setAttribute('data-theme', theme);
+                } else {
+                  document.documentElement.removeAttribute('data-theme');
+                }
               } catch (e) {}
             `}
         </Script>

@@ -440,20 +440,20 @@ export function OrganizationView({
       ) : (
         <div className="grid gap-6">
           {showSetupHint && (
-            <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+            <Panel className="flex flex-wrap items-center gap-4 border-border bg-muted p-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                 <Info className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
                 <h2 className="font-bold">
                   {tText("Organization comes before workplace setup")}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {tText("Departments and designations describe employee structure. The next step defines the physical office and attendance geofence.")}
                 </p>
               </div>
               <Link
-                className="inline-flex h-10 items-center rounded-lg bg-[#151515] px-4 text-sm font-semibold text-white"
+                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-tone"
                 href="/app/attendance/offices"
               >
                 {tText("Continue to office setup")}
@@ -464,7 +464,7 @@ export function OrganizationView({
             <Panel className="p-7">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">{tText("Departments")}</h2>
-                <Building2 className="text-[#151515]" />
+                <Building2 className="text-foreground" />
               </div>
               <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
                 <input
@@ -584,10 +584,10 @@ function DepartmentNode({
   return (
     <div>
       <div
-        className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-variant bg-white px-4 py-3"
+        className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-variant bg-card px-4 py-3"
         style={{ marginLeft: depth * 24 }}
       >
-        <div className="grid size-8 place-items-center rounded-lg bg-zinc-100 text-[#151515]">
+        <div className="grid size-8 place-items-center rounded-lg bg-muted text-foreground">
           <Building2 className="size-4" />
         </div>
         {editing ? (
@@ -605,7 +605,7 @@ function DepartmentNode({
           <>
             <select
               aria-label={`Parent for ${department.name}`}
-              className="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-xs"
+              className="h-9 rounded-lg border border-border bg-card px-2 text-xs"
               onChange={(event) =>
                 void onMove(department.id, event.target.value || null)
               }
@@ -624,7 +624,7 @@ function DepartmentNode({
                 ))}
             </select>
             <button
-              className="text-xs font-bold text-[#151515]"
+              className="text-xs font-bold text-foreground"
               disabled={name.trim().length < 2}
               onClick={async () => {
                 await onRename(department.id, name);
@@ -646,7 +646,7 @@ function DepartmentNode({
         ) : (
           <>
             <button
-              className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-50"
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
               onClick={() => setAddingChild((current) => !current)}
               title={tText("Add child department")}
               type="button"
@@ -654,7 +654,7 @@ function DepartmentNode({
               <Plus className="size-4" />
             </button>
             <button
-              className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-50"
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
               onClick={() => setEditing(true)}
               title={tText("Edit department")}
               type="button"
@@ -678,7 +678,7 @@ function DepartmentNode({
       </div>
       {addingChild && (
         <div
-          className="mt-2 flex gap-2 rounded-lg bg-zinc-50 p-3"
+          className="mt-2 flex gap-2 rounded-lg bg-muted p-3"
           style={{ marginLeft: (depth + 1) * 24 }}
         >
           <input
@@ -729,7 +729,7 @@ function DesignationRow({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(designation.name);
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-zinc-50 px-4 py-3">
+    <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3">
       {editing ? (
         <input
           aria-label={`Rename ${designation.name}`}
@@ -746,7 +746,7 @@ function DesignationRow({
       {editing ? (
         <>
           <button
-            className="text-xs font-bold text-[#151515]"
+            className="text-xs font-bold text-foreground"
             disabled={name.trim().length < 2}
             onClick={async () => {
               await onRename(designation.id, name);
@@ -768,7 +768,7 @@ function DesignationRow({
       ) : (
         <>
           <button
-            className="rounded-lg p-2 text-zinc-500 hover:bg-white"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-card"
             onClick={() => setEditing(true)}
             title={tText("Edit designation")}
             type="button"
@@ -937,7 +937,7 @@ export function EmployeesView() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             aria-label={tText("How employee onboarding works")}
-            className="grid size-11 place-items-center rounded-xl border border-zinc-300 bg-white text-zinc-600 transition hover:border-[#151515] hover:bg-zinc-50 hover:text-[#151515]"
+            className="grid size-11 place-items-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary hover:bg-muted hover:text-foreground"
             onClick={() => setOnboardingOpen(true)}
             title={tText("How employee onboarding works")}
             type="button"
@@ -945,7 +945,7 @@ export function EmployeesView() {
             <Info className="size-5" />
           </button>
           <Link
-            className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
+            className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground hover:bg-muted"
             href="/app/imports/employees"
           >
             <FileUp className="mr-2 size-4" />
@@ -975,7 +975,7 @@ export function EmployeesView() {
           {payrollEnabled && (
             <div className="mb-5 grid gap-4 lg:grid-cols-3">
               <Link
-                className="group rounded-[6px] theme-tone theme-tone-emerald border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
+                className="group rounded-[6px] theme-tone theme-tone-emerald border p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/payroll/runs"
               >
                 <div className="flex items-start gap-3">
@@ -991,7 +991,7 @@ export function EmployeesView() {
                 </div>
               </Link>
               <Link
-                className="group rounded-[6px] theme-tone theme-tone-violet border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
+                className="group rounded-[6px] theme-tone theme-tone-violet border p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/modules/payroll/payslips"
               >
                 <div className="flex items-start gap-3">
@@ -1007,7 +1007,7 @@ export function EmployeesView() {
                 </div>
               </Link>
               <Link
-                className="group rounded-[6px] theme-tone theme-tone-amber border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
+                className="group rounded-[6px] theme-tone theme-tone-amber border p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/reports?type=PAYROLL"
               >
                 <div className="flex items-start gap-3">
@@ -1031,7 +1031,7 @@ export function EmployeesView() {
                   <FilterField label={tText("Search employees")}>
                   <div className="flex gap-2">
                     <div className="relative min-w-0 flex-1">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+                      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                       <input
                         aria-label={tText("Search employees")}
                         className={`${inputClass} pl-10`}
@@ -1041,7 +1041,7 @@ export function EmployeesView() {
                       />
                     </div>
                     <button
-                      className="h-11 rounded-xl bg-[#151515] px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-95"
+                      className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-on-tone shadow-sm transition hover:brightness-95"
                       type="submit"
                     >
                       {tText("Search")}</button>
@@ -1151,7 +1151,7 @@ export function EmployeesView() {
                         <DataTableCell>
                           <Link
                             href={`/app/employees/${employee.id}`}
-                            className="font-semibold text-[#151515] hover:underline"
+                            className="font-semibold text-foreground hover:underline"
                           >
                             {employee.fullName}
                           </Link>
@@ -1242,10 +1242,10 @@ export function EmployeesView() {
           <ol className="grid gap-3">
             {EMPLOYEE_ONBOARDING_STEPS.map(({ number, title, body }) => (
               <li
-                className="flex gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+                className="flex gap-4 rounded-xl border border-border bg-muted p-4"
                 key={number}
               >
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#151515] text-sm font-bold text-white">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-on-tone">
                   {number}
                 </span>
                 <span>
@@ -1258,7 +1258,7 @@ export function EmployeesView() {
             ))}
           </ol>
           <Link
-            className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#151515] px-4 text-sm font-bold text-white"
+            className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-on-tone"
             href="/app/employees/new"
           >
             {tText("Add an employee")}</Link>
@@ -1489,7 +1489,7 @@ export function EmployeeEditorView() {
           </div>
         </Panel>
         <Panel className="p-7">
-          <div className="grid size-14 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+          <div className="grid size-14 place-items-center rounded-xl bg-muted text-foreground">
             <ShieldCheck />
           </div>
           <h2 className="mt-5 text-lg font-semibold">{tText("What happens next?")}</h2>
@@ -1501,10 +1501,10 @@ export function EmployeeEditorView() {
               "Approve their registered device if required",
             ].map((step, index) => (
               <li className="flex items-start gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-[#151515]">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold text-foreground">
                   {index + 2}
                 </span>
-                <span className="pt-0.5 text-zinc-600">{step}</span>
+                <span className="pt-0.5 text-muted-foreground">{step}</span>
               </li>
             ))}
           </ol>
@@ -1519,7 +1519,7 @@ export function EmployeeEditorView() {
         >
           <div className="rounded-xl border theme-tone theme-tone-emerald p-4 text-sm">
             {tText("The Employee self-service role is already assigned. No role setup is required.")}</div>
-          <div className="mt-4 grid gap-4 rounded-xl border border-zinc-200 p-5">
+          <div className="mt-4 grid gap-4 rounded-xl border border-border p-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-outline">
                 {tText("Login email")}</p>
@@ -1533,7 +1533,7 @@ export function EmployeeEditorView() {
               </p>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 text-sm font-bold text-[#151515]"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border text-sm font-bold text-foreground"
               onClick={async () => {
                 await navigator.clipboard.writeText(
                   `Email: ${createdAccount.email}\nTemporary password: ${createdAccount.password}`,
@@ -1678,11 +1678,11 @@ export function EmployeeImportView() {
         steps={importSteps}
       />
       <Panel className="mb-6 overflow-hidden">
-        <div className="border-b border-surface-variant bg-zinc-50 p-6">
+        <div className="border-b border-surface-variant bg-muted p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold">{tText("Prepare your file")}</h2>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {tText("Use the provided columns in the same order. Excel users can open the template and save it as CSV UTF-8.")}</p>
             </div>
             <PrimaryButton
@@ -1700,7 +1700,7 @@ export function EmployeeImportView() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-white text-xs uppercase text-outline">
+              <thead className="bg-card text-xs uppercase text-outline">
                 <tr>
                   <th className="px-5 py-3">{tText("Column")}</th>
                   <th className="px-5 py-3">{tText("Required")}</th>
@@ -1716,12 +1716,12 @@ export function EmployeeImportView() {
                   >
                     <td className="px-5 py-3">
                       <div className="font-semibold">{field.label}</div>
-                      <code className="text-xs text-zinc-500">{field.key}</code>
+                      <code className="text-xs text-muted-foreground">{field.key}</code>
                     </td>
                     <td className="px-5 py-3">
                       {field.required ? tText("Yes") : tText("No")}
                     </td>
-                    <td className="px-5 py-3 text-zinc-500">{field.format}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{field.format}</td>
                     <td className="px-5 py-3 font-mono text-xs">
                       {field.example}
                     </td>
@@ -1729,21 +1729,21 @@ export function EmployeeImportView() {
                 ))}
               </tbody>
             </table>
-            <div className="border-t border-surface-variant theme-tone theme-tone-amber px-5 py-4 text-sm text-zinc-500">
+            <div className="border-t border-surface-variant theme-tone theme-tone-amber px-5 py-4 text-sm text-muted-foreground">
               {schema.notes.join(" ")} {tText("Maximum")}{schema.maxRows} {tText("employee rows.")}</div>
           </div>
         )}
       </Panel>
       <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-border bg-muted p-8 text-center">
         <div className="max-w-xl">
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white text-[#151515] shadow-sm">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-card text-foreground shadow-sm">
             <FileUp className="size-7" />
           </div>
           <h2 className="mt-5 text-xl font-semibold">
             {tText("Upload employee CSV")}</h2>
           <p className="mt-2 text-sm text-outline">
             {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template. Validation results will appear in the import history below.")}</p>
-          <label className="mt-5 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-[#151515] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2a2927]">
+          <label className="mt-5 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-on-tone shadow-sm transition hover:bg-primary-container">
             {uploading ? tText("Uploading...") : tText("Choose CSV")}
             <input
               type="file"
@@ -1754,11 +1754,11 @@ export function EmployeeImportView() {
             />
           </label>
           <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-card px-3 py-1 shadow-sm">
               <ClipboardCheck className="size-3.5 theme-tone-text" />
               {tText("Headers checked")}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-card px-3 py-1 shadow-sm">
               <AlertTriangle className="size-3.5 theme-tone-text" />
               {tText("Row errors reported")}
             </span>
@@ -1770,7 +1770,7 @@ export function EmployeeImportView() {
           <LoadingState />
         ) : (
           <Panel className="overflow-hidden">
-            <div className="border-b border-border bg-zinc-50 px-6 py-4">
+            <div className="border-b border-border bg-muted px-6 py-4">
               <h2 className="font-semibold">{tText("Recent imports")}</h2>
               <p className="text-sm text-muted-foreground">
                 {tText("Track validation status, successful rows, and files that need correction.")}
@@ -1796,7 +1796,7 @@ export function EmployeeImportView() {
                 </div>
                 {job.errorRows > 0 && (
                   <button
-                    className="text-sm font-semibold text-[#151515] hover:underline"
+                    className="text-sm font-semibold text-foreground hover:underline"
                     onClick={() => void showErrors(job.id)}
                     type="button"
                   >
@@ -1815,10 +1815,10 @@ export function EmployeeImportView() {
       </div>
       {selectedJobId && (
         <Panel className="mt-6 overflow-hidden">
-          <div className="flex items-center justify-between border-b border-surface-variant bg-zinc-50 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-surface-variant bg-muted px-6 py-4">
             <h2 className="font-semibold">{tText("Rows that need correction")}</h2>
             <button
-              className="text-sm font-semibold text-[#151515]"
+              className="text-sm font-semibold text-foreground"
               onClick={() => {
                 setSelectedJobId(null);
                 setRowErrors(null);
@@ -1972,7 +1972,7 @@ export function UsersRolesView() {
         <div className="flex flex-wrap gap-2">
           {canCreateRoles && (
             <button
-              className="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
+              className="inline-flex h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground hover:bg-muted"
               onClick={() => setCreateRoleOpen(true)}
               type="button"
             >
@@ -1997,26 +1997,26 @@ export function UsersRolesView() {
         <LoadingState />
       ) : (
         <div className="grid gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-300 bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-5">
             <div>
-              <p className="font-bold text-zinc-800">{tText("Employee app accounts")}</p>
+              <p className="font-bold text-foreground">{tText("Employee app accounts")}</p>
               <p className="mt-1 text-sm text-outline">
                 {tText("Create and invite employees from the employee directory. Their Employee self-service role is assigned automatically.")}</p>
             </div>
             <Link
-              className="text-sm font-bold text-[#151515]"
+              className="text-sm font-bold text-foreground"
               href="/app/employees"
             >
               {tText("Open employees →")}</Link>
           </div>
           <div className="grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
             <Panel className="overflow-hidden">
-              <div className="border-b border-surface-variant bg-zinc-50 px-6 py-4 font-semibold">
+              <div className="border-b border-surface-variant bg-muted px-6 py-4 font-semibold">
                 {tText("Workspace login accounts")}</div>
               {users.map((user) => (
                 <button
                   key={user.id}
-                  className="flex w-full items-center justify-between gap-4 border-b border-surface-variant px-6 py-4 text-left last:border-0 hover:bg-zinc-50 disabled:cursor-default"
+                  className="flex w-full items-center justify-between gap-4 border-b border-surface-variant px-6 py-4 text-left last:border-0 hover:bg-muted disabled:cursor-default"
                   disabled={!canManageUsers}
                   onClick={() => openUserAccess(user)}
                   type="button"
@@ -2026,7 +2026,7 @@ export function UsersRolesView() {
                       {user.employee?.fullName || user.email}
                     </div>
                     {user.employee && (
-                      <div className="text-xs text-zinc-500">{user.email}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
                     )}
                     <div className="text-xs text-muted-foreground">
                       {user.roles.map((role) => role.name).join(", ") ||
@@ -2048,19 +2048,19 @@ export function UsersRolesView() {
                   <Link
                     key={role.id}
                     href={`/app/access/roles/${role.id}`}
-                    className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-[#151515]"
+                    className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-primary"
                   >
                     <div>
                       <div className="font-semibold">{role.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {role.isSystem ? tText("System role") : tText("Custom role")} ·{" "}
                         {role.assignedUsers ?? 0} {tText("users")}</div>
-                      <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">
+                      <p className="mt-2 max-w-sm text-xs leading-5 text-muted-foreground">
                         {SYSTEM_ROLE_SUMMARIES[role.name] ??
                           `${role.permissionKeys?.length ?? 0} configured capabilities.`}
                       </p>
                     </div>
-                    <ShieldCheck className="size-5 text-[#151515]" />
+                    <ShieldCheck className="size-5 text-foreground" />
                   </Link>
                 ))}
               </div>
@@ -2091,7 +2091,7 @@ export function UsersRolesView() {
                 {elevatedRoles.map((role) => (
                   <label
                     key={role.id}
-                    className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm"
+                    className="flex items-center gap-3 rounded-lg bg-muted p-3 text-sm"
                   >
                     <input
                       type="checkbox"
@@ -2131,7 +2131,7 @@ export function UsersRolesView() {
             <div className="grid gap-2">
               {elevatedRoles.map((role) => (
                 <label
-                  className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4"
+                  className="flex items-start gap-3 rounded-xl bg-muted p-4"
                   key={role.id}
                 >
                   <input
@@ -2269,10 +2269,10 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
         <LoadingState />
       ) : role.isSystem ? (
         <div className="grid gap-6">
-          <div className="flex items-start gap-3 rounded-xl border border-zinc-300 bg-white p-5 text-sm text-zinc-600">
-            <Info className="mt-0.5 size-5 shrink-0 text-[#151515]" />
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            <Info className="mt-0.5 size-5 shrink-0 text-foreground" />
             <div>
-              <strong className="text-zinc-800">{tText("Built-in role")}</strong>
+              <strong className="text-foreground">{tText("Built-in role")}</strong>
               <p className="mt-1 leading-6">
                 {tText("DeltCRM assigns and maintains this role automatically. It cannot be edited because changing its technical permissions could break essential product flows.")}</p>
             </div>
@@ -2288,11 +2288,11 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                     ? tText("Team visibility and approval work for assigned reporting employees.")
                     : tText("Full business administration for this tenant workspace.")}
             </p>
-            <p className="mt-4 text-sm font-semibold text-zinc-600">
+            <p className="mt-4 text-sm font-semibold text-muted-foreground">
               {selected.size} {tText("protected capabilities included")}</p>
             {role.name === "EMPLOYEE" && (
               <Link
-                className="mt-5 inline-flex text-sm font-bold text-[#151515]"
+                className="mt-5 inline-flex text-sm font-bold text-foreground"
                 href="/app/employees"
               >
                 {tText("Manage employee accounts →")}</Link>
@@ -2308,7 +2308,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {ROLE_PRESETS.map((preset) => (
                 <button
-                  className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-[#151515] hover:bg-zinc-50"
+                  className="rounded-xl border border-border p-4 text-left transition hover:border-primary hover:bg-muted"
                   key={preset.id}
                   onClick={() => applyPreset(preset.keys)}
                   type="button"
@@ -2325,9 +2325,9 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
           </Panel>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-zinc-600">
+            <p className="text-sm font-semibold text-muted-foreground">
               {selected.size} {tText("capabilities enabled")}</p>
-            <label className="flex items-center gap-2 text-sm text-zinc-500">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input
                 checked={showTechnical}
                 className="accent-primary"
@@ -2346,7 +2346,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                 key={group.module}
                 className="border-b border-surface-variant p-6 last:border-0"
               >
-                <h2 className="mb-1 text-base font-bold text-zinc-800">
+                <h2 className="mb-1 text-base font-bold text-foreground">
                   {sentenceCase(group.module)}
                 </h2>
                 <p className="mb-4 text-sm text-outline">
@@ -2357,7 +2357,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                     return (
                       <label
                         key={key}
-                        className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-sm"
+                        className="flex items-start gap-3 rounded-xl bg-muted p-4 text-sm"
                       >
                         <input
                           type="checkbox"
@@ -2375,7 +2375,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
                           }}
                         />
                         <span>
-                          <strong className="block font-semibold text-zinc-800">
+                          <strong className="block font-semibold text-foreground">
                             {sentenceCase(presentation.title)}
                           </strong>
                           <span className="mt-1 block text-xs leading-5 text-outline">
@@ -2411,8 +2411,8 @@ function AccessDialog({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-foreground/45 p-4">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl bg-card p-7 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold">{title}</h2>
           <button onClick={onClose} className="text-sm text-outline">

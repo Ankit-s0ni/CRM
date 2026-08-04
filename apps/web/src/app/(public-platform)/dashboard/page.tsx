@@ -22,20 +22,20 @@ export default function DashboardPage() {
   if (!hasHydrated || !user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <nav className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-muted flex flex-col">
+      <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">AI</span>
+                  <span className="text-on-tone font-bold text-sm">AI</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">Acme Industries</span>
+                <span className="ml-3 text-xl font-bold text-foreground">Acme Industries</span>
               </div>
             </div>
             <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-4">{user.email}</span>
+              <span className="text-sm text-muted-foreground mr-4">{user.email}</span>
               <button
                 onClick={() => {
                   clearAuth();
@@ -51,12 +51,12 @@ export default function DashboardPage() {
       </nav>
 
       <main className="flex-1 max-w-7xl w-full mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+        <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="px-4 py-5 sm:p-6 text-center">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg leading-6 font-medium text-foreground">
               Welcome to the HRMS Dashboard
             </h3>
-            <div className="mt-2 max-w-xl text-sm text-gray-500 mx-auto">
+            <div className="mt-2 max-w-xl text-sm text-muted-foreground mx-auto">
               <p>
                 You have successfully authenticated via the NestJS API with Row-Level Security!
                 Tenant ID: {user.tenantId}

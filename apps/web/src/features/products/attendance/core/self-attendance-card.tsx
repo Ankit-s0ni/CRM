@@ -131,7 +131,7 @@ export function SelfAttendanceCard({
     return (
       <div
         className={cn(
-          "animate-pulse rounded-2xl bg-zinc-100",
+          "animate-pulse rounded-2xl bg-muted",
           compact ? "h-24" : "h-48",
         )}
       />
@@ -181,13 +181,13 @@ export function SelfAttendanceCard({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm",
+        "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
         compact ? "p-4" : "p-5",
       )}
       aria-label={t("attendance.self.title", "My attendance")}
     >
       <div className="flex flex-wrap items-center gap-4">
-        <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+        <div className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
           <TimerReset className="size-5" />
         </div>
         <div className="min-w-36 flex-1">
@@ -232,7 +232,7 @@ export function SelfAttendanceCard({
           <button
             disabled={busy || today.isLocked}
             onClick={() => punch(primaryAction)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#151515] px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-on-tone shadow-sm disabled:opacity-50"
           >
             <PrimaryIcon className="size-4" />
             {busy ? t("common.state.saving", "Saving...") : label}
@@ -241,7 +241,7 @@ export function SelfAttendanceCard({
             <button
               disabled={busy || today.isLocked}
               onClick={() => punch("break-start")}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-[#151515]"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border px-4 text-sm font-semibold text-foreground"
             >
               <Coffee className="size-4" />
               {t("attendance.self.startBreak", "Start break")}

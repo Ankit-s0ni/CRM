@@ -38,7 +38,7 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
       dir="ltr"
       className={cn(
         "inline-flex h-9 items-center rounded-[6px] border border-border bg-card p-1",
-        "shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-muted",
+        "shadow-sm transition hover:bg-muted",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className,
       )}
@@ -48,7 +48,7 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
           "grid h-7 min-w-10 place-items-center rounded-[5px] px-3 text-xs font-semibold transition",
           isEn
             ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-muted-foreground hover:bg-white hover:text-foreground",
+            : "text-muted-foreground hover:bg-card hover:text-foreground",
         )}
       >
         EN
@@ -58,7 +58,7 @@ export function LanguageToggle({ className }: LanguageToggleProps) {
           "grid h-7 min-w-10 place-items-center rounded-[5px] px-3 text-xs font-semibold transition",
           !isEn
             ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-muted-foreground hover:bg-white hover:text-foreground",
+            : "text-muted-foreground hover:bg-card hover:text-foreground",
         )}
       >
         AR

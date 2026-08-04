@@ -7,19 +7,19 @@ import { APP_DOMAIN } from "@/lib/app-domain";
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-5 py-8">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-white shadow-xl shadow-slate-200/70 lg:grid-cols-[1fr_440px]">
-        <section className="hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-card shadow-xl shadow-border/70 lg:grid-cols-[1fr_440px]">
+        <section className="hidden bg-foreground p-10 text-on-tone lg:flex lg:flex-col lg:justify-between">
           <div>
-            <div className="inline-flex size-12 items-center justify-center rounded-lg bg-[#151515] text-white shadow-lg shadow-[#151515]/20">
+            <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary text-on-tone shadow-lg shadow-primary/20">
               <Building2 className="size-6" />
             </div>
-            <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+            <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-on-tone/55">
               DELTCRM Workspace
             </p>
             <h1 className="mt-3 max-w-lg text-4xl font-semibold leading-tight tracking-tight">
               Sign in to your operations workspace
             </h1>
-            <p className="mt-4 max-w-md text-sm leading-6 text-white/70">
+            <p className="mt-4 max-w-md text-sm leading-6 text-on-tone/70">
               Review attendance, employees, payroll, permissions, and daily HR
               queues from one focused console.
             </p>
@@ -44,13 +44,13 @@ export default function LoginPage() {
               },
             ].map(({ icon: Icon, title, body }) => (
               <div
-                className="flex gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+                className="flex gap-3 rounded-lg border border-on-tone/10 bg-card/5 p-4"
                 key={title}
               >
-                <Icon className="mt-0.5 size-5 shrink-0 text-[#beb8ad]" />
+                <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
                 <div>
                   <div className="text-sm font-semibold">{title}</div>
-                  <div className="mt-1 text-xs leading-5 text-white/60">
+                  <div className="mt-1 text-xs leading-5 text-on-tone/60">
                     {body}
                   </div>
                 </div>
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
         <section className="p-6 sm:p-10">
           <div className="mb-8 text-center">
-            <div className="mx-auto inline-flex size-14 items-center justify-center rounded-lg bg-[#151515] text-white shadow-lg shadow-[#151515]/20">
+            <div className="mx-auto inline-flex size-14 items-center justify-center rounded-lg bg-primary text-on-tone shadow-lg shadow-primary/20">
               <Building2 className="size-7" />
             </div>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">

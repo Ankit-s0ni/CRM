@@ -1,5 +1,4 @@
 import {
-  Blocks,
   Building2,
   ClipboardCheck,
   FileBarChart,
@@ -46,13 +45,20 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
     ],
   },
   {
-    label: "Modules",
-    localizationKey: "tenant.navigation.modules",
-    href: "/app/modules",
-    icon: Blocks,
+    label: "Attendance",
+    localizationKey: "tenant.navigation.attendance",
+    href: "/app/modules/attendance",
+    icon: ClipboardCheck,
+    moduleKey: "ATTENDANCE",
+    anyPermissions: [...attendanceWorkspaceAccessPermissions],
+  },
+  {
+    label: "Payroll",
+    localizationKey: "tenant.navigation.payroll",
+    href: "/app/modules/payroll",
+    icon: WalletCards,
+    moduleKey: "PAYROLL",
     anyPermissions: [
-      "workspace.modules.read",
-      ...attendanceWorkspaceAccessPermissions,
       "payroll.settings.read",
       "payroll.policies.read",
       "payroll.components.read",
@@ -123,38 +129,7 @@ export const tenantContextNavigation: Record<
       permission: "organization.imports.read",
     },
   ],
-  modules: [
-    {
-      label: "All modules",
-      localizationKey: "tenant.navigation.allModules",
-      href: "/app/modules",
-      permission: "workspace.modules.read",
-    },
-    {
-      label: "Attendance",
-      localizationKey: "tenant.navigation.attendance",
-      href: "/app/modules/attendance",
-      icon: ClipboardCheck,
-      moduleKey: "ATTENDANCE",
-      anyPermissions: [...attendanceWorkspaceAccessPermissions],
-    },
-    {
-      label: "Payroll",
-      localizationKey: "tenant.navigation.payroll",
-      href: "/app/modules/payroll",
-      icon: WalletCards,
-      moduleKey: "PAYROLL",
-      anyPermissions: [
-        "payroll.settings.read",
-        "payroll.policies.read",
-        "payroll.components.read",
-        "payroll.structures.read",
-        "payroll.compensation.read",
-        "payroll.accounting.read",
-        "attendance.payroll-lock.manage",
-      ],
-    },
-  ],
+  modules: [],
   reports: [
     {
       label: "Report center",
@@ -275,7 +250,6 @@ export function canViewTenantNavItem(
   )
     return false;
   if (item.moduleKey && !moduleKeys.has(item.moduleKey)) return false;
-  if (item.href === "/app/modules" && moduleKeys.size === 0) return false;
   return true;
 }
 
@@ -307,7 +281,14 @@ export function tenantTopLevelActive(pathname: string, href: string) {
   if (href === "/app") return pathname === href;
   const context = tenantNavigationContext(pathname);
   if (href === "/app/employees") return context === "employees";
-  if (href === "/app/modules") return context === "modules";
+  if (href === "/app/modules/attendance")
+    return (
+      pathname.startsWith("/app/modules/attendance") ||
+      pathname.startsWith("/app/attendance") ||
+      pathname.startsWith("/app/leave")
+    );
+  if (href === "/app/modules/payroll")
+    return pathname.startsWith("/app/modules/payroll");
   if (href === "/app/reports") return context === "reports";
   if (href === "/app/settings") return context === "settings";
   return false;

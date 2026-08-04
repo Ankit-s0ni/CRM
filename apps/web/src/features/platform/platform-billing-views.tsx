@@ -68,7 +68,7 @@ export function PlatformBillingOverview() {
       description="Authoritative recurring revenue, collections, outstanding balances and subscription movement across DeltCRM."
       action={
         <Link
-          className="rounded-xl bg-[#151515] px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-tone"
           href="/platform/plans"
         >
           Manage plans
@@ -213,7 +213,7 @@ export function PlatformPlansView() {
       action={
         canManage ? (
           <Button
-            className="bg-[#151515] text-white"
+            className="bg-primary text-on-tone"
             onClick={() => setSelected(null)}
           >
             <Plus />
@@ -230,10 +230,10 @@ export function PlatformPlansView() {
           {plans.map((plan) => (
             <article
               className={cn(
-                "flex flex-col rounded-2xl border bg-white p-5 shadow-sm",
+                "flex flex-col rounded-2xl border bg-card p-5 shadow-sm",
                 plan.isActive
                   ? "border-surface-variant"
-                  : "border-dashed border-zinc-300 opacity-75",
+                  : "border-dashed border-border opacity-75",
               )}
               key={plan.id}
             >
@@ -260,7 +260,7 @@ export function PlatformPlansView() {
                   </Button>
                 )}
               </div>
-              <div className="mt-6 text-3xl font-bold text-[#151515]">
+              <div className="mt-6 text-3xl font-bold text-foreground">
                 {formatMoney(plan.pricePerUser, plan.currency)}
               </div>
               <div className="text-xs text-outline">
@@ -301,7 +301,7 @@ export function PlatformPlansView() {
                     </div>
                   ))}
                   {(plan.capabilities?.length ?? 0) > 6 && (
-                    <div className="text-xs font-semibold text-[#151515]">
+                    <div className="text-xs font-semibold text-foreground">
                       +{plan.capabilities.length - 6} more features
                     </div>
                   )}
@@ -395,7 +395,7 @@ export function PlatformInvoicesView() {
             />
             <tbody className="divide-y divide-outline-variant">
               {result?.data.map((invoice) => (
-                <tr className="hover:bg-zinc-50" key={invoice.id}>
+                <tr className="hover:bg-muted" key={invoice.id}>
                   <td className="p-4 font-semibold">{invoice.invoiceNumber}</td>
                   <td className="p-4">
                     <strong>{invoice.tenant?.companyName}</strong>
@@ -471,7 +471,7 @@ export function PlatformPaymentsView() {
       <PlatformBillingNav active="/platform/billing/payments" />
       <div className="flex flex-wrap gap-3">
         <select
-          className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
+          className="h-10 rounded-lg border border-border bg-card px-3 text-sm"
           value={provider}
           onChange={(event) => setProvider(event.target.value)}
         >
@@ -480,7 +480,7 @@ export function PlatformPaymentsView() {
           <option value="STRIPE">Stripe</option>
         </select>
         <select
-          className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
+          className="h-10 rounded-lg border border-border bg-card px-3 text-sm"
           value={status}
           onChange={(event) => setStatus(event.target.value)}
         >
@@ -659,7 +659,7 @@ export function PlatformDunningView() {
                   </div>
                   {canRetry && (
                     <Button
-                      className="bg-[#151515] text-white"
+                      className="bg-primary text-on-tone"
                       disabled={!invoice || busy === subscription.id}
                       onClick={() => void retry(subscription)}
                     >
@@ -687,14 +687,14 @@ export function PlatformDunningView() {
 
 function PlatformBillingNav({ active }: { active: string }) {
   return (
-    <nav className="flex gap-1 overflow-x-auto rounded-xl border border-surface-variant bg-white p-1">
+    <nav className="flex gap-1 overflow-x-auto rounded-xl border border-surface-variant bg-card p-1">
       {billingLinks.map((link) => (
         <Link
           className={cn(
             "whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold",
             active === link.href
-              ? "bg-[#151515] text-white"
-              : "text-on-surface-variant hover:bg-zinc-50",
+              ? "bg-primary text-on-tone"
+              : "text-on-surface-variant hover:bg-muted",
           )}
           href={link.href}
           key={link.href}
@@ -731,7 +731,7 @@ function BillingFilters({
         />
       </div>
       <select
-        className="h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
+        className="h-10 rounded-lg border border-border bg-card px-3 text-sm"
         value={status}
         onChange={(event) => onStatus(event.target.value)}
       >
@@ -899,13 +899,13 @@ function PlanEditor({
       : value.moduleKeys.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/45 p-4">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-foreground/45 p-4">
       <form
-        className="mx-auto my-8 w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl"
+        className="mx-auto my-8 w-full max-w-3xl rounded-2xl bg-card p-6 shadow-2xl"
         onSubmit={submit}
       >
         <div className="flex items-start gap-4">
-          <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+          <div className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
             <Boxes />
           </div>
           <div>
@@ -933,10 +933,10 @@ function PlanEditor({
               className={cn(
                 "rounded-lg px-3 py-2 text-center text-xs font-semibold",
                 step === index + 1
-                  ? "bg-[#151515] text-white"
+                  ? "bg-primary text-on-tone"
                   : step > index + 1
                     ? "theme-tone theme-tone-emerald"
-                    : "bg-zinc-50 text-outline",
+                    : "bg-muted text-outline",
               )}
               key={label}
             >
@@ -1021,7 +1021,7 @@ function PlanEditor({
             <div className="sm:col-span-2">
               <FormField label="Description">
                 <textarea
-                  className="min-h-24 rounded-lg border border-zinc-300 p-3 text-sm"
+                  className="min-h-24 rounded-lg border border-border p-3 text-sm"
                   value={value.description}
                   onChange={(event) =>
                     setValue({ ...value, description: event.target.value })
@@ -1058,7 +1058,7 @@ function PlanEditor({
                         <span className="mt-1 block text-xs leading-5 text-outline">
                           {module.description}
                         </span>
-                        <span className="mt-2 block text-[10px] font-semibold uppercase text-[#151515]">
+                        <span className="mt-2 block text-[10px] font-semibold uppercase text-foreground">
                           {module.kind === "ADD_ON"
                             ? `Add-on · Requires ${module.dependencyKeys.join(", ")}`
                             : "Product"}
@@ -1089,7 +1089,7 @@ function PlanEditor({
                         className={cn(
                           "flex items-start gap-3 rounded-xl border p-4",
                           unavailable
-                            ? "border-dashed border-zinc-300 bg-zinc-50 opacity-60"
+                            ? "border-dashed border-border bg-muted opacity-60"
                             : "border-surface-variant",
                         )}
                         key={capability.id}
@@ -1124,7 +1124,7 @@ function PlanEditor({
                           {!unavailable &&
                             !capability.isCore &&
                             capability.dependencyKeys.length > 0 && (
-                              <span className="mt-2 block text-[10px] font-semibold text-[#151515]">
+                              <span className="mt-2 block text-[10px] font-semibold text-foreground">
                                 Requires {capability.dependencyKeys.join(", ")}
                               </span>
                             )}
@@ -1174,8 +1174,8 @@ function PlanEditor({
                 )}
               </div>
             )}
-            <div className="rounded-2xl bg-zinc-50 p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-[#151515]">
+            <div className="rounded-2xl bg-muted p-5">
+              <div className="text-xs font-bold uppercase tracking-wide text-foreground">
                 Commercial summary
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -1262,7 +1262,7 @@ function PlanEditor({
             )}
           </Button>
           <Button
-            className="bg-[#151515] text-white"
+            className="bg-primary text-on-tone"
             disabled={busy || !canContinue}
             type="submit"
           >
@@ -1291,8 +1291,8 @@ function InvoiceDrawer({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[80] flex justify-end bg-black/35">
-      <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-foreground/35">
+      <aside className="h-full w-full max-w-xl overflow-y-auto bg-card p-6 shadow-2xl">
         <div className="flex items-start">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-wider text-outline">
@@ -1310,7 +1310,7 @@ function InvoiceDrawer({
         </div>
         <div className="mt-5 flex gap-2">
           <StatusBadge status={invoice.status} />
-          <span className="rounded-full bg-zinc-50 px-2.5 py-1 text-[10px] font-bold">
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold">
             {invoice.currency}
           </span>
         </div>
@@ -1365,7 +1365,7 @@ function InvoiceDrawer({
           <div className="divide-y divide-outline-variant">
             {invoice.transactions?.map((transaction) => (
               <div className="flex items-center gap-3 p-4" key={transaction.id}>
-                <CreditCard className="size-4 text-[#151515]" />
+                <CreditCard className="size-4 text-foreground" />
                 <div className="flex-1 text-sm">
                   <strong>{transaction.gateway}</strong>
                   <div className="text-xs text-outline">
@@ -1383,7 +1383,7 @@ function InvoiceDrawer({
           </div>
         </BillingPanel>
         {invoice.pdfChecksum && (
-          <div className="mt-6 break-all rounded-xl bg-zinc-50 p-4 font-mono text-[10px] text-on-surface-variant">
+          <div className="mt-6 break-all rounded-xl bg-muted p-4 font-mono text-[10px] text-on-surface-variant">
             SHA-256 {invoice.pdfChecksum}
           </div>
         )}
@@ -1394,7 +1394,7 @@ function InvoiceDrawer({
 
 function PlanFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-zinc-50 p-4">
+    <div className="rounded-xl bg-muted p-4">
       <div className="text-[9px] font-bold uppercase tracking-wider text-outline">
         {label}
       </div>
@@ -1425,7 +1425,7 @@ function MoneyRow({
 }
 function TableHead({ columns }: { columns: string[] }) {
   return (
-    <thead className="bg-zinc-50 text-[10px] uppercase tracking-wider text-on-surface-variant">
+    <thead className="bg-muted text-[10px] uppercase tracking-wider text-on-surface-variant">
       <tr>
         {columns.map((column, index) => (
           <th

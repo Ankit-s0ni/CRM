@@ -119,5 +119,5 @@ Every sprint plan must contain all of the following before implementation begins
 - `docs/Sprint list /SPRINT-7.5-IMPLEMENTATION.md`
 - `docs/Sprint list /SPRINT-8-IMPLEMENTATION.md`
 - `docs/Sprint list /SPRINT-9-IMPLEMENTATION.md`
-- `docs/PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md` (Sprint 8 work package 8.1R)
+- `docs/plans/multi-product-platform/PLATFORM-MODULE-AND-PLAN-CATALOG-IMPLEMENTATION-PLAN.md` (Sprint 8 work package 8.1R)
 - `docs/ATTENDANCE-LEAVE-SIMPLIFICATION-IMPLEMENTATION-PLAN.md` (Sprint 7.5 remediation)

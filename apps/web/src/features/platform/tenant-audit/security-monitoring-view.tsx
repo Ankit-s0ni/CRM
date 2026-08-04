@@ -232,11 +232,11 @@ export function SecurityMonitoringView() {
     <div className="mx-auto min-h-[calc(100vh-64px)] w-full max-w-[1440px] px-4 py-8 lg:px-6">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-[#2a2927]">
+          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-foreground">
             Attendance integrity
           </p>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-[-.02em] text-zinc-900">
+            <h1 className="text-3xl font-bold tracking-[-.02em] text-foreground">
               Security Monitoring Feed
             </h1>
             <RouteFeatureInfo />
@@ -245,7 +245,7 @@ export function SecurityMonitoringView() {
             Real-time integrity tracking for attendance and geofencing.
           </p>
         </div>
-        <Card className="flex min-w-72 items-center gap-6 rounded-xl border-zinc-300 bg-white p-4 shadow-sm">
+        <Card className="flex min-w-72 items-center gap-6 rounded-xl border-border bg-card p-4 shadow-sm">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-outline">
               Violations in view
@@ -279,13 +279,13 @@ export function SecurityMonitoringView() {
             className={cn(
               "shrink-0 rounded-full border-0 px-5 text-sm font-semibold",
               type === filter.value
-                ? "bg-[#151515] text-white hover:bg-[#2a2927] hover:text-white"
-                : "bg-surface-container-high text-on-surface-variant hover:bg-zinc-100",
+                ? "bg-primary text-on-tone hover:bg-primary-container hover:text-on-tone"
+                : "bg-surface-container-high text-on-surface-variant hover:bg-muted",
             )}
           >
             {filter.label}
             {!filter.value && (
-              <span className="rounded bg-white/20 px-1.5 text-[10px]">
+              <span className="rounded bg-card/20 px-1.5 text-[10px]">
                 {response?.meta.total ?? 0}
               </span>
             )}
@@ -297,7 +297,7 @@ export function SecurityMonitoringView() {
           onChange={(event) =>
             updateQuery({ status: event.target.value as AlertStatus | "" })
           }
-          className="ml-auto h-9 shrink-0 rounded-full border border-zinc-300 bg-white px-4 text-sm font-semibold text-on-surface-variant"
+          className="ml-auto h-9 shrink-0 rounded-full border border-border bg-card px-4 text-sm font-semibold text-on-surface-variant"
         >
           <option value="">All statuses</option>
           <option value="OPEN">Open</option>
@@ -342,7 +342,7 @@ export function SecurityMonitoringView() {
           ))}
         </section>
       ) : (
-        <Card className="grid min-h-72 place-items-center border-zinc-300 bg-white text-center">
+        <Card className="grid min-h-72 place-items-center border-border bg-card text-center">
           <div>
             <ShieldCheck className="mx-auto mb-4 size-12 theme-tone-text" />
             <h2 className="text-xl font-bold">No matching security events</h2>
@@ -404,7 +404,7 @@ function AlertCard({
   return (
     <Card
       className={cn(
-        "group overflow-hidden rounded-xl border-zinc-300 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg",
+        "group overflow-hidden rounded-xl border-border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg",
         featured
           ? "col-span-12 border-l-4 border-l-error lg:col-span-8"
           : "col-span-12 md:col-span-6 lg:col-span-4",
@@ -431,11 +431,11 @@ function AlertCard({
             </span>
           </div>
           <div className="mb-4 flex items-start gap-4">
-            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
               <AlertTypeIcon type={alert.alertType} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold leading-7 text-zinc-900">
+              <h2 className="text-xl font-semibold leading-7 text-foreground">
                 {alert.title}
               </h2>
               <p className="mt-1 text-sm text-on-surface-variant">
@@ -471,7 +471,7 @@ function AlertCard({
           <div className="mt-auto flex flex-wrap gap-3">
             <Button
               onClick={onOpen}
-              className="bg-[#151515] text-white hover:bg-[#2a2927]"
+              className="bg-primary text-on-tone hover:bg-primary-container"
             >
               <Eye className="size-4" /> View verification log
             </Button>
@@ -514,14 +514,14 @@ function AlertDrawer({
   onBlock: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[70] bg-black/40" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[70] bg-foreground/40" onMouseDown={onClose}>
       <aside
         className="ml-auto h-full w-full max-w-xl overflow-y-auto bg-surface p-6 shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#2a2927]">
+            <p className="text-xs font-bold uppercase tracking-widest text-foreground">
               Verification evidence
             </p>
             <h2 className="mt-1 text-2xl font-bold">{alert.title}</h2>
@@ -536,7 +536,7 @@ function AlertDrawer({
             <X className="size-5" />
           </Button>
         </div>
-        <Card className="mb-5 border-zinc-300 bg-white p-5">
+        <Card className="mb-5 border-border bg-card p-5">
           <div className="grid grid-cols-2 gap-5">
             <Metric
               label="Employee"
@@ -557,7 +557,7 @@ function AlertDrawer({
           />
         )}
         {evidence?.selfie && (
-          <Card className="mt-5 overflow-hidden border-zinc-300 bg-white p-4">
+          <Card className="mt-5 overflow-hidden border-border bg-card p-4">
             {/* The URL is fetched only after forensic authorization and expires in 60 seconds. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -572,7 +572,7 @@ function AlertDrawer({
           </Card>
         )}
         {!evidence && alert.verificationLogId && (
-          <Card className="mt-5 grid min-h-36 place-items-center border-zinc-300 bg-white">
+          <Card className="mt-5 grid min-h-36 place-items-center border-border bg-card">
             <p className="text-sm text-outline">
               Authorizing private evidence…
             </p>
@@ -667,13 +667,13 @@ function MapPreview({
     return (
       <div
         className={cn(
-          "grid min-h-52 w-full place-items-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 text-center",
+          "grid min-h-52 w-full place-items-center rounded-xl border border-dashed border-border bg-muted px-6 text-center",
           compact && "md:w-72 md:shrink-0",
         )}
       >
         <div>
-          <LocateOff className="mx-auto size-8 text-zinc-400" />
-          <p className="mt-3 text-sm font-semibold text-zinc-700">
+          <LocateOff className="mx-auto size-8 text-muted-foreground" />
+          <p className="mt-3 text-sm font-semibold text-foreground">
             Location was not captured
           </p>
           <p className="mt-1 text-xs text-outline">
@@ -689,7 +689,7 @@ function MapPreview({
   return (
     <div
       className={cn(
-        "relative min-h-64 w-full overflow-hidden rounded-xl border border-zinc-300 bg-stone-100",
+        "relative min-h-64 w-full overflow-hidden rounded-xl border border-border bg-muted",
         compact && "md:w-72 md:shrink-0",
       )}
     >
@@ -706,11 +706,11 @@ function MapPreview({
         ]}
       />
       <div className="absolute left-3 right-3 top-3 z-[500] flex items-start justify-between gap-2">
-        <div className="rounded-lg border border-white/70 bg-white/95 px-3 py-2 shadow-md backdrop-blur">
-          <p className="text-[10px] font-bold uppercase tracking-[.12em] text-zinc-500">
+        <div className="rounded-lg border border-on-tone/70 bg-card/95 px-3 py-2 shadow-md backdrop-blur">
+          <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
             Recorded location
           </p>
-          <p className="mt-0.5 text-xs font-semibold text-zinc-900">
+          <p className="mt-0.5 text-xs font-semibold text-foreground">
             {point.latitude.toFixed(6)}, {point.longitude.toFixed(6)}
           </p>
           {distance !== undefined && (
@@ -719,14 +719,14 @@ function MapPreview({
             </p>
           )}
           {point.accuracyMeters != null && (
-            <p className="mt-0.5 text-[10px] text-zinc-500">
+            <p className="mt-0.5 text-[10px] text-muted-foreground">
               Accuracy +/- {Math.round(point.accuracyMeters)} m
             </p>
           )}
         </div>
         <a
           aria-label="Open recorded location in OpenStreetMap"
-          className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/70 bg-white/95 text-zinc-800 shadow-md transition hover:bg-white hover:text-[#151515]"
+          className="grid size-9 shrink-0 place-items-center rounded-lg border border-on-tone/70 bg-card/95 text-foreground shadow-md transition hover:bg-card hover:text-foreground"
           href={mapsUrl}
           rel="noreferrer"
           target="_blank"
@@ -810,7 +810,7 @@ function statusLabel(status: AlertStatus) {
 function severityClass(severity: SecurityAlert["severity"]) {
   if (severity === "CRITICAL") return "bg-error-container text-on-error-container";
   if (severity === "WARNING") return "theme-tone theme-tone-amber";
-  return "bg-zinc-100 text-[#151515]";
+  return "bg-muted text-foreground";
 }
 
 function formatDistance(meters: number) {

@@ -22,7 +22,7 @@ for (const file of walk(root)) {
   }
 }
 
-const platformRoot = join(root, 'apps/api/src/modules/platform');
+const platformRoot = join(root, 'apps/api/src/platform/control-plane');
 for (const file of walk(platformRoot)) {
   if (!file.endsWith('.ts') || file.endsWith('.spec.ts')) continue;
   const path = relative(root, file);
@@ -33,7 +33,7 @@ for (const file of walk(platformRoot)) {
 }
 
 const platformDatabase = readFileSync(
-  join(platformRoot, 'platform-auth/platform-database.service.ts'),
+  join(root, 'apps/api/src/shared/database/platform-database.service.ts'),
   'utf8',
 );
 if (!platformDatabase.includes('DATABASE_URL_PLATFORM')) {

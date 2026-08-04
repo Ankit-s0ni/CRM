@@ -313,11 +313,11 @@ function PayrollTabPanel({
           <div>
             <div className="flex items-center gap-3">
               <tab.icon className="size-5 text-foreground" />
-              <h2 className="text-xl font-semibold text-zinc-900">
+              <h2 className="text-xl font-semibold text-foreground">
                 {tText(tab.label)}
               </h2>
             </div>
-            <p className="mt-1 max-w-3xl text-sm text-zinc-500">
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
               {tText(tab.description)}
             </p>
           </div>
@@ -519,10 +519,10 @@ function PayrollOverview({
         <Panel className="border-border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="reference-home-hand text-xs font-bold uppercase tracking-[0.18em] text-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {tText("Organization setup")}
               </p>
-              <h2 className="mt-2 text-2xl font-bold text-foreground">
+              <h2 className="mt-2 text-xl font-semibold text-foreground">
                 {tText("Set up in this order")}
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -637,7 +637,7 @@ function PayrollOverview({
           </div>
         </Panel>
 
-        <Panel className="border-border bg-[#f7fff8] p-5">
+        <Panel className="theme-tone theme-tone-emerald p-5">
           <h3 className="text-base font-bold text-foreground">{tText("Where daily work happens")}</h3>
           <div className="mt-4 grid gap-3 text-sm">
             <a className="flex items-center justify-between text-foreground hover:text-foreground" href="/app/employees">
@@ -652,7 +652,7 @@ function PayrollOverview({
           </div>
         </Panel>
 
-        <Panel className="border-border bg-[#fff9ef] p-5">
+        <Panel className="theme-tone theme-tone-amber p-5">
           <h3 className="text-base font-bold text-foreground">{tText("Need attention")}</h3>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {tText("Check employees missing payroll setup before running salary.")}
@@ -1265,8 +1265,8 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
         {tText("Start simple: create BASIC as Basic salary. Type = Earning, Amount type = Fixed, keep Recurring checked, calculation order = 100. After saving, click Make pay line ready.")}
       </SetupHint>
       {selectedComponentName ? (
-        <p className="mb-3 text-sm text-zinc-600">
-          {tText("You are adding rules to")}: <span className="font-medium text-zinc-900">{selectedComponentName}</span>
+        <p className="mb-3 text-sm text-muted-foreground">
+          {tText("You are adding rules to")}: <span className="font-medium text-foreground">{selectedComponentName}</span>
         </p>
       ) : null}
       <FieldGrid>
@@ -1644,26 +1644,26 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
       {mode === "choose" ? (
         <div className="grid gap-3 md:grid-cols-2">
           <button
-            className="rounded-lg border border-zinc-300 p-4 text-left hover:bg-zinc-50"
+            className="rounded-lg border border-border p-4 text-left hover:bg-muted"
             onClick={() => setMode("create")}
             type="button"
           >
-            <span className="block text-sm font-semibold text-zinc-900">
+            <span className="block text-sm font-semibold text-foreground">
               {tText("Create new salary template")}
             </span>
-            <span className="mt-1 block text-sm leading-6 text-zinc-600">
+            <span className="mt-1 block text-sm leading-6 text-muted-foreground">
               {tText("Use this for a new salary design, such as Google monthly salary.")}
             </span>
           </button>
           <button
-            className="rounded-lg border border-zinc-300 p-4 text-left hover:bg-zinc-50"
+            className="rounded-lg border border-border p-4 text-left hover:bg-muted"
             onClick={() => setMode("edit")}
             type="button"
           >
-            <span className="block text-sm font-semibold text-zinc-900">
+            <span className="block text-sm font-semibold text-foreground">
               {tText("Use existing salary template")}
             </span>
-            <span className="mt-1 block text-sm leading-6 text-zinc-600">
+            <span className="mt-1 block text-sm leading-6 text-muted-foreground">
               {tText("Use this when the template is already created and you want to add pay lines.")}
             </span>
           </button>
@@ -2104,7 +2104,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
                 value={nameDraft}
               />
               <button
-                className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-semibold text-white"
+                className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-semibold text-on-tone"
                 onClick={async () => {
                   setEditingName(false);
                   await apiClient.patch(
@@ -2129,13 +2129,13 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
               </button>
             </div>
           ) : (
-            <h3 className="text-base font-semibold text-zinc-900">
+            <h3 className="text-base font-semibold text-foreground">
               {text(existing.name, tText("Approval policy"))}
             </h3>
           )}
           {!editingName && (
             <button
-              className="text-xs text-zinc-400 hover:text-zinc-600"
+              className="text-xs text-muted-foreground hover:text-muted-foreground"
               onClick={() => setEditingName(true)}
               type="button"
             >
@@ -2143,12 +2143,12 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
             </button>
           )}
         </div>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           {tText("Current configuration. Create a new version to change these rules.")}
         </p>
         <div className="mt-3 grid gap-2 text-sm">
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Four eyes")}:</span>
+            <span className="text-muted-foreground">{tText("Four eyes")}:</span>
             <span className="font-medium">
               {activeVersion?.fourEyesEnabled
                 ? tText("Enabled — different user must approve")
@@ -2156,23 +2156,23 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
             </span>
           </div>
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Maker can approve")}:</span>
+            <span className="text-muted-foreground">{tText("Maker can approve")}:</span>
             <span className="font-medium">
               {activeVersion?.makerCanApprove ? tText("Yes") : tText("No")}
             </span>
           </div>
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Required levels")}:</span>
+            <span className="text-muted-foreground">{tText("Required levels")}:</span>
             <span className="font-medium">{text(activeVersion?.requiredLevels, "2")}</span>
           </div>
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Allowed permissions")}:</span>
+            <span className="text-muted-foreground">{tText("Allowed permissions")}:</span>
             <span className="font-medium text-xs">
               {Array.isArray(activePerms) ? activePerms.join(", ") : String(activePerms ?? "")}
             </span>
           </div>
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Allowed roles")}:</span>
+            <span className="text-muted-foreground">{tText("Allowed roles")}:</span>
             <span className="font-medium text-xs">
               {Array.isArray(activeRoleKeys)
                 ? activeRoleKeys.join(", ")
@@ -2180,7 +2180,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
             </span>
           </div>
           <div className="flex gap-2">
-            <span className="text-zinc-500">{tText("Version")}:</span>
+            <span className="text-muted-foreground">{tText("Version")}:</span>
             <span className="font-medium">{text(activeVersion?.version, "1")}</span>
           </div>
         </div>
@@ -2205,7 +2205,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
         }
         title={tText("New version")}
       >
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           {tText("Change the rules above by creating a new version.")}
         </p>
         <div className="mt-4">
@@ -2338,7 +2338,7 @@ function AuditFilters() {
   const { tText } = useTenantLocalization();
   return (
     <Panel className="p-5">
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted-foreground">
         {tText("Use the audit table pagination from the API response. Date range, action, entity type and entity ID filters are available on the backend endpoint and can be appended to the route query.")}
       </p>
     </Panel>
@@ -2379,8 +2379,8 @@ function ResourceTable({
           tabKey={tabKey}
         />
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-zinc-200 text-sm">
-            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="bg-muted text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <tr>
                 {columns.map((column) => (
                   <th className="px-4 py-3" key={column}>
@@ -2390,7 +2390,7 @@ function ResourceTable({
                 <th className="px-4 py-3">{tText("Actions")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-border">
               {rowList.map((row, index) => (
                 <tr key={`${row.id ?? index}`}>
                   {columns.map((column) => (
@@ -2521,7 +2521,7 @@ function RowActions({
   const { tText } = useTenantLocalization();
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
-  if (!canManage) return <span className="text-xs text-zinc-400">{tText("Read only")}</span>;
+  if (!canManage) return <span className="text-xs text-muted-foreground">{tText("Read only")}</span>;
   const id = String(row.id ?? "");
   const actions: Array<{ label: string; endpoint: string; method?: "post" | "delete" | "patch"; body?: unknown; confirm?: string }> = [];
   if (tabKey === "calendars") {
@@ -2545,13 +2545,13 @@ function RowActions({
   if (tabKey === "compensation" && employeeId) {
     actions.push({ label: tText("End today"), endpoint: `/payroll/employees/${employeeId}/compensation/${id}/end`, method: "patch", body: { effectiveTo: today, reason: "Ended from payroll setup" }, confirm: tText("End this compensation version today?") });
   }
-  if (!actions.length) return <span className="text-xs text-zinc-400">{tText("No action")}</span>;
+  if (!actions.length) return <span className="text-xs text-muted-foreground">{tText("No action")}</span>;
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap gap-2">
       {actions.map((action) => (
         <button
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+          className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
           disabled={Boolean(busy)}
           key={action.label}
           onClick={() => {
@@ -2602,10 +2602,10 @@ function PolicyMatrixResult({ data }: { data: unknown }) {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cells.map((cell) => (
           <div key={cell}>
-            <div className="text-xs font-semibold uppercase text-zinc-500">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">
               {tText(label(cell))}
             </div>
-            <div className="mt-1 break-words text-sm text-zinc-900">
+            <div className="mt-1 break-words text-sm text-foreground">
               {formatValue(value[cell], tText)}
             </div>
           </div>
@@ -2646,9 +2646,9 @@ function FormPanel({
     <Panel className="p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="max-w-3xl">
-          <h3 className="text-base font-semibold text-zinc-900">{title}</h3>
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
           {description ? (
-            <p className="mt-1 text-sm leading-6 text-zinc-600">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {description}
             </p>
           ) : null}
@@ -2704,7 +2704,7 @@ function InlineAction({
   return (
     <div className="grid gap-1">
       <button
-        className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
+        className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-50"
         disabled={disabled || busy}
         onClick={() => {
           setBusy(true);
@@ -2955,23 +2955,23 @@ function PayLineChecklist({
     setDraggedId("");
   }
   return (
-    <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 p-4">
+    <div className="mt-4 grid gap-3 rounded-lg border border-border p-4">
       <div>
-        <h4 className="text-sm font-semibold text-zinc-900">
+        <h4 className="text-sm font-semibold text-foreground">
           {tText("Pay lines in this salary template")}
         </h4>
-        <p className="mt-1 text-sm leading-6 text-zinc-600">
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
           {tText("A salary template can contain many pay lines. Select all ready pay lines you want to add, then click Add selected pay lines.")}
         </p>
       </div>
       {addedPayLines.length ? (
         <div className="grid gap-2">
-          <p className="text-sm font-semibold text-zinc-900">
+          <p className="text-sm font-semibold text-foreground">
             {tText("Drag pay lines to change order")}
           </p>
           {addedPayLines.map((line, index) => (
             <div
-              className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm shadow-sm"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-sm shadow-sm"
               draggable={!disabled && !reordering}
               key={line.componentVersionId}
               onDragEnd={() => setDraggedId("")}
@@ -2979,16 +2979,16 @@ function PayLineChecklist({
               onDragStart={() => setDraggedId(line.componentVersionId)}
               onDrop={() => dropAddedPayLine(line.componentVersionId)}
             >
-              <GripVertical className="size-4 shrink-0 text-zinc-400" />
+              <GripVertical className="size-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-zinc-900">
+                <p className="truncate font-semibold text-foreground">
                   {line.label}
                 </p>
-                <p className="text-xs text-zinc-500">{line.amountLabel}</p>
+                <p className="text-xs text-muted-foreground">{line.amountLabel}</p>
               </div>
               <button
                 aria-label={tText("Move up")}
-                className="grid size-9 place-items-center rounded-lg border border-zinc-200 text-zinc-600 disabled:opacity-40"
+                className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground disabled:opacity-40"
                 disabled={disabled || reordering || index === 0}
                 onClick={() => moveAddedPayLine(index, -1)}
                 type="button"
@@ -2997,7 +2997,7 @@ function PayLineChecklist({
               </button>
               <button
                 aria-label={tText("Move down")}
-                className="grid size-9 place-items-center rounded-lg border border-zinc-200 text-zinc-600 disabled:opacity-40"
+                className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground disabled:opacity-40"
                 disabled={
                   disabled ||
                   reordering ||
@@ -3034,11 +3034,11 @@ function PayLineChecklist({
       </div>
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {loading ? (
-          <p className="text-sm text-zinc-500">{tText("Loading pay lines")}</p>
+          <p className="text-sm text-muted-foreground">{tText("Loading pay lines")}</p>
         ) : options.length ? (
           options.map((option) => (
             <label
-              className="flex min-h-11 items-center gap-3 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-800"
+              className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3 text-sm font-medium text-foreground"
               key={option.value}
             >
               <input
@@ -3057,14 +3057,14 @@ function PayLineChecklist({
             </label>
           ))
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {tText("No more ready pay lines are available to add.")}
           </p>
         )}
       </div>
       {selectedOptions.length ? (
         <div className="mt-2 grid gap-3">
-          <h5 className="text-sm font-semibold text-zinc-900">
+          <h5 className="text-sm font-semibold text-foreground">
             {tText("Amount for selected pay lines")}
           </h5>
           {selectedOptions.map((option, index) => {
@@ -3073,14 +3073,14 @@ function PayLineChecklist({
               defaultPayLineRule();
             return (
               <div
-                className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-3 lg:grid-cols-[minmax(180px,1fr)_220px_minmax(180px,1fr)]"
+                className="grid gap-3 rounded-lg border border-border bg-card p-3 lg:grid-cols-[minmax(180px,1fr)_220px_minmax(180px,1fr)]"
                 key={option.value}
               >
                 <div>
-                  <p className="text-sm font-bold text-zinc-900">
+                  <p className="text-sm font-bold text-foreground">
                     {option.label}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {rule.amountType === "percentage"
                       ? tText("Uses a percentage of this employee's monthly salary.")
                       : rule.amountType === "fixed"
@@ -3178,7 +3178,7 @@ function CheckboxField({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <label className="flex h-11 items-center gap-3 rounded-lg border border-zinc-300 px-3 text-sm font-medium">
+    <label className="flex h-11 items-center gap-3 rounded-lg border border-border px-3 text-sm font-medium">
       <input
         checked={Boolean(form[name])}
         onChange={(event) =>

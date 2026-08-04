@@ -4,7 +4,6 @@ import {
   Bell,
   Building2,
   ChevronDown,
-  ChevronRight,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -66,16 +65,6 @@ function sidebarPreferenceSnapshot() {
 function sidebarPreferenceServerSnapshot() {
   return false;
 }
-
-const contextLabels: Record<
-  NonNullable<ReturnType<typeof tenantNavigationContext>>,
-  string
-> = {
-  employees: "Employees",
-  modules: "Modules",
-  reports: "Reports",
-  settings: "Settings",
-};
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -235,9 +224,6 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       : null;
   const attendanceCapabilitiesLoaded =
     attendanceCapabilityState?.pathname === pathname;
-  const activeContextItem = contextItems.find((item) =>
-    tenantContextLinkActive(pathname, item.href),
-  );
   return (
     <div className="tenant-page min-h-screen text-foreground">
       <a
@@ -252,13 +238,13 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             "tenant.shell.closeNavigation",
             "Close navigation",
           )}
-          className="fixed inset-0 z-40 bg-black/35 lg:hidden"
+          className="fixed inset-0 z-40 bg-foreground/35 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
       <aside
         className={cn(
-          "app-sidebar fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col border-e border-border bg-background text-foreground shadow-[8px_0_30px_rgba(20,20,20,0.06)] transition-[width,transform] duration-200 lg:translate-x-0",
+          "app-sidebar fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col border-e border-border bg-background text-foreground shadow-lg transition-[width,transform] duration-200 lg:translate-x-0",
           desktopCollapsed ? "lg:w-[84px]" : "lg:w-[280px]",
           mobileOpen
             ? "translate-x-0"
@@ -275,7 +261,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               : t("tenant.shell.collapseNavigation", "Collapse navigation")
           }
           className={cn(
-            "absolute -end-3 top-6 z-10 hidden size-7 place-items-center rounded-full border border-border bg-background text-foreground shadow-sm transition hover:bg-white lg:grid",
+            "absolute -end-3 top-6 z-10 hidden size-7 place-items-center rounded-full border border-border bg-background text-foreground shadow-sm transition hover:bg-card lg:grid",
             focusRingClass,
           )}
           onClick={toggleDesktopSidebar}
@@ -302,7 +288,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             {user.logoUrl ? (
               <Image
                 alt={`${user.companyName ?? "Workspace"} logo`}
-                className="size-full bg-white object-contain p-1"
+                className="size-full bg-card object-contain p-1"
                 height={40}
                 src={user.logoUrl}
                 unoptimized
@@ -316,7 +302,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             <div className="text-xl font-medium text-foreground app-sidebar-title">
               {user.companyName || tText("DeltCRM")}
             </div>
-            <div className="max-w-40 truncate text-[13px] text-muted-foreground app-sidebar-subtitle">
+            <div className="max-w-40 truncate text-sm text-muted-foreground app-sidebar-subtitle">
               {t("tenant.shell.workspace", "DeltCRM HRMS")}
             </div>
           </div>
@@ -334,7 +320,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           <div
             className={cn(
-              "px-4 pb-4 pt-8 text-[12px] font-medium uppercase tracking-[.08em] text-muted-foreground app-sidebar-section-label",
+              "px-4 pb-4 pt-8 text-xs font-medium uppercase tracking-wider text-muted-foreground app-sidebar-section-label",
               desktopCollapsed && "lg:hidden",
             )}
           >
@@ -350,10 +336,10 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "sidebar-nav-item flex min-h-14 items-center gap-4 rounded-[5px] border px-4 py-2 text-[18px] font-medium transition",
+                  "sidebar-nav-item flex min-h-14 items-center gap-4 rounded-md border px-4 py-2 text-base font-semibold transition",
                   desktopCollapsed && "lg:justify-center lg:gap-0 lg:px-2",
                   active
-                    ? "sidebar-nav-item-active border-border bg-card text-foreground shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+                    ? "sidebar-nav-item-active border-border bg-card text-foreground shadow-sm"
                     : "border-transparent text-foreground hover:border-outline hover:bg-card",
                 )}
                 title={
@@ -362,7 +348,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                     : undefined
                 }
               >
-                <Icon className="size-[22px] shrink-0 stroke-[1.7]" />
+                <Icon className="size-5 shrink-0 stroke-[1.7]" />
                 <span className={cn(desktopCollapsed && "lg:hidden")}>
                   {t(item.localizationKey, item.label)}
                 </span>
@@ -374,7 +360,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           <button
             aria-label={t("tenant.shell.logout", "Logout")}
             className={cn(
-              "sidebar-logout flex min-h-11 w-full items-center gap-4 rounded-[5px] px-4 text-[18px] text-foreground transition hover:bg-card",
+              "sidebar-logout flex min-h-11 w-full items-center gap-4 rounded-md px-4 text-base font-medium text-foreground transition hover:bg-card",
               desktopCollapsed && "lg:justify-center lg:gap-0 lg:px-0",
               focusRingClass,
             )}
@@ -396,7 +382,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           desktopCollapsed ? "lg:ps-[84px]" : "lg:ps-[280px]",
         )}
       >
-        <header className="sticky top-0 z-30 flex min-h-[76px] items-center border-b border-border bg-background/95 px-4 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur lg:px-6 xl:px-8">
           <button
             aria-label={t(
               "tenant.shell.openNavigation",
@@ -407,41 +393,16 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           >
             <Menu />
           </button>
-          <div className="min-w-0 flex-1">
-            <div className="hidden items-center gap-2 text-xs text-muted-foreground lg:flex">
-              <Link className="font-semibold text-foreground" href="/app">
-                {t("tenant.navigation.dashboard", "Dashboard")}
-              </Link>
-              {currentContext && (
-                <>
-                  <ChevronRight className="directional-icon size-3" />
-                  <span>
-                    {t(
-                      `tenant.navigation.${currentContext}`,
-                      contextLabels[currentContext],
-                    )}
-                  </span>
-                </>
-              )}
-              {activeContextItem && (
-                <>
-                  <ChevronRight className="directional-icon size-3" />
-                  <span className="truncate">
-                    {t(
-                      activeContextItem.localizationKey,
-                      activeContextItem.label,
-                    )}
-                  </span>
-                </>
-              )}
-            </div>
-            <div className="mt-1 hidden w-full sm:block">
+          <div className="hidden min-w-0 flex-1 sm:block">
+            <div className="w-full max-w-2xl">
               <PortalSearch />
             </div>
           </div>
-          <div className="ms-auto flex shrink-0 items-center gap-2.5 text-foreground">
+          <div className="ms-auto flex shrink-0 items-center gap-1.5 text-foreground sm:gap-2">
             <LanguageToggle />
-            <ThemeSwitcher />
+            <div className="hidden xl:block">
+              <ThemeSwitcher />
+            </div>
             <Link
               aria-label={t(
                 "tenant.shell.notifications",
@@ -449,27 +410,29 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               )}
               href="/app/notifications"
               className={cn(
-                "grid size-10 place-items-center rounded-[5px] hover:bg-card",
+                "grid size-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground",
                 focusRingClass,
               )}
             >
-              <Bell className="size-[18px]" />
+              <Bell className="size-5" />
             </Link>
             <HeaderContextHelp />
-            <div className="hidden h-8 w-px bg-border sm:block" />
-            <div className="grid size-11 place-items-center rounded-full border border-primary bg-background text-sm font-medium text-foreground">
-              {user.email.slice(0, 2).toUpperCase()}
+            <div className="mx-1 hidden h-8 w-px bg-border lg:block" />
+            <div className="flex min-h-11 items-center gap-2 rounded-full py-1 ps-1 pe-2">
+              <span className="grid size-9 place-items-center rounded-full border border-primary bg-background text-sm font-semibold text-foreground">
+                {user.email.slice(0, 2).toUpperCase()}
+              </span>
+              <span className="hidden min-w-0 text-start 2xl:block">
+                <span className="block max-w-40 truncate text-sm font-semibold text-foreground">
+                  {user.email}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {user.roles?.[0]?.replaceAll("_", " ") ??
+                    t("tenant.shell.workspaceUser", "Workspace user")}
+                </span>
+              </span>
+              <ChevronDown className="size-4 text-muted-foreground" />
             </div>
-            <div className="hidden text-end sm:block">
-              <div className="max-w-44 truncate text-[15px] font-semibold text-foreground">
-                {user.email}
-              </div>
-              <div className="text-[12px] text-muted-foreground">
-                {user.roles?.[0]?.replaceAll("_", " ") ??
-                  t("tenant.shell.workspaceUser", "Workspace user")}
-              </div>
-            </div>
-            <ChevronDown className="size-4" />
           </div>
         </header>
         <div className="border-b border-border bg-background px-4 py-3 sm:hidden">
@@ -488,7 +451,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                 "{context} navigation",
                 { context: currentContext ?? "" },
               )}
-              className="sticky top-[76px] z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-border bg-background px-4 lg:px-8"
+              className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-border bg-background px-4 lg:px-8"
             >
               {contextItems.map((item) => {
                 const active = tenantContextLinkActive(pathname, item.href);

@@ -52,8 +52,8 @@ export function FeatureInfo({
             className={cn(
               "min-h-11 min-w-11 gap-2 rounded-full",
               tone === "inverse"
-                ? "text-surface-variant hover:bg-white/10 hover:text-white"
-                : "text-on-surface-variant hover:bg-zinc-50 hover:text-foreground",
+                ? "text-surface-variant hover:bg-card/10 hover:text-on-tone"
+                : "text-on-surface-variant hover:bg-muted hover:text-foreground",
               label && "px-3",
               className,
             )}
@@ -77,9 +77,9 @@ export function FeatureHelpDrawer({
   entry: AttendanceHelpEntry | PortalHelpEntry;
 }) {
   return (
-    <DialogContent className="max-h-[88vh] overflow-y-auto border border-zinc-200 bg-white p-0 shadow-2xl sm:max-w-xl">
-      <DialogHeader className="bg-zinc-700 px-6 py-6 pr-14 text-white">
-        <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-200">
+    <DialogContent className="max-h-[88vh] overflow-y-auto border border-border bg-card p-0 shadow-2xl sm:max-w-xl">
+      <DialogHeader className="bg-primary-container px-6 py-6 pr-14 text-on-tone">
+        <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
           <Sparkles className="size-4" />
           Feature guide
         </div>
@@ -91,7 +91,7 @@ export function FeatureHelpDrawer({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-6 px-6 py-6 text-zinc-700">
+      <div className="space-y-6 px-6 py-6 text-foreground">
         <HelpSection title="Use this when">
           <p>{entry.useWhen}</p>
         </HelpSection>
@@ -100,7 +100,7 @@ export function FeatureHelpDrawer({
           <ol className="space-y-3">
             {entry.steps.map((step, index) => (
               <li className="flex gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-foreground">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold text-foreground">
                   {index + 1}
                 </span>
                 <span className="pt-0.5">{step}</span>
@@ -110,12 +110,12 @@ export function FeatureHelpDrawer({
         </HelpSection>
 
         {entry.effect && (
-          <div className="rounded-xl border border-zinc-300 bg-zinc-50 p-4">
+          <div className="rounded-xl border border-border bg-muted p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold">
               <ShieldCheck className="size-4 text-foreground" />
               What it affects
             </h3>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {entry.effect}
             </p>
           </div>
@@ -145,7 +145,7 @@ export function FeatureHelpDrawer({
             <div className="flex flex-wrap gap-2">
               {entry.related.map((related) => (
                 <Link
-                  className="rounded-full border border-outline-variant px-3 py-2 text-xs font-semibold text-[#151515] hover:bg-zinc-50"
+                  className="rounded-full border border-outline-variant px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted"
                   href={related.href}
                   key={related.href}
                 >
@@ -193,7 +193,7 @@ export function HeaderContextHelp() {
             />
           }
         >
-          <CircleHelp className="size-[18px]" />
+          <CircleHelp className="size-5" />
         </DialogTrigger>
         <FeatureHelpDrawer entry={portalHelpEntryForPath(pathname)} />
       </Dialog>
@@ -211,8 +211,8 @@ function HelpSection({
 }) {
   return (
     <section>
-      <h3 className="mb-2 text-sm font-bold text-zinc-900">{title}</h3>
-      <div className="text-sm leading-6 text-zinc-500">{children}</div>
+      <h3 className="mb-2 text-sm font-bold text-foreground">{title}</h3>
+      <div className="text-sm leading-6 text-muted-foreground">{children}</div>
     </section>
   );
 }

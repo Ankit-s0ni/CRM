@@ -129,7 +129,7 @@ export function NotificationPreferencesView() {
       )}
       action={
         <Link
-          className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515]"
+          className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
           href="/app/notifications"
         >
           <BellRing className="size-4" /> {tText("Open inbox")}
@@ -141,7 +141,7 @@ export function NotificationPreferencesView() {
         <LoadingState />
       ) : (
         <Panel className="overflow-hidden">
-          <div className="grid grid-cols-[1fr_repeat(3,92px)] border-b border-surface-variant bg-zinc-50 px-5 py-3 text-xs font-bold uppercase text-outline">
+          <div className="grid grid-cols-[1fr_repeat(3,92px)] border-b border-surface-variant bg-muted px-5 py-3 text-xs font-bold uppercase text-outline">
             <span>{tText("Notice")}</span>
             <span className="text-center">{tText("In app")}</span>
             <span className="text-center">{tText("Email")}</span>
@@ -170,18 +170,18 @@ export function NotificationPreferencesView() {
                         <button
                           aria-checked={preference.enabled}
                           aria-label={`${preference.label} via ${channel}`}
-                          className={`relative h-6 w-11 rounded-full transition ${preference.enabled ? "bg-[#151515]" : "bg-zinc-300"} disabled:cursor-not-allowed disabled:opacity-60`}
+                          className={`relative h-6 w-11 rounded-full transition ${preference.enabled ? "bg-primary" : "bg-outline"} disabled:cursor-not-allowed disabled:opacity-60`}
                           disabled={preference.mandatory || saving === key}
                           onClick={() => void toggle(preference)}
                           role="switch"
                           type="button"
                         >
                           <span
-                            className={`absolute top-1 size-4 rounded-full bg-white transition ${preference.enabled ? "left-6" : "left-1"}`}
+                            className={`absolute top-1 size-4 rounded-full bg-card transition ${preference.enabled ? "left-6" : "left-1"}`}
                           />
                         </button>
                       ) : (
-                        <span className="text-zinc-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </div>
                   );
@@ -191,7 +191,7 @@ export function NotificationPreferencesView() {
           })}
         </Panel>
       )}
-      <p className="mt-4 text-sm text-zinc-500">
+      <p className="mt-4 text-sm text-muted-foreground">
         {tText("These preferences apply only to your signed-in account, not to every employee in the company.")}
       </p>
     </AdminPage>
@@ -382,11 +382,11 @@ export function OnboardingWizard() {
   const embeddedSetupStep = step === 2 || step === 3;
 
   return (
-    <div className="min-h-screen bg-surface text-zinc-900">
-      <header className="flex h-20 items-center justify-between border-b border-surface-variant bg-white px-8">
+    <div className="min-h-screen bg-surface text-foreground">
+      <header className="flex h-20 items-center justify-between border-b border-surface-variant bg-card px-8">
         <div className="flex items-center gap-4">
-          <strong className="text-xl text-[#151515]">{tText("DeltCRM")}</strong>
-          <span className="h-6 w-px bg-zinc-300" />
+          <strong className="text-xl text-foreground">{tText("DeltCRM")}</strong>
+          <span className="h-6 w-px bg-outline" />
           <span className="text-sm text-on-surface-variant">{tText("Setup Wizard")}</span>
         </div>
         <span className="text-sm text-outline">{tText("Support")}</span>
@@ -397,18 +397,18 @@ export function OnboardingWizard() {
             <div key={label} className="flex flex-1 items-start last:flex-none">
               <div className="grid justify-items-center gap-2">
                 <div
-                  className={`grid size-10 place-items-center rounded-full font-bold ${index + 1 <= step ? "bg-[#151515] text-white" : "bg-surface-variant text-on-surface-variant"}`}
+                  className={`grid size-10 place-items-center rounded-full font-bold ${index + 1 <= step ? "bg-primary text-on-tone" : "bg-surface-variant text-on-surface-variant"}`}
                 >
                   {index + 1 < step ? <Check className="size-4" /> : index + 1}
                 </div>
                 <span
-                  className={`whitespace-nowrap text-xs font-semibold ${index + 1 === step ? "text-[#151515]" : "text-outline"}`}
+                  className={`whitespace-nowrap text-xs font-semibold ${index + 1 === step ? "text-foreground" : "text-outline"}`}
                 >
                   {label}
                 </span>
               </div>
               {index < stepDefinitions.length - 1 && (
-                <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-[#151515]" : "bg-surface-variant"}`} />
+                <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-primary" : "bg-surface-variant"}`} />
               )}
             </div>
           ))}
@@ -419,7 +419,7 @@ export function OnboardingWizard() {
           </div>
         )}
         <div
-          className={`mx-auto grid min-h-[600px] max-w-[1320px] overflow-hidden rounded-xl border border-surface-variant bg-white shadow-xl ${embeddedSetupStep ? "" : "lg:grid-cols-[1.1fr_.9fr]"}`}
+          className={`mx-auto grid min-h-[600px] max-w-[1320px] overflow-hidden rounded-xl border border-surface-variant bg-card shadow-xl ${embeddedSetupStep ? "" : "lg:grid-cols-[1.1fr_.9fr]"}`}
         >
           <section className={embeddedSetupStep ? "p-6 lg:p-10" : "p-8 lg:p-16"}>
             <div className={embeddedSetupStep ? "mx-auto max-w-[1180px]" : "mx-auto max-w-xl"}>
@@ -441,8 +441,8 @@ export function OnboardingWizard() {
               </p>
               {step === 1 && (
                 <div className="grid gap-6">
-                  <label className="flex cursor-pointer items-center gap-5 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-5">
-                    <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-variant text-[#151515]">
+                  <label className="flex cursor-pointer items-center gap-5 rounded-xl border-2 border-dashed border-border bg-muted p-5">
+                    <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-variant text-foreground">
                       {logoPreview ? (
                         <img
                           src={logoPreview}
@@ -616,9 +616,9 @@ export function OnboardingWizard() {
                 </div>
               )}
               {step === 6 && (
-                <div className="grid gap-5 rounded-xl border border-zinc-300 p-6">
+                <div className="grid gap-5 rounded-xl border border-border p-6">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="text-[#151515]" />
+                    <ShieldCheck className="text-foreground" />
                     <strong>{tText("Business Admin is ready")}</strong>
                   </div>
                   <p className="text-sm text-on-surface-variant">
@@ -659,18 +659,18 @@ export function OnboardingWizard() {
             </div>
           </section>
           {!embeddedSetupStep && (
-            <aside className="hidden items-center justify-center bg-zinc-50 p-12 lg:flex">
-              <div className="w-full rounded-3xl border border-white bg-white/70 p-10 shadow-2xl">
+            <aside className="hidden items-center justify-center bg-muted p-12 lg:flex">
+              <div className="w-full rounded-3xl border border-on-tone bg-card/70 p-10 shadow-2xl">
                 <div
-                  className={`grid aspect-video place-items-center rounded-2xl ${logoPreview ? "bg-white p-4 border border-zinc-200" : "bg-gradient-to-br from-primary to-emerald-300"}`}
+                  className={`grid aspect-video place-items-center rounded-2xl ${logoPreview ? "bg-card p-4 border border-border" : "bg-gradient-to-br from-primary to-accent"}`}
                 >
                   {logoPreview ? (
                     <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain" />
                   ) : (
-                    <Building2 className="size-24 text-white" />
+                    <Building2 className="size-24 text-on-tone" />
                   )}
                 </div>
-                <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-[#151515]">
+                <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-foreground">
                   {tText("Enterprise grade")}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">{tText("Ready to scale with you.")}</h2>
@@ -797,11 +797,11 @@ export function CompanySettingsView() {
               <p className="mt-1 text-xs leading-5 text-outline">
                 {tText("Employees see this tenant identity after signing in. Public login remains DeltCRM branded.")}
               </p>
-              <label className="mt-5 grid aspect-square max-h-56 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50">
+              <label className="mt-5 grid aspect-square max-h-56 cursor-pointer place-items-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted">
                 {logoPreview ? (
                   <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain p-4" />
                 ) : (
-                  <UploadCloud className="size-10 text-[#151515]" />
+                  <UploadCloud className="size-10 text-foreground" />
                 )}
                 <input
                   className="hidden"
@@ -821,7 +821,7 @@ export function CompanySettingsView() {
             </Panel>
           </div>
           {dirty && (
-            <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">
+            <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-xl">
               <p className="text-sm font-medium text-on-surface-variant">{tText("Unsaved changes detected")}</p>
               <PrimaryButton onClick={save}>{tText("Save changes")}</PrimaryButton>
             </div>
@@ -924,7 +924,7 @@ export function AttendanceDefaultsView() {
             <p className="mt-4 text-sm font-semibold theme-tone-text theme-tone-emerald">{tText("Attendance defaults saved.")}</p>
           )}
           {dirty && (
-            <div className="sticky bottom-4 mt-6 flex items-center justify-between rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">
+            <div className="sticky bottom-4 mt-6 flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-xl">
               <span className="text-sm">{tText("Unsaved changes detected")}</span>
               <PrimaryButton onClick={save}>{tText("Save policy")}</PrimaryButton>
             </div>
@@ -957,10 +957,10 @@ function Toggle({
         aria-label={label}
         aria-pressed={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-[#151515]" : "bg-surface-variant"}`}
+        className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-primary" : "bg-surface-variant"}`}
       >
         <span
-          className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${checked ? "left-[22px]" : "left-0.5"}`}
+          className={`absolute top-0.5 size-5 rounded-full bg-card shadow transition ${checked ? "left-[22px]" : "left-0.5"}`}
         />
       </button>
     </div>

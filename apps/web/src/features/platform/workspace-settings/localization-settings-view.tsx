@@ -335,7 +335,7 @@ export function LocalizationSettingsView() {
           <Panel className="overflow-hidden">
             <div className="border-b border-surface-variant p-5">
               <div className="flex items-start gap-3">
-                <span className="grid size-10 place-items-center rounded-xl bg-muted text-[#151515]">
+                <span className="grid size-10 place-items-center rounded-xl bg-muted text-foreground">
                   <Globe2 className="size-5" />
                 </span>
                 <div>
@@ -382,7 +382,7 @@ export function LocalizationSettingsView() {
                     "Approved regional pack",
                   )}
                 </span>
-                <div className="mt-2 flex h-11 items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm">
+                <div className="mt-2 flex h-11 items-center justify-between rounded-lg border border-border bg-muted px-3 text-sm">
                   <span>{regionalLocaleNames[regionalLocale]}</span>
                   <ShieldCheck className="size-4 theme-tone-text theme-tone-emerald" />
                 </div>
@@ -400,7 +400,7 @@ export function LocalizationSettingsView() {
                       const enabled = draft.enabledLanguages.includes(locale);
                       return (
                         <label
-                          className="flex min-h-16 items-center gap-3 rounded-xl border border-zinc-200 p-4"
+                          className="flex min-h-16 items-center gap-3 rounded-xl border border-border p-4"
                           key={locale}
                         >
                           <input
@@ -472,7 +472,7 @@ export function LocalizationSettingsView() {
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   policy.allowTenantOverrides
                     ? "theme-tone theme-tone-emerald theme-tone-text theme-tone-emerald"
-                    : "bg-zinc-100 text-zinc-600"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {policy.allowTenantOverrides
@@ -481,7 +481,7 @@ export function LocalizationSettingsView() {
               </span>
             </div>
             {policy.allowTenantOverrides && canManageOverrides ? (
-              <div className="grid gap-4 border-b border-surface-variant bg-zinc-50/70 p-5 md:grid-cols-2">
+              <div className="grid gap-4 border-b border-surface-variant bg-muted/70 p-5 md:grid-cols-2">
                 <label className="grid gap-2 text-sm font-semibold">
                   Approved label
                   <select
@@ -561,10 +561,10 @@ export function LocalizationSettingsView() {
                       <strong className="text-sm">
                         {override.key.defaultMessage}
                       </strong>
-                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold">
+                      <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold">
                         {override.locale}
                       </span>
-                      <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-[#151515]">
+                      <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-foreground">
                         {override.status}
                       </span>
                     </div>
@@ -575,7 +575,7 @@ export function LocalizationSettingsView() {
                   </div>
                   {override.status === "DRAFT" && canManageOverrides && (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-zinc-300 px-3 text-xs font-semibold"
+                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs font-semibold"
                       disabled={saving}
                       onClick={() =>
                         void transitionOverride(override, "REVIEW")
@@ -587,7 +587,7 @@ export function LocalizationSettingsView() {
                   )}
                   {override.status === "REVIEW" && canManageOverrides && (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#151515] px-3 text-xs font-semibold text-white"
+                      className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-on-tone"
                       disabled={saving}
                       onClick={() =>
                         void transitionOverride(override, "PUBLISHED")
@@ -611,14 +611,14 @@ export function LocalizationSettingsView() {
         <Panel className="sticky top-24 overflow-hidden">
           <div className="flex items-center justify-between border-b border-surface-variant p-5">
             <div className="flex items-center gap-3">
-              <Languages className="size-5 text-[#151515]" />
+              <Languages className="size-5 text-foreground" />
               <div>
                 <h2 className="font-semibold">Live preview</h2>
                 <p className="text-xs text-outline">Actual published catalog</p>
               </div>
             </div>
             <select
-              className="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-xs"
+              className="h-9 rounded-lg border border-border bg-card px-2 text-xs"
               onChange={(event) =>
                 setPreviewLocale(event.target.value as AppLanguage)
               }
@@ -632,12 +632,12 @@ export function LocalizationSettingsView() {
             </select>
           </div>
           <div
-            className="min-h-80 bg-zinc-50 p-5"
+            className="min-h-80 bg-muted p-5"
             dir={previewDirection}
             lang={previewLocale}
           >
-            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#151515]">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-foreground">
                 {preview(
                   "tenant.dashboard.header.eyebrow",
                   "Workspace operations",
@@ -658,7 +658,7 @@ export function LocalizationSettingsView() {
                   preview("attendance.status.late", "Late"),
                 ].map((label, index) => (
                   <div
-                    className="rounded-xl border border-zinc-200 p-4"
+                    className="rounded-xl border border-border p-4"
                     key={label}
                   >
                     <span className="text-xs text-outline">{label}</span>
@@ -668,7 +668,7 @@ export function LocalizationSettingsView() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex items-center gap-2 rounded-xl bg-muted p-3 text-xs font-semibold text-[#151515]">
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-muted p-3 text-xs font-semibold text-foreground">
                 <RefreshCw className="size-4" />
                 {preview(
                   "tenant.dashboard.attention.openRegister",

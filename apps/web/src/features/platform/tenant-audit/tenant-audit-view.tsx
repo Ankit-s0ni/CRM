@@ -166,7 +166,7 @@ export function TenantAuditView() {
             Apply filters
           </PrimaryButton>
           <button
-            className="min-h-11 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
+            className="min-h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold"
             onClick={() => {
               setDraft(emptyFilters);
               setApplied(emptyFilters);
@@ -191,7 +191,7 @@ export function TenantAuditView() {
                 {response.pagination.total} matching audit records
               </p>
             </div>
-            <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-[#151515]">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground">
               Read only
             </span>
           </div>
@@ -224,8 +224,8 @@ function AuditRow({ record }: { record: AuditRecord }) {
             {record.entityId ? ` · ${record.entityId}` : ""}
           </span>
         </div>
-        <div className="text-xs text-zinc-500">
-          <strong className="block text-zinc-700">
+        <div className="text-xs text-muted-foreground">
+          <strong className="block text-foreground">
             {record.actor?.email ?? "System process"}
           </strong>
           {record.impersonated ? "Platform impersonation" : "Workspace session"}
@@ -234,10 +234,10 @@ function AuditRow({ record }: { record: AuditRecord }) {
           {new Date(record.createdAt).toLocaleString()}
         </time>
       </summary>
-      <div className="mt-4 grid gap-4 rounded-xl bg-zinc-50 p-4 lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 rounded-xl bg-muted p-4 lg:grid-cols-2">
         <Evidence title="Previous value" value={record.oldValue} />
         <Evidence title="New value" value={record.newValue} />
-        <div className="text-xs text-zinc-500 lg:col-span-2">
+        <div className="text-xs text-muted-foreground lg:col-span-2">
           Request: {record.requestId ?? "Not recorded"} · IP: {record.ipAddress ?? "Not recorded"}
         </div>
       </div>
@@ -248,8 +248,8 @@ function AuditRow({ record }: { record: AuditRecord }) {
 function Evidence({ title, value }: { title: string; value: unknown }) {
   return (
     <div>
-      <strong className="text-xs uppercase tracking-wide text-zinc-500">{title}</strong>
-      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-white p-3 text-xs text-zinc-700">
+      <strong className="text-xs uppercase tracking-wide text-muted-foreground">{title}</strong>
+      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-card p-3 text-xs text-foreground">
         {value == null ? "Not recorded" : JSON.stringify(value, null, 2)}
       </pre>
     </div>
@@ -269,17 +269,17 @@ function Pagination({
     <div className="flex items-center justify-between border-t border-surface-variant p-4">
       <button
         aria-label="Previous audit page"
-        className="grid size-10 place-items-center rounded-lg border border-zinc-300 disabled:opacity-40"
+        className="grid size-10 place-items-center rounded-lg border border-border disabled:opacity-40"
         disabled={page <= 1}
         onClick={() => onPage(page - 1)}
         type="button"
       >
         <ChevronLeft className="size-4" />
       </button>
-      <span className="text-sm text-zinc-500">Page {page} of {totalPages}</span>
+      <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
       <button
         aria-label="Next audit page"
-        className="grid size-10 place-items-center rounded-lg border border-zinc-300 disabled:opacity-40"
+        className="grid size-10 place-items-center rounded-lg border border-border disabled:opacity-40"
         disabled={page >= totalPages}
         onClick={() => onPage(page + 1)}
         type="button"

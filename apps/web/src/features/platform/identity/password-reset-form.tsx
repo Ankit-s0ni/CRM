@@ -130,22 +130,22 @@ export function PasswordResetForm() {
   return (
     <>
       <div
-        className={`w-full max-w-[380px] rounded-[12px] border border-zinc-300 bg-zinc-50 p-8 shadow-lg transition-all duration-500 ${isResetState ? "opacity-100 translate-y-0" : "opacity-100"
+        className={`w-full max-w-[380px] rounded-[12px] border border-border bg-muted p-8 shadow-lg transition-all duration-500 ${isResetState ? "opacity-100 translate-y-0" : "opacity-100"
           }`}
       >
         <div className="mb-8 flex flex-col items-center">
           <div
-            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-accent/40" : "bg-[#2a2927]"
+            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-accent/40" : "bg-primary-container"
               }`}
           >
             <span
-              className={`material-symbols-outlined text-[32px] ${isResetState ? "text-foreground" : "text-zinc-100"
+              className={`material-symbols-outlined text-[32px] ${isResetState ? "text-foreground" : "text-muted-foreground"
                 }`}
             >
               {isResetState ? "shield_lock" : "lock_reset"}
             </span>
           </div>
-          <h1 className="mb-2 text-center text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-zinc-900">
+          <h1 className="mb-2 text-center text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-foreground">
             {isResetState ? "Set New Password" : "Forgot Password?"}
           </h1>
           <p className="max-w-[320px] text-center text-[16px] leading-6 text-on-surface-variant">
@@ -181,7 +181,7 @@ export function PasswordResetForm() {
                   <input
                     id="password"
                     type="password"
-                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
+                    className="h-14 w-full rounded-[8px] border border-border bg-card pl-12 pr-4 text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-ring/20"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -193,7 +193,7 @@ export function PasswordResetForm() {
                 <span className={`text-[12px] font-medium ${strengthTone.textColor}`}>{strengthTone.text}</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 rounded-[8px] border border-zinc-300/30 bg-white/50 px-4 py-4">
+              <div className="grid grid-cols-1 gap-2 rounded-[8px] border border-border/30 bg-card/50 px-4 py-4">
                 <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[0] ? "text-accent-foreground" : "text-on-surface-variant"}`}>
                   <span className="material-symbols-outlined text-[16px]">
                     {strength.checks[0] ? "check_circle" : "circle"}
@@ -225,7 +225,7 @@ export function PasswordResetForm() {
                   <input
                     id="confirmPassword"
                     type="password"
-                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
+                    className="h-14 w-full rounded-[8px] border border-border bg-card pl-12 pr-4 text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-ring/20"
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     required
@@ -245,7 +245,7 @@ export function PasswordResetForm() {
                 <input
                   id="email"
                   type="email"
-                  className="h-11 w-full rounded-[8px] border border-zinc-300 bg-white pl-10 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
+                  className="h-11 w-full rounded-[8px] border border-border bg-card pl-10 pr-4 text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-ring/20"
                   placeholder="name@DeltCRM.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
@@ -258,7 +258,7 @@ export function PasswordResetForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-11 w-full items-center justify-center rounded-[8px] bg-[#151515] px-6 text-[14px] font-medium leading-5 text-white shadow-md transition-all hover:bg-[#2a2927] disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-11 w-full items-center justify-center rounded-[8px] bg-primary px-6 text-[14px] font-medium leading-5 text-on-tone shadow-md transition-all hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading
               ? isResetState
@@ -272,7 +272,7 @@ export function PasswordResetForm() {
           {!isResetState ? (
             <div className="text-center">
               <Link
-                className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-[#151515] hover:underline"
+                className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-foreground hover:underline"
                 href={backToLoginHref}
               >
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -289,7 +289,7 @@ export function PasswordResetForm() {
       </div>
 
       <div
-        className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-[16px] bg-zinc-900 px-6 py-4 text-surface shadow-2xl transition-transform duration-500 ${toastVisible ? "translate-y-0" : "translate-y-[200%]"
+        className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-[16px] bg-foreground px-6 py-4 text-surface shadow-2xl transition-transform duration-500 ${toastVisible ? "translate-y-0" : "translate-y-[200%]"
           }`}
       >
         <span
@@ -300,9 +300,9 @@ export function PasswordResetForm() {
         </span>
         <div className="flex flex-col">
           <span className="text-[14px] font-medium leading-5">Password Reset Successful</span>
-          <span className="text-[12px] leading-4 text-zinc-300">You can now login with your new credentials.</span>
+          <span className="text-[12px] leading-4 text-muted-foreground">You can now login with your new credentials.</span>
         </div>
-        <button className="ml-4 text-zinc-300 hover:text-surface" type="button" onClick={() => setToastVisible(false)}>
+        <button className="ml-4 text-muted-foreground hover:text-surface" type="button" onClick={() => setToastVisible(false)}>
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>

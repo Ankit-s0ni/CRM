@@ -200,7 +200,7 @@ export function AttendanceOverview() {
           {departments.length > 0 && (
             <select
               aria-label={tText("Department scope")}
-              className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
+              className="h-10 rounded-lg border border-outline-variant bg-card px-3 text-sm"
               onChange={(event) => setDepartmentId(event.target.value)}
               value={departmentId}
             >
@@ -215,7 +215,7 @@ export function AttendanceOverview() {
           {offices.length > 0 && (
             <select
               aria-label={tText("Office scope")}
-              className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
+              className="h-10 rounded-lg border border-outline-variant bg-card px-3 text-sm"
               onChange={(event) => setOfficeId(event.target.value)}
               value={officeId}
             >
@@ -230,7 +230,7 @@ export function AttendanceOverview() {
           <label className="text-xs font-bold text-on-surface-variant">
             {tText("Operational date")}<input
               aria-label={tText("Operational date")}
-              className="ml-2 h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm"
+              className="ml-2 h-10 rounded-lg border border-outline-variant bg-card px-3 text-sm"
               onChange={(event) => setDate(event.target.value)}
               type="date"
               value={date}
@@ -289,7 +289,7 @@ export function AttendanceOverview() {
           </div>
 
           {data.unavailable.length > 0 && (
-            <p className="rounded-xl border border-surface-variant bg-white px-4 py-3 text-xs text-on-surface-variant">
+            <p className="rounded-xl border border-surface-variant bg-card px-4 py-3 text-xs text-on-surface-variant">
               {tText("Some optional summaries are unavailable for this role or temporarily offline. Available data is shown without replacing missing values with estimates.")}</p>
           )}
         </div>
@@ -476,8 +476,8 @@ export function AttendanceSetupIndex() {
       {capabilities &&
         !capabilities.fieldTrackingEntitled &&
         granted.has("billing.subscription.manage") && (
-          <div className="mb-6 flex gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4">
-            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-[#151515]" />
+          <div className="mb-6 flex gap-3 rounded-xl border border-border bg-muted p-4">
+            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-foreground" />
             <div>
               <p className="text-sm font-bold">
                 {tText("Field Tracking is not included in this workspace")}</p>
@@ -518,7 +518,7 @@ function SummaryCard({
     success: "theme-tone theme-tone-emerald border",
     danger: "theme-tone theme-tone-red border",
     warning: "theme-tone theme-tone-amber border",
-    neutral: "border-zinc-300 bg-white text-[#151515]",
+    neutral: "border-border bg-card text-foreground",
   };
   return (
     <Link
@@ -594,7 +594,7 @@ export function AttentionQueue({
         <p className="text-sm text-on-surface-variant">
           {tText("Open the queue that needs action instead of searching across screens.")}</p>
       </div>
-      <div className="divide-y divide-zinc-100">
+      <div className="divide-y divide-border">
         {items.map((item) => (
           <AttendanceTaskCard {...item} key={item.label} />
         ))}
@@ -624,11 +624,11 @@ export function AttendanceTaskCard({
 }) {
   return (
     <div className="flex min-h-16 items-center gap-3 px-5 py-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-zinc-50 text-[#151515]">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-foreground">
         <Icon className="size-4" />
       </span>
       <Link
-        className="min-w-0 flex-1 font-semibold hover:text-[#151515]"
+        className="min-w-0 flex-1 font-semibold hover:text-foreground"
         href={href}
       >
         {label}
@@ -683,13 +683,13 @@ function QuickActions({ permissions }: { permissions: ReadonlySet<string> }) {
       <div className="mt-4 grid gap-2">
         {actions.map(({ label, href, icon: Icon }) => (
           <Link
-            className="flex min-h-11 items-center gap-3 rounded-lg border border-surface-variant px-4 text-sm font-semibold transition hover:border-[#151515] hover:bg-zinc-50"
+            className="flex min-h-11 items-center gap-3 rounded-lg border border-surface-variant px-4 text-sm font-semibold transition hover:border-primary hover:bg-muted"
             href={href}
             key={href}
           >
-            <Icon className="size-4 text-[#151515]" />
+            <Icon className="size-4 text-foreground" />
             {label}
-            <ArrowRight className="ml-auto size-4 text-zinc-400" />
+            <ArrowRight className="ml-auto size-4 text-muted-foreground" />
           </Link>
         ))}
       </div>
@@ -787,14 +787,14 @@ function SetupHealth({
             {tText("Core configuration reported by current setup APIs.")}</p>
         </div>
         <Link
-          className="text-xs font-bold text-[#151515]"
+          className="text-xs font-bold text-foreground"
           href="/app/attendance/setup"
         >
           {tText("Open setup")}</Link>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
         {checks.map(({ label, value, ready, icon: Icon }) => (
-          <div className="rounded-lg bg-zinc-50 p-3" key={label}>
+          <div className="rounded-lg bg-muted p-3" key={label}>
             <div className="flex items-center gap-2">
               <Icon
                 className={cn(
@@ -828,7 +828,7 @@ function MonthEndReadiness({
   return (
     <Panel className="p-5">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-zinc-700 text-white">
+        <span className="grid size-10 place-items-center rounded-lg bg-primary-container text-on-tone">
           <LockKeyhole className="size-5" />
         </span>
         <div>
@@ -839,19 +839,19 @@ function MonthEndReadiness({
         <FeatureInfo className="ml-auto" helpKey="payroll-lock" />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-zinc-50 p-3">
+        <div className="rounded-lg bg-muted p-3">
           <p className="text-xs text-on-surface-variant">{tText("Completed reports")}</p>
           <p className="mt-1 text-xl font-bold">
             {data.completedReports ?? "—"}
           </p>
         </div>
-        <div className="rounded-lg bg-zinc-50 p-3">
+        <div className="rounded-lg bg-muted p-3">
           <p className="text-xs text-on-surface-variant">{tText("Active payroll locks")}</p>
           <p className="mt-1 text-xl font-bold">{data.activeLocks ?? "—"}</p>
         </div>
       </div>
       <Link
-        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#151515]"
+        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-foreground"
         href={
           canPayroll ? "/app/attendance/payroll" : "/app/attendance/reports"
         }
@@ -876,7 +876,7 @@ function SetupGroupCard({
   return (
     <Panel className="p-6">
       <div className="flex items-start gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-zinc-700 text-white">
+        <span className="grid size-11 place-items-center rounded-xl bg-primary-container text-on-tone">
           <Icon className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -893,7 +893,7 @@ function SetupGroupCard({
       <div className="mt-5 flex flex-wrap gap-2">
         {group.links.map((link) => (
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-semibold text-foreground hover:bg-muted"
             href={link.href}
             key={link.href}
           >
@@ -914,7 +914,7 @@ export function SetupHealthBadge({
   const values = {
     ready: ["Ready", "theme-tone theme-tone-emerald"],
     attention: ["Needs setup", "theme-tone theme-tone-amber"],
-    unknown: ["Review", "bg-zinc-100 text-on-surface-variant"],
+    unknown: ["Review", "bg-muted text-on-surface-variant"],
   } as const;
   return (
     <span

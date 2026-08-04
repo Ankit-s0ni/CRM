@@ -184,7 +184,7 @@ export function PortalSearch() {
           "Search employees or settings",
         )}
         autoComplete="off"
-        className="h-10 w-full rounded-lg border border-border bg-muted/70 ps-11 pe-24 text-sm outline-none transition placeholder:text-muted-foreground hover:bg-white focus:border-ring focus:bg-white focus:ring-2 focus:ring-ring/20"
+        className="h-10 w-full rounded-lg border border-border bg-muted/70 ps-11 pe-24 text-sm outline-none transition placeholder:text-muted-foreground hover:bg-card focus:border-ring focus:bg-card focus:ring-2 focus:ring-ring/20"
         onBlur={() => window.setTimeout(() => setOpen(false), 150)}
         onChange={(event) => {
           setQuery(event.target.value);
@@ -197,14 +197,14 @@ export function PortalSearch() {
         )}
         value={query}
       />
-      <span className="pointer-events-none absolute end-3 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-white px-2 py-0.5 text-[10px] font-semibold text-muted-foreground lg:inline-flex">
+      <span className="pointer-events-none absolute end-3 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-card px-2 py-0.5 text-xs font-semibold text-muted-foreground lg:inline-flex">
         /
       </span>
       {open && (
-        <div className="absolute inset-x-0 top-12 z-50 max-h-96 overflow-y-auto rounded-lg border border-border bg-white p-2 shadow-xl">
+        <div className="absolute inset-x-0 top-12 z-50 max-h-96 overflow-y-auto rounded-lg border border-border bg-card p-2 shadow-xl">
           {!query.trim() && (
             <>
-              <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+              <div className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 {t("tenant.search.quickOpen", "Quick open")}
               </div>
               {quickDestinations.map(
@@ -243,7 +243,7 @@ export function PortalSearch() {
               onMouseDown={() => navigate(`/app/employees/${employee.id}`)}
               type="button"
             >
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-foreground">
+              <span className="grid size-9 place-items-center rounded-lg bg-muted text-foreground">
                 <UserRound className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
@@ -264,7 +264,7 @@ export function PortalSearch() {
               onMouseDown={() => navigate(href)}
               type="button"
             >
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-50 text-foreground">
+              <span className="grid size-9 place-items-center rounded-lg bg-muted text-foreground">
                 <Settings2 className="size-4" />
               </span>
               <span className="min-w-0 flex-1">

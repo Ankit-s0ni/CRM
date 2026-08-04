@@ -157,23 +157,23 @@ export function PayrollRunPreparationWorkspace({
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           isCurrent
-                            ? "bg-[#151515] text-white ring-2 ring-[#151515]/30"
+                            ? "bg-primary text-on-tone ring-2 ring-ring/30"
                             : isDone
                                 ? "theme-tone theme-tone-emerald"
-                                : "bg-zinc-100 text-zinc-400"
+                                : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {tText(step.replace(/_/g, " "))}
                       </span>
                       {index < STATUS_STEPS.length - 1 && (
-                        <ArrowRight className="size-3 text-zinc-300" />
+                        <ArrowRight className="size-3 text-muted-foreground" />
                       )}
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <p className="mt-4 text-sm leading-6 text-zinc-500">
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">
                 {tText("Create payroll or select a run to see progress.")}
               </p>
             )}
@@ -182,10 +182,10 @@ export function PayrollRunPreparationWorkspace({
         <Panel className="overflow-hidden">
             <div className="border-b border-outline-variant p-5">
             <div className="flex items-center gap-3">
-              <PlayCircle className="size-5 text-[#151515]" />
+              <PlayCircle className="size-5 text-foreground" />
               <h2 className="text-lg font-semibold">{tText("Runs")}</h2>
             </div>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {tText("Select a payroll month, then complete the work steps below.")}
             </p>
           </div>
@@ -196,7 +196,7 @@ export function PayrollRunPreparationWorkspace({
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-outline-variant text-sm">
-                <thead className="theme-table-header text-left text-xs font-semibold uppercase text-zinc-500">
+                <thead className="theme-table-header text-left text-xs font-semibold uppercase text-muted-foreground">
                   <tr>
                     {[
                       "Period",
@@ -258,7 +258,7 @@ export function PayrollRunPreparationWorkspace({
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-white"
+                            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-on-tone"
                             onClick={() => {
                               setActiveRunId(String(run.id));
                               setActiveRunPayGroupId(String(run.payGroupId ?? ""));
@@ -376,7 +376,7 @@ function CreateRunForm({
           </select>
           {form.payGroupId && (
             <Link
-              className="mt-2 inline-flex text-sm font-semibold text-[#151515] hover:underline"
+              className="mt-2 inline-flex text-sm font-semibold text-foreground hover:underline"
               href={`/app/employees?payGroupId=${form.payGroupId}`}
             >
               {tText("View employees in this pay group")}
@@ -402,7 +402,7 @@ function CreateRunForm({
             type="month"
             value={form.periodKey}
           />
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {tText("Changing the salary month updates the start and end dates.")}
           </p>
         </Field>
@@ -684,17 +684,17 @@ function RunActionForms({
     <>
     <Panel className="p-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {tText("Payroll work steps")}
         </p>
-        <h2 className="mt-1 font-serif text-2xl font-semibold text-[#151515]">
+        <h2 className="mt-1 text-xl font-semibold text-foreground">
           {tText("Work on selected payroll")}
         </h2>
       </div>
       <div className="mt-4 grid gap-4">
         {!noRun && activeRunStatus && (
             <div className="flex flex-wrap items-center gap-2 rounded-xl theme-tone theme-tone-neutral border px-3 py-2 text-sm">
-            <span className="text-zinc-500">{tText("Status")}:</span>
+            <span className="text-muted-foreground">{tText("Status")}:</span>
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[activeRunStatus] ?? "theme-tone theme-tone-neutral"}`}
             >
@@ -702,27 +702,27 @@ function RunActionForms({
             </span>
             {!canCalculate && !canReview && !canApprove && !canFinalize &&
                 !canGenerate && !canPublish && !canMarkPaid && activeRunStatus === "DRAFT" && (
-              <span className="ml-auto text-xs text-zinc-500">
+              <span className="ml-auto text-xs text-muted-foreground">
                 1. {tText("Import attendance, add optional changes, then check")}
               </span>
             )}
             {canCalculate && (
-              <span className="ml-auto text-xs text-zinc-500">
+              <span className="ml-auto text-xs text-muted-foreground">
                 4. {tText("Calculate salary")}
               </span>
             )}
             {canReview && (
-              <span className="ml-auto text-xs text-zinc-500">
+              <span className="ml-auto text-xs text-muted-foreground">
                 5. {tText("Review salary")}
               </span>
             )}
             {(canApprove || canFinalize) && (
-              <span className="ml-auto text-xs text-zinc-500">
+              <span className="ml-auto text-xs text-muted-foreground">
                 {tText("Next: approve or finalize")}
               </span>
             )}
             {canGenerate && (
-              <span className="ml-auto text-xs text-zinc-500">
+              <span className="ml-auto text-xs text-muted-foreground">
                 {tText("Next: generate payslips and files")}
               </span>
             )}
@@ -746,7 +746,7 @@ function RunActionForms({
             value={activeRunId}
           />
           {!activeRunId && (
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {tText(
                 "Create payroll above or choose an existing month from the Runs table.",
               )}
@@ -762,11 +762,11 @@ function RunActionForms({
               </p>
             )}
         </Field>
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
+        <div className="border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-foreground">
             {tText("1. Import attendance")}
           </h3>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             {tText("Bring attendance for all employees in this payroll run. Salary changes are added after this, before calculation.")}
           </p>
         </div>
@@ -803,14 +803,14 @@ function RunActionForms({
           {spinner("snapshot")}
           {tText("Import attendance for this period")}
         </PrimaryButton>
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
+        <div className="border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-foreground">
             {tText("2. Salary changes")}
-            <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
               {tText("Optional")}
             </span>
           </h3>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             {tText("Skip this if there are no bonuses, deductions, corrections, or final-settlement changes.")}
           </p>
         </div>
@@ -857,19 +857,19 @@ function RunActionForms({
           {spinner("input")}
           {tText("Add employee salary change")}
         </PrimaryButton>
-        <div className="border-t border-zinc-100 pt-4">
-          <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-4">
+        <div className="border-t border-border pt-4">
+          <div className="rounded-xl border border-dashed border-border bg-muted p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold text-zinc-800">
+                <h3 className="text-sm font-semibold text-foreground">
                   {tText("Add many employee salary changes")}
                 </h3>
-                <p className="mt-1 text-xs leading-5 text-zinc-500">
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {tText("Optional. Use this when many employees have bonuses, deductions, or corrections. For one employee, use Add employee salary change above.")}
                 </p>
               </div>
               <button
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition hover:border-primary hover:text-foreground"
                 onClick={() => setShowBulkChanges((current) => !current)}
                 type="button"
               >
@@ -882,9 +882,9 @@ function RunActionForms({
                   <p className="font-semibold">{tText("When to use this")}</p>
                   <p>{tText("Use this table when many employees need a bonus, deduction, or correction in the same payroll month.")}</p>
                 </div>
-                <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
-                  <table className="min-w-[760px] divide-y divide-zinc-100 text-sm">
-                    <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+                <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                  <table className="min-w-[760px] divide-y divide-border text-sm">
+                    <thead className="bg-muted text-left text-xs font-semibold uppercase text-muted-foreground">
                       <tr>
                         {[
                           "Employee",
@@ -900,7 +900,7 @@ function RunActionForms({
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-100">
+                    <tbody className="divide-y divide-border">
                       {bulkRows.map((row) => (
                         <tr key={row.id}>
                           <td className="min-w-48 px-3 py-2">
@@ -1005,7 +1005,7 @@ function RunActionForms({
                           <td className="px-3 py-2">
                             <button
                               aria-label={tText("Remove row")}
-                              className="grid size-10 place-items-center rounded-lg border border-zinc-200 text-zinc-500 transition hover:theme-tone-red"
+                              className="grid size-10 place-items-center rounded-lg border border-border text-muted-foreground transition hover:theme-tone-red"
                               disabled={inputsLocked || bulkRows.length === 1}
                               onClick={() => {
                                 setBulkRows((current) =>
@@ -1023,12 +1023,12 @@ function RunActionForms({
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs leading-5 text-zinc-500">
+                <p className="text-xs leading-5 text-muted-foreground">
                   {tText("Amount is entered normally, for example 20.000 OMR. The system converts it for payroll in the background.")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                    className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition hover:border-primary hover:text-foreground"
                     disabled={inputsLocked}
                     onClick={() => {
                       setBulkRows((current) => [
@@ -1043,7 +1043,7 @@ function RunActionForms({
                     {tText("Add row")}
                   </button>
                   <button
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition"
+                    className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition"
                     disabled={inputsLocked}
                     onClick={() => {
                       setBulkRows([createBulkSalaryChangeRow()]);
@@ -1100,11 +1100,11 @@ function RunActionForms({
             )}
           </div>
         </div>
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
+        <div className="border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-foreground">
             {tText("3. Check payroll")}
           </h3>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             {tText("Check missing salary, bank details, attendance, and other issues before calculation.")}
           </p>
         </div>
@@ -1126,7 +1126,7 @@ function RunActionForms({
           {tText("Check payroll")}
         </PrimaryButton>
         {readiness && (
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-700">
+          <div className="rounded-md border border-border bg-muted p-3 text-xs text-foreground">
             <div className="font-semibold">
               {tText("Payroll check")}: {String(readiness.status ?? "")}
             </div>
@@ -1158,8 +1158,8 @@ function RunActionForms({
             )}
           </div>
         )}
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
+        <div className="border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-foreground">
             {tText("4. Calculate and approve")}
           </h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -1181,7 +1181,7 @@ function RunActionForms({
                 {tText("Calculate salary")}
               </PrimaryButton>
               {activeRunId && !canCalculate && (
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {tText("Check payroll first")}
                 </p>
               )}
@@ -1205,7 +1205,7 @@ function RunActionForms({
                 {tText("Review salary")}
               </PrimaryButton>
               {activeRunId && !canReview && (
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {tText("Calculate salary first")}
                 </p>
               )}
@@ -1236,7 +1236,7 @@ function RunActionForms({
                 </p>
               )}
               {activeRunId && !canApprove && activeRunStatus !== "REVIEWED" && (
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {tText("Review salary first")}
                 </p>
               )}
@@ -1262,7 +1262,7 @@ function RunActionForms({
                 {tText("Finalize payroll")}
               </PrimaryButton>
               {activeRunId && !canFinalize && (
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {tText("Approve payroll first")}
                 </p>
               )}
@@ -1281,10 +1281,10 @@ function RunActionForms({
     </Panel>
     <Panel className="p-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {tText("Final outputs")}
           </p>
-          <h3 className="mt-1 font-serif text-2xl font-semibold text-[#151515]">
+          <h3 className="mt-1 text-xl font-semibold text-foreground">
             {tText("Payslips, files, and payment")}
           </h3>
           <div className="mt-3 grid gap-3">
@@ -1333,7 +1333,7 @@ function RunActionForms({
                       : tText("Generate file")}
                 </PrimaryButton>
                 {activeRunId && !canGenerate && (
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {tText("Finalize payroll first")}
                   </p>
                 )}
@@ -1356,7 +1356,7 @@ function RunActionForms({
                   {tText("Publish")}
                 </PrimaryButton>
                 {activeRunId && !canPublish && (
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {tText("Generate payslips first")}
                   </p>
                 )}
@@ -1386,7 +1386,7 @@ function RunActionForms({
                   {tText("Mark paid")}
                 </PrimaryButton>
                 {activeRunId && !canMarkPaid && (
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {tText("Publish payslips first")}
                   </p>
                 )}
@@ -1403,18 +1403,18 @@ function RunActionForms({
                 {errorMsg || message}
               </div>
             )}
-            <div className="rounded-xl border border-zinc-200 bg-white">
-              <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3">
+            <div className="rounded-xl border border-border bg-card">
+              <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
                 <div>
-                  <h4 className="text-sm font-semibold text-zinc-900">
+                  <h4 className="text-sm font-semibold text-foreground">
                     {tText("Generated payslips")}
                   </h4>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {tText("Download employee payslip PDFs for this payroll run.")}
                   </p>
                 </div>
                 <button
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                  className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition hover:border-primary hover:text-foreground"
                   disabled={payslipsLoading || noRun}
                   onClick={() => void loadPayslips()}
                   type="button"
@@ -1423,13 +1423,13 @@ function RunActionForms({
                 </button>
               </div>
               {payslipsLoading ? (
-                <div className="p-4 text-sm text-zinc-500">
+                <div className="p-4 text-sm text-muted-foreground">
                   {tText("Loading payslips.")}
                 </div>
               ) : payslips.length ? (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-zinc-100 text-sm">
-                    <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+                  <table className="min-w-full divide-y divide-border text-sm">
+                    <thead className="bg-muted text-left text-xs font-semibold uppercase text-muted-foreground">
                       <tr>
                         <th className="px-4 py-3">{tText("Employee")}</th>
                         <th className="px-4 py-3">{tText("Payslip")}</th>
@@ -1438,7 +1438,7 @@ function RunActionForms({
                         <th className="px-4 py-3">{tText("PDF")}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-100">
+                    <tbody className="divide-y divide-border">
                       {payslips.map((payslip, index) => {
                         const payslipId = String(payslip.id ?? "");
                         const hasPdf = Boolean(payslip.objectKey);
@@ -1460,7 +1460,7 @@ function RunActionForms({
                             </td>
                             <td className="px-4 py-3">
                               <button
-                                className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                                 disabled={!payslipId || !hasPdf || busy === `payslip-${payslipId}`}
                                 onClick={() => void downloadPayslip(payslipId)}
                                 type="button"
@@ -1480,7 +1480,7 @@ function RunActionForms({
                   </table>
                 </div>
               ) : (
-                <div className="p-4 text-sm leading-6 text-zinc-500">
+                <div className="p-4 text-sm leading-6 text-muted-foreground">
                   {activeRunStatus === "PAID" ||
                   activeRunStatus === "PUBLISHED" ||
                   activeRunStatus === "OUTPUTS_GENERATED"

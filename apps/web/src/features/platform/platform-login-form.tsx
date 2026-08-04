@@ -60,7 +60,7 @@ export function PlatformLoginForm() {
   return (
     <form
       onSubmit={submit}
-      className="w-full max-w-[430px] rounded-2xl border border-zinc-300 bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,.10)]"
+      className="w-full max-w-[430px] rounded-2xl border border-border bg-card p-8 shadow-xl"
     >
       <div className="mb-7 flex items-center gap-3">
         <img
@@ -77,7 +77,7 @@ export function PlatformLoginForm() {
       </div>
 
       <div className="mb-7">
-        <div className="mb-4 grid size-12 place-items-center rounded-full bg-surface-variant text-[#151515]">
+        <div className="mb-4 grid size-12 place-items-center rounded-full bg-surface-variant text-foreground">
           {challengeToken ? <ShieldCheck /> : <KeyRound />}
         </div>
         <h2 className="text-2xl font-bold">
@@ -157,7 +157,7 @@ export function PlatformLoginForm() {
       <Button
         type="submit"
         disabled={busy}
-        className="mt-7 h-12 w-full bg-[#151515] text-white hover:bg-[#2a2927]"
+        className="mt-7 h-12 w-full bg-primary text-on-tone hover:bg-primary-container"
       >
         {busy
           ? "Please wait..."
@@ -170,7 +170,7 @@ export function PlatformLoginForm() {
       {challengeToken && (
         <button
           type="button"
-          className="mt-4 w-full text-sm font-medium text-[#151515]"
+          className="mt-4 w-full text-sm font-medium text-foreground"
           onClick={() => {
             setChallengeToken("");
             setCode("");

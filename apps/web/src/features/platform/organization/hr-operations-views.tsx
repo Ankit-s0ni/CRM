@@ -181,7 +181,7 @@ export function RegularizationQueueView() {
           {items.length ? (
             items.map((item) => (
               <Link
-                className="grid gap-3 border-b border-surface-variant p-5 transition last:border-0 hover:bg-zinc-50 md:grid-cols-[1fr_170px_130px_110px] md:items-center"
+                className="grid gap-3 border-b border-surface-variant p-5 transition last:border-0 hover:bg-muted md:grid-cols-[1fr_170px_130px_110px] md:items-center"
                 href={`/app/attendance/regularizations/${item.id}?returnTo=${encodeURIComponent(`${pathname}?status=${status}`)}`}
                 key={item.id}
               >
@@ -270,7 +270,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
         "Compare immutable attendance evidence with the requested correction.",
       )}
       action={
-        <Link className="text-sm font-semibold text-[#151515]" href={returnTo}>
+        <Link className="text-sm font-semibold text-foreground" href={returnTo}>
           {tText("Back to queue")}
         </Link>
       }
@@ -292,12 +292,12 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                 </div>
                 <StatusPill value={item.status} />
               </div>
-              <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm leading-6">
+              <p className="mt-5 rounded-xl bg-muted p-4 text-sm leading-6">
                 {item.reason}
               </p>
             </Panel>
             <Panel className="overflow-hidden">
-              <div className="grid grid-cols-3 bg-zinc-700 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white">
+              <div className="grid grid-cols-3 bg-primary-container px-5 py-3 text-xs font-bold uppercase tracking-wider text-on-tone">
                 <span>{tText("Evidence")}</span>
                 <span>{tText("Recorded")}</span>
                 <span>{tText("Requested")}</span>
@@ -349,7 +349,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
                 </div>
               </>
             ) : (
-              <p className="mt-3 text-sm text-zinc-500">
+              <p className="mt-3 text-sm text-muted-foreground">
                 {item.managerComments || tText("Decision completed.")}
               </p>
             )}
@@ -514,12 +514,12 @@ export function ReportsCenterView({
       <div className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {reportCards.map(({ type: cardType, title, body, icon: Icon }) => (
           <Panel
-            className="relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-md"
+            className="relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
             key={cardType}
           >
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-border via-border to-border" />
             <div className="flex items-start gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-[#151515]">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                 <Icon className="size-5" />
               </span>
               <div className="min-w-0">
@@ -531,7 +531,7 @@ export function ReportsCenterView({
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               <button
-                className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-semibold text-[#151515] transition hover:bg-muted"
+                className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-muted"
                 onClick={() => setType(cardType)}
                 type="button"
               >
@@ -539,7 +539,7 @@ export function ReportsCenterView({
               </button>
               {canGenerate && (
                 <button
-                  className="inline-flex min-h-10 items-center rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-50"
+                  className="inline-flex min-h-10 items-center rounded-xl bg-foreground px-4 text-sm font-semibold text-on-tone transition hover:bg-primary-container disabled:opacity-50"
                   disabled={busy}
                   onClick={() => create(cardType)}
                   type="button"
@@ -578,7 +578,7 @@ export function ReportsCenterView({
         <LoadingState />
       ) : (
         <Panel className="overflow-hidden">
-          <div className="border-b border-border bg-zinc-50 px-6 py-4">
+          <div className="border-b border-border bg-muted px-6 py-4">
             <h2 className="font-semibold">{tText("Report history")}</h2>
             <p className="text-sm text-muted-foreground">
               {tText("Download completed exports, retry failed jobs, and regenerate older attendance workbooks.")}
@@ -600,7 +600,7 @@ export function ReportsCenterView({
                 >
                   <div>
                     <div className="flex items-center gap-2 font-semibold">
-                      <FileSpreadsheet className="size-4 text-[#151515]" />
+                      <FileSpreadsheet className="size-4 text-foreground" />
                       {reportLabel(job.reportType, job.contractVersion, tText)}
                     </div>
                     <div className="mt-1 text-xs text-outline">
@@ -629,7 +629,7 @@ export function ReportsCenterView({
                   <StatusPill value={expired ? "EXPIRED" : job.status} />
                   {legacyAttendanceExport && canGenerate ? (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515]"
+                      className="h-10 rounded-lg border border-border text-sm font-semibold text-foreground"
                       disabled={busy}
                       onClick={() => create("MUSTER", job.period)}
                     >
@@ -638,7 +638,7 @@ export function ReportsCenterView({
                     </button>
                   ) : job.status === "FAILED" && canGenerate ? (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515]"
+                      className="h-10 rounded-lg border border-border text-sm font-semibold text-foreground"
                       disabled={busy}
                       onClick={() => create(job.reportType, job.period)}
                     >
@@ -647,7 +647,7 @@ export function ReportsCenterView({
                     </button>
                   ) : (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515] disabled:opacity-40"
+                      className="h-10 rounded-lg border border-border text-sm font-semibold text-foreground disabled:opacity-40"
                       disabled={job.status !== "COMPLETED" || Boolean(expired)}
                       onClick={() => download(job.id)}
                     >
@@ -672,7 +672,7 @@ export function ReportsCenterView({
           )}
         </Panel>
       )}
-      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-[#151515]">
+      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-foreground">
         <Link href="/app/attendance/register">
           {tText("Open Attendance register")}
         </Link>
@@ -739,7 +739,7 @@ export function PayrollLockView() {
       )}
       action={
         <Link
-          className="text-sm font-semibold text-[#151515]"
+          className="text-sm font-semibold text-foreground"
           href="/app/attendance/reports"
         >
           {tText("Open reports center")}
@@ -749,7 +749,7 @@ export function PayrollLockView() {
       {error && <ErrorState message={error} />}
       <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
         <Panel className="h-fit p-6">
-          <div className="grid size-11 place-items-center rounded-xl bg-zinc-700 text-white">
+          <div className="grid size-11 place-items-center rounded-xl bg-primary-container text-on-tone">
             <LockKeyhole className="size-5" />
           </div>
           <div className="mt-4 flex items-center gap-2">
@@ -817,7 +817,7 @@ export function PayrollLockView() {
                       <StatusPill value={item.status} />
                       {item.status === "LOCKED" && (
                         <button
-                          className="h-9 rounded-lg border border-zinc-300 px-3 text-sm font-semibold"
+                          className="h-9 rounded-lg border border-border px-3 text-sm font-semibold"
                           onClick={() => reopen(item)}
                         >
                           <RotateCcw className="mr-1 inline size-4" />
@@ -829,7 +829,7 @@ export function PayrollLockView() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {item.history.map((entry) => (
                       <span
-                        className="rounded-lg bg-zinc-50 px-3 py-2 text-xs"
+                        className="rounded-lg bg-muted px-3 py-2 text-xs"
                         key={entry.id}
                       >
                         {entry.action} · {dateTime(entry.createdAt)}
@@ -912,7 +912,7 @@ export function LeaveBalancesView() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {balances.map((balance) => (
             <Panel className="p-6" key={balance.id}>
-              <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+              <div className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
                 <CalendarCheck />
               </div>
               <div className="mt-5 text-sm text-outline">
@@ -1095,7 +1095,7 @@ export function LeaveRequestsView({
       }
       action={
         returnTo ? (
-          <Link className="text-sm font-bold text-[#151515]" href={returnTo}>
+          <Link className="text-sm font-bold text-foreground" href={returnTo}>
             {tText("Back to employee")}
           </Link>
         ) : undefined
@@ -1113,7 +1113,7 @@ export function LeaveRequestsView({
             )}
           </p>
           <Link
-            className="mt-5 inline-flex h-11 items-center rounded-xl bg-[#151515] px-5 text-sm font-bold text-white"
+            className="mt-5 inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-on-tone"
             href="/app/attendance/setup/leave"
           >
             {tText("Set up leave policies")}
@@ -1152,7 +1152,7 @@ export function LeaveRequestsView({
                         {tText("Reject")}
                       </button>
                       <button
-                        className="h-9 flex-1 rounded-lg bg-[#151515] text-xs font-semibold text-white"
+                        className="h-9 flex-1 rounded-lg bg-primary text-xs font-semibold text-on-tone"
                         onClick={() => decision(item, "approve")}
                       >
                         {tText("Approve")}
@@ -1160,7 +1160,7 @@ export function LeaveRequestsView({
                     </>
                   ) : item.status === "PENDING" && !employeeId ? (
                     <button
-                      className="h-9 w-full rounded-lg border border-zinc-300 text-xs font-semibold"
+                      className="h-9 w-full rounded-lg border border-border text-xs font-semibold"
                       onClick={() => cancel(item)}
                     >
                       {tText("Cancel")}
@@ -1186,7 +1186,7 @@ export function LeaveRequestsView({
       {pages > 1 && (
         <div className="mt-5 flex items-center justify-end gap-3 text-sm">
           <button
-            className="rounded-lg border border-zinc-300 px-4 py-2 font-semibold disabled:opacity-40"
+            className="rounded-lg border border-border px-4 py-2 font-semibold disabled:opacity-40"
             disabled={page === 1}
             onClick={() => setPage((current) => current - 1)}
           >
@@ -1198,7 +1198,7 @@ export function LeaveRequestsView({
             {pages}
           </span>
           <button
-            className="rounded-lg border border-zinc-300 px-4 py-2 font-semibold disabled:opacity-40"
+            className="rounded-lg border border-border px-4 py-2 font-semibold disabled:opacity-40"
             disabled={page >= pages}
             onClick={() => setPage((current) => current + 1)}
           >
@@ -1236,7 +1236,7 @@ export function NotificationsInboxView() {
       )}
       action={
         <button
-          className="text-sm font-semibold text-[#151515]"
+          className="text-sm font-semibold text-foreground"
           onClick={() =>
             apiClient.post("/notifications/read-all", {}).then(load)
           }
@@ -1253,11 +1253,11 @@ export function NotificationsInboxView() {
           {items.length ? (
             items.map((item) => (
               <button
-                className={`flex w-full gap-4 border-b border-surface-variant p-5 text-left last:border-0 ${item.isRead ? "bg-white" : "bg-zinc-50"}`}
+                className={`flex w-full gap-4 border-b border-surface-variant p-5 text-left last:border-0 ${item.isRead ? "bg-card" : "bg-muted"}`}
                 key={item.id}
                 onClick={() => read(item)}
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-700 text-white">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-container text-on-tone">
                   <Bell className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -1267,7 +1267,7 @@ export function NotificationsInboxView() {
                       {dateTime(item.createdAt)}
                     </span>
                   </span>
-                  <span className="mt-1 block text-sm leading-6 text-zinc-500">
+                  <span className="mt-1 block text-sm leading-6 text-muted-foreground">
                     {item.body}
                   </span>
                 </span>
@@ -1396,7 +1396,7 @@ export function LeavePoliciesView() {
       {error && <ErrorState message={error} />}
       <Panel className="mb-5 p-5">
         <h2 className="font-bold">{tText("How Leave policies apply")}</h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-500">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {tText(
             "A new policy creates an opening balance for every active employee. New employees receive the same active policies automatically. Policy changes keep existing requests and balance ledger entries intact.",
           )}
@@ -1409,7 +1409,7 @@ export function LeavePoliciesView() {
           {policies.map((policy) => (
             <Panel className="p-6" key={policy.id}>
               <div className="flex items-start justify-between gap-3">
-                <CalendarCheck className="size-6 text-[#151515]" />
+                <CalendarCheck className="size-6 text-foreground" />
                 <StatusPill value={policy.isActive ? "ACTIVE" : "INACTIVE"} />
               </div>
               <h2 className="mt-5 text-lg font-bold">{policy.name}</h2>
@@ -1418,7 +1418,7 @@ export function LeavePoliciesView() {
                 {policy.version ?? 1}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-zinc-50 p-3">
+                <div className="rounded-xl bg-muted p-3">
                   <span className="text-xs text-outline">
                     {tText("Annual")}
                   </span>
@@ -1427,7 +1427,7 @@ export function LeavePoliciesView() {
                     {tText("days")}
                   </strong>
                 </div>
-                <div className="rounded-xl bg-zinc-50 p-3">
+                <div className="rounded-xl bg-muted p-3">
                   <span className="text-xs text-outline">
                     {tText("Carry forward")}
                   </span>
@@ -1438,7 +1438,7 @@ export function LeavePoliciesView() {
                 </div>
               </div>
               <button
-                className="mt-5 text-sm font-bold text-[#151515]"
+                className="mt-5 text-sm font-bold text-foreground"
                 onClick={() => beginEdit(policy)}
                 type="button"
               >
@@ -1487,7 +1487,7 @@ export function LeavePoliciesView() {
                 {Number(balance.remainingDays)} {tText("days")}
               </strong>
               <button
-                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-[#151515]"
+                className="rounded-lg border border-border px-3 py-2 text-sm font-semibold text-foreground"
                 onClick={() => adjustBalance(balance)}
                 type="button"
               >
@@ -1632,13 +1632,13 @@ export function LeaveModuleHub() {
           .filter((item) => item.show)
           .map((item) => (
             <Link
-              className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-[#151515]"
+              className="group rounded-xl border border-surface-variant bg-card p-6 shadow-sm transition hover:border-primary"
               href={item.href}
               key={item.href}
             >
-              <CalendarCheck className="size-6 text-[#151515]" />
+              <CalendarCheck className="size-6 text-foreground" />
               <h2 className="mt-5 text-lg font-bold">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-500">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {item.body}
               </p>
             </Link>
@@ -1677,7 +1677,7 @@ function Comparison({
     <div className="grid grid-cols-3 border-b border-surface-variant px-5 py-4 text-sm last:border-0">
       <strong>{label}</strong>
       <span>{current}</span>
-      <span className="font-semibold text-[#151515]">{requested}</span>
+      <span className="font-semibold text-foreground">{requested}</span>
     </div>
   );
 }
@@ -1692,8 +1692,8 @@ function Modal({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-7 shadow-2xl">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-foreground/45 p-4">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-2xl bg-card p-7 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">{title}</h2>
           <button aria-label={tText("Close")} onClick={onClose}>
@@ -1715,7 +1715,7 @@ function CheckField({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
+    <label className="flex items-center gap-3 rounded-lg bg-muted p-3 text-sm">
       <input
         type="checkbox"
         checked={checked}

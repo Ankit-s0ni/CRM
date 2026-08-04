@@ -147,10 +147,10 @@ function OpenStreetMapFieldMap({
 
       geofences.forEach((office) => {
         leaflet.circle([office.latitude, office.longitude], {
-          fillColor: "#434343",
+          fillColor: "var(--map-geofence)",
           fillOpacity: 0.08,
           radius: office.radiusMeters,
-          color: "#434343",
+          color: "var(--map-geofence)",
           opacity: 0.8,
           weight: 2,
         }).addTo(nextFeatureLayer);
@@ -158,7 +158,7 @@ function OpenStreetMapFieldMap({
       if (path.length > 1) {
         leaflet.polyline(
           path.map(({ latitude, longitude }) => [latitude, longitude]),
-          { color: "#27272a", opacity: 0.95, weight: 5 },
+          { color: "var(--map-route)", opacity: 0.95, weight: 5 },
         ).addTo(nextFeatureLayer);
       }
       markers.forEach((marker) => {
@@ -225,7 +225,7 @@ function OpenStreetMapFieldMap({
   return (
     <div
       className={cn(
-        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-zinc-300 bg-stone-200",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-border bg-outline-variant",
         onMapClick && "cursor-crosshair",
         className,
       )}
@@ -243,15 +243,15 @@ function OpenStreetMapFieldMap({
         satelliteLabel={tText("Satellite")}
       />
       <style jsx global>{`
-        .field-map-marker__pin { display:block; width:30px; height:30px; border:4px solid white; border-radius:999px 999px 999px 0; box-shadow:0 4px 12px rgba(25,24,35,.28); transform:rotate(-45deg); }
-        .field-map-marker__pin--live { background:#138a55; }
-        .field-map-marker__pin--stale, .field-map-marker__pin--gap { background:#c06b18; }
-        .field-map-marker__pin--offline { background:#a5a5a5; }
-        .field-map-marker__pin--stop { background:#0d6e78; }
-        .field-map-marker__pin--punch { background:#a23063; }
-        .field-map-marker__pin--alert { background:#dc2626; }
-        .field-map-marker__pin--default { background:#27272a; }
-        .field-map-marker__pin--selected { box-shadow:0 0 0 5px rgba(53,37,205,.24),0 4px 12px rgba(25,24,35,.28); }
+        .field-map-marker__pin { display:block; width:30px; height:30px; border:4px solid var(--color-card); border-radius:999px 999px 999px 0; box-shadow:var(--shadow-md); transform:rotate(-45deg); }
+        .field-map-marker__pin--live { background:var(--map-pin-live); }
+        .field-map-marker__pin--stale, .field-map-marker__pin--gap { background:var(--map-pin-warning); }
+        .field-map-marker__pin--offline { background:var(--map-pin-offline); }
+        .field-map-marker__pin--stop { background:var(--map-pin-stop); }
+        .field-map-marker__pin--punch { background:var(--map-pin-punch); }
+        .field-map-marker__pin--alert { background:var(--map-pin-alert); }
+        .field-map-marker__pin--default { background:var(--map-route); }
+        .field-map-marker__pin--selected { box-shadow:0 0 0 5px color-mix(in srgb, var(--color-primary) 24%, transparent),var(--shadow-md); }
       `}</style>
     </div>
   );
@@ -278,7 +278,7 @@ export function DeterministicFieldMap({
   return (
     <div
       className={cn(
-        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-zinc-300 bg-stone-200",
+        "relative isolate z-0 min-h-[460px] overflow-hidden rounded-2xl border border-border bg-outline-variant",
         onMapClick && "cursor-crosshair",
         className,
       )}
@@ -296,13 +296,13 @@ export function DeterministicFieldMap({
     >
       {baseLayer === "map" ? (
         <>
-          <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(#c9c6c0_1px,transparent_1px),linear-gradient(90deg,#c9c6c0_1px,transparent_1px)] [background-size:52px_52px]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,.9),transparent_24%),radial-gradient(circle_at_80%_72%,rgba(215,225,213,.8),transparent_28%)]" />
+          <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(var(--map-grid)_1px,transparent_1px),linear-gradient(90deg,var(--map-grid)_1px,transparent_1px)] [background-size:52px_52px]" />
+          <div className="absolute inset-0 bg-muted" />
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-[#43523d] [background-image:radial-gradient(circle_at_18%_24%,#8d9270_0_9%,transparent_10%),radial-gradient(circle_at_72%_68%,#315d49_0_14%,transparent_15%),radial-gradient(circle_at_48%_38%,#6f7552_0_20%,transparent_21%)]" />
-          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(28deg,transparent_46%,#c9c39a_47%_49%,transparent_50%),linear-gradient(118deg,transparent_47%,#74806a_48%_50%,transparent_51%)] [background-size:130px_110px]" />
+          <div className="absolute inset-0 bg-primary-container" />
+          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(28deg,transparent_46%,var(--map-grid)_47%_49%,transparent_50%),linear-gradient(118deg,transparent_47%,var(--map-terrain)_48%_50%,transparent_51%)] [background-size:130px_110px]" />
         </>
       )}
       <svg
@@ -311,7 +311,7 @@ export function DeterministicFieldMap({
         preserveAspectRatio="none"
         viewBox="0 0 1000 600"
       >
-        <g className="stroke-stone-400" opacity=".45">
+        <g className="stroke-outline" opacity=".45">
           <path d="M0 115 C180 80 250 175 410 142 S720 55 1000 112" fill="none" strokeWidth="20" />
           <path d="M165 0 C185 130 120 290 205 600" fill="none" strokeWidth="12" />
           <path d="M0 470 C230 420 410 530 640 460 S820 390 1000 430" fill="none" strokeWidth="10" />
@@ -320,8 +320,8 @@ export function DeterministicFieldMap({
           const point = project(office, bounds);
           return (
             <g key={office.id}>
-              <circle cx={point.x} cy={point.y} fill="#4343431c" r={Math.max(24, Math.min(80, office.radiusMeters / 5))} stroke="#434343" strokeDasharray="6 5" strokeWidth="2" />
-              <text fill="#27272a" fontSize="12" fontWeight="700" x={point.x + 12} y={point.y - 14}>{office.label}</text>
+              <circle cx={point.x} cy={point.y} fill="color-mix(in srgb, var(--map-geofence) 12%, transparent)" r={Math.max(24, Math.min(80, office.radiusMeters / 5))} stroke="var(--map-geofence)" strokeDasharray="6 5" strokeWidth="2" />
+              <text fill="var(--color-foreground)" fontSize="12" fontWeight="700" x={point.x + 12} y={point.y - 14}>{office.label}</text>
             </g>
           );
         })}
@@ -329,7 +329,7 @@ export function DeterministicFieldMap({
           <polyline
             fill="none"
             points={projectedPath.map(({ x, y }) => `${x},${y}`).join(" ")}
-            stroke="#27272a"
+            stroke="var(--map-route)"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="7"
@@ -352,14 +352,14 @@ export function DeterministicFieldMap({
             type="button"
           >
             <span className={cn(
-              "grid size-9 place-items-center rounded-full border-4 border-white text-white shadow-lg transition",
+              "grid size-9 place-items-center rounded-full border-4 border-on-tone text-on-tone shadow-lg transition",
               markerTone(marker.tone),
-              active && "scale-125 ring-4 ring-[#151515]/20",
+              active && "scale-125 ring-4 ring-ring/20",
             )}>
               <MapPin className="size-4" />
             </span>
             {marker.label && (
-              <span className="mt-1 block max-w-32 truncate rounded-md bg-zinc-700 px-2 py-1 text-[10px] font-semibold text-white shadow">
+              <span className="mt-1 block max-w-32 truncate rounded-md bg-primary-container px-2 py-1 text-[10px] font-semibold text-on-tone shadow">
                 {marker.label}
               </span>
             )}
@@ -372,7 +372,7 @@ export function DeterministicFieldMap({
         onChange={setBaseLayer}
         satelliteLabel={tText("Satellite")}
       />
-      <div className="absolute bottom-3 left-3 rounded-lg border border-zinc-300 bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-zinc-500 shadow-sm backdrop-blur">
+      <div className="absolute bottom-3 left-3 rounded-lg border border-border bg-card/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-muted-foreground shadow-sm backdrop-blur">
         {baseLayer === "map"
           ? tText("Deterministic map provider")
           : tText("Deterministic satellite preview")}
@@ -395,7 +395,7 @@ function MapLayerSwitch({
   return (
     <div
       aria-label={`${mapLabel} / ${satelliteLabel}`}
-      className="absolute left-1/2 top-3 z-[500] flex -translate-x-1/2 rounded-xl border border-white/70 bg-white/95 p-1 shadow-lg backdrop-blur"
+      className="absolute left-1/2 top-3 z-[500] flex -translate-x-1/2 rounded-xl border border-on-tone/70 bg-card/95 p-1 shadow-lg backdrop-blur"
       onClick={(event) => event.stopPropagation()}
       role="group"
     >
@@ -408,8 +408,8 @@ function MapLayerSwitch({
           className={cn(
             "flex h-11 min-w-24 items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors",
             activeLayer === id
-              ? "bg-zinc-900 text-white shadow-sm"
-              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950",
+              ? "bg-foreground text-on-tone shadow-sm"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
           key={id}
           onClick={() => onChange(id)}
@@ -455,5 +455,5 @@ function markerTone(tone: MapMarker["tone"]) {
   if (tone === "stop") return "theme-tone theme-tone-teal";
   if (tone === "punch") return "theme-tone theme-tone-rose";
   if (tone === "alert") return "theme-tone theme-tone-red";
-  return "bg-[#151515]";
+  return "bg-primary";
 }

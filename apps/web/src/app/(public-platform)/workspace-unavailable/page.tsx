@@ -41,18 +41,18 @@ export default async function WorkspaceUnavailablePage({
       <main className="relative z-10 flex w-full max-w-[600px] flex-col items-center text-center">
         <div className="mb-12">
           <div className="flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-[32px] text-[#151515]">
+            <span className="material-symbols-outlined text-[32px] text-foreground">
               hub
             </span>
-            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-zinc-900">
+            <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-foreground">
               DeltCRM
             </h1>
           </div>
         </div>
 
         <div className="relative mb-8 aspect-video w-full max-w-[420px]">
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[12px] border border-zinc-300/30 bg-gradient-to-tr from-surface-container-high to-zinc-50 shadow-sm">
-            <div className="relative flex h-[288px] w-[192px] flex-col items-center justify-center rounded-t-[8px] border-x-4 border-t-4 border-surface-variant bg-white px-4 py-4 shadow-xl">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[12px] border border-border/30 bg-gradient-to-tr from-surface-container-high to-muted shadow-sm">
+            <div className="relative flex h-[288px] w-[192px] flex-col items-center justify-center rounded-t-[8px] border-x-4 border-t-4 border-surface-variant bg-card px-4 py-4 shadow-xl">
               <div className="mb-auto mt-4 h-1 w-full bg-surface-variant" />
 
               <div className="floating mb-4 rounded-full bg-error-container p-4">
@@ -66,10 +66,10 @@ export default async function WorkspaceUnavailablePage({
 
               <div className="mb-2 h-1 w-12 bg-surface-variant" />
               <div className="h-1 w-8 bg-surface-variant" />
-              <div className="absolute right-4 top-1/2 h-6 w-6 rounded-full border-4 border-white bg-surface-variant shadow-inner" />
+              <div className="absolute right-4 top-1/2 h-6 w-6 rounded-full border-4 border-on-tone bg-surface-variant shadow-inner" />
             </div>
 
-            <div className="absolute left-12 top-12 flex rotate-[-6deg] items-center gap-1 rounded-[8px] border border-zinc-300/20 bg-white/80 px-2 py-2 shadow-sm backdrop-blur">
+            <div className="absolute left-12 top-12 flex rotate-[-6deg] items-center gap-1 rounded-[8px] border border-border/20 bg-card/80 px-2 py-2 shadow-sm backdrop-blur">
               <span className="material-symbols-outlined text-[18px] text-error">
                 warning
               </span>
@@ -78,8 +78,8 @@ export default async function WorkspaceUnavailablePage({
               </span>
             </div>
 
-            <div className="absolute bottom-16 right-8 flex rotate-[12deg] items-center gap-1 rounded-[8px] border border-zinc-300/20 bg-white/80 px-2 py-2 shadow-sm backdrop-blur">
-              <span className="material-symbols-outlined text-[18px] text-[#151515]">
+            <div className="absolute bottom-16 right-8 flex rotate-[12deg] items-center gap-1 rounded-[8px] border border-border/20 bg-card/80 px-2 py-2 shadow-sm backdrop-blur">
+              <span className="material-symbols-outlined text-[18px] text-foreground">
                 credit_card_off
               </span>
               <span className="text-[12px] font-semibold leading-4 text-on-surface-variant">
@@ -90,7 +90,7 @@ export default async function WorkspaceUnavailablePage({
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-zinc-900">
+          <h2 className="text-[30px] font-bold leading-[38px] tracking-[-0.02em] text-foreground">
             {content.title}
           </h2>
           <p className="px-4 text-[18px] leading-7 text-on-surface-variant">
@@ -100,14 +100,14 @@ export default async function WorkspaceUnavailablePage({
 
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
           <Link
-            className="group relative flex items-center gap-2 rounded-[12px] bg-[#151515] px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-[#151515]/20 transition-all duration-300 hover:bg-[#2a2927] active:scale-95"
+            className="group relative flex items-center gap-2 rounded-[12px] bg-primary px-8 py-4 text-[14px] font-medium leading-5 text-on-tone shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary-container active:scale-95"
             href={`mailto:support@${APP_DOMAIN}`}
           >
             <span className="material-symbols-outlined">support_agent</span>
             Contact support
           </Link>
           <Link
-            className="rounded-[12px] border-2 border-[#beb8ad] bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-[#151515] transition-all duration-300 hover:bg-muted active:scale-95"
+            className="rounded-[12px] border-2 border-border bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-foreground transition-all duration-300 hover:bg-muted active:scale-95"
             href="/"
           >
             Go to main site

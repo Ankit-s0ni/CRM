@@ -173,13 +173,13 @@ export function AttendanceDetailView({
           <Link
             aria-label={tText("Back to attendance register")}
             href={returnTo}
-            className="grid size-10 place-items-center rounded-xl border border-zinc-300 bg-white"
+            className="grid size-10 place-items-center rounded-xl border border-border bg-card"
           >
             <ArrowLeft className="size-4" />
           </Link>
         )}
         <div className="min-w-56 flex-1">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-foreground">
             {embedded ? tText("Employee attendance") : tText("Attendance detail")}
           </p>
           <div className="mt-1 flex items-center gap-2">
@@ -198,11 +198,11 @@ export function AttendanceDetailView({
                 : tText("Monthly calendar and evidence timeline")}
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-white p-1">
+        <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-card p-1">
           <button
             aria-label={tText("Previous month")}
             onClick={() => moveMonth(-1)}
-            className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
+            className="grid size-9 place-items-center rounded-lg hover:bg-muted"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -215,7 +215,7 @@ export function AttendanceDetailView({
           <button
             aria-label={tText("Next month")}
             onClick={() => moveMonth(1)}
-            className="grid size-9 place-items-center rounded-lg hover:bg-zinc-50"
+            className="grid size-9 place-items-center rounded-lg hover:bg-muted"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -274,7 +274,7 @@ function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
     {
       label: tText("Worked"),
       value: formatMinutes(data.workMinutes),
-      color: "text-[#151515]",
+      color: "text-foreground",
     },
     {
       label: tText("Overtime"),
@@ -287,7 +287,7 @@ function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
       {values.map((item) => (
         <article
           key={item.label}
-          className="rounded-xl border border-surface-variant bg-white p-4 shadow-sm"
+          className="rounded-xl border border-surface-variant bg-card p-4 shadow-sm"
         >
           <span className="text-xs text-outline">{item.label}</span>
           <strong className={cn("mt-1 block text-xl", item.color)}>
@@ -333,7 +333,7 @@ function MonthCalendar({
   return (
     <Panel className="overflow-hidden p-4 lg:p-6">
       <div className="mb-4 flex items-center gap-2">
-        <CalendarDays className="size-5 text-[#151515]" />
+        <CalendarDays className="size-5 text-foreground" />
         <div>
           <h2 className="font-semibold">{tText("Monthly calendar")}</h2>
           <p className="text-xs text-outline">
@@ -366,13 +366,13 @@ function MonthCalendar({
               className={cn(
                 "min-h-24 rounded-xl border p-2 text-left transition",
                 selectable
-                  ? "border-surface-variant bg-white hover:border-zinc-400"
-                  : "border-transparent bg-zinc-50 text-zinc-400",
+                  ? "border-surface-variant bg-card hover:border-border"
+                  : "border-transparent bg-muted text-muted-foreground",
                 day &&
                   tone &&
                   "border-current/10 bg-[color:var(--calendar-bg)] text-[color:var(--calendar-fg)]",
                 selectedDate === date &&
-                  "border-[#151515] ring-2 ring-[#151515]/15",
+                  "border-primary ring-2 ring-ring/15",
               )}
               style={
                 day && tone
@@ -456,8 +456,8 @@ function DayEvidence({
     );
   const tone = statusTone(data.status);
   return (
-    <aside className="overflow-hidden rounded-xl border border-surface-variant bg-white shadow-sm xl:sticky xl:top-20">
-      <div className="border-b border-surface-variant bg-gradient-to-br from-zinc-50 to-[#eefbf3] p-5">
+    <aside className="overflow-hidden rounded-xl border border-surface-variant bg-card shadow-sm xl:sticky xl:top-20">
+      <div className="border-b border-surface-variant bg-gradient-to-br from-muted to-card p-5">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-outline">
@@ -471,7 +471,7 @@ function DayEvidence({
             </h2>
           </div>
           {data.isLocked && (
-            <span className="grid size-9 place-items-center rounded-lg bg-white text-on-surface-variant">
+            <span className="grid size-9 place-items-center rounded-lg bg-card text-on-surface-variant">
               <LockKeyhole className="size-4" />
             </span>
           )}
@@ -491,7 +491,7 @@ function DayEvidence({
         </div>
       </div>
       {data.exception && (
-        <div className="m-4 rounded-xl border border-zinc-200 bg-surface-variant p-3 text-xs">
+        <div className="m-4 rounded-xl border border-border bg-surface-variant p-3 text-xs">
           <strong>{data.exception.exceptionType.replaceAll("_", " ")}</strong>
           <p className="mt-1 text-on-surface-variant">
             {data.exception.reason}
@@ -503,7 +503,7 @@ function DayEvidence({
           <h3 className="font-semibold">{tText("Evidence timeline")}</h3>
           {onCorrect && !data.isLocked && (
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#151515] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#2a2927]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-on-tone shadow-sm transition hover:bg-primary-container"
               onClick={onCorrect}
             >
               <PencilLine className="size-4" />
@@ -605,12 +605,12 @@ function CreateCorrectionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/55 p-4"
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-foreground/55 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="create-correction-title"
     >
-      <div className="my-auto w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="my-auto w-full max-w-xl rounded-2xl bg-card p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id="create-correction-title" className="text-xl font-bold">
@@ -623,7 +623,7 @@ function CreateCorrectionDialog({
             <span className="text-2xl text-on-surface-variant">×</span>
           </button>
         </div>
-        <p className="mt-4 rounded-xl bg-zinc-50 p-3 text-xs leading-5 text-on-surface-variant">
+        <p className="mt-4 rounded-xl bg-muted p-3 text-xs leading-5 text-on-surface-variant">
           {data
             ? `Recorded: ${formatClock(data.firstCheckin)} to ${formatClock(data.lastCheckout)}. `
             : tText("No attendance was recorded for this day.")}
@@ -681,7 +681,7 @@ function CreateCorrectionDialog({
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button
-            className="h-11 rounded-xl border border-zinc-300 px-5 text-sm font-semibold"
+            className="h-11 rounded-xl border border-border px-5 text-sm font-semibold"
             disabled={busy}
             onClick={onClose}
           >
@@ -766,12 +766,12 @@ function Timeline({
             "grid size-8 place-items-center rounded-full",
             event.timeSuspect
               ? "bg-error-container text-error"
-              : "bg-zinc-50 text-[#151515]",
+              : "bg-muted text-foreground",
           )}
         >
           <Icon className="size-4" />
         </span>
-        {!last && <span className="min-h-10 w-px flex-1 bg-zinc-200" />}
+        {!last && <span className="min-h-10 w-px flex-1 bg-outline-variant" />}
       </div>
       <div className="pb-5">
         <div className="flex items-center justify-between gap-2">
@@ -797,7 +797,7 @@ function Timeline({
 }
 function Mini({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/80 p-2">
+    <div className="rounded-lg bg-card/80 p-2">
       <strong className="block text-sm">{value}</strong>
       <span className="text-[9px] uppercase text-outline">{label}</span>
     </div>

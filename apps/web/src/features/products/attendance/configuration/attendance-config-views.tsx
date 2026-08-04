@@ -350,18 +350,18 @@ export function OfficesView({
           <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <h2 className="font-bold">{tText("How policy assignment works")}</h2>
-              <p className="mt-1 text-sm leading-6 text-zinc-500">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 {tText(
                   "DeltCRM resolves one effective policy for each employee. A direct employee assignment wins over a department assignment, and a department assignment wins over the tenant default.",
                 )}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[#151515]">
-              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Employee")}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-foreground">
+              <span className="rounded-full bg-muted px-3 py-2">{tText("Employee")}</span>
               <span>{tText("overrides")}</span>
-              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Department")}</span>
+              <span className="rounded-full bg-muted px-3 py-2">{tText("Department")}</span>
               <span>{tText("overrides")}</span>
-              <span className="rounded-full bg-zinc-100 px-3 py-2">{tText("Tenant")}</span>
+              <span className="rounded-full bg-muted px-3 py-2">{tText("Tenant")}</span>
             </div>
           </div>
         </Panel>
@@ -375,7 +375,7 @@ export function OfficesView({
             )}{" "}
             <strong>{tText("Office geofence")}</strong>.
           </p>
-          <Link className="font-bold text-[#151515]" href="/app/attendance/policies">
+          <Link className="font-bold text-foreground" href="/app/attendance/policies">
             {tText("Review attendance policies")}
           </Link>
         </div>
@@ -385,7 +385,7 @@ export function OfficesView({
       ) : firstOfficeSetup ? null : (
         <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
           <Panel className="overflow-hidden">
-            <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-surface-variant bg-zinc-50 px-6 py-3 text-xs font-bold uppercase tracking-wider text-outline">
+            <div className="grid grid-cols-[1fr_100px_90px_130px] border-b border-surface-variant bg-muted px-6 py-3 text-xs font-bold uppercase tracking-wider text-outline">
               <span>{tText("Office")}</span>
               <span>{tText("Employees")}</span>
               <span>{tText("Radius")}</span>
@@ -412,13 +412,13 @@ export function OfficesView({
                   <div className="flex gap-3">
                     {!embedded && (
                       <button
-                        className="text-left text-xs font-semibold text-[#151515]"
+                        className="text-left text-xs font-semibold text-foreground"
                         onClick={() => openAssignments(office)}
                       >
                         {tText("Assign")}
                       </button>
                     )}
-                    <button className="text-left text-xs font-semibold text-[#151515]" onClick={() => openEdit(office)}>
+                    <button className="text-left text-xs font-semibold text-foreground" onClick={() => openEdit(office)}>
                       {tText("Edit")}
                     </button>
                   </div>
@@ -548,7 +548,7 @@ export function OfficesView({
         <Dialog error={error} title={`Assign employees · ${assigning.officeName}`} onClose={() => setAssigning(null)}>
           <div className="grid max-h-96 gap-2 overflow-auto">
             {employees.map((employee) => (
-              <div key={employee.id} className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-zinc-50 p-3">
+              <div key={employee.id} className="grid grid-cols-[1fr_auto] items-center rounded-lg bg-muted p-3">
                 <label className="flex items-center gap-3 text-sm">
                   <input
                     type="checkbox"
@@ -862,7 +862,7 @@ export function PoliciesView() {
           {data.map((policy) => (
             <Panel key={policy.id} className="p-6">
               <div className="flex items-start justify-between">
-                <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+                <div className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
                   <ShieldCheck />
                 </div>
                 <span className="rounded-full theme-tone theme-tone-emerald px-3 py-1 text-xs font-semibold theme-tone-text theme-tone-emerald">
@@ -885,11 +885,11 @@ export function PoliciesView() {
                 {policy.fieldTrackingEnabled && <Tag>{tText("Field tracking")}</Tag>}
               </div>
               <div className="mt-5 flex gap-4">
-                <button className="text-sm font-semibold text-[#151515]" onClick={() => openRuleEditor(policy)}>
+                <button className="text-sm font-semibold text-foreground" onClick={() => openRuleEditor(policy)}>
                   {tText("Edit rules")}
                 </button>
                 <button
-                  className="text-sm font-semibold text-[#151515]"
+                  className="text-sm font-semibold text-foreground"
                   onClick={() => {
                     setEditing(policy);
                     setAssignments(policy.assignments);
@@ -915,7 +915,7 @@ export function PoliciesView() {
           <Field label={tText("Policy name")}>
             <input autoFocus className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <div className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-on-surface-variant">
+          <div className="mt-5 rounded-xl bg-muted p-4 text-sm text-on-surface-variant">
             {tText("New policies start with secure default thresholds and can be refined after creation.")}
           </div>
           <PrimaryButton className="mt-5 w-full" onClick={create}>
@@ -925,7 +925,7 @@ export function PoliciesView() {
       )}
       {editing && (
         <Dialog error={error} title={`Assignments · ${editing.name}`} onClose={() => setEditing(null)}>
-          <div className="mb-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
+          <div className="mb-5 rounded-xl border border-border bg-muted p-4 text-sm leading-6 text-on-surface-variant">
             {tText(
               "Assign the broad tenant default first, use department assignments for team-specific rules, and use employee assignments only for approved exceptions. This policy currently resolves directly for approximately",
             )}
@@ -936,7 +936,7 @@ export function PoliciesView() {
             {assignments.map((assignment) => (
               <div
                 key={assignmentKey(assignment)}
-                className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 text-sm"
+                className="flex items-center justify-between rounded-lg bg-muted p-3 text-sm"
               >
                 <span>{assignmentLabel(assignment, departments, employees)}</span>
                 <button
@@ -1012,7 +1012,7 @@ export function PoliciesView() {
               </Field>
             )}
             <button
-              className="h-10 rounded-lg border border-[#151515] text-sm font-semibold text-[#151515]"
+              className="h-10 rounded-lg border border-primary text-sm font-semibold text-foreground"
               onClick={addAssignment}
             >
               {tText("Add assignment")}
@@ -1026,14 +1026,14 @@ export function PoliciesView() {
       {focusedEmployeeId && focusedEmployee && data && (
         <Dialog title={`Attendance policy · ${focusedEmployee.fullName}`} onClose={() => router.push(returnTo)}>
           {focusedError && <ErrorState message={focusedError} />}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-on-surface-variant">
+          <div className="rounded-xl border border-border bg-muted p-4 text-sm leading-6 text-on-surface-variant">
             {tText(
               "Choose one predefined policy for this employee. An employee policy overrides department and tenant defaults. Choose inherited policy to remove the employee-specific exception.",
             )}
           </div>
           {focusedResolution && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-50 p-4 text-sm">
-              <span className="text-zinc-500">{tText("Currently effective")}</span>
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-muted p-4 text-sm">
+              <span className="text-muted-foreground">{tText("Currently effective")}</span>
               <strong>
                 {focusedResolution.policyName} · {sentenceCase(focusedResolution.source)}
               </strong>
@@ -1244,7 +1244,7 @@ export function PoliciesView() {
                   </>
                 )}
               </div>
-              <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
+              <div className="mt-3 flex items-center gap-3 rounded-lg bg-muted p-3 text-sm">
                 <label className="flex min-h-10 flex-1 items-center gap-3">
                   <input
                     checked={ruleForm.requireRegisteredDevice}
@@ -1290,7 +1290,7 @@ export function PoliciesView() {
                 <p className="mt-1 text-xs leading-5 text-outline">
                   {tText("Optional continuous route tracking for eligible field employees.")}
                 </p>
-                <div className="mt-3 flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
+                <div className="mt-3 flex items-center gap-3 rounded-lg bg-muted p-3 text-sm">
                   <label className="flex min-h-10 flex-1 items-center gap-3">
                     <input
                       type="checkbox"
@@ -1308,7 +1308,7 @@ export function PoliciesView() {
                   <FeatureInfo className="ml-auto" helpKey="background-tracking" />
                 </div>
                 {ruleForm.fieldTrackingEnabled && (
-                  <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
+                  <label className="mt-3 flex min-h-10 items-center gap-3 rounded-lg bg-muted p-3 text-sm">
                     <input
                       checked={ruleForm.allowHybridFieldTracking}
                       type="checkbox"
@@ -1324,8 +1324,8 @@ export function PoliciesView() {
                 )}
               </div>
             )}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">{tText("Employee app impact")}</p>
+            <div className="rounded-xl border border-border bg-muted p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{tText("Employee app impact")}</p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
                 {tText("Employees using this policy will")}{" "}
                 {ruleForm.locationMode === "NONE"
@@ -1468,7 +1468,7 @@ export function ShiftsView() {
           {data.map((shift) => (
             <Panel key={shift.id} className="p-6">
               <div className="flex items-center justify-between">
-                <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+                <div className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
                   <Clock3 />
                 </div>
                 {shift.isOvernight && (
@@ -1480,10 +1480,10 @@ export function ShiftsView() {
               <h2 className="mt-5 text-lg font-semibold">{shift.name}</h2>
               <div className="mt-5 flex items-center gap-4">
                 <strong className="text-2xl">{shift.startTime}</strong>
-                <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-primary to-emerald-300" />
+                <span className="h-1 flex-1 rounded-full bg-gradient-to-r from-primary to-accent" />
                 <strong className="text-2xl">{shift.endTime}</strong>
               </div>
-              <button className="mt-5 text-sm font-semibold text-[#151515]" onClick={() => openEdit(shift)}>
+              <button className="mt-5 text-sm font-semibold text-foreground" onClick={() => openEdit(shift)}>
                 {tText("Edit shift")}
               </button>
             </Panel>
@@ -1630,7 +1630,7 @@ export function RostersView() {
       description={tText("Plan the working week, bulk assign shifts and import validated CSV schedules.")}
       action={
         <div className="flex flex-wrap gap-3">
-          <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold">
+          <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold">
             <Upload className="size-4" />
             {tText("Import CSV")}
             <input
@@ -1664,7 +1664,7 @@ export function RostersView() {
       ) : (
         <Panel className="overflow-auto">
           <div className="min-w-[850px]">
-            <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-surface-variant bg-zinc-50">
+            <div className="grid grid-cols-[220px_repeat(7,1fr)] border-b border-surface-variant bg-muted">
               <div className="p-4 text-xs font-bold uppercase text-outline">{tText("Employee")}</div>
               {dateRange(today, end).map((date) => (
                 <div
@@ -1702,15 +1702,15 @@ export function RostersView() {
                       {roster ? (
                         <button
                           title={tText("Remove roster")}
-                          className="rounded-lg bg-muted px-2 py-1 text-center text-xs font-semibold text-[#151515]"
+                          className="rounded-lg bg-muted px-2 py-1 text-center text-xs font-semibold text-foreground"
                           onClick={() => removeRoster(roster)}
                         >
                           <span className="block">{roster.shift.name}</span>
-                          <span className="block text-[10px] font-medium text-[#151515]">{tText("Roster")}</span>
+                          <span className="block text-[10px] font-medium text-foreground">{tText("Roster")}</span>
                         </button>
                       ) : (
                         <button
-                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${weeklyOff ? "bg-slate-50" : "theme-tone theme-tone-emerald/50"}`}
+                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-muted/50 ${weeklyOff ? "bg-muted" : "theme-tone theme-tone-emerald/50"}`}
                           onClick={() => {
                             setBulkForm({
                               employeeIds: [employee.id],
@@ -1723,7 +1723,7 @@ export function RostersView() {
                           }}
                         >
                           {weeklyOff ? (
-                            <span className="text-xs font-semibold text-slate-500">{tText("Weekly off")}</span>
+                            <span className="text-xs font-semibold text-muted-foreground">{tText("Weekly off")}</span>
                           ) : (
                             <span className="text-xs font-semibold theme-tone-text theme-tone-emerald">
                               <span className="block">
@@ -1788,7 +1788,7 @@ export function RostersView() {
             <fieldset className="grid max-h-64 gap-2 overflow-auto">
               <legend className="mb-2 text-sm font-medium">{tText("Employees")}</legend>
               {employees.map((employee) => (
-                <label key={employee.id} className="flex items-center gap-3 rounded-lg bg-zinc-50 p-3 text-sm">
+                <label key={employee.id} className="flex items-center gap-3 rounded-lg bg-muted p-3 text-sm">
                   <input
                     type="checkbox"
                     checked={bulkForm.employeeIds.includes(employee.id)}
@@ -1977,7 +1977,7 @@ export function HolidaysView() {
       action={
         <div className="flex flex-wrap gap-2">
           <button
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] disabled:opacity-50"
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground disabled:opacity-50"
             disabled={syncing}
             onClick={syncPublicHolidays}
             type="button"
@@ -1994,12 +1994,12 @@ export function HolidaysView() {
     >
       {error && <ErrorState message={error} />}
       {syncMessage && (
-        <div className="mb-5 rounded-xl border border-border bg-muted p-4 text-sm font-medium text-[#151515]">
+        <div className="mb-5 rounded-xl border border-border bg-muted p-4 text-sm font-medium text-foreground">
           {syncMessage}
         </div>
       )}
       {missingRegionOffices.length > 0 && syncing && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-muted p-4 text-sm text-[#151515]">
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-muted p-4 text-sm text-foreground">
           <RefreshCw className="size-5 shrink-0 animate-spin" />
           {tText("Detecting each office country from its saved location and importing public holidays…")}
         </div>
@@ -2024,12 +2024,12 @@ export function HolidaysView() {
         <LoadingState />
       ) : (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-          <Panel className="overflow-hidden border-zinc-200 shadow-sm">
-            <div className="border-b border-surface-variant bg-gradient-to-r from-blue-50 via-white to-cyan-50 px-5 py-5">
+          <Panel className="overflow-hidden border-border shadow-sm">
+            <div className="border-b border-surface-variant bg-gradient-to-r from-muted via-card to-muted px-5 py-5">
               <div className="flex items-center justify-between gap-4">
                 <button
                   aria-label={tText("Previous month")}
-                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:-translate-x-0.5 hover:border-border hover:text-[#151515]"
+                  className="grid size-10 place-items-center rounded-xl border border-border bg-card text-foreground shadow-sm transition hover:-translate-x-0.5 hover:border-border hover:text-foreground"
                   onClick={() =>
                     setVisibleMonth(
                       new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() - 1, 1)),
@@ -2040,10 +2040,10 @@ export function HolidaysView() {
                   <ChevronLeft className="size-4" />
                 </button>
                 <div className="text-center">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#151515]">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
                     {tText("Holiday schedule")}
                   </p>
-                  <h2 className="mt-1 text-xl font-bold text-zinc-950">{monthLabel}</h2>
+                  <h2 className="mt-1 text-xl font-bold text-foreground">{monthLabel}</h2>
                   <p className="mt-1 text-xs text-outline">
                     {visibleMonthHolidays.length}{" "}
                     {visibleMonthHolidays.length === 1 ? tText("holiday") : tText("holidays")} {tText("across")}
@@ -2052,7 +2052,7 @@ export function HolidaysView() {
                 </div>
                 <button
                   aria-label={tText("Next month")}
-                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:translate-x-0.5 hover:border-border hover:text-[#151515]"
+                  className="grid size-10 place-items-center rounded-xl border border-border bg-card text-foreground shadow-sm transition hover:translate-x-0.5 hover:border-border hover:text-foreground"
                   onClick={() =>
                     setVisibleMonth(
                       new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() + 1, 1)),
@@ -2064,14 +2064,14 @@ export function HolidaysView() {
                 </button>
               </div>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                <span className="rounded-full bg-[#ede7dc] px-3 py-1 text-xs font-semibold text-[#151515]">
+                <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground">
                   {importedThisMonth} {tText("public")}
                 </span>
                 <span className="rounded-full theme-tone theme-tone-amber px-3 py-1 text-xs font-semibold theme-tone-text theme-tone-amber">
                   {manuallyAddedThisMonth} {tText("HR added")}
                 </span>
                 <button
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-border hover:text-[#151515]"
+                  className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground hover:border-border hover:text-foreground"
                   onClick={() =>
                     setVisibleMonth(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)))
                   }
@@ -2099,24 +2099,24 @@ export function HolidaysView() {
                         key={date}
                         className={`group relative min-h-28 overflow-hidden rounded-xl border p-2.5 transition ${
                           !inMonth
-                            ? "border-transparent bg-zinc-50/50 text-zinc-400"
+                            ? "border-transparent bg-muted/50 text-muted-foreground"
                             : holidays.length
-                              ? "border-border bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-[0_8px_24px_-18px_rgba(37,99,235,0.8)] ring-1 ring-[#beb8ad]"
+                              ? "border-border bg-gradient-to-br from-muted via-card to-muted shadow-md shadow-primary/15 ring-1 ring-ring"
                               : isWeekend
-                                ? "border-zinc-200 bg-zinc-50/70"
-                                : "border-surface-variant bg-white hover:border-zinc-300 hover:shadow-sm"
+                                ? "border-border bg-muted/70"
+                                : "border-surface-variant bg-card hover:border-border hover:shadow-sm"
                         }`}
                       >
                         {holidays.length > 0 && (
-                          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
+                          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-accent" />
                         )}
                         <span
                           className={`grid size-7 place-items-center rounded-full text-xs font-bold ${
                             isToday
-                              ? "bg-zinc-950 text-white"
+                              ? "bg-foreground text-on-tone"
                               : holidays.length
-                                ? "bg-[#151515] text-white"
-                                : "text-zinc-700"
+                                ? "bg-primary text-on-tone"
+                                : "text-foreground"
                           }`}
                         >
                           {day}
@@ -2126,8 +2126,8 @@ export function HolidaysView() {
                             key={holiday.id}
                             className={`mt-2 block w-full rounded-lg px-2 py-1.5 text-left text-[11px] font-bold leading-4 transition hover:-translate-y-0.5 ${
                               holiday.source === "PUBLIC_DATA"
-                                ? "bg-[#151515] text-white shadow-sm"
-                                : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber ring-1 ring-amber-200"
+                                ? "bg-primary text-on-tone shadow-sm"
+                                : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber ring-1 ring-outline-variant"
                             }`}
                             onClick={() => showHoliday(holiday)}
                             title={`${holiday.holidayName} · ${holiday.office?.officeName ?? "All offices"}`}
@@ -2137,7 +2137,7 @@ export function HolidaysView() {
                           </button>
                         ))}
                         {holidays.length > 2 && (
-                          <span className="mt-1 block text-[10px] font-semibold text-[#151515]">
+                          <span className="mt-1 block text-[10px] font-semibold text-foreground">
                             +{holidays.length - 2} {tText("more")}
                           </span>
                         )}
@@ -2146,14 +2146,14 @@ export function HolidaysView() {
                   })}
                 </div>
                 {!visibleMonthHolidays.length && (
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
                     <span>
                       {tText("No holidays are scheduled in")}
                       {monthLabel}.
                     </span>
                     {nextOutsideVisibleMonth && (
                       <button
-                        className="font-semibold text-[#151515] hover:underline"
+                        className="font-semibold text-foreground hover:underline"
                         onClick={() => setVisibleMonth(monthStart(nextOutsideVisibleMonth.holidayDate))}
                         type="button"
                       >
@@ -2166,27 +2166,27 @@ export function HolidaysView() {
               </div>
             </div>
           </Panel>
-          <Panel className="h-fit overflow-hidden border-zinc-200 p-0 shadow-sm xl:sticky xl:top-6">
-            <div className="bg-zinc-950 px-5 py-5 text-white">
+          <Panel className="h-fit overflow-hidden border-border p-0 shadow-sm xl:sticky xl:top-6">
+            <div className="bg-foreground px-5 py-5 text-on-tone">
               <div className="flex items-center gap-2">
                 <CalendarDays className="size-5 theme-tone-text theme-tone-teal" />
                 <h2 className="font-semibold">{tText("Upcoming holidays")}</h2>
               </div>
-              <p className="mt-1 text-xs text-zinc-400">{tText("Select a holiday to open its month and details.")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{tText("Select a holiday to open its month and details.")}</p>
             </div>
             <div className="grid gap-2 p-4">
               {upcoming.map((holiday) => (
                 <button
                   key={holiday.id}
-                  className="group flex items-center gap-3 rounded-xl border border-transparent bg-zinc-50 p-3 text-left transition hover:border-border hover:bg-muted"
+                  className="group flex items-center gap-3 rounded-xl border border-transparent bg-muted p-3 text-left transition hover:border-border hover:bg-muted"
                   onClick={() => showHoliday(holiday)}
                   type="button"
                 >
-                  <span className="grid w-12 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white text-center shadow-sm">
-                    <span className="bg-[#151515] py-0.5 text-[9px] font-bold uppercase text-white">
+                  <span className="grid w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-card text-center shadow-sm">
+                    <span className="bg-primary py-0.5 text-[9px] font-bold uppercase text-on-tone">
                       {new Date(holiday.holidayDate).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" })}
                     </span>
-                    <span className="py-1 text-lg font-black text-zinc-900">
+                    <span className="py-1 text-lg font-black text-foreground">
                       {new Date(holiday.holidayDate).getUTCDate()}
                     </span>
                   </span>
@@ -2197,7 +2197,7 @@ export function HolidaysView() {
                     </span>
                     <span
                       className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        holiday.source === "PUBLIC_DATA" ? "bg-[#ede7dc] text-[#151515]" : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber"
+                        holiday.source === "PUBLIC_DATA" ? "bg-muted text-foreground" : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber"
                       }`}
                     >
                       {holiday.source === "PUBLIC_DATA" ? tText("Public holiday") : tText("HR added")}
@@ -2206,7 +2206,7 @@ export function HolidaysView() {
                 </button>
               ))}
               {!upcoming.length && (
-                <p className="rounded-lg bg-zinc-50 p-4 text-sm text-outline">
+                <p className="rounded-lg bg-muted p-4 text-sm text-outline">
                   {tText("No upcoming holidays. Sync a public calendar or add one manually.")}
                 </p>
               )}
@@ -2532,7 +2532,7 @@ function OfficeLocationPicker({
           </div>
         </div>
         <button
-          className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 text-sm font-semibold text-[#151515] transition-colors hover:bg-stone-50"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-card px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           disabled={locating}
           onClick={useCurrentLocation}
           type="button"
@@ -2554,7 +2554,7 @@ function OfficeLocationPicker({
             aria-controls={suggestionListId}
             aria-expanded={suggestionsOpen}
             aria-activedescendant={activeSuggestion >= 0 ? `${suggestionListId}-${activeSuggestion}` : undefined}
-            className="block w-full rounded-xl border border-outline-variant bg-white py-2 pl-9 pr-3 text-sm focus:border-[#151515] focus:outline-none focus:ring-1 focus:ring-[#151515]"
+            className="block w-full rounded-xl border border-outline-variant bg-card py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
             placeholder={tText("Search for a location (e.g., city, street, landmark)...")}
             value={searchQuery}
             onChange={(event) => {
@@ -2581,7 +2581,7 @@ function OfficeLocationPicker({
             <div
               id={suggestionListId}
               role="listbox"
-              className="absolute z-[1000] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-outline-variant bg-white p-1.5 shadow-xl"
+              className="absolute z-[1000] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-outline-variant bg-card p-1.5 shadow-xl"
             >
               {suggestionError && (
                 <div className="rounded-lg theme-tone theme-tone-red px-3 py-2.5 text-sm font-medium">
@@ -2599,7 +2599,7 @@ function OfficeLocationPicker({
                     role="option"
                     aria-selected={activeSuggestion === index}
                     className={`block w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                      activeSuggestion === index ? "bg-muted" : "hover:bg-stone-50"
+                      activeSuggestion === index ? "bg-muted" : "hover:bg-muted"
                     }`}
                     onMouseDown={(event) => event.preventDefault()}
                     onMouseEnter={() => setActiveSuggestion(index)}
@@ -2616,7 +2616,7 @@ function OfficeLocationPicker({
         <button
           type="submit"
           disabled={searching || !searchQuery.trim()}
-          className="rounded-xl bg-[#151515] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-tone transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {searching ? tText("Searching...") : tText("Search")}
         </button>
@@ -2751,7 +2751,7 @@ function DurationField({
   const descriptionId = `${id}-description`;
 
   return (
-    <fieldset className="rounded-xl border border-surface-variant bg-zinc-50/60 p-4">
+    <fieldset className="rounded-xl border border-surface-variant bg-muted/60 p-4">
       <legend className="px-1 text-sm font-semibold text-on-surface">{label}</legend>
       <p className="mb-3 min-h-10 text-xs leading-5 text-outline" id={descriptionId}>
         {description}
@@ -2794,7 +2794,7 @@ function DurationField({
           </select>
         </label>
       </div>
-      <p className="mt-3 text-xs font-semibold text-[#151515]">{formatPolicyDuration(normalizedValue)}</p>
+      <p className="mt-3 text-xs font-semibold text-foreground">{formatPolicyDuration(normalizedValue)}</p>
     </fieldset>
   );
 }
@@ -2813,7 +2813,7 @@ function PolicyToggle({
   return (
     <label
       className={`flex min-h-28 cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-        checked ? "border-[#151515] bg-muted" : "border-surface-variant bg-white hover:bg-zinc-50"
+        checked ? "border-primary bg-muted" : "border-surface-variant bg-card hover:bg-muted"
       }`}
     >
       <input
@@ -2902,8 +2902,8 @@ function Dialog({
       data-testid="dialog-panel"
       className={
         inline
-          ? "w-full rounded-2xl border border-surface-variant bg-zinc-50/50 p-5 lg:p-7"
-          : `${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] w-full overflow-auto rounded-2xl bg-white p-7 shadow-2xl`
+          ? "w-full rounded-2xl border border-surface-variant bg-muted/50 p-5 lg:p-7"
+          : `${wide ? "max-w-3xl" : "max-w-lg"} max-h-[90vh] w-full overflow-auto rounded-2xl bg-card p-7 shadow-2xl`
       }
     >
       <div className="mb-6 flex items-center justify-between">
@@ -2926,7 +2926,7 @@ function Dialog({
   return createPortal(
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/45 p-4"
+      className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-foreground/45 p-4"
       role="dialog"
     >
       {panel}
@@ -2947,7 +2947,7 @@ function clearStaleScrollLock() {
 }
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-zinc-50 p-3">
+    <div className="rounded-lg bg-muted p-3">
       <div className="text-xs text-outline">{label}</div>
       <div className="mt-1 font-semibold">{value}</div>
     </div>
@@ -2955,7 +2955,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-zinc-50 px-3 py-1 text-on-surface-variant">
+    <span className="rounded-full bg-muted px-3 py-1 text-on-surface-variant">
       <Check className="mr-1 inline size-3 theme-tone-text" />
       {children}
     </span>

@@ -202,7 +202,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-6 rounded-lg border border-border bg-white p-6 shadow-sm sm:p-8">
+    <div className="flex w-full flex-col gap-6 rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
       {error && (
         <div className="flex items-center gap-3 rounded-lg border theme-tone theme-tone-red border p-4 text-sm" id="error-banner" role="alert">
           <span className="material-symbols-outlined text-error">report</span>
@@ -224,7 +224,7 @@ export function LoginForm() {
           )}
           <div className="relative">
             <input
-              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 text-sm text-foreground outline-none transition focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20" autoComplete="email" aria-describedby={error ? "error-banner" : undefined}
+              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20" autoComplete="email" aria-describedby={error ? "error-banner" : undefined}
               id="email" 
               name="email" 
               placeholder="e.g. sarah.j@acme.com" 
@@ -240,7 +240,7 @@ export function LoginForm() {
           <div className="flex justify-between items-center">
             <label className="block text-sm font-semibold text-foreground" htmlFor="password">Password</label>
             <Link
-              className="text-sm font-semibold text-[#151515] transition hover:underline"
+              className="text-sm font-semibold text-foreground transition hover:underline"
               href={forgotPasswordHref}
             >
               Forgot password?
@@ -248,7 +248,7 @@ export function LoginForm() {
           </div>
           <div className="relative">
             <input 
-              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 pr-12 text-sm text-foreground outline-none transition focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20" autoComplete="current-password" aria-describedby={error ? "error-banner" : undefined}
+              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 pr-12 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20" autoComplete="current-password" aria-describedby={error ? "error-banner" : undefined}
               id="password"
               name="password"
               placeholder="Enter your password"
@@ -259,7 +259,7 @@ export function LoginForm() {
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-e-lg text-muted-foreground transition-colors hover:text-[#151515] focus:outline-none focus:ring-2 focus:ring-[#151515]/20"
+              className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-e-lg text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
               onClick={() => setShowPassword((visible) => !visible)}
@@ -274,14 +274,14 @@ export function LoginForm() {
         <div className="flex items-center">
           <label className="flex items-center gap-4 cursor-pointer group">
             <div className="relative flex items-center">
-              <input className="peer h-5 w-5 cursor-pointer rounded border-border bg-background text-[#151515] transition focus:ring-[#151515]" type="checkbox"/>
+              <input className="peer h-5 w-5 cursor-pointer rounded border-border bg-background text-foreground transition focus:ring-ring" type="checkbox"/>
             </div>
             <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">Remember this device</span>
           </label>
         </div>
 
         <button 
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#151515] text-sm font-semibold text-on-primary shadow-sm shadow-[#151515]/20 transition hover:bg-[#2a2927] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-on-primary shadow-sm shadow-primary/20 transition hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
           id="signin-btn" 
           type="submit"
           disabled={loading}
@@ -303,7 +303,7 @@ export function LoginForm() {
       <div className="mt-2 border-t border-border pt-6 text-center">
         <p className="text-sm text-muted-foreground">
           Not your workspace? 
-          <Link className="ml-1 font-semibold text-[#151515] hover:underline" href="/signup">
+          <Link className="ml-1 font-semibold text-foreground hover:underline" href="/signup">
             Switch company
           </Link>
         </p>

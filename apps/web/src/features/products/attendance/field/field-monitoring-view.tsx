@@ -126,7 +126,7 @@ export function FieldMonitoringView() {
       description={tText("Live, stale, and offline field employees with privacy-safe location evidence.")}
       title={tText("Field Operations")}
     >
-      <div className="mb-5 flex items-start gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4 text-sm leading-6 text-zinc-600">
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-border bg-muted p-4 text-sm leading-6 text-muted-foreground">
         <FeatureInfo helpKey="background-tracking" />
         <p>
           {tText("Location is shown only for employees enabled by an active field attendance policy and only during eligible work sessions. Raw route evidence follows the workspace retention policy.")}</p>
@@ -146,7 +146,7 @@ export function FieldMonitoringView() {
               {(["ALL", "LIVE", "STALE", "OFFLINE"] as const).map((state) => (
                 <button
                   aria-pressed={filter === state}
-                  className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", filter === state ? "bg-zinc-700 text-white" : "bg-zinc-50 text-zinc-500")}
+                  className={cn("rounded-full px-3 py-1.5 text-xs font-semibold", filter === state ? "bg-primary-container text-on-tone" : "bg-muted text-muted-foreground")}
                   key={state}
                   onClick={() =>
                     router.push(
@@ -162,7 +162,7 @@ export function FieldMonitoringView() {
           <div className="max-h-[600px] overflow-y-auto p-2">
             {loading ? <LoadingState /> : filtered.map((employee) => (
               <button
-                className={cn("mb-1 w-full rounded-xl border p-3 text-left transition", selectedId === employee.id ? "border-[#2a2927] bg-zinc-50" : "border-transparent hover:bg-zinc-50")}
+                className={cn("mb-1 w-full rounded-xl border p-3 text-left transition", selectedId === employee.id ? "border-primary bg-muted" : "border-transparent hover:bg-muted")}
                 key={employee.id}
                 onClick={() => setSelectedId(employee.id)}
                 type="button"
@@ -189,7 +189,7 @@ export function FieldMonitoringView() {
               </div>
               <div className="flex items-center gap-2 text-sm"><BatteryMedium className="size-4" />{selected.location?.batteryLevel ?? "--"}%</div>
               <div className="text-sm">{tText("Accuracy")}{selected.location?.accuracyM ?? "--"}m</div>
-              <Link className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#151515] px-4 text-sm font-semibold text-white" href={`/app/attendance/field/${selected.id}/route`}>
+              <Link className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-on-tone" href={`/app/attendance/field/${selected.id}/route`}>
                 <Route className="size-4" />{tText("View route")}</Link>
             </Panel>
           )}
@@ -211,7 +211,7 @@ async function fetchLiveEmployees() {
 }
 
 function Stat({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Activity; tone?: "green" | "amber" }) {
-  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]", tone === "green" && "theme-tone-icon theme-tone-emerald", tone === "amber" && "theme-tone-icon theme-tone-amber")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></div></Panel>;
+  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-muted text-foreground", tone === "green" && "theme-tone-icon theme-tone-emerald", tone === "amber" && "theme-tone-icon theme-tone-amber")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></div></Panel>;
 }
 
 function relativeTime(value: string) {

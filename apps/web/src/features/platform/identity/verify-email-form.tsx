@@ -136,7 +136,7 @@ export function VerifyEmailForm() {
 
   return (
     <>
-      <div className="rounded-[12px] border border-surface-variant bg-white px-6 pb-7 pt-7 text-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]">
+      <div className="rounded-[12px] border border-surface-variant bg-card px-6 pb-7 pt-7 text-center shadow-lg">
         <div className="mb-8 flex items-center justify-center gap-2">
           <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-7 w-auto" />
         </div>
@@ -144,14 +144,14 @@ export function VerifyEmailForm() {
         <div className="mb-6 flex justify-center">
           <div className="relative flex h-24 w-24 items-center justify-center">
             <div className="absolute inset-0 rounded-full bg-muted" />
-            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-[#151515]">mail</span>
+            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-foreground">mail</span>
           </div>
         </div>
 
-        <h1 className="mb-2 text-[24px] font-semibold leading-8 tracking-[-0.01em] text-zinc-900">Verify your email</h1>
+        <h1 className="mb-2 text-[24px] font-semibold leading-8 tracking-[-0.01em] text-foreground">Verify your email</h1>
         <p className="mb-8 text-[16px] leading-6 text-on-surface-variant">
           We sent a 6-digit code to{" "}
-          <span className="font-semibold text-zinc-900">{email || "your email"}</span>
+          <span className="font-semibold text-foreground">{email || "your email"}</span>
         </p>
 
         {error ? (
@@ -167,7 +167,7 @@ export function VerifyEmailForm() {
         ) : null}
 
         {resendMessage ? (
-          <div className="mb-5 rounded-[12px] border border-zinc-300 bg-zinc-50 px-4 py-3 text-left text-sm text-on-surface-variant">
+          <div className="mb-5 rounded-[12px] border border-border bg-muted px-4 py-3 text-left text-sm text-on-surface-variant">
             {resendMessage}
           </div>
         ) : null}
@@ -190,7 +190,7 @@ export function VerifyEmailForm() {
                   const target = document.getElementById("verification-code");
                   target?.focus();
                 }}
-                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-zinc-300 bg-surface text-[20px] font-bold text-zinc-900 transition-all duration-200 hover:border-[#151515] focus:border-[#151515]"
+                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-border bg-surface text-[20px] font-bold text-foreground transition-all duration-200 hover:border-primary focus:border-primary"
               >
                 {digit.trim() || ""}
               </button>
@@ -200,7 +200,7 @@ export function VerifyEmailForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#151515] px-6 text-[14px] font-medium leading-5 text-white shadow-sm transition-all hover:bg-zinc-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-6 text-[14px] font-medium leading-5 text-on-tone shadow-sm transition-all hover:bg-muted-foreground disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               <>
@@ -223,7 +223,7 @@ export function VerifyEmailForm() {
               type="button"
               onClick={handleResend}
               disabled={resending || secondsLeft > 0}
-              className="font-semibold text-[#151515] hover:underline disabled:opacity-50 disabled:no-underline"
+              className="font-semibold text-foreground hover:underline disabled:opacity-50 disabled:no-underline"
             >
               {resending
                 ? "Resending..."
@@ -235,7 +235,7 @@ export function VerifyEmailForm() {
 
           <div className="pt-1">
             <Link
-              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-on-surface-variant transition-colors hover:text-[#151515]"
+              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-on-surface-variant transition-colors hover:text-foreground"
               href="/signup"
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>

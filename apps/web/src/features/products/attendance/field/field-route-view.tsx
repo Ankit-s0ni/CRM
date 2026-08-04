@@ -75,18 +75,18 @@ export function FieldRouteView({ employeeId }: { employeeId: string }) {
 
   return (
     <AdminPage
-      action={<input aria-label={tText("Route date")} className="h-11 rounded-xl border border-zinc-300 bg-white px-4 text-sm" max={new Date().toISOString().slice(0, 10)} onChange={(event) => { setLoading(true); setPlaying(false); setDate(event.target.value); }} type="date" value={date} />}
+      action={<input aria-label={tText("Route date")} className="h-11 rounded-xl border border-border bg-card px-4 text-sm" max={new Date().toISOString().slice(0, 10)} onChange={(event) => { setLoading(true); setPlaying(false); setDate(event.target.value); }} type="date" value={date} />}
       description={tText("Daily route evidence, dwell stops, tracking gaps, and attendance markers.")}
       title={tText("Route Playback")}
     >
-      <Link className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#151515]" href="/app/attendance/field"><ArrowLeft className="size-4" />{tText("Back to live board")}</Link>
+      <Link className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-foreground" href="/app/attendance/field"><ArrowLeft className="size-4" />{tText("Back to live board")}</Link>
       {error && <div className="mb-4"><ErrorState message={error} /></div>}
       {loading ? <Panel className="p-5"><LoadingState /></Panel> : route && (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-4">
             <FieldMap markers={markers} path={visiblePath} />
             <Panel className="flex items-center gap-4 p-4">
-              <button aria-label={playing ? "Pause playback" : "Play route"} className="grid size-11 place-items-center rounded-full bg-[#151515] text-white" onClick={togglePlayback} type="button">{playing ? <Pause className="size-5" /> : <Play className="size-5" />}</button>
+              <button aria-label={playing ? "Pause playback" : "Play route"} className="grid size-11 place-items-center rounded-full bg-primary text-on-tone" onClick={togglePlayback} type="button">{playing ? <Pause className="size-5" /> : <Play className="size-5" />}</button>
               <input aria-label={tText("Playback position")} className="h-2 flex-1 accent-primary" max="100" min="0" onChange={(event) => setProgress(Number(event.target.value))} type="range" value={progress} />
               <span className="w-12 text-right text-xs font-bold">{progress}%</span>
             </Panel>
@@ -120,11 +120,11 @@ async function fetchRoute(employeeId: string, date: string) {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof Route; label: string; value: string }) {
-  return <Panel className="p-4"><Icon className="mb-3 size-5 text-[#151515]" /><div className="text-xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></Panel>;
+  return <Panel className="p-4"><Icon className="mb-3 size-5 text-foreground" /><div className="text-xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></Panel>;
 }
 
 function TimelineRow({ icon: Icon, label, time: value, tone }: { icon: typeof Route; label: string; time: string; tone?: "amber" }) {
-  return <div className="flex items-center gap-3 rounded-xl p-3 hover:bg-zinc-50"><span className={`grid size-9 place-items-center rounded-full ${tone === "amber" ? "theme-tone-icon theme-tone-amber" : "bg-zinc-50 text-[#151515]"}`}><Icon className="size-4" /></span><div className="min-w-0 flex-1 text-sm font-medium">{label}</div><span className="text-xs text-outline">{value}</span></div>;
+  return <div className="flex items-center gap-3 rounded-xl p-3 hover:bg-muted"><span className={`grid size-9 place-items-center rounded-full ${tone === "amber" ? "theme-tone-icon theme-tone-amber" : "bg-muted text-foreground"}`}><Icon className="size-4" /></span><div className="min-w-0 flex-1 text-sm font-medium">{label}</div><span className="text-xs text-outline">{value}</span></div>;
 }
 
 function time(value: string) {

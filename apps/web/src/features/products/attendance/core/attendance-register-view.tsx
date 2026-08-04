@@ -167,7 +167,7 @@ export function AttendanceRegisterView() {
     <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-foreground">
             {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -180,7 +180,7 @@ export function AttendanceRegisterView() {
         <button
           type="button"
           onClick={() => exportCsv(result?.data ?? [])}
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold"
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold"
         >
           <Download className="size-4" />
           {tText("Export current page")}</button>
@@ -264,7 +264,7 @@ export function AttendanceRegisterView() {
                 {tText("Missing checkout")}</option>
             </select>
           </FilterField>
-          <span className="grid size-11 place-items-center rounded-lg bg-muted text-[#151515]">
+          <span className="grid size-11 place-items-center rounded-lg bg-muted text-foreground">
             <Filter className="size-4" />
           </span>
       </Toolbar>
@@ -348,7 +348,7 @@ function RegisterTable({
               >
                 <Td>
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-lg bg-muted text-xs font-bold text-[#151515]">
+                    <div className="grid size-10 place-items-center rounded-lg bg-muted text-xs font-bold text-foreground">
                       {initials(row.employee.fullName)}
                     </div>
                     <div>
@@ -429,7 +429,7 @@ function RegisterTable({
                 <Td>
                   <Link
                     href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#151515]"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-foreground"
                   >
                     {tText("View")}<ChevronRight className="size-3" />
                   </Link>
@@ -491,7 +491,7 @@ function Metric({
   label,
   value,
   icon: Icon,
-  tone = "text-[#151515] bg-zinc-50",
+  tone = "text-foreground bg-muted",
 }: {
   label: string;
   value: string;
@@ -499,7 +499,7 @@ function Metric({
   tone?: string;
 }) {
   return (
-    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-white p-4 shadow-sm">
+    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-card p-4 shadow-sm">
       <span className={cn("grid size-10 place-items-center rounded-lg", tone)}>
         <Icon className="size-5" />
       </span>

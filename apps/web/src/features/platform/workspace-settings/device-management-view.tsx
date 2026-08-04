@@ -134,8 +134,8 @@ export function DeviceManagementView() {
             type="button"
             className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition ${
               filter === item.value
-                ? "border-[#151515] bg-[#151515] text-white"
-                : "border-zinc-300 bg-white text-on-surface-variant hover:border-[#151515]"
+                ? "border-primary bg-primary text-on-tone"
+                : "border-border bg-card text-on-surface-variant hover:border-primary"
             }`}
           onClick={() =>
             router.push(
@@ -273,7 +273,7 @@ function DeviceTable({
               className="grid gap-5 p-5 lg:grid-cols-[minmax(220px,1.2fr)_minmax(180px,.8fr)_auto] lg:items-center"
             >
               <div className="flex min-w-0 items-start gap-4">
-                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                   {device.platform === "IOS" ? (
                     <Smartphone className="size-6" />
                   ) : (
@@ -282,11 +282,11 @@ function DeviceTable({
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold text-zinc-900">
+                    <h2 className="font-semibold text-foreground">
                       {device.deviceModel || `${device.platform} device`}
                     </h2>
                     {device.isPrimary && (
-                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#151515]">
+                      <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-foreground">
                         {tText("Primary")}</span>
                     )}
                   </div>
@@ -296,7 +296,7 @@ function DeviceTable({
                   {showEmployee && device.employee && (
                     <Link
                       href={`/app/employees/${device.employee.id}`}
-                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#151515] hover:underline"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
                     >
                       <UserRound className="size-4" /> {device.employee.fullName} ·{" "}
                       {device.employee.employeeCode}
@@ -332,7 +332,7 @@ function DeviceTable({
                   {device.status === "ACTIVE" && candidates.length > 0 && (
                     <button
                       type="button"
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#151515] px-4 text-sm font-semibold text-[#151515]"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary px-4 text-sm font-semibold text-foreground"
                       onClick={() =>
                         onDecision({ action: "replace", device, candidates })
                       }
@@ -390,12 +390,12 @@ function DeviceDecisionDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[80] grid place-items-center bg-zinc-900/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center bg-foreground/55 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="device-decision-title"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -411,7 +411,7 @@ function DeviceDecisionDialog({
           <button
             type="button"
             aria-label={tText("Close device action")}
-            className="grid size-11 place-items-center rounded-full text-zinc-500 hover:bg-surface-variant"
+            className="grid size-11 place-items-center rounded-full text-muted-foreground hover:bg-surface-variant"
             onClick={onClose}
           >
             <X className="size-5" />
@@ -475,7 +475,7 @@ function MetricCard({
   tone?: "neutral" | "warning" | "success" | "danger";
 }) {
   const tones = {
-    neutral: "bg-zinc-50 text-[#151515]",
+    neutral: "bg-muted text-foreground",
     warning: "theme-tone-icon theme-tone-amber",
     success: "theme-tone-icon theme-tone-emerald",
     danger: "bg-error-container text-on-error-container",
@@ -496,7 +496,7 @@ function StatusBadge({ status }: { status: DeviceStatus }) {
     PENDING_APPROVAL: "status-badge status-pending",
     ACTIVE: "status-badge status-active",
     BLOCKED: "status-badge status-blocked",
-    REPLACED: "bg-zinc-100 text-zinc-500",
+    REPLACED: "bg-muted text-muted-foreground",
   };
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${styles[status]}`}>

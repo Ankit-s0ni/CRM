@@ -1000,9 +1000,12 @@ async function main() {
       icon: 'wallet-cards',
       dependencyKeys: ['ATTENDANCE'],
       availability: 'AVAILABLE',
+      kind: 'PRODUCT',
+      parentModuleId: null,
+      customerVisible: true,
       description:
         'Payroll foundation, compensation configuration, policy setup, and protected employee payroll data',
-      catalogOrder: 110,
+      catalogOrder: 30,
     },
   ]) {
     await prisma.module.upsert({

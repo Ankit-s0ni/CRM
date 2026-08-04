@@ -179,9 +179,9 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
 
   if (!draft || !data) {
     return (
-      <section className="mt-5 rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
+      <section className="mt-5 rounded-xl border border-surface-variant bg-card p-5 shadow-sm">
         <div className="flex items-center gap-3">
-          <Globe2 className="size-5 text-[#151515]" />
+          <Globe2 className="size-5 text-foreground" />
           <div>
             <h2 className="font-semibold">Localization</h2>
             <p className="text-xs text-outline">
@@ -198,10 +198,10 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
   const direction = previewLocale.startsWith("ar") ? "rtl" : "ltr";
 
   return (
-    <section className="mt-5 overflow-hidden rounded-xl border border-surface-variant bg-white shadow-sm">
+    <section className="mt-5 overflow-hidden rounded-xl border border-surface-variant bg-card shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-surface-variant p-5">
         <div className="flex items-start gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-muted text-[#151515]">
+          <span className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
             <Languages className="size-5" />
           </span>
           <div>
@@ -214,14 +214,14 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
         </div>
         <div className="flex gap-2">
           <Link
-            className="inline-flex h-10 items-center rounded-lg border border-zinc-300 px-4 text-sm font-semibold"
+            className="inline-flex h-10 items-center rounded-lg border border-border px-4 text-sm font-semibold"
             href={`/platform/audit?tenantId=${tenantId}&module=localization`}
           >
             Audit history
           </Link>
           {canManage && (
             <Button
-              className="bg-zinc-950 text-white"
+              className="bg-foreground text-on-tone"
               disabled={
                 busy ||
                 !draft.enabledLocales.includes(draft.defaultLocale) ||
@@ -250,7 +250,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
           <label className="grid gap-2 text-sm font-semibold">
             Regional Arabic pack
             <select
-              className="h-11 rounded-lg border border-zinc-300 bg-white px-3"
+              className="h-11 rounded-lg border border-border bg-card px-3"
               disabled={!canManage}
               onChange={(event) =>
                 setDraft({
@@ -269,7 +269,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
           </label>
           <div>
             <span className="text-sm font-semibold">Market suggestion</span>
-            <div className="mt-2 flex h-11 items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm">
+            <div className="mt-2 flex h-11 items-center justify-between rounded-lg border border-border bg-muted px-3 text-sm">
               <span>{localeNames[data.suggestedRegionalLocale]}</span>
               <ShieldCheck className="size-4 theme-tone-text" />
             </div>
@@ -293,10 +293,10 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             <div className="mt-2 flex flex-wrap gap-2">
               {data.offices.map((office) => (
                 <span
-                  className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-xs"
+                  className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs"
                   key={office.id}
                 >
-                  <MapPin className="size-3 text-[#151515]" />
+                  <MapPin className="size-3 text-foreground" />
                   {office.officeName} · {office.countryCode}
                 </span>
               ))}
@@ -312,7 +312,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {allLocales.map((locale) => (
                 <label
-                  className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 text-sm"
+                  className="flex items-center gap-3 rounded-xl border border-border p-3 text-sm"
                   key={locale}
                 >
                   <input
@@ -331,7 +331,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
           <label className="grid gap-2 text-sm font-semibold">
             Tenant default
             <select
-              className="h-11 rounded-lg border border-zinc-300 bg-white px-3"
+              className="h-11 rounded-lg border border-border bg-card px-3"
               disabled={!canManage}
               onChange={(event) =>
                 setDraft({
@@ -390,7 +390,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             <div className="mt-2 grid max-h-48 gap-2 overflow-auto">
               {data.overrides.map((override) => (
                 <div
-                  className="flex items-center justify-between gap-3 rounded-xl bg-zinc-50 p-3 text-xs"
+                  className="flex items-center justify-between gap-3 rounded-xl bg-muted p-3 text-xs"
                   key={override.id}
                 >
                   <div className="min-w-0">
@@ -402,20 +402,20 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
                       {override.reason}
                     </span>
                   </div>
-                  <span className="rounded-full bg-white px-2 py-1 font-bold">
+                  <span className="rounded-full bg-card px-2 py-1 font-bold">
                     {override.status}
                   </span>
                 </div>
               ))}
               {!data.overrides.length && (
-                <p className="rounded-xl bg-zinc-50 p-3 text-xs text-outline">
+                <p className="rounded-xl bg-muted p-3 text-xs text-outline">
                   No tenant-specific wording has been created.
                 </p>
               )}
             </div>
           </div>
         </div>
-        <div className="border-t border-surface-variant bg-zinc-50 p-5 xl:border-l xl:border-t-0">
+        <div className="border-t border-surface-variant bg-muted p-5 xl:border-l xl:border-t-0">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="font-semibold">Resolved preview</h3>
@@ -424,7 +424,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
               </p>
             </div>
             <select
-              className="h-9 rounded-lg border border-zinc-300 bg-white px-2 text-xs"
+              className="h-9 rounded-lg border border-border bg-card px-2 text-xs"
               onChange={(event) =>
                 setPreviewLocale(event.target.value as Locale)
               }
@@ -438,11 +438,11 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             </select>
           </div>
           <div
-            className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
+            className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
             dir={direction}
             lang={previewLocale}
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#151515]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-foreground">
               {preview["tenant.dashboard.header.eyebrow"] ??
                 "Workspace operations"}
             </p>
@@ -459,7 +459,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
                 ["attendance.status.late", "Late", "2"],
               ].map(([key, fallback, value]) => (
                 <div
-                  className="rounded-xl border border-zinc-200 p-3"
+                  className="rounded-xl border border-border p-3"
                   key={key}
                 >
                   <span className="text-xs text-outline">

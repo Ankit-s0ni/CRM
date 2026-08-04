@@ -2,26 +2,26 @@ import { SignupForm } from "@/features/platform/identity/signup-form";
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-surface text-zinc-900 md:flex">
-      <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(79,62,219,0.2),_transparent_28%),linear-gradient(180deg,#353535_0%,#333333_100%)] px-[50px] pb-[36px] pt-[50px] md:flex md:w-[50.4%] md:flex-col md:justify-between">
-        <div className="absolute right-[-96px] top-[-96px] h-72 w-72 rounded-full bg-zinc-400 opacity-20 blur-3xl" />
+    <div className="min-h-screen bg-surface text-foreground md:flex">
+      <section className="relative hidden min-h-screen overflow-hidden bg-gradient-to-b from-primary-container to-primary px-[50px] pb-[36px] pt-[50px] md:flex md:w-[50.4%] md:flex-col md:justify-between">
+        <div className="absolute right-[-96px] top-[-96px] h-72 w-72 rounded-full bg-outline opacity-20 blur-3xl" />
         <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-accent opacity-[0.08] blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-4">
-          <div className="text-[28px] font-bold tracking-tight text-white">DeltCRM</div>
+          <div className="text-[28px] font-bold tracking-tight text-on-tone">DeltCRM</div>
         </div>
 
         <div className="relative z-10 flex flex-col gap-10">
           <div className="space-y-5">
-            <h2 className="max-w-[392px] text-[33px] font-bold leading-[1.12] tracking-[-0.03em] text-zinc-50">
+            <h2 className="max-w-[392px] text-[33px] font-bold leading-[1.12] tracking-[-0.03em] text-on-tone">
               The most reliable CRM for fast-growing teams.
             </h2>
-            <p className="max-w-[450px] text-[18px] leading-[1.55] text-zinc-200">
+            <p className="max-w-[450px] text-[18px] leading-[1.55] text-muted-foreground">
               Streamline your workflow with an enterprise-grade platform that sets up in minutes.
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-[18px] border border-white/10 shadow-2xl">
+          <div className="overflow-hidden rounded-[18px] border border-on-tone/10 shadow-2xl">
             <img
               className="aspect-[16/10] w-full object-cover"
               alt="DeltCRM dashboard preview"
@@ -54,16 +54,16 @@ export default function SignupPage() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold leading-5 text-zinc-50">{benefit.title}</p>
-                  <p className="max-w-[370px] text-[14px] leading-6 text-zinc-300">{benefit.body}</p>
+                  <p className="text-[14px] font-semibold leading-5 text-on-tone">{benefit.title}</p>
+                  <p className="max-w-[370px] text-[14px] leading-6 text-muted-foreground">{benefit.body}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="relative z-10 border-t border-white/10 pt-7">
-          <p className="text-[12px] font-semibold leading-4 tracking-[0.02em] text-zinc-300">
+        <div className="relative z-10 border-t border-on-tone/10 pt-7">
+          <p className="text-[12px] font-semibold leading-4 tracking-[0.02em] text-muted-foreground">
             Trusted by 500+ enterprises across India.
           </p>
         </div>

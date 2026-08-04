@@ -302,10 +302,10 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
   if (loading)
     return (
       <div className="mx-auto max-w-[1500px] space-y-5 p-8">
-        <div className="h-28 animate-pulse rounded-xl bg-zinc-100" />
+        <div className="h-28 animate-pulse rounded-xl bg-muted" />
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="h-56 animate-pulse rounded-xl bg-zinc-100" />
-          <div className="h-56 animate-pulse rounded-xl bg-zinc-100" />
+          <div className="h-56 animate-pulse rounded-xl bg-muted" />
+          <div className="h-56 animate-pulse rounded-xl bg-muted" />
         </div>
       </div>
     );
@@ -335,7 +335,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
       <div className="mx-auto max-w-[1500px] p-5 lg:p-8">
         <Link
           href="/platform/tenants"
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-[#151515]"
+          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           Back to tenants
@@ -345,9 +345,9 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             {error}
           </div>
         )}
-        <section className="rounded-xl border border-surface-variant bg-white px-5 pt-5 shadow-sm">
+        <section className="rounded-xl border border-surface-variant bg-card px-5 pt-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="grid size-14 place-items-center rounded-xl border border-outline-variant bg-surface text-[#151515]">
+            <div className="grid size-14 place-items-center rounded-xl border border-outline-variant bg-surface text-foreground">
               <Building2 />
             </div>
             <div>
@@ -360,7 +360,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap gap-4 text-xs text-on-surface-variant">
-                <span className="text-[#151515]">
+                <span className="text-foreground">
                   {tenant.subdomain}.{APP_DOMAIN}
                 </span>
                 <span>
@@ -377,7 +377,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               {permissions.includes("platform.impersonation.create") && (
                 <Button
                   onClick={openImpersonation}
-                  className="h-10 bg-[#151515] px-4 text-white"
+                  className="h-10 bg-primary px-4 text-on-tone"
                 >
                   <Shield />
                   Impersonate Admin
@@ -397,7 +397,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </div>
           </div>
           <div className="mt-6 flex gap-1 overflow-x-auto border-t border-outline-variant">
-            <button className="flex h-14 items-center gap-2 border-b-2 border-[#151515] px-4 text-sm font-semibold text-[#151515]">
+            <button className="flex h-14 items-center gap-2 border-b-2 border-primary px-4 text-sm font-semibold text-foreground">
               <Activity className="size-4" />
               Overview
             </button>
@@ -407,7 +407,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   key={tab}
                   disabled
                   title="Planned for a later work package"
-                  className="h-14 cursor-not-allowed px-4 text-sm text-zinc-500"
+                  className="h-14 cursor-not-allowed px-4 text-sm text-muted-foreground"
                 >
                   {tab}
                 </button>
@@ -417,10 +417,10 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         </section>
         <TenantLocalizationPanel tenantId={tenantId} />
         <div className="mt-5 grid gap-5 lg:grid-cols-3">
-          <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-surface-variant bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-outline">
               <span>Current plan</span>
-              <CreditCard className="size-4 text-[#151515]" />
+              <CreditCard className="size-4 text-foreground" />
             </div>
             <h2 className="mt-4 text-lg font-semibold">
               {subscription?.plan.name || "No active plan"}
@@ -432,12 +432,12 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </p>
             <button
               disabled
-              className="mt-6 text-sm font-semibold text-zinc-400"
+              className="mt-6 text-sm font-semibold text-muted-foreground"
             >
               View plan details
             </button>
           </section>
-          <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-surface-variant bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-outline">
               <span>License usage</span>
               <Users className="size-4 theme-tone-text" />
@@ -450,7 +450,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 {usage.percentage}% used
               </span>
             </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-200">
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-outline-variant">
               <div
                 className="h-full rounded-full theme-tone theme-tone-emerald"
                 style={{ width: `${Math.min(100, usage.percentage)}%` }}
@@ -461,7 +461,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               this billing cycle.
             </p>
           </section>
-          <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-surface-variant bg-card p-5 shadow-sm">
             <dl className="space-y-4 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="flex items-center gap-2 text-on-surface-variant">
@@ -490,7 +490,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </div>
             </dl>
           </section>
-          <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm lg:col-span-2">
+          <section className="rounded-xl border border-surface-variant bg-card p-5 shadow-sm lg:col-span-2">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wide text-outline">
@@ -505,14 +505,14 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   Manage overrides
                 </Button>
               ) : (
-                <Package className="size-5 text-[#151515]" />
+                <Package className="size-5 text-foreground" />
               )}
             </div>
             <div className="mb-4 flex flex-wrap gap-2">
               {(entitlements?.products ?? []).map((product) => (
                 <span
                   key={product.key}
-                  className="rounded-full bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-[#151515]"
+                  className="rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground"
                 >
                   {product.name}
                   {product.kind === "ADD_ON" ? " add-on" : ""}
@@ -550,12 +550,12 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               )}
             </div>
           </section>
-          <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-surface-variant bg-card p-5 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-outline">
               Primary administrator
             </p>
             <div className="mt-5 flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded-full bg-zinc-100 text-[#151515]">
+              <div className="grid size-11 place-items-center rounded-full bg-muted text-foreground">
                 <Mail className="size-5" />
               </div>
               <div className="min-w-0">
@@ -587,7 +587,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             platform audit trail.
           </p>
           {tenant.status !== "CHURNED" && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-error-container bg-white p-4">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-error-container bg-card p-4">
               <div>
                 <div className="text-sm font-semibold">
                   {active ? "Suspend tenant" : "Reactivate tenant"}
@@ -602,8 +602,8 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 <Button
                   className={
                     active
-                      ? "theme-tone theme-tone-red text-white"
-                      : "theme-tone theme-tone-emerald text-white"
+                      ? "theme-tone theme-tone-red text-on-tone"
+                      : "theme-tone theme-tone-emerald text-on-tone"
                   }
                   onClick={() =>
                     setLifecycle(active ? "suspend" : "reactivate")
@@ -614,12 +614,12 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               )}
             </div>
           )}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-destructive bg-white p-4">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-destructive bg-card p-4">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold">
                 Delete tenant data{" "}
                 {deletionJob && (
-                  <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] text-zinc-600">
+                  <span className="rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
                     {deletionJob.status.replace("_", " ")}
                   </span>
                 )}
@@ -655,7 +655,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </div>
             {canLifecycle && !deletionJob && (
               <Button
-                className="theme-tone theme-tone-red text-white"
+                className="theme-tone theme-tone-red text-on-tone"
                 onClick={() => setDeletionOpen(true)}
               >
                 Schedule deletion
@@ -663,7 +663,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             )}
             {canLifecycle && deletionJob?.status === "FAILED" && (
               <Button
-                className="theme-tone theme-tone-red text-white"
+                className="theme-tone theme-tone-red text-on-tone"
                 disabled={busy}
                 onClick={retryDeletion}
               >
@@ -674,9 +674,9 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         </section>
       </div>
       {overridesOpen && entitlements && (
-        <div className="fixed inset-0 z-[90] grid place-items-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-foreground/50 p-4">
           <div
-            className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
+            className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-card p-6 shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="tenant-overrides-title"
@@ -724,7 +724,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                         {capability.description ||
                           "Controls access to this Attendance feature."}
                       </span>
-                      <span className="mt-1 block text-[11px] font-medium text-[#151515]">
+                      <span className="mt-1 block text-[11px] font-medium text-foreground">
                         Currently {capability.included ? "enabled" : "disabled"}
                         {capability.source === "PLAN"
                           ? ` by ${entitlements.plan?.name ?? "the plan"}`
@@ -734,7 +734,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                       </span>
                     </span>
                     <select
-                      className="h-11 rounded-lg border border-outline-variant bg-white px-3 text-sm"
+                      className="h-11 rounded-lg border border-outline-variant bg-card px-3 text-sm"
                       value={overrideModes[capability.key] ?? "INHERIT"}
                       onChange={(event) =>
                         setOverrideModes((current) => ({
@@ -756,7 +756,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Reason for this tenant exception
               <textarea
-                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-[#151515]"
+                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 value={overrideReason}
                 onChange={(event) => setOverrideReason(event.target.value)}
                 minLength={10}
@@ -769,7 +769,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 Cancel
               </Button>
               <Button
-                className="bg-[#151515] text-white"
+                className="bg-primary text-on-tone"
                 disabled={busy || overrideReason.trim().length < 10}
                 onClick={saveOverrides}
               >
@@ -780,9 +780,9 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         </div>
       )}
       {lifecycle && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-black/45 p-4">
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-foreground/45 p-4">
           <div
-            className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-xl bg-card p-6 shadow-2xl"
             role="dialog"
             aria-modal="true"
           >
@@ -798,7 +798,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Reason
               <textarea
-                className="mt-2 min-h-28 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-[#151515]"
+                className="mt-2 min-h-28 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 minLength={10}
@@ -820,8 +820,8 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 disabled={busy || reason.trim().length < 10}
                 className={
                   lifecycle === "suspend"
-                    ? "theme-tone theme-tone-red text-white"
-                    : "theme-tone theme-tone-emerald text-white"
+                    ? "theme-tone theme-tone-red text-on-tone"
+                    : "theme-tone theme-tone-emerald text-on-tone"
                 }
                 onClick={applyLifecycle}
               >
@@ -836,9 +836,9 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         </div>
       )}
       {deletionOpen && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-foreground/50 p-4">
           <div
-            className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-lg rounded-xl bg-card p-6 shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="tenant-deletion-title"
@@ -858,7 +858,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Auditable reason
               <textarea
-                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-red-500"
+                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-destructive"
                 value={deletionReason}
                 onChange={(e) => setDeletionReason(e.target.value)}
                 minLength={10}
@@ -893,7 +893,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </Button>
               <Button
                 disabled={busy || deletionReason.trim().length < 10}
-                className="theme-tone theme-tone-red text-white"
+                className="theme-tone theme-tone-red text-on-tone"
                 onClick={scheduleDeletion}
               >
                 {busy ? "Scheduling..." : "Suspend and schedule"}
@@ -903,8 +903,8 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         </div>
       )}
       {impersonateOpen && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-black/45 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-foreground/45 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-card p-6 shadow-2xl">
             <h2 className="text-xl font-bold">Start support session</h2>
             <p className="mt-2 text-sm text-on-surface-variant">
               Access is read-only, scoped, audited and expires automatically.
@@ -912,7 +912,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Act as
               <select
-                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-white px-3"
+                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-card px-3"
                 value={targetUserId}
                 onChange={(e) => setTargetUserId(e.target.value)}
               >
@@ -926,7 +926,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-4 block text-sm font-semibold">
               Duration
               <select
-                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-white px-3"
+                className="mt-2 h-11 w-full rounded-lg border border-outline-variant bg-card px-3"
                 value={minutes}
                 onChange={(e) => setMinutes(Number(e.target.value))}
               >
@@ -961,7 +961,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   !targetUserId ||
                   impersonationReason.trim().length < 10
                 }
-                className="bg-[#151515] text-white"
+                className="bg-primary text-on-tone"
                 onClick={startImpersonation}
               >
                 {busy ? "Starting..." : "Start session"}

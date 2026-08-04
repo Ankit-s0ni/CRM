@@ -118,7 +118,7 @@ export function TenantDirectory() {
           </div>
           {canCreate && (
             <Button
-              className="h-11 bg-[#151515] px-5 text-white shadow-md hover:bg-[#2a2927]"
+              className="h-11 bg-primary px-5 text-on-tone shadow-md hover:bg-primary-container"
               onClick={() => setCreateOpen(true)}
             >
               <Plus />
@@ -126,7 +126,7 @@ export function TenantDirectory() {
             </Button>
           )}
         </div>
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-surface-variant bg-white p-4">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-surface-variant bg-card p-4">
           <div className="relative min-w-[240px] flex-1 sm:hidden">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
             <input
@@ -173,7 +173,7 @@ export function TenantDirectory() {
             ))}
           </select>
           <button
-            className="ml-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#151515] hover:bg-surface-variant"
+            className="ml-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-variant"
             onClick={reset}
           >
             <RotateCcw className="size-4" />
@@ -185,7 +185,7 @@ export function TenantDirectory() {
             {error}
           </div>
         )}
-        <div className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-card shadow-sm">
           <div className="hidden grid-cols-[1.6fr_1.25fr_.85fr_1fr_.85fr_.7fr] gap-4 bg-surface-variant px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant md:grid">
             <span>Company</span>
             <span>Subdomain</span>
@@ -205,7 +205,7 @@ export function TenantDirectory() {
             </div>
           ) : tenants.length === 0 ? (
             <div className="grid place-items-center px-6 py-20 text-center">
-              <div className="grid size-14 place-items-center rounded-full bg-surface-variant text-[#151515]">
+              <div className="grid size-14 place-items-center rounded-full bg-surface-variant text-foreground">
                 <Building2 />
               </div>
               <h2 className="mt-4 text-lg font-semibold">No tenants found</h2>
@@ -251,7 +251,7 @@ export function TenantDirectory() {
                     {tenant.subdomain}.{APP_DOMAIN}
                   </div>
                   <div>
-                    <span className="rounded-full bg-surface-variant px-2 py-1 text-[10px] font-semibold text-[#151515]">
+                    <span className="rounded-full bg-surface-variant px-2 py-1 text-[10px] font-semibold text-foreground">
                       {tenant.subscription?.plan.name || "No plan"}
                     </span>
                   </div>
@@ -264,7 +264,7 @@ export function TenantDirectory() {
                     </div>
                     <div className="mt-2 h-1.5 rounded-full bg-surface-container-high">
                       <div
-                        className="h-full rounded-full bg-[#151515]"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${usage}%` }}
                       />
                     </div>
@@ -310,7 +310,7 @@ export function TenantDirectory() {
               >
                 <ChevronLeft className="size-4" />
               </button>
-              <span className="grid size-8 place-items-center rounded-lg bg-[#151515] font-bold text-white">
+              <span className="grid size-8 place-items-center rounded-lg bg-primary font-bold text-on-tone">
                 {page}
               </span>
               <button
@@ -324,8 +324,8 @@ export function TenantDirectory() {
           </div>
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-3 md:hidden">
-          <div className="rounded-xl border bg-white p-4">
-            <Users className="size-5 text-[#151515]" />
+          <div className="rounded-xl border bg-card p-4">
+            <Users className="size-5 text-foreground" />
             <div className="mt-2 text-2xl font-semibold">
               {pagination.total}
             </div>

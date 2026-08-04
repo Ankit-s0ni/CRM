@@ -12,7 +12,7 @@ export const uxSpacing = {
 } as const;
 
 export const uxTypography = {
-  pageTitle: "reference-home-serif text-[34px] font-semibold leading-tight text-foreground md:text-[42px]",
+  pageTitle: "text-3xl font-semibold tracking-tight text-foreground",
   sectionTitle: "text-xl font-bold text-foreground",
   panelTitle: "text-sm font-bold text-foreground",
   body: "text-sm leading-6 text-foreground",
@@ -25,13 +25,13 @@ export const uxFocusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export const uxPanel =
-  "rounded-[6px] border border-border bg-card text-foreground shadow-[0_2px_8px_rgba(20,20,20,0.04)]";
+  "rounded-[6px] border border-border bg-card text-foreground shadow-sm";
 
 export const uxInput =
   "min-h-11 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/65 disabled:cursor-not-allowed disabled:bg-muted disabled:text-outline focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 aria-invalid:border-destructive aria-invalid:ring-destructive/20";
 
 export const uxTable = {
-  wrapper: "overflow-x-auto rounded-[6px] border border-border bg-card shadow-[0_2px_8px_rgba(20,20,20,0.04)]",
+  wrapper: "overflow-x-auto rounded-[6px] border border-border bg-card shadow-sm",
   table: "w-full min-w-[760px] border-collapse text-left text-sm",
   head: "bg-muted text-xs font-bold uppercase tracking-wide text-muted-foreground",
   headCell: "px-4 py-3",

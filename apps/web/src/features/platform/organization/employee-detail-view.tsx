@@ -345,7 +345,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       action={
         <Link
           href="/app/employees"
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-on-surface-variant"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-on-surface-variant"
         >
           <ArrowLeft className="size-4" /> {tText("Employees")}</Link>
       }
@@ -425,7 +425,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           </div>
 
           <Panel className="h-fit p-6">
-            <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+            <div className="grid size-12 place-items-center rounded-xl bg-muted text-foreground">
               <Fingerprint className="size-6" />
             </div>
             <h2 className="mt-5 text-xl font-bold">{tText("Biometric identity")}</h2>
@@ -554,7 +554,7 @@ function EmployeeWorkspaceTabs({
   return (
     <nav
       aria-label={tText("Employee workspace")}
-      className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-surface-variant bg-white p-2"
+      className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-surface-variant bg-card p-2"
     >
       {items
         .filter(
@@ -568,8 +568,8 @@ function EmployeeWorkspaceTabs({
             aria-current={active === item.key ? "page" : undefined}
             className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${
               active === item.key
-                ? "bg-[#151515] text-white"
-                : "text-zinc-500 hover:bg-zinc-50"
+                ? "bg-primary text-on-tone"
+                : "text-muted-foreground hover:bg-muted"
             }`}
             key={item.key}
             onClick={() => onChange(item.key)}
@@ -922,7 +922,7 @@ function EmployeePayrollPanel({
               />
             </div>
 
-            <div className="flex gap-2 overflow-x-auto rounded-xl border border-border bg-zinc-50 p-1">
+            <div className="flex gap-2 overflow-x-auto rounded-xl border border-border bg-muted p-1">
               {[
                 ["pay", tText("Pay setup")],
                 ["salary", tText("Salary")],
@@ -1005,7 +1005,7 @@ function EmployeePayrollPanel({
                     type="date"
                     value={String(payForm.effectiveFrom)}
                   />
-                  <label className="flex min-h-11 items-center gap-3 rounded-lg border border-zinc-300 px-3 text-sm font-semibold">
+                  <label className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3 text-sm font-semibold">
                     <input
                       checked={Boolean(payForm.salaryHold)}
                       onChange={(event) =>
@@ -1110,7 +1110,7 @@ function EmployeePayrollPanel({
                 title={tText("Bank details")}
               >
                 {!canReadProtected ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-muted-foreground">
                     {tText("You do not have permission to view bank details.")}
                   </p>
                 ) : (
@@ -1206,7 +1206,7 @@ function EmployeePayrollPanel({
                 title={tText("Government IDs")}
               >
                 {!canReadProtected ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-muted-foreground">
                     {tText("You do not have permission to view government IDs.")}
                   </p>
                 ) : (
@@ -1285,7 +1285,7 @@ function EmployeePayrollPanel({
                 title={tText("Payslip history")}
               >
                 {!canReadPayslips ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-muted-foreground">
                     {tText("You do not have permission to view payslips.")}
                   </p>
                 ) : payslips.length ? (
@@ -1294,10 +1294,10 @@ function EmployeePayrollPanel({
                       <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-muted/50 p-5">
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div>
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#151515]">
+                            <p className="text-xs font-bold uppercase tracking-wide text-foreground">
                               {tText("Latest payslip")}
                             </p>
-                            <h3 className="mt-2 text-lg font-bold text-zinc-950">
+                            <h3 className="mt-2 text-lg font-bold text-foreground">
                               {payrollText(
                                 latestPayslip.periodKey,
                                 payrollText(
@@ -1306,9 +1306,9 @@ function EmployeePayrollPanel({
                                 ),
                               )}
                             </h3>
-                            <p className="mt-1 text-sm text-zinc-500">
+                            <p className="mt-1 text-sm text-muted-foreground">
                               {tText("Net salary")}:{" "}
-                              <span className="font-semibold text-zinc-900">
+                              <span className="font-semibold text-foreground">
                                 {payrollMinorMoney(latestPayslip.netPayMinor, latestPayslip.currency)}
                               </span>
                             </p>
@@ -1316,7 +1316,7 @@ function EmployeePayrollPanel({
                           <PayslipStatusBadge status={payrollText(latestPayslip.status, "GENERATED")} />
                         </div>
                         <button
-                          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#151515] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-tone disabled:cursor-not-allowed disabled:opacity-50"
                           disabled={
                             saving === `payslip-${payrollText(latestPayslip.id, "")}` ||
                             !latestPayslip.objectKey
@@ -1343,8 +1343,8 @@ function EmployeePayrollPanel({
                     />
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-500">
-                    <h3 className="font-bold text-zinc-900">{tText("No payslips yet")}</h3>
+                  <div className="rounded-xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
+                    <h3 className="font-bold text-foreground">{tText("No payslips yet")}</h3>
                     <p className="mt-2 leading-6">
                       {tText("After payroll is finalized and payslips are generated, this employee's PDFs will appear here.")}
                     </p>
@@ -1356,7 +1356,7 @@ function EmployeePayrollPanel({
         )}
       </Panel>
       <Panel className="h-fit p-6">
-        <div className="grid size-12 place-items-center rounded-2xl bg-zinc-100 text-[#151515]">
+        <div className="grid size-12 place-items-center rounded-2xl bg-muted text-foreground">
           <UserRound className="size-6" />
         </div>
         <h2 className="mt-5 text-lg font-bold">{tText("Payroll context")}</h2>
@@ -1377,9 +1377,9 @@ function EmployeePayrollPanel({
             positive
           />
         </div>
-        <div className="mt-5 rounded-xl border border-border bg-zinc-50 p-4">
+        <div className="mt-5 rounded-xl border border-border bg-muted p-4">
           <h3 className="text-sm font-bold">{tText("Missing details")}</h3>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {missing.length
               ? missing.join(", ")
               : tText("This employee has the payroll details needed.")}
@@ -1387,11 +1387,11 @@ function EmployeePayrollPanel({
         </div>
         <div className="mt-5 rounded-xl theme-card-muted p-4">
           <h3 className="text-sm font-bold">{tText("Company payroll rules")}</h3>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {tText("To change pay groups, salary templates, salary rules, approvals, or accounting links, go to Modules.")}
           </p>
           <Link
-            className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#151515] px-3 text-sm font-semibold text-white"
+            className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-on-tone"
             href="/app/modules/payroll"
           >
             {tText("Open Payroll Setup")}
@@ -1418,7 +1418,7 @@ function PayrollMiniCard({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <span className="grid size-10 place-items-center rounded-xl bg-muted text-foreground">
           <Icon className="size-5" />
@@ -1433,10 +1433,10 @@ function PayrollMiniCard({
           {ready ? tText("Ready") : tText("Missing")}
         </span>
       </div>
-      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-zinc-400">
+      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 truncate text-sm font-bold text-zinc-900">{value}</p>
+      <p className="mt-1 truncate text-sm font-bold text-foreground">{value}</p>
     </div>
   );
 }
@@ -1456,21 +1456,21 @@ function PayrollEditSection({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="flex gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
             <Icon className="size-5" />
           </span>
           <div>
             <h3 className="font-bold">{title}</h3>
-            <p className="mt-1 text-sm leading-6 text-zinc-500">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {description}
             </p>
           </div>
         </div>
         {!canEdit && (
-          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-500">
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
             {tText("View only")}
           </span>
         )}
@@ -1538,11 +1538,11 @@ function PayrollSelect({
 
 function PayrollExistingDetail({ rows }: { rows: string[][] }) {
   return (
-    <div className="grid gap-2 rounded-xl bg-zinc-50 p-4 text-sm">
+    <div className="grid gap-2 rounded-xl bg-muted p-4 text-sm">
       {rows.map(([label, value]) => (
         <div className="flex justify-between gap-4" key={label}>
-          <span className="text-zinc-500">{label}</span>
-          <span className="font-semibold text-zinc-900">{value}</span>
+          <span className="text-muted-foreground">{label}</span>
+          <span className="font-semibold text-foreground">{value}</span>
         </div>
       ))}
     </div>
@@ -1553,14 +1553,14 @@ function PayrollHistory({ rows }: { rows: Array<Record<string, unknown>> }) {
   const { tText } = useTenantLocalization();
   if (!rows.length) {
     return (
-      <p className="rounded-xl bg-zinc-50 p-4 text-sm text-zinc-500">
+      <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">
         {tText("No salary history yet.")}
       </p>
     );
   }
   return (
     <div className="overflow-hidden rounded-xl border border-border">
-      <div className="grid grid-cols-4 bg-zinc-50 px-4 py-3 text-xs font-bold uppercase tracking-wide text-zinc-500">
+      <div className="grid grid-cols-4 bg-muted px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         <span>{tText("Salary")}</span>
         <span>{tText("From")}</span>
         <span>{tText("To")}</span>
@@ -1593,7 +1593,7 @@ function PayslipHistoryTable({
   const { tText } = useTenantLocalization();
   return (
     <div className="overflow-hidden rounded-xl border border-border">
-      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] bg-zinc-50 px-4 py-3 text-xs font-bold uppercase tracking-wide text-zinc-500">
+      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] bg-muted px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         <span>{tText("Month")}</span>
         <span>{tText("Net salary")}</span>
         <span>{tText("Status")}</span>
@@ -1617,7 +1617,7 @@ function PayslipHistoryTable({
             </span>
             <span>{payrollText(payslip.publishedAt, tText("Not published")).slice(0, 10)}</span>
             <button
-              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-300 px-3 text-xs font-semibold text-[#151515] disabled:cursor-not-allowed disabled:text-zinc-400"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-border px-3 text-xs font-semibold text-foreground disabled:cursor-not-allowed disabled:text-muted-foreground"
               disabled={!hasPdf || saving === `payslip-${payslipId}`}
               onClick={() => void onDownload(payslipId)}
               type="button"
@@ -1638,8 +1638,8 @@ function PayslipStatusBadge({ status }: { status: string }) {
     status === "PUBLISHED"
       ? "theme-tone theme-tone-emerald"
       : status === "GENERATED"
-        ? "bg-[#ede7dc] text-[#151515]"
-        : "bg-zinc-100 text-zinc-700";
+        ? "bg-muted text-foreground"
+        : "bg-muted text-foreground";
   const label =
     status === "PUBLISHED"
       ? "Published"
@@ -1786,7 +1786,7 @@ function EmploymentProfile({
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="grid size-14 place-items-center rounded-2xl bg-zinc-100 text-[#151515]">
+          <div className="grid size-14 place-items-center rounded-2xl bg-muted text-foreground">
             <UserRound className="size-7" />
           </div>
           <div>
@@ -1898,7 +1898,7 @@ function TodaySummary({
             className={`grid size-12 place-items-center rounded-2xl ${
               positive
                 ? "theme-tone theme-tone-emerald"
-                : "bg-white text-[#151515]"
+                : "bg-card text-foreground"
             }`}
           >
             <Clock3 className="size-6" />
@@ -1938,7 +1938,7 @@ function TodaySummary({
 
 function TodayValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white p-4">
+    <div className="bg-card p-4">
       <p className="text-[10px] font-bold uppercase tracking-wider text-outline">
         {label}
       </p>
@@ -1981,7 +1981,7 @@ function EmployeeLifecyclePanel({
         <div className="flex flex-wrap gap-2">
           {canUpdate && employee.status !== "TERMINATED" && (
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
               onClick={() => setDialog("edit")}
               type="button"
             >
@@ -1989,7 +1989,7 @@ function EmployeeLifecyclePanel({
           )}
           {canManageLifecycle && employee.status !== "TERMINATED" && (
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-error bg-white px-4 text-sm font-semibold text-error"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-error bg-card px-4 text-sm font-semibold text-error"
               onClick={() => setDialog("terminate")}
               type="button"
             >
@@ -2450,7 +2450,7 @@ function ReadinessPanel({
           <p className="mt-1 text-sm text-outline">
             {tText("Complete these steps before the employee starts using attendance.")}</p>
         </div>
-        <span className="rounded-full bg-zinc-50 px-3 py-1 text-sm font-bold text-[#151515]">
+        <span className="rounded-full bg-muted px-3 py-1 text-sm font-bold text-foreground">
           {complete}/{total}
         </span>
       </div>
@@ -2466,7 +2466,7 @@ function ReadinessPanel({
           };
           return (
             <button
-              className="flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-left text-sm transition hover:bg-zinc-50"
+              className="flex items-start gap-3 rounded-xl bg-muted p-4 text-left text-sm transition hover:bg-muted"
               key={key}
               onClick={() => onSelect(step.tab)}
               type="button"
@@ -2481,12 +2481,12 @@ function ReadinessPanel({
                 {ready ? "Y" : "!"}
               </span>
               <span>
-                <strong className="block text-zinc-800">{step.title}</strong>
+                <strong className="block text-foreground">{step.title}</strong>
                 <span className="mt-1 block text-xs leading-5 text-outline">
                   {ready ? tText("Complete") : step.description}
                 </span>
                 {!ready && (
-                  <span className="mt-2 block text-xs font-bold text-[#151515]">
+                  <span className="mt-2 block text-xs font-bold text-foreground">
                     {step.action} →
                   </span>
                 )}
@@ -2507,7 +2507,7 @@ function AccountSummary({
   const { tText } = useTenantLocalization();
   return (
     <Panel className="h-fit p-6">
-      <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+      <div className="grid size-12 place-items-center rounded-xl bg-muted text-foreground">
         <KeyRound className="size-6" />
       </div>
       <h2 className="mt-5 text-xl font-bold">{tText("Account access")}</h2>
@@ -2552,7 +2552,7 @@ function AssignmentsPanel({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{tText("Work assignments")}</h2>
           <button
-            className="flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-200"
+            className="flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-outline-variant"
             onClick={() => setEditing(true)}
           >
             <Pencil className="size-3" /> {tText("Edit")}</button>
@@ -2591,7 +2591,7 @@ function AssignmentsPanel({
           ))}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
+          className="mt-5 inline-flex text-sm font-bold text-foreground"
           href="/app/attendance/rosters"
         >
           {tText("Manage shifts and rosters")}</Link>
@@ -2625,7 +2625,7 @@ function AssignmentsPanel({
             {tText("No tenant, department, or employee policy currently resolves for this employee.")}</p>
         )}
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
+          className="mt-5 inline-flex text-sm font-bold text-foreground"
           href={`/app/attendance/policies?employeeId=${employeeId}&returnTo=${encodeURIComponent(`/app/employees/${employeeId}?tab=assignments`)}`}
         >
           {tText("Change this employee&apos;s policy")}</Link>
@@ -2649,7 +2649,7 @@ function AssignmentsPanel({
           )}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
+          className="mt-5 inline-flex text-sm font-bold text-foreground"
           href="/app/attendance/setup/leave"
         >
           {tText("Manage Leave policies")}</Link>
@@ -2717,7 +2717,7 @@ function LeavePanel({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold">{tText("Recent requests")}</h2>
           <Link
-            className="text-sm font-bold text-[#151515]"
+            className="text-sm font-bold text-foreground"
             href={`/app/attendance/leave/requests?employeeId=${employeeId}&returnTo=/app/employees/${employeeId}`}
           >
             {tText("Open full history")}</Link>
@@ -2725,7 +2725,7 @@ function LeavePanel({
         <div className="mt-4 grid gap-3">
           {workspace.leave.recentRequests.length ? (
             workspace.leave.recentRequests.map((request) => (
-              <div className="rounded-xl bg-zinc-50 p-4" key={request.id}>
+              <div className="rounded-xl bg-muted p-4" key={request.id}>
                 <div className="flex items-center justify-between gap-3">
                   <strong className="text-sm">{request.policy.name}</strong>
                   <span className="text-xs font-bold">{request.status}</span>
@@ -2797,7 +2797,7 @@ function AccountPanel({
                 <div className="mt-2 flex flex-wrap gap-2">
                   {elevatedRoles.map(({ role }) => (
                     <span
-                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-[#151515]"
+                      className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground"
                       key={role.id}
                     >
                       {role.name.replaceAll("_", " ")}
@@ -2907,7 +2907,7 @@ function CreateEmployeeAccountDialog({
               value={email}
             />
           </Field>
-          <div className="rounded-lg bg-zinc-50 p-4 text-sm">
+          <div className="rounded-lg bg-muted p-4 text-sm">
             <span className="block text-xs font-bold uppercase tracking-wide text-outline">
               {tText("Account role")}</span>
             <strong className="mt-1 block">{tText("Employee self-service")}</strong>
@@ -3063,7 +3063,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ListChecks className="size-5 text-[#151515]" />
+          <ListChecks className="size-5 text-foreground" />
           <div>
             <h2 className="text-lg font-bold">{tText("Employee history")}</h2>
             <p className="text-sm text-outline">
@@ -3105,11 +3105,11 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
               key={entry.id}
             >
               <div className="flex items-start gap-4">
-                <Clock3 className="mt-0.5 size-4 shrink-0 text-[#151515]" />
+                <Clock3 className="mt-0.5 size-4 shrink-0 text-foreground" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold">{entry.title}</p>
-                    <span className="rounded-full bg-zinc-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-outline">
+                    <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-outline">
                       {tText(historyCategoryLabel(entry.category))}
                     </span>
                     {entry.impersonated && (
@@ -3130,7 +3130,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       {entry.changes.slice(0, 6).map((change) => (
                         <div
-                          className="rounded-lg bg-zinc-50 px-3 py-2 text-xs"
+                          className="rounded-lg bg-muted px-3 py-2 text-xs"
                           key={change.field}
                         >
                           <strong className="block capitalize">
@@ -3163,7 +3163,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
       </div>
       {nextCursor && !loading && (
         <button
-          className="mt-5 w-full rounded-xl border border-surface-variant px-4 py-3 text-sm font-semibold text-[#151515] disabled:opacity-50"
+          className="mt-5 w-full rounded-xl border border-surface-variant px-4 py-3 text-sm font-semibold text-foreground disabled:opacity-50"
           disabled={loadingMore}
           onClick={loadMore}
           type="button"
@@ -3398,7 +3398,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
           )}
         </div>
         {canManage && uploadOpen && (
-          <div className="border-t border-surface-variant bg-zinc-50/70 p-6">
+          <div className="border-t border-surface-variant bg-muted/70 p-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <Field label={tText("Document title")}>
                 <input
@@ -3432,14 +3432,14 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <Field label={tText("Private file")}>
                 <input
                   accept="application/pdf,image/jpeg,image/png,image/webp"
-                  className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-[#151515]"
+                  className="block min-h-11 w-full rounded-lg border border-border bg-card p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:font-semibold file:text-foreground"
                   onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                   type="file"
                 />
               </Field>
             </div>
             {file && (
-              <div className="mt-4 rounded-xl border border-surface-variant bg-white p-3 text-xs text-on-surface-variant">
+              <div className="mt-4 rounded-xl border border-surface-variant bg-card p-3 text-xs text-on-surface-variant">
                 <strong className="block truncate text-sm text-on-surface">
                   {file.name}
                 </strong>
@@ -3459,7 +3459,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <span className="mr-auto text-xs text-outline">
                 {tText("A title and a file are required.")}</span>
               <button
-                className="h-11 rounded-xl border border-zinc-300 bg-white px-5 text-sm font-semibold"
+                className="h-11 rounded-xl border border-border bg-card px-5 text-sm font-semibold"
                 onClick={() => setUploadOpen(false)}
                 type="button"
               >
@@ -3491,7 +3491,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               key={document.id}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                   <FileText className="size-5" />
                 </span>
                 <div className="min-w-0">
@@ -3514,7 +3514,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <div className="flex gap-2">
                 <button
                   aria-label={`View ${document.title}`}
-                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-[#151515] disabled:opacity-50"
+                  className="grid size-10 place-items-center rounded-lg border border-border text-foreground disabled:opacity-50"
                   disabled={previewLoadingId === document.id}
                   onClick={() => view(document)}
                   type="button"
@@ -3527,7 +3527,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 </button>
                 <button
                   aria-label={`Download ${document.title}`}
-                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-[#151515]"
+                  className="grid size-10 place-items-center rounded-lg border border-border text-foreground"
                   onClick={() => download(document)}
                   type="button"
                 >
@@ -3561,7 +3561,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               </p>
             </div>
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground disabled:opacity-50"
               disabled={payslipsLoading}
               onClick={() => void loadPayslips()}
               type="button"
@@ -3585,8 +3585,8 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 saving={payslipSaving}
               />
             ) : (
-              <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-500">
-                <h3 className="font-bold text-zinc-900">{tText("No generated payslips yet")}</h3>
+              <div className="rounded-xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
+                <h3 className="font-bold text-foreground">{tText("No generated payslips yet")}</h3>
                 <p className="mt-2 leading-6">
                   {tText("After payroll is finalized and payslips are generated, this employee's PDF will appear here.")}
                 </p>
@@ -3598,16 +3598,16 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       {preview && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-zinc-900/60 p-4"
+          className="fixed inset-0 z-[1000] grid place-items-center overflow-y-auto bg-foreground/60 p-4"
           onClick={() => setPreview(null)}
           role="dialog"
         >
           <section
-            className="my-6 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="my-6 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-card shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <header className="flex flex-wrap items-center gap-4 border-b border-surface-variant p-5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                 <FileText className="size-5" />
               </span>
               <div className="min-w-0">
@@ -3621,7 +3621,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-4 text-sm font-semibold text-[#151515]"
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold text-foreground"
                   onClick={() => window.location.assign(preview.url)}
                   type="button"
                 >
@@ -3629,7 +3629,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                   {tText("Download")}</button>
                 <button
                   aria-label={tText("Close document viewer")}
-                  className="grid size-10 place-items-center rounded-lg text-outline hover:bg-zinc-100"
+                  className="grid size-10 place-items-center rounded-lg text-outline hover:bg-muted"
                   onClick={() => setPreview(null)}
                   type="button"
                 >
@@ -3637,9 +3637,9 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 </button>
               </div>
             </header>
-            <div className="min-h-[55vh] flex-1 bg-zinc-100 p-3">
+            <div className="min-h-[55vh] flex-1 bg-muted p-3">
               <iframe
-                className="h-[70vh] w-full rounded-lg border-0 bg-white"
+                className="h-[70vh] w-full rounded-lg border-0 bg-card"
                 src={preview.url}
                 title={`Preview ${preview.document.title}`}
               />
@@ -3685,16 +3685,16 @@ function EmployeeActionDialog({
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-zinc-900/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-foreground/55 p-4"
       role="dialog"
     >
-      <section className="my-6 max-h-[92vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <section className="my-6 max-h-[92vh] w-full max-w-2xl overflow-auto rounded-2xl bg-card p-6 shadow-2xl">
         <div className="mb-6 flex items-start gap-4">
           <span
             className={`grid size-11 shrink-0 place-items-center rounded-xl ${
               tone === "danger"
                 ? "bg-error-container text-on-error-container"
-                : "bg-zinc-50 text-[#151515]"
+                : "bg-muted text-foreground"
             }`}
           >
             {tone === "danger" ? (
@@ -3711,7 +3711,7 @@ function EmployeeActionDialog({
           </div>
           <button
             aria-label={tText("Close dialog")}
-            className="ml-auto grid size-10 shrink-0 place-items-center rounded-lg text-outline hover:bg-zinc-50"
+            className="ml-auto grid size-10 shrink-0 place-items-center rounded-lg text-outline hover:bg-muted"
             onClick={onClose}
             type="button"
           >
@@ -3743,15 +3743,15 @@ function DialogActions({
   return (
     <div className="mt-6 flex flex-wrap justify-end gap-3">
       <button
-        className="min-h-11 rounded-xl border border-zinc-300 px-5 text-sm font-semibold"
+        className="min-h-11 rounded-xl border border-border px-5 text-sm font-semibold"
         disabled={busy}
         onClick={onCancel}
         type="button"
       >
         {tText("Cancel")}</button>
       <button
-        className={`min-h-11 rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50 ${
-          danger ? "bg-error" : "bg-[#151515]"
+        className={`min-h-11 rounded-xl px-5 text-sm font-semibold text-on-tone disabled:opacity-50 ${
+          danger ? "bg-error" : "bg-primary"
         }`}
         disabled={busy || confirmDisabled}
         onClick={() => void onConfirm()}
@@ -3797,8 +3797,8 @@ function sentenceLabel(value: string) {
 
 function AssignmentRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 p-3">
-      <span className="text-sm text-zinc-500">{label}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-muted p-3">
+      <span className="text-sm text-muted-foreground">{label}</span>
       <strong className="text-right text-sm">{value}</strong>
     </div>
   );
@@ -3838,7 +3838,7 @@ function FaceResetDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[80] grid place-items-center bg-zinc-900/55 p-4"
+      className="fixed inset-0 z-[80] grid place-items-center bg-foreground/55 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -3863,7 +3863,7 @@ function FaceResetDialog({
           <div className="flex gap-3">
             <button
               type="button"
-              className="min-h-11 flex-1 rounded-xl border border-zinc-300 px-4 text-sm font-semibold"
+              className="min-h-11 flex-1 rounded-xl border border-border px-4 text-sm font-semibold"
               onClick={onClose}
             >
               {tText("Cancel")}</button>
@@ -3891,8 +3891,8 @@ function Detail({
   icon: typeof UserRound;
 }) {
   return (
-    <div className="rounded-xl bg-zinc-50 p-4">
-      <Icon className="size-5 text-[#151515]" />
+    <div className="rounded-xl bg-muted p-4">
+      <Icon className="size-5 text-foreground" />
       <p className="mt-3 text-xs font-bold uppercase tracking-wide text-outline">
         {label}
       </p>
@@ -3911,8 +3911,8 @@ function IdentityRow({
   positive: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 p-3">
-      <span className="text-sm text-zinc-500">{label}</span>
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-muted p-3">
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span
         className={`inline-flex items-center gap-1 text-sm font-bold theme-tone-text`}
       >
@@ -4016,8 +4016,8 @@ function EditAssignmentsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-surface-variant p-4">
           <h2 className="text-lg font-bold">{tText("Edit assignments")}</h2>
           <button onClick={onClose}>

@@ -416,7 +416,7 @@ export function PlatformLocalizationEditor({
         <div className="flex items-start gap-3">
           <Link
             aria-label="Back to languages"
-            className="mt-0.5 grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white transition hover:border-zinc-400 hover:bg-zinc-50"
+            className="mt-0.5 grid size-10 place-items-center rounded-xl border border-border bg-card transition hover:border-border hover:bg-muted"
             href="/platform/localization"
           >
             <ArrowLeft className="size-4" />
@@ -445,7 +445,7 @@ export function PlatformLocalizationEditor({
             <ArrowDownToLine className="size-4" /> CSV
           </Button>
           {canTranslate && (
-            <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold">
+            <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-semibold">
               <FileUp className="size-4" /> Import
               <input
                 accept=".json,.csv,application/json,text/csv"
@@ -474,7 +474,7 @@ export function PlatformLocalizationEditor({
       )}
 
       {importReport && (
-        <section className="mb-5 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <section className="mb-5 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="font-semibold">Import dry-run report</h2>
@@ -488,7 +488,7 @@ export function PlatformLocalizationEditor({
                 Cancel
               </Button>
               <Button
-                className="bg-zinc-950 text-white"
+                className="bg-foreground text-on-tone"
                 disabled={!importReport.valid || busy}
                 onClick={() => void applyImport()}
               >
@@ -509,14 +509,14 @@ export function PlatformLocalizationEditor({
       )}
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-          <div className="border-b border-zinc-200 p-4">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border p-4">
             <div className="flex flex-wrap items-center gap-3">
               <label className="relative min-w-64 flex-1">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
                 <input
                   aria-label="Search localization keys"
-                  className="h-10 w-full rounded-xl border border-zinc-200 bg-zinc-50 pl-10 pr-3 text-sm outline-none focus:border-zinc-500"
+                  className="h-10 w-full rounded-xl border border-border bg-muted pl-10 pr-3 text-sm outline-none focus:border-border"
                   onChange={(event) => {
                     setQuery(event.target.value);
                     setPage(1);
@@ -527,7 +527,7 @@ export function PlatformLocalizationEditor({
               </label>
               <label className="relative">
                 <select
-                  className="h-10 appearance-none rounded-xl border border-zinc-200 bg-white px-3 pr-9 text-sm"
+                  className="h-10 appearance-none rounded-xl border border-border bg-card px-3 pr-9 text-sm"
                   onChange={(event) => {
                     setNamespace(event.target.value);
                     setPage(1);
@@ -543,7 +543,7 @@ export function PlatformLocalizationEditor({
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2" />
               </label>
-              <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 px-3 text-sm">
+              <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-border px-3 text-sm">
                 <input
                   checked={missingOnly}
                   onChange={(event) => {
@@ -560,13 +560,13 @@ export function PlatformLocalizationEditor({
             <div className="grid gap-3 p-5">
               {[0, 1, 2, 3].map((item) => (
                 <div
-                  className="h-28 animate-pulse rounded-xl bg-zinc-50"
+                  className="h-28 animate-pulse rounded-xl bg-muted"
                   key={item}
                 />
               ))}
             </div>
           ) : (
-            <div className="divide-y divide-zinc-100">
+            <div className="divide-y divide-border">
               {paginatedKeys.map((key) => {
                 const isEditing = editingKey === key.key;
                 return (
@@ -574,10 +574,10 @@ export function PlatformLocalizationEditor({
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <code className="text-xs font-semibold text-zinc-800">
+                          <code className="text-xs font-semibold text-foreground">
                             {key.key}
                           </code>
-                          <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-600">
+                          <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-muted-foreground">
                             {key.namespace}
                           </span>
                           {key.translation && (
@@ -647,12 +647,12 @@ export function PlatformLocalizationEditor({
                       />
                     </div>
                     {isEditing && (
-                      <div className="mt-4 rounded-xl border border-zinc-300 bg-zinc-50 p-4">
+                      <div className="mt-4 rounded-xl border border-border bg-muted p-4">
                         <label className="grid gap-2 text-xs font-semibold">
                           Translation
                           <textarea
                             autoFocus
-                            className="min-h-24 rounded-lg border border-zinc-300 bg-white p-3 text-sm outline-none focus:border-zinc-700"
+                            className="min-h-24 rounded-lg border border-border bg-card p-3 text-sm outline-none focus:border-border"
                             dir={
                               selectedLocale.startsWith("ar") ? "rtl" : "ltr"
                             }
@@ -675,7 +675,7 @@ export function PlatformLocalizationEditor({
                               Cancel
                             </Button>
                             <Button
-                              className="bg-zinc-950 text-white"
+                              className="bg-foreground text-on-tone"
                               disabled={busy || !value.trim()}
                               onClick={() => void saveTranslation()}
                             >
@@ -696,7 +696,7 @@ export function PlatformLocalizationEditor({
             </div>
           )}
           {!loading && filteredKeys.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
               <div className="flex items-center gap-3 text-xs text-outline">
                 <span>
                   Showing {pageStart + 1}-
@@ -706,7 +706,7 @@ export function PlatformLocalizationEditor({
                 <label className="flex items-center gap-2">
                   Rows
                   <select
-                    className="h-8 rounded-lg border border-zinc-200 bg-white px-2 text-xs text-zinc-800"
+                    className="h-8 rounded-lg border border-border bg-card px-2 text-xs text-foreground"
                     onChange={(event) => {
                       setPageSize(Number(event.target.value));
                       setPage(1);
@@ -722,7 +722,7 @@ export function PlatformLocalizationEditor({
               <div className="flex items-center gap-1">
                 <button
                   aria-label="Previous page"
-                  className="grid size-9 place-items-center rounded-lg border border-zinc-200 bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid size-9 place-items-center rounded-lg border border-border bg-card disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={currentPage <= 1}
                   onClick={() => setPage((value) => Math.max(1, value - 1))}
                   type="button"
@@ -743,8 +743,8 @@ export function PlatformLocalizationEditor({
                       className={cn(
                         "grid size-9 place-items-center rounded-lg text-xs font-semibold",
                         item === currentPage
-                          ? "bg-zinc-950 text-white"
-                          : "border border-zinc-200 bg-white hover:bg-zinc-50",
+                          ? "bg-foreground text-on-tone"
+                          : "border border-border bg-card hover:bg-muted",
                       )}
                       key={item}
                       onClick={() => setPage(item)}
@@ -756,7 +756,7 @@ export function PlatformLocalizationEditor({
                 )}
                 <button
                   aria-label="Next page"
-                  className="grid size-9 place-items-center rounded-lg border border-zinc-200 bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid size-9 place-items-center rounded-lg border border-border bg-card disabled:cursor-not-allowed disabled:opacity-40"
                   disabled={currentPage >= totalPages}
                   onClick={() =>
                     setPage((value) => Math.min(totalPages, value + 1))
@@ -771,37 +771,37 @@ export function PlatformLocalizationEditor({
         </section>
 
         <aside className="grid gap-5 xl:sticky xl:top-20">
-          <section className="rounded-2xl bg-zinc-950 p-5 text-white shadow-sm">
+          <section className="rounded-2xl bg-foreground p-5 text-on-tone shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-white/10">
+              <span className="grid size-10 place-items-center rounded-xl bg-card/10">
                 <Languages className="size-5" />
               </span>
               <div>
                 <h2 className="font-semibold">Release control</h2>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-muted-foreground">
                   {selectedLocale} · v{detail?.version ?? "—"}
                 </p>
               </div>
             </div>
             <dl className="mt-5 grid grid-cols-2 gap-3 text-xs">
-              <div className="rounded-xl bg-white/5 p-3">
-                <dt className="text-zinc-400">Coverage</dt>
+              <div className="rounded-xl bg-card/5 p-3">
+                <dt className="text-muted-foreground">Coverage</dt>
                 <dd className="mt-1 text-lg font-bold">
                   {selectedPack?.coverage ?? 0}%
                 </dd>
               </div>
-              <div className="rounded-xl bg-white/5 p-3">
-                <dt className="text-zinc-400">Affected tenants</dt>
+              <div className="rounded-xl bg-card/5 p-3">
+                <dt className="text-muted-foreground">Affected tenants</dt>
                 <dd className="mt-1 text-lg font-bold">
                   {selectedPack?.affectedTenants ?? 0}
                 </dd>
               </div>
-              <div className="rounded-xl bg-white/5 p-3">
-                <dt className="text-zinc-400">Changed values</dt>
+              <div className="rounded-xl bg-card/5 p-3">
+                <dt className="text-muted-foreground">Changed values</dt>
                 <dd className="mt-1 text-lg font-bold">{changedCount}</dd>
               </div>
-              <div className="rounded-xl bg-white/5 p-3">
-                <dt className="text-zinc-400">Fallback parent</dt>
+              <div className="rounded-xl bg-card/5 p-3">
+                <dt className="text-muted-foreground">Fallback parent</dt>
                 <dd className="mt-1 text-lg font-bold">
                   {detail?.parentLocale ?? "—"}
                 </dd>
@@ -810,7 +810,7 @@ export function PlatformLocalizationEditor({
             <div className="mt-5 grid gap-2">
               {canReview && detail?.status === "DRAFT" && (
                 <Button
-                  className="w-full bg-white text-zinc-950"
+                  className="w-full bg-card text-foreground"
                   disabled={busy}
                   onClick={() => void runAction("review")}
                 >
@@ -819,7 +819,7 @@ export function PlatformLocalizationEditor({
               )}
               {canPublish && detail?.status === "REVIEW" && (
                 <Button
-                  className="w-full bg-accent text-zinc-950"
+                  className="w-full bg-accent text-foreground"
                   disabled={
                     busy || (selectedLocale === "ar" && detail.coverage < 100)
                   }
@@ -837,7 +837,7 @@ export function PlatformLocalizationEditor({
                 detail &&
                 ["DRAFT", "REVIEW"].includes(detail.status) && (
                   <Button
-                    className="w-full border-white/20 text-white"
+                    className="w-full border-on-tone/20 text-on-tone"
                     disabled={busy}
                     onClick={() => void archive(detail.version)}
                     variant="outline"
@@ -849,18 +849,18 @@ export function PlatformLocalizationEditor({
           </section>
 
           <section
-            className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+            className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
             dir={selectedLocale.startsWith("ar") ? "rtl" : "ltr"}
             lang={selectedLocale}
           >
-            <div className="border-b border-zinc-200 p-4">
+            <div className="border-b border-border p-4">
               <h2 className="font-semibold">Dashboard preview</h2>
               <p className="text-xs text-outline">
                 Inheritance applied for missing regional values
               </p>
             </div>
-            <div className="bg-zinc-50 p-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-4">
+            <div className="bg-muted p-4">
+              <div className="rounded-xl border border-border bg-card p-4">
                 <p className="text-[10px] font-bold uppercase tracking-wider theme-tone-text">
                   {resolvedMessage(
                     detail,
@@ -883,7 +883,7 @@ export function PlatformLocalizationEditor({
                     ["attendance.status.late", "Late", "2"],
                   ].map(([key, fallback, count]) => (
                     <div
-                      className="rounded-lg border border-zinc-200 p-3"
+                      className="rounded-lg border border-border p-3"
                       key={key}
                     >
                       <span className="text-[10px] text-outline">
@@ -897,12 +897,12 @@ export function PlatformLocalizationEditor({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <h2 className="font-semibold">Version history</h2>
             <div className="mt-3 grid gap-2">
               {selectedPack?.versions.map((version) => (
                 <div
-                  className="flex items-center justify-between rounded-xl bg-zinc-50 p-3"
+                  className="flex items-center justify-between rounded-xl bg-muted p-3"
                   key={version.version}
                 >
                   <div>
@@ -916,7 +916,7 @@ export function PlatformLocalizationEditor({
                   {version.status === "ARCHIVED" && canPublish && (
                     <button
                       aria-label={`Restore version ${version.version}`}
-                      className="grid size-8 place-items-center rounded-lg border border-zinc-300 bg-white"
+                      className="grid size-8 place-items-center rounded-lg border border-border bg-card"
                       disabled={busy}
                       onClick={() => void rollback(version.version)}
                       title={`Restore version ${version.version}`}
@@ -941,9 +941,9 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
       className={cn(
         "rounded-full px-2 py-1 text-[10px] font-bold",
         status === "PUBLISHED" && "theme-tone theme-tone-emerald",
-        status === "REVIEW" && "bg-[#ede7dc] text-[#151515]",
+        status === "REVIEW" && "bg-muted text-foreground",
         status === "DRAFT" && "theme-tone theme-tone-amber",
-        status === "ARCHIVED" && "bg-zinc-100 text-zinc-600",
+        status === "ARCHIVED" && "bg-muted text-muted-foreground",
       )}
     >
       {status}
@@ -968,7 +968,7 @@ function MessageCell({
         "rounded-xl border p-3",
         missing
           ? "border-dashed theme-tone theme-tone-amber border"
-          : "border-zinc-200 bg-zinc-50",
+          : "border-border bg-muted",
       )}
     >
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-outline">

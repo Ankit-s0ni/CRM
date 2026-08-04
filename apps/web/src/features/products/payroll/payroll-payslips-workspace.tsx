@@ -91,7 +91,7 @@ export function PayrollPayslipsWorkspace() {
       <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
         <Panel className="h-fit p-5">
           <div className="flex items-center gap-3">
-            <ReceiptText className="size-5 text-[#151515]" />
+            <ReceiptText className="size-5 text-foreground" />
             <h2 className="text-lg font-semibold">{tText("Payslip source")}</h2>
           </div>
           <div className="mt-4">
@@ -114,7 +114,7 @@ export function PayrollPayslipsWorkspace() {
         <div className="grid gap-5">
           {error && <ErrorState message={error} />}
           <Panel className="overflow-hidden">
-            <div className="border-b border-zinc-100 p-5">
+            <div className="border-b border-border p-5">
               <h2 className="text-lg font-semibold">{tText("Run payslips")}</h2>
             </div>
             {loading ? (
@@ -131,7 +131,7 @@ export function PayrollPayslipsWorkspace() {
             )}
           </Panel>
           <Panel className="overflow-hidden">
-            <div className="border-b border-zinc-100 p-5">
+            <div className="border-b border-border p-5">
               <h2 className="text-lg font-semibold">{tText("My payslips")}</h2>
             </div>
             {myPayslips.length ? (
@@ -161,8 +161,8 @@ function PayslipTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-zinc-100 text-sm">
-        <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+      <table className="min-w-full divide-y divide-border text-sm">
+        <thead className="bg-muted text-left text-xs font-semibold uppercase text-muted-foreground">
           <tr>
             {columns.map((column) => (
               <th className="px-4 py-3" key={column}>
@@ -172,7 +172,7 @@ function PayslipTable({
             <th className="px-4 py-3">{tText("Download")}</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100">
+        <tbody className="divide-y divide-border">
           {tableRows.map((row, index) => {
             const id = String(row.id ?? index);
             return (
@@ -188,7 +188,7 @@ function PayslipTable({
                 ))}
                 <td className="px-4 py-3">
                   <button
-                    className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold"
                     onClick={() => onDownload(id)}
                     type="button"
                   >

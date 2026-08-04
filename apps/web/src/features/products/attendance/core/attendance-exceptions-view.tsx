@@ -206,7 +206,7 @@ export function AttendanceExceptionsView() {
     <div className="mx-auto w-full max-w-[1500px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-foreground">
             {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -235,7 +235,7 @@ export function AttendanceExceptionsView() {
               .length ?? 0
           }
           icon={BriefcaseBusiness}
-          tone="bg-zinc-100 text-[#151515]"
+          tone="bg-muted text-foreground"
         />
         <SummaryCard
           label={tText("Work from home")}
@@ -264,8 +264,8 @@ export function AttendanceExceptionsView() {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold",
               type === option.value
-                ? "border-[#151515] bg-[#151515] text-white"
-                : "border-zinc-200 bg-white text-on-surface-variant",
+                ? "border-primary bg-primary text-on-tone"
+                : "border-border bg-card text-on-surface-variant",
             )}
           >
             {option.label}
@@ -299,14 +299,14 @@ export function AttendanceExceptionsView() {
           <button
             disabled={page <= 1}
             onClick={() => updateQuery(type, page - 1)}
-            className="grid size-9 place-items-center rounded-lg border bg-white disabled:opacity-40"
+            className="grid size-9 place-items-center rounded-lg border bg-card disabled:opacity-40"
           >
             <ChevronLeft className="size-4" />
           </button>
           <button
             disabled={page >= data.pagination.pages}
             onClick={() => updateQuery(type, page + 1)}
-            className="grid size-9 place-items-center rounded-lg border bg-white disabled:opacity-40"
+            className="grid size-9 place-items-center rounded-lg border bg-card disabled:opacity-40"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -355,7 +355,7 @@ function ExceptionTable({
     <Panel className="overflow-x-auto">
       <table className="w-full min-w-[850px] text-left">
         <thead>
-          <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
+          <tr className="border-b border-surface-variant bg-muted text-[10px] font-bold uppercase tracking-wider text-outline">
             <Th>{tText("Employee")}</Th>
             <Th>{tText("Type")}</Th>
             <Th>{tText("Date range")}</Th>
@@ -405,7 +405,7 @@ function ExceptionTable({
                     <button
                       aria-label={tText("Edit exception")}
                       onClick={() => onEdit(item)}
-                      className="grid size-8 place-items-center rounded-lg bg-zinc-50 text-[#151515]"
+                      className="grid size-8 place-items-center rounded-lg bg-muted text-foreground"
                     >
                       <Pencil className="size-3.5" />
                     </button>
@@ -454,16 +454,16 @@ function ExceptionEditor({
     form.reason.trim() &&
     !overlap;
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-900/45 p-4">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-foreground/45 p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="exception-title"
-        className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-xl rounded-2xl bg-card p-6 shadow-2xl"
       >
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#2a2927]">
+            <p className="text-xs font-bold uppercase tracking-wider text-foreground">
               {tText("Attendance exception")}</p>
             <h2 id="exception-title" className="mt-1 text-xl font-bold">
               {editing ? tText("Edit approved period") : tText("Add approved period")}
@@ -472,7 +472,7 @@ function ExceptionEditor({
           <button
             aria-label={tText("Close")}
             onClick={onClose}
-            className="grid size-9 place-items-center rounded-lg bg-zinc-50"
+            className="grid size-9 place-items-center rounded-lg bg-muted"
           >
             <X className="size-4" />
           </button>
@@ -505,8 +505,8 @@ function ExceptionEditor({
                   className={cn(
                     "rounded-xl border p-3 text-xs font-semibold",
                     form.exceptionType === value
-                      ? "border-[#151515] bg-zinc-50 text-[#151515]"
-                      : "border-zinc-200",
+                      ? "border-primary bg-muted text-foreground"
+                      : "border-border",
                   )}
                 >
                   {label(value)}
@@ -546,7 +546,7 @@ function ExceptionEditor({
           )}
           <Field label={tText("Approval reason")}>
             <textarea
-              className="min-h-24 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/15"
+              className="min-h-24 w-full rounded-lg border border-border p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/15"
               maxLength={500}
               value={form.reason}
               onChange={(event) =>
@@ -555,8 +555,8 @@ function ExceptionEditor({
               placeholder={tText("Add the approved business reason")}
             />
           </Field>
-          <div className="rounded-xl bg-zinc-50 p-3 text-xs text-on-surface-variant">
-            <ShieldCheck className="mr-2 inline size-4 text-[#151515]" />
+          <div className="rounded-xl bg-muted p-3 text-xs text-on-surface-variant">
+            <ShieldCheck className="mr-2 inline size-4 text-foreground" />
             {tText("Changes are audited and cannot alter payroll-locked attendance periods.")}</div>
           <PrimaryButton disabled={!ready || saving} onClick={onSave}>
             {saving ? tText("Saving…") : editing ? tText("Save changes") : tText("Create exception")}
@@ -571,7 +571,7 @@ function SummaryCard({
   label: title,
   value,
   icon: Icon,
-  tone = "bg-zinc-50 text-[#151515]",
+  tone = "bg-muted text-foreground",
 }: {
   label: string;
   value: number;
@@ -579,7 +579,7 @@ function SummaryCard({
   tone?: string;
 }) {
   return (
-    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-white p-4 shadow-sm">
+    <article className="flex items-center gap-3 rounded-xl border border-surface-variant bg-card p-4 shadow-sm">
       <span className={cn("grid size-10 place-items-center rounded-lg", tone)}>
         <Icon className="size-5" />
       </span>
@@ -595,8 +595,8 @@ function TypeBadge({ type }: { type: ExceptionType }) {
     type === "WFH"
       ? "theme-tone theme-tone-teal border theme-tone-text theme-tone-teal"
       : type === "ON_DUTY"
-        ? "bg-zinc-100 text-[#151515]"
-        : "bg-zinc-100 text-on-surface-variant";
+        ? "bg-muted text-foreground"
+        : "bg-muted text-on-surface-variant";
   return (
     <span
       className={cn(

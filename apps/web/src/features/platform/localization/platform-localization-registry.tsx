@@ -181,7 +181,7 @@ export function PlatformLocalizationRegistry() {
         </div>
         {canTranslate && (
           <Button
-            className="bg-zinc-950 text-white"
+            className="bg-foreground text-on-tone"
             onClick={() => setAddOpen(true)}
           >
             <Plus className="size-4" />
@@ -209,8 +209,8 @@ export function PlatformLocalizationRegistry() {
         />
       </section>
 
-      <section className="mt-5 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 p-4">
+      <section className="mt-5 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
           <div>
             <h2 className="font-semibold">Language registry</h2>
             <p className="mt-0.5 text-xs text-outline">
@@ -221,7 +221,7 @@ export function PlatformLocalizationRegistry() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-outline" />
             <input
               aria-label="Search languages"
-              className="h-10 w-full rounded-xl border border-zinc-200 bg-zinc-50 pl-10 pr-3 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              className="h-10 w-full rounded-xl border border-border bg-muted pl-10 pr-3 text-sm outline-none transition focus:border-border focus:ring-2 focus:ring-ring"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search languages..."
               value={query}
@@ -229,7 +229,7 @@ export function PlatformLocalizationRegistry() {
           </label>
         </div>
 
-        <div className="hidden grid-cols-[minmax(260px,1.5fr)_110px_160px_130px_130px_90px] gap-4 border-b border-zinc-100 bg-zinc-50 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-outline lg:grid">
+        <div className="hidden grid-cols-[minmax(260px,1.5fr)_110px_160px_130px_130px_90px] gap-4 border-b border-border bg-muted px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-outline lg:grid">
           <span>Language</span>
           <span>Direction</span>
           <span>Coverage</span>
@@ -242,21 +242,21 @@ export function PlatformLocalizationRegistry() {
           <div className="grid gap-2 p-4">
             {[0, 1, 2, 3].map((item) => (
               <div
-                className="h-20 animate-pulse rounded-xl bg-zinc-50"
+                className="h-20 animate-pulse rounded-xl bg-muted"
                 key={item}
               />
             ))}
           </div>
         ) : (
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-border">
             {visiblePacks.map((pack) => (
               <Link
-                className="group grid min-h-20 items-center gap-4 px-5 py-4 transition hover:bg-zinc-50 lg:grid-cols-[minmax(260px,1.5fr)_110px_160px_130px_130px_90px]"
+                className="group grid min-h-20 items-center gap-4 px-5 py-4 transition hover:bg-muted lg:grid-cols-[minmax(260px,1.5fr)_110px_160px_130px_130px_90px]"
                 href={`/platform/localization/${encodeURIComponent(pack.locale)}`}
                 key={pack.locale}
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-800">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-sm font-bold text-foreground">
                     {pack.locale}
                   </span>
                   <div className="min-w-0">
@@ -275,7 +275,7 @@ export function PlatformLocalizationRegistry() {
                 </span>
                 <div>
                   <div className="text-xs">{pack.coverage}% complete</div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-100">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
                       className={cn(
                         "h-full rounded-full",
@@ -330,8 +330,8 @@ export function PlatformLocalizationRegistry() {
                   className={cn(
                     "flex min-h-16 items-center justify-between rounded-xl border p-3 text-left transition",
                     selectedLocale === language.locale
-                      ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-900/10"
-                      : "border-zinc-200 hover:border-zinc-400",
+                      ? "border-border bg-muted ring-2 ring-ring/10"
+                      : "border-border hover:border-border",
                   )}
                   key={language.locale}
                   onClick={() => setSelectedLocale(language.locale)}
@@ -374,7 +374,7 @@ export function PlatformLocalizationRegistry() {
               Cancel
             </Button>
             <Button
-              className="bg-zinc-950 text-white"
+              className="bg-foreground text-on-tone"
               disabled={!selectedLocale || busy}
               onClick={() => void createLanguage()}
             >
@@ -397,7 +397,7 @@ function RegistryMetric({
   suffix?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <p className="text-xs font-medium text-outline">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight">
         {value}
@@ -413,9 +413,9 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
       className={cn(
         "w-fit rounded-full px-2.5 py-1 text-[10px] font-bold",
         status === "PUBLISHED" && "theme-tone theme-tone-emerald",
-        status === "REVIEW" && "bg-[#ede7dc] text-[#151515]",
+        status === "REVIEW" && "bg-muted text-foreground",
         status === "DRAFT" && "theme-tone theme-tone-amber",
-        status === "ARCHIVED" && "bg-zinc-100 text-zinc-600",
+        status === "ARCHIVED" && "bg-muted text-muted-foreground",
       )}
     >
       {status}

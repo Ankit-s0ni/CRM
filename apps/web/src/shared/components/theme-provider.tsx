@@ -2,7 +2,15 @@
 
 import { createContext, useContext, useEffect, useSyncExternalStore } from "react";
 
-type Theme = "current" | "monochrome";
+export type Theme =
+  | "default"
+  | "editorial"
+  | "charcoal"
+  | "navy"
+  | "emerald"
+  | "teal"
+  | "crimson"
+  | "monochrome";
 
 interface ThemeProviderState {
   theme: Theme;
@@ -10,12 +18,22 @@ interface ThemeProviderState {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "monochrome",
+  theme: "default",
   setTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 const THEME_CHANGE_EVENT = "deltcrm-theme-change";
+const themes = new Set<Theme>([
+  "default",
+  "editorial",
+  "charcoal",
+  "navy",
+  "emerald",
+  "teal",
+  "crimson",
+  "monochrome",
+]);
 
 function subscribeToTheme(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -28,14 +46,26 @@ function subscribeToTheme(onStoreChange: () => void) {
 
 function readTheme(storageKey: string, defaultTheme: Theme) {
   const storedTheme = localStorage.getItem(storageKey);
-  if (storedTheme === "current" || storedTheme === "default") return "current";
-  if (storedTheme === "monochrome") return "monochrome";
-  return defaultTheme;
+  // Preserve the value used by Vedant's first theme implementation.
+  if (storedTheme === "current") return "editorial";
+  return themes.has(storedTheme as Theme)
+    ? (storedTheme as Theme)
+    : defaultTheme;
+}
+
+function applyTheme(theme: Theme) {
+  const root = window.document.documentElement;
+
+  if (theme === "default") {
+    root.removeAttribute("data-theme");
+  } else {
+    root.setAttribute("data-theme", theme);
+  }
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = "monochrome",
+  defaultTheme = "default",
   storageKey = "deltcrm-ui-theme",
 }: {
   children: React.ReactNode;
@@ -49,18 +79,13 @@ export function ThemeProvider({
   );
 
   useEffect(() => {
-    const root = window.document.documentElement;
-
-    if (theme === "monochrome") {
-      root.setAttribute("data-theme", "monochrome");
-    } else {
-      root.removeAttribute("data-theme");
-    }
+    applyTheme(theme);
   }, [theme]);
 
   const value = {
     theme,
     setTheme: (nextTheme: Theme) => {
+      applyTheme(nextTheme);
       localStorage.setItem(storageKey, nextTheme);
       window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
     },

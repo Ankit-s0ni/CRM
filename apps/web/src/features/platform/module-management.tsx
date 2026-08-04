@@ -149,7 +149,7 @@ export function ModuleManagement() {
   return (
     <div className="mx-auto max-w-[1500px] p-5 lg:p-8">
       <header className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#151515]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-foreground">
           Commercial catalog
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">
@@ -168,7 +168,7 @@ export function ModuleManagement() {
       )}
 
       <div className="grid gap-5 xl:grid-cols-[340px_1fr]">
-        <aside className="rounded-2xl border border-outline-variant bg-white p-5 shadow-sm">
+        <aside className="rounded-2xl border border-outline-variant bg-card p-5 shadow-sm">
           <h2 className="font-semibold">Product Catalog</h2>
           <p className="mt-1 text-xs text-outline">
             Customer-facing products, add-ons and capabilities.
@@ -186,14 +186,14 @@ export function ModuleManagement() {
           </div>
 
           {comingSoon.length > 0 && (
-            <div className="mt-7 border-t border-zinc-100 pt-5">
+            <div className="mt-7 border-t border-border pt-5">
               <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-outline">
                 <Sparkles className="size-4" /> Coming later
               </div>
               <div className="space-y-2">
                 {comingSoon.map((product) => (
                   <div
-                    className="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 text-sm text-outline"
+                    className="flex items-center gap-3 rounded-xl bg-muted p-3 text-sm text-outline"
                     key={product.id}
                   >
                     <LockKeyhole className="size-4" />
@@ -210,7 +210,7 @@ export function ModuleManagement() {
 
         <main className="space-y-5">
           {selectedProduct && <ProductDetail product={selectedProduct} />}
-          <section className="overflow-hidden rounded-2xl border border-outline-variant bg-white shadow-sm">
+          <section className="overflow-hidden rounded-2xl border border-outline-variant bg-card shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-surface-variant p-5">
               <div>
                 <h2 className="font-semibold">Tenant product entitlements</h2>
@@ -233,7 +233,7 @@ export function ModuleManagement() {
             <div className="overflow-x-auto">
               <div className="min-w-[720px]">
                 <div
-                  className="grid border-b border-surface-variant bg-zinc-50 text-[10px] font-semibold uppercase tracking-wide text-on-surface-variant"
+                  className="grid border-b border-surface-variant bg-muted text-[10px] font-semibold uppercase tracking-wide text-on-surface-variant"
                   style={{
                     gridTemplateColumns: `240px repeat(${assignable.length}, minmax(150px, 1fr))`,
                   }}
@@ -246,7 +246,7 @@ export function ModuleManagement() {
                     >
                       {item.name}
                       {item.kind === "ADD_ON" && (
-                        <span className="mt-1 block text-[9px] text-[#151515]">
+                        <span className="mt-1 block text-[9px] text-foreground">
                           Attendance add-on
                         </span>
                       )}
@@ -263,7 +263,7 @@ export function ModuleManagement() {
                     }}
                   >
                     <div className="flex items-center gap-3 p-4">
-                      <div className="grid size-9 place-items-center rounded-lg bg-surface-variant text-xs font-bold text-[#151515]">
+                      <div className="grid size-9 place-items-center rounded-lg bg-surface-variant text-xs font-bold text-foreground">
                         {tenant.companyName.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
@@ -290,7 +290,7 @@ export function ModuleManagement() {
                             aria-checked={active}
                             aria-label={`${active ? "Disable" : "Enable"} ${item.name} for ${tenant.companyName}`}
                             className={`relative h-6 w-11 rounded-full transition ${
-                              active ? "theme-tone theme-tone-emerald" : "bg-zinc-200"
+                              active ? "theme-tone theme-tone-emerald" : "bg-outline-variant"
                             } disabled:opacity-55`}
                             disabled={disabled}
                             onClick={() => void toggle(tenant.id, item)}
@@ -302,7 +302,7 @@ export function ModuleManagement() {
                             }
                           >
                             <span
-                              className={`absolute top-1 size-4 rounded-full bg-white shadow transition ${
+                              className={`absolute top-1 size-4 rounded-full bg-card shadow transition ${
                                 active ? "left-6" : "left-1"
                               }`}
                             />
@@ -360,7 +360,7 @@ function ProductButton({
   return (
     <button
       className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left ${
-        selected ? "border-[#151515] bg-zinc-50" : "border-surface-variant"
+        selected ? "border-primary bg-muted" : "border-surface-variant"
       }`}
       onClick={() => onSelect(product.key)}
       type="button"
@@ -382,16 +382,16 @@ function ProductButton({
 function ProductDetail({ product }: { product: PlatformModule }) {
   const capabilities = product.capabilities ?? [];
   return (
-    <section className="rounded-2xl border border-outline-variant bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-outline-variant bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#151515]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-foreground">
             Available product
           </p>
           <h2 className="mt-1 text-xl font-bold">{product.name}</h2>
           <p className="mt-2 text-sm text-on-surface-variant">{product.description}</p>
         </div>
-        <div className="rounded-xl bg-zinc-50 px-4 py-2 text-xs font-semibold text-[#151515]">
+        <div className="rounded-xl bg-muted px-4 py-2 text-xs font-semibold text-foreground">
           {capabilities.length} plan features
         </div>
       </div>
@@ -399,7 +399,7 @@ function ProductDetail({ product }: { product: PlatformModule }) {
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {capabilities.map((capability) => (
           <div
-            className="rounded-xl border border-zinc-200 p-4"
+            className="rounded-xl border border-border p-4"
             key={capability.id}
           >
             <div className="flex items-start gap-2">
@@ -423,13 +423,13 @@ function ProductDetail({ product }: { product: PlatformModule }) {
       </div>
 
       {(product.addOns?.length ?? 0) > 0 && (
-        <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-          <div className="text-xs font-bold uppercase tracking-wide text-[#151515]">
+        <div className="mt-5 rounded-xl border border-border bg-muted p-4">
+          <div className="text-xs font-bold uppercase tracking-wide text-foreground">
             Optional add-on
           </div>
           {product.addOns?.map((addOn) => (
             <div className="mt-2 flex items-center gap-3" key={addOn.id}>
-              <MapPin className="size-5 text-[#151515]" />
+              <MapPin className="size-5 text-foreground" />
               <div>
                 <div className="text-sm font-semibold">{addOn.name}</div>
                 <div className="text-xs text-outline">

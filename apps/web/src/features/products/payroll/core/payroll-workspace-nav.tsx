@@ -25,7 +25,7 @@ export function PayrollWorkspaceNav() {
   return (
     <nav
       aria-label={tText("Payroll workspace")}
-      className="sticky top-16 z-20 flex min-h-14 items-center gap-1 overflow-x-auto border-b border-zinc-200 bg-white px-3 shadow-sm lg:px-6"
+      className="sticky top-16 z-20 flex min-h-14 items-center gap-1 overflow-x-auto border-b border-border bg-card px-3 shadow-sm lg:px-6"
     >
       {payrollNavItems.map((item) => {
         const active = currentSection === item.section;
@@ -36,8 +36,8 @@ export function PayrollWorkspaceNav() {
             className={cn(
               "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition",
               active
-                ? "bg-zinc-700 text-white"
-                : "text-on-surface-variant hover:bg-zinc-100 hover:text-zinc-700",
+                ? "bg-primary-container text-on-tone"
+                : "text-on-surface-variant hover:bg-muted hover:text-foreground",
             )}
             href={item.href}
             key={item.href}

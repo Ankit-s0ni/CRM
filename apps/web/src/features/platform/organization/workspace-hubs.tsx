@@ -169,11 +169,11 @@ export function ModulesHub() {
         <div className="grid gap-5 lg:grid-cols-2">
           {attendance && canAccessAttendanceWorkspace(permissions) && (
             <Link
-              className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2a2927] hover:shadow-md"
+              className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
               href="/app/modules/attendance"
             >
               <div className="flex items-start gap-4">
-                <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+                <span className="grid size-12 place-items-center rounded-xl bg-muted text-foreground">
                   <ClipboardCheck className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -181,9 +181,9 @@ export function ModulesHub() {
                     <h2 className="text-lg font-bold">
                       {tText("Attendance")}
                     </h2>
-                    <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-[#151515]" />
+                    <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-foreground" />
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {tText(
                       "Attendance setup for policies, offices, shifts, rosters, holidays, devices, and security.",
                     )}
@@ -193,7 +193,7 @@ export function ModulesHub() {
                   </span>
                   {attendanceAddOns?.map((module) => (
                     <span
-                      className="ml-2 mt-4 inline-flex rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-[#151515]"
+                      className="ml-2 mt-4 inline-flex rounded-full bg-muted px-3 py-1 text-xs font-bold text-foreground"
                       key={module.key}
                     >
                       {localizedModuleName(module.key, module.name, tText)}
@@ -205,11 +205,11 @@ export function ModulesHub() {
           )}
           {payroll && canOpenPayroll && (
               <Link
-                className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2a2927] hover:shadow-md"
+                className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
                 href="/app/modules/payroll"
               >
                 <div className="flex items-start gap-4">
-                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+                  <span className="grid size-12 place-items-center rounded-xl bg-muted text-foreground">
                     <WalletCards className="size-6" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -219,7 +219,7 @@ export function ModulesHub() {
                       </h2>
                       <ChevronRight className="size-5 text-outline" />
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-zinc-500">
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       {tText(
                         "Company payroll setup for pay groups, salary rules, approval steps, and accounting links.",
                       )}
@@ -234,7 +234,7 @@ export function ModulesHub() {
           {shouldShowPayrollEnablement && (
             <Panel className="rounded-2xl border theme-tone theme-tone-amber p-6">
               <div className="flex items-start gap-4">
-                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white theme-tone-text">
+                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-card theme-tone-text">
                   <WalletCards className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -244,7 +244,7 @@ export function ModulesHub() {
                     enabled for this workspace yet. Enable the PAYROLL module
                     from platform tenant modules before using payroll screens.
                   </p>
-                  <span className="mt-4 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold theme-tone-text">
+                  <span className="mt-4 inline-flex rounded-full bg-card px-3 py-1 text-xs font-bold theme-tone-text">
                     Needs workspace enablement
                   </span>
                 </div>
@@ -264,19 +264,19 @@ export function ModulesHub() {
             )
             .map((module) => (
               <Link
-                className="rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:border-[#2a2927] hover:shadow-md"
+                className="rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:border-primary hover:shadow-md"
                 href="/app/settings/modules"
                 key={module.key}
               >
                 <div className="flex items-start gap-4">
-                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-zinc-500">
+                  <span className="grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
                     <Building2 className="size-6" />
                   </span>
                   <div>
                     <h2 className="text-lg font-bold">
                       {localizedModuleName(module.key, module.name, tText)}
                     </h2>
-                    <p className="mt-2 text-sm text-zinc-500">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       {tText(
                         "Review this enabled service, its dependencies, and its current configuration health.",
                       )}
@@ -287,7 +287,7 @@ export function ModulesHub() {
               </Link>
             ))}
           {!modules.length && (
-            <Panel className="p-8 text-sm text-zinc-500">
+            <Panel className="p-8 text-sm text-muted-foreground">
               {tText("No business modules are enabled for this workspace.")}
             </Panel>
           )}
@@ -521,12 +521,12 @@ export function SettingsHub() {
           return (
             <section key={section.title}>
               <div className="mb-4 flex items-start gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#151515] text-sm font-bold text-white">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-on-tone">
                   {index + 1}
                 </span>
                 <div>
                   <h2 className="text-lg font-bold">{section.title}</h2>
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {section.description}
                   </p>
                 </div>
@@ -538,22 +538,22 @@ export function SettingsHub() {
                     return (
                       <Link
                         className={cn(
-                          "group rounded-xl border border-surface-variant bg-white p-5 shadow-sm transition hover:border-[#2a2927] hover:shadow-md",
+                          "group rounded-xl border border-surface-variant bg-card p-5 shadow-sm transition hover:border-primary hover:shadow-md",
                         )}
                         href={href}
                         key={href}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+                          <span className="grid size-10 place-items-center rounded-xl bg-muted text-foreground">
                             <Icon className="size-5" />
                           </span>
-                          <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-[#151515]" />
+                          <ChevronRight className="ml-auto size-5 text-muted-foreground group-hover:text-foreground" />
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                           <h3 className="font-bold">{title}</h3>
                           {readiness && <HealthPill value={readiness.status} />}
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-zinc-500">
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
                           {description}
                         </p>
                         {readiness?.issues[0] && (
@@ -635,15 +635,15 @@ function WorkspaceLaunchChecklist({
   const firstIncomplete = steps.findIndex(({ complete }) => !complete);
 
   return (
-    <Panel className="mb-8 overflow-hidden border-zinc-200">
-      <div className="border-b border-surface-variant bg-zinc-50 p-5">
-        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#151515]">
+    <Panel className="mb-8 overflow-hidden border-border">
+      <div className="border-b border-surface-variant bg-muted p-5">
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-foreground">
           {tText("Workspace launch checklist")}
         </p>
         <h2 className="mt-1 text-xl font-bold">
           {tText("Set up in this order")}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           {tText(
             "Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.",
           )}
@@ -661,20 +661,20 @@ function WorkspaceLaunchChecklist({
                   step.complete
                     ? "theme-tone theme-tone-emerald"
                     : index === firstIncomplete
-                      ? "bg-[#151515] text-white"
-                      : "bg-zinc-100 text-outline",
+                      ? "bg-primary text-on-tone"
+                      : "bg-muted text-outline",
                 )}
               >
                 {step.complete ? <Check className="size-4" /> : index + 1}
               </span>
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-foreground">
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
                 <strong className="block text-sm">{step.title}</strong>
                 <span className="text-xs text-outline">{step.description}</span>
               </span>
-              <span className="ml-auto shrink-0 text-xs font-semibold text-[#151515]">
+              <span className="ml-auto shrink-0 text-xs font-semibold text-foreground">
                 {step.complete
                   ? tText("Complete")
                   : index === firstIncomplete
@@ -769,7 +769,7 @@ export function ModuleSettingsView() {
           ))}
         </div>
       ) : (
-        <Panel className="p-8 text-sm text-zinc-500">
+        <Panel className="p-8 text-sm text-muted-foreground">
           {tText("No modules are enabled. Review the subscription with the Business Admin or DeltCRM support.")}</Panel>
       )}
     </AdminPage>
@@ -998,14 +998,14 @@ export function IntegrationSettingsView() {
                 <h2 className="font-bold">{provider.name}</h2>
                 <HealthPill value={provider.status} />
               </div>
-              <p className="mt-3 text-sm leading-6 text-zinc-500">
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 {provider.message}
               </p>
             </Panel>
           ))}
         </div>
       )}
-      {note && <p className="mt-5 text-sm text-zinc-500">{note}</p>}
+      {note && <p className="mt-5 text-sm text-muted-foreground">{note}</p>}
     </AdminPage>
   );
 }
@@ -1043,7 +1043,7 @@ function ModuleHealthCard({
   return (
     <Panel className="p-6">
       <div className="flex items-start gap-4">
-        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+        <span className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
           <Blocks className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -1051,7 +1051,7 @@ function ModuleHealthCard({
             <h2 className="font-bold">{module.name}</h2>
             <HealthPill value={health?.status ?? "CHECKING"} />
           </div>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {module.description ?? tText("DeltCRM workspace module")}
           </p>
         </div>
@@ -1059,7 +1059,7 @@ function ModuleHealthCard({
       {health && <ModuleReadiness health={health} compact />}
       {href && (
         <Link
-          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#151515]"
+          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-foreground"
           href={href}
         >
           {tText("Open configuration")}<ChevronRight className="size-4" />
@@ -1080,13 +1080,13 @@ function ModuleReadiness({
   return (
     <div
       className={cn(
-        "rounded-xl border border-surface-variant bg-white",
+        "rounded-xl border border-surface-variant bg-card",
         compact ? "mt-5 p-4" : "p-6",
       )}
     >
       {!compact && (
         <div className="flex items-center gap-3">
-          <Activity className="size-5 text-[#151515]" />
+          <Activity className="size-5 text-foreground" />
           <h2 className="font-bold">{tText("Configuration health")}</h2>
           <HealthPill value={health.status} />
         </div>
@@ -1094,7 +1094,7 @@ function ModuleReadiness({
       <div className="mt-3 flex flex-wrap gap-2">
         {Object.entries(health.configuration).map(([label, value]) => (
           <span
-            className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-semibold text-on-surface-variant"
+            className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-on-surface-variant"
             key={label}
           >
             {configurationLabel(label, t)}: {value}
@@ -1129,17 +1129,17 @@ function WorkflowLink({
 }) {
   return (
     <Link
-      className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-[#2a2927] hover:shadow-md"
+      className="group rounded-xl border border-surface-variant bg-card p-6 shadow-sm transition hover:border-primary hover:shadow-md"
       href={href}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
+        <span className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
           <Icon className="size-5" />
         </span>
-        <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-[#151515]" />
+        <ChevronRight className="ml-auto size-5 text-muted-foreground group-hover:text-foreground" />
       </div>
       <h2 className="mt-5 font-bold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-zinc-500">{description}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </Link>
   );
 }
@@ -1158,7 +1158,7 @@ function HealthPill({ value }: { value: string }) {
           : blocked
             ? "theme-tone theme-tone-red"
             : neutral
-              ? "bg-zinc-100 text-zinc-500"
+              ? "bg-muted text-muted-foreground"
               : "theme-tone theme-tone-amber",
       )}
     >

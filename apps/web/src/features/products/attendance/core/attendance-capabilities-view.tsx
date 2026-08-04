@@ -124,7 +124,7 @@ export function AttendanceCapabilitiesView() {
       description={tText("Control the tenant-wide capability boundary. Policy assignments decide the exact behavior for each employee.")}
       action={
         <Button
-          className="h-11 bg-[#151515] px-5 text-white hover:bg-[#2a2927]"
+          className="h-11 bg-primary px-5 text-on-tone hover:bg-primary-container"
           disabled={
             !canManage || saving || !capabilities?.fieldTrackingEntitled
           }
@@ -180,7 +180,7 @@ export function AttendanceCapabilitiesView() {
           <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
             <Panel className="p-7">
               <div className="flex items-start gap-4">
-                <span className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+                <span className="grid size-11 place-items-center rounded-xl bg-muted text-foreground">
                   <Radar className="size-5" />
                 </span>
                 <div>
@@ -189,17 +189,17 @@ export function AttendanceCapabilitiesView() {
                       {tText("Field tracking boundary")}</h2>
                     <FeatureInfo helpKey="background-tracking" />
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-zinc-500">
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
                     {tText("Turning this off ends active field sessions and rejects new tracking requests. Eligible employee policies still need to enable field tracking individually.")}</p>
                 </div>
               </div>
               {!capabilities.fieldTrackingEntitled ? (
-                <div className="mt-6 flex gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                  <LockKeyhole className="mt-0.5 size-5 shrink-0 text-zinc-500" />
+                <div className="mt-6 flex gap-3 rounded-xl border border-border bg-muted p-4">
+                  <LockKeyhole className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-bold">
                       {tText("Not included for this workspace")}</p>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {canManageSubscription
                         ? tText("Review the workspace subscription with the DeltCRM platform owner before enabling tracked field work.")
                         : tText("Field Tracking is unavailable for this workspace. Office and non-tracked attendance continue normally.")}
@@ -250,7 +250,7 @@ export function AttendanceCapabilitiesView() {
 
             <Panel className="p-7">
               <h2 className="text-lg font-bold">{tText("Employee policy impact")}</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-500">
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {tText("Department and employee assignments override the tenant default. The mobile app receives only the final effective behavior.")}</p>
               <dl className="mt-5 space-y-3 text-sm">
                 <Impact
@@ -275,7 +275,7 @@ export function AttendanceCapabilitiesView() {
                 />
               </dl>
               <Link
-                className="mt-6 flex h-9 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium transition hover:bg-zinc-50"
+                className="mt-6 flex h-9 w-full items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium transition hover:bg-muted"
                 href="/app/attendance/policies"
               >
                 {tText("Manage employee policies")}</Link>
@@ -304,7 +304,7 @@ function StatusCard({
   return (
     <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-zinc-50 text-[#151515]">
+        <span className="grid size-10 place-items-center rounded-lg bg-muted text-foreground">
           <Icon className="size-5" />
         </span>
         <div className="flex items-center gap-1">
@@ -312,7 +312,7 @@ function StatusCard({
             <FeatureInfo className="min-h-9 min-w-9" helpKey={helpKey} />
           )}
           <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "status-badge status-enabled" : "bg-zinc-100 text-on-surface-variant"}`}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "status-badge status-enabled" : "bg-muted text-on-surface-variant"}`}
           >
             {enabled ? tText("Enabled") : tText("Off")}
           </span>
@@ -326,9 +326,9 @@ function StatusCard({
 
 function Impact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-zinc-50 px-4 py-3">
-      <dt className="text-zinc-500">{label}</dt>
-      <dd className="font-bold text-zinc-700">{value}</dd>
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-muted px-4 py-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-bold text-foreground">{value}</dd>
     </div>
   );
 }

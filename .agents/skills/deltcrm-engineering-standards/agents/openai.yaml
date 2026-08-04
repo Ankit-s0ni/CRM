@@ -1,0 +1,4 @@
+interface:
+  display_name: "DeltCRM Engineering Standards"
+  short_description: "Build and review DeltCRM changes safely and consistently"
+  default_prompt: "Apply the DeltCRM engineering standards to implement or review this change, including architecture, tenant security, UI quality, localization, testing, and production-data safety."
