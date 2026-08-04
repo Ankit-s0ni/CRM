@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -46,6 +47,7 @@ export class PayrollProcessingController {
   @Post('runs/:id/calculate')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_CALCULATE)
   @ApiOperation({ summary: 'Calculate payroll run results' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollProcessingResponseDto })
   calculate(
     @CurrentUser() user: AuthenticatedUser,
@@ -145,6 +147,7 @@ export class PayrollProcessingController {
   @Post('runs/:id/publish')
   @RequirePermissions(PERMISSIONS.PAYROLL_PAYSLIPS_PUBLISH)
   @ApiOperation({ summary: 'Publish generated payslips' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollProcessingResponseDto })
   publish(
     @CurrentUser() user: AuthenticatedUser,
@@ -167,6 +170,7 @@ export class PayrollProcessingController {
 
   @Get('runs/:id/payslips')
   @RequirePermissions(PERMISSIONS.PAYROLL_PAYSLIPS_READ)
+  @ApiOperation({ summary: 'List payslips generated for a payroll run' })
   @ApiOkResponse({ type: PayrollProcessingResponseDto })
   listPayslips(
     @CurrentUser() user: AuthenticatedUser,
@@ -177,6 +181,7 @@ export class PayrollProcessingController {
 
   @Get('runs/:id/jobs')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOperation({ summary: 'List background jobs for a payroll run' })
   @ApiOkResponse({ type: PayrollProcessingResponseDto })
   listJobs(
     @CurrentUser() user: AuthenticatedUser,
@@ -187,6 +192,7 @@ export class PayrollProcessingController {
 
   @Get('payslips/:id/download')
   @RequirePermissions(PERMISSIONS.PAYROLL_PAYSLIPS_READ)
+  @ApiOperation({ summary: 'Create a signed payslip download URL' })
   @ApiOkResponse({ type: PayrollProcessingResponseDto })
   downloadPayslip(
     @CurrentUser() user: AuthenticatedUser,
@@ -197,6 +203,7 @@ export class PayrollProcessingController {
 
   @Get('outputs/:id/download')
   @RequirePermissions(PERMISSIONS.PAYROLL_REPORTS_GENERATE)
+  @ApiOperation({ summary: 'Create a signed payroll output download URL' })
   @ApiOkResponse({ type: PayrollProcessingResponseDto })
   downloadOutput(
     @CurrentUser() user: AuthenticatedUser,

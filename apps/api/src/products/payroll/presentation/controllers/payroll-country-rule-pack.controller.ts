@@ -41,6 +41,7 @@ export class PayrollCountryRulePackController {
 
   @Get()
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'List tenant country rule packs' })
   @ApiOkResponse({ type: PayrollCountryRulePackListResponseDto })
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.service.list(user.tenantId);

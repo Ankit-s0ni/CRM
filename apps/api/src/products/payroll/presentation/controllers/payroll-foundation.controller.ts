@@ -13,6 +13,7 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -136,6 +137,7 @@ export class PayrollFoundationController {
 
   @Get('pay-groups')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'List payroll pay groups' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listPayGroups(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListPayGroupsQuery(user.tenantId));
@@ -143,6 +145,7 @@ export class PayrollFoundationController {
 
   @Post('pay-groups')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll pay group' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createPayGroup(
     @CurrentUser() user: AuthenticatedUser,
@@ -155,6 +158,7 @@ export class PayrollFoundationController {
 
   @Get('pay-groups/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'Get a payroll pay group' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getPayGroup(
     @CurrentUser() user: AuthenticatedUser,
@@ -165,6 +169,7 @@ export class PayrollFoundationController {
 
   @Patch('pay-groups/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Update a payroll pay group' })
   @ApiOkResponse({ type: PayrollVersionedCommandResponseDto })
   updatePayGroup(
     @CurrentUser() user: AuthenticatedUser,
@@ -178,6 +183,7 @@ export class PayrollFoundationController {
 
   @Get('pay-groups/:id/employees')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_READ)
+  @ApiOperation({ summary: 'List employees assigned to a pay group' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listPayGroupEmployees(
     @CurrentUser() user: AuthenticatedUser,
@@ -190,6 +196,7 @@ export class PayrollFoundationController {
 
   @Post('pay-groups/:id/employees')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'Assign an employee to a pay group' })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   assignEmployee(
     @CurrentUser() user: AuthenticatedUser,
@@ -203,6 +210,7 @@ export class PayrollFoundationController {
 
   @Delete('pay-groups/:id/employees/:employeeId')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'Remove an employee from a pay group' })
   @ApiOkResponse({ type: PayrollStatusCommandResponseDto })
   removeEmployee(
     @CurrentUser() user: AuthenticatedUser,
@@ -221,6 +229,7 @@ export class PayrollFoundationController {
 
   @Get('components')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_READ)
+  @ApiOperation({ summary: 'List payroll components' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listComponents(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListPayComponentsQuery(user.tenantId));
@@ -228,6 +237,7 @@ export class PayrollFoundationController {
 
   @Post('components')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll component' })
   @ApiCreatedResponse({ type: PayrollCommandResponseDto })
   createComponent(
     @CurrentUser() user: AuthenticatedUser,
@@ -240,6 +250,7 @@ export class PayrollFoundationController {
 
   @Get('components/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_READ)
+  @ApiOperation({ summary: 'Get a payroll component' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getComponent(
     @CurrentUser() user: AuthenticatedUser,
@@ -250,6 +261,7 @@ export class PayrollFoundationController {
 
   @Get('components/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_READ)
+  @ApiOperation({ summary: 'List payroll component versions' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getComponentHistory(
     @CurrentUser() user: AuthenticatedUser,
@@ -262,6 +274,7 @@ export class PayrollFoundationController {
 
   @Post('components/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll component version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createComponentVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -275,6 +288,8 @@ export class PayrollFoundationController {
 
   @Post('components/:id/versions/:versionId/activate')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPONENTS_MANAGE)
+  @ApiOperation({ summary: 'Activate a payroll component version' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   activateComponentVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -293,6 +308,7 @@ export class PayrollFoundationController {
 
   @Get('salary-structures')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_READ)
+  @ApiOperation({ summary: 'List salary structures' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listStructures(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListSalaryStructuresQuery(user.tenantId));
@@ -300,6 +316,7 @@ export class PayrollFoundationController {
 
   @Post('salary-structures')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_MANAGE)
+  @ApiOperation({ summary: 'Create a salary structure' })
   @ApiCreatedResponse({ type: PayrollCommandResponseDto })
   createStructure(
     @CurrentUser() user: AuthenticatedUser,
@@ -312,6 +329,7 @@ export class PayrollFoundationController {
 
   @Get('salary-structures/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_READ)
+  @ApiOperation({ summary: 'Get a salary structure' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getStructure(
     @CurrentUser() user: AuthenticatedUser,
@@ -324,6 +342,7 @@ export class PayrollFoundationController {
 
   @Get('salary-structures/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_READ)
+  @ApiOperation({ summary: 'List salary structure versions' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getStructureHistory(
     @CurrentUser() user: AuthenticatedUser,
@@ -336,6 +355,7 @@ export class PayrollFoundationController {
 
   @Post('salary-structures/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_MANAGE)
+  @ApiOperation({ summary: 'Create a salary structure version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createStructureVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -354,6 +374,8 @@ export class PayrollFoundationController {
 
   @Post('salary-structures/:id/versions/:versionId/activate')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_MANAGE)
+  @ApiOperation({ summary: 'Activate a salary structure version' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   activateStructureVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -372,6 +394,7 @@ export class PayrollFoundationController {
 
   @Post('salary-structures/versions/:versionId/components')
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_MANAGE)
+  @ApiOperation({ summary: 'Add a component to a salary structure version' })
   @ApiCreatedResponse({ type: PayrollCommandResponseDto })
   addStructureComponent(
     @CurrentUser() user: AuthenticatedUser,
@@ -392,6 +415,9 @@ export class PayrollFoundationController {
     'salary-structures/versions/:versionId/components/:componentVersionId',
   )
   @RequirePermissions(PERMISSIONS.PAYROLL_STRUCTURES_MANAGE)
+  @ApiOperation({
+    summary: 'Remove a component from a salary structure version',
+  })
   @ApiOkResponse({ type: PayrollStatusCommandResponseDto })
   removeStructureComponent(
     @CurrentUser() user: AuthenticatedUser,
@@ -410,6 +436,7 @@ export class PayrollFoundationController {
 
   @Get('employees/:employeeId/profile')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_READ)
+  @ApiOperation({ summary: 'Get an employee payroll profile' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getProfile(
     @CurrentUser() user: AuthenticatedUser,
@@ -422,6 +449,7 @@ export class PayrollFoundationController {
 
   @Post('employees/:employeeId/profile')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'Create an employee payroll profile' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createProfile(
     @CurrentUser() user: AuthenticatedUser,
@@ -440,6 +468,7 @@ export class PayrollFoundationController {
 
   @Patch('employees/:employeeId/profile')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'Update an employee payroll profile' })
   @ApiOkResponse({ type: PayrollVersionedCommandResponseDto })
   updateProfile(
     @CurrentUser() user: AuthenticatedUser,
@@ -458,6 +487,7 @@ export class PayrollFoundationController {
 
   @Get('employees/:employeeId/compensation')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_READ)
+  @ApiOperation({ summary: 'Get effective employee compensation' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getCompensation(
     @CurrentUser() user: AuthenticatedUser,
@@ -476,6 +506,7 @@ export class PayrollFoundationController {
 
   @Get('employees/:employeeId/compensation/history')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_READ)
+  @ApiOperation({ summary: 'List employee compensation history' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getCompensationHistory(
     @CurrentUser() user: AuthenticatedUser,
@@ -488,6 +519,7 @@ export class PayrollFoundationController {
 
   @Post('employees/:employeeId/compensation')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'Create an employee compensation version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createCompensation(
     @CurrentUser() user: AuthenticatedUser,
@@ -506,6 +538,7 @@ export class PayrollFoundationController {
 
   @Patch('employees/:employeeId/compensation/:compensationId/end')
   @RequirePermissions(PERMISSIONS.PAYROLL_COMPENSATION_MANAGE)
+  @ApiOperation({ summary: 'End an employee compensation version' })
   @ApiOkResponse({ type: PayrollVersionedCommandResponseDto })
   endCompensation(
     @CurrentUser() user: AuthenticatedUser,
@@ -526,6 +559,7 @@ export class PayrollFoundationController {
 
   @Get('policy-matrix/effective')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'Resolve the effective payroll policy matrix' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getEffectivePolicy(
     @CurrentUser() user: AuthenticatedUser,

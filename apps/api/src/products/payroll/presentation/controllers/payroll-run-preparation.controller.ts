@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -44,6 +45,7 @@ export class PayrollRunPreparationController {
 
   @Get()
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOperation({ summary: 'List payroll runs' })
   @ApiOkResponse({ type: PayrollRunListResponseDto })
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.service.listRuns(user.tenantId);
@@ -62,6 +64,7 @@ export class PayrollRunPreparationController {
 
   @Get(':id')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOperation({ summary: 'Get a payroll run' })
   @ApiOkResponse({ type: PayrollRunResponseDto })
   get(
     @CurrentUser() user: AuthenticatedUser,
@@ -111,6 +114,7 @@ export class PayrollRunPreparationController {
   @Post(':id/input-imports/:importId/commit')
   @RequirePermissions(PERMISSIONS.PAYROLL_INPUTS_MANAGE)
   @ApiOperation({ summary: 'Commit a previously validated Payroll input CSV' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollRunResponseDto })
   commitInputImport(
     @CurrentUser() user: AuthenticatedUser,
@@ -125,6 +129,7 @@ export class PayrollRunPreparationController {
   @ApiOperation({
     summary: 'Validate run readiness and mark INPUTS_READY if clean',
   })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollRunResponseDto })
   validate(
     @CurrentUser() user: AuthenticatedUser,
@@ -135,6 +140,7 @@ export class PayrollRunPreparationController {
 
   @Get(':id/readiness')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOperation({ summary: 'Get payroll run readiness' })
   @ApiOkResponse({ type: PayrollRunResponseDto })
   readiness(
     @CurrentUser() user: AuthenticatedUser,
@@ -145,6 +151,7 @@ export class PayrollRunPreparationController {
 
   @Get(':id/validation-issues')
   @RequirePermissions(PERMISSIONS.PAYROLL_RUNS_READ)
+  @ApiOperation({ summary: 'List payroll run validation issues' })
   @ApiOkResponse({ type: PayrollRunListResponseDto })
   validationIssues(
     @CurrentUser() user: AuthenticatedUser,
@@ -155,6 +162,7 @@ export class PayrollRunPreparationController {
 
   @Patch('validation-issues/:issueId/acknowledge')
   @RequirePermissions(PERMISSIONS.PAYROLL_INPUTS_MANAGE)
+  @ApiOperation({ summary: 'Acknowledge a payroll validation issue' })
   @ApiOkResponse({ type: PayrollRunResponseDto })
   acknowledgeIssue(
     @CurrentUser() user: AuthenticatedUser,

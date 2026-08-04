@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -96,6 +97,7 @@ export class PayrollAdministrationController {
 
   @Get('calendars')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'List payroll calendars' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listCalendars(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListPayrollCalendarsQuery(user.tenantId));
@@ -103,6 +105,7 @@ export class PayrollAdministrationController {
 
   @Post('calendars')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll calendar' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createCalendar(
     @CurrentUser() user: AuthenticatedUser,
@@ -115,6 +118,7 @@ export class PayrollAdministrationController {
 
   @Get('calendars/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'Get a payroll calendar and its versions' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   getCalendar(
     @CurrentUser() user: AuthenticatedUser,
@@ -127,6 +131,7 @@ export class PayrollAdministrationController {
 
   @Patch('calendars/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Update a payroll calendar' })
   @ApiOkResponse({ type: PayrollVersionedCommandResponseDto })
   updateCalendar(
     @CurrentUser() user: AuthenticatedUser,
@@ -140,6 +145,7 @@ export class PayrollAdministrationController {
 
   @Post('calendars/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll calendar version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createCalendarVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -153,6 +159,8 @@ export class PayrollAdministrationController {
 
   @Post('calendars/:id/activate')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Activate a payroll calendar' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   activateCalendar(
     @CurrentUser() user: AuthenticatedUser,
@@ -165,6 +173,8 @@ export class PayrollAdministrationController {
 
   @Post('calendars/:id/deactivate')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Deactivate a payroll calendar' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   deactivateCalendar(
     @CurrentUser() user: AuthenticatedUser,
@@ -177,6 +187,7 @@ export class PayrollAdministrationController {
 
   @Get('policies')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'List payroll policies' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listPolicies(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(new ListPayrollPoliciesQuery(user.tenantId));
@@ -184,6 +195,7 @@ export class PayrollAdministrationController {
 
   @Post('policies')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll policy' })
   @ApiCreatedResponse({ type: PayrollCommandResponseDto })
   createPolicy(
     @CurrentUser() user: AuthenticatedUser,
@@ -196,6 +208,7 @@ export class PayrollAdministrationController {
 
   @Patch('policies/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Update a payroll policy' })
   @ApiOkResponse({ type: PayrollCommandResponseDto })
   updatePolicy(
     @CurrentUser() user: AuthenticatedUser,
@@ -209,6 +222,7 @@ export class PayrollAdministrationController {
 
   @Post('policies/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll policy version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createPolicyVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -222,6 +236,8 @@ export class PayrollAdministrationController {
 
   @Post('policies/:id/versions/:versionId/activate')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Activate a payroll policy version' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   activatePolicyVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -235,6 +251,7 @@ export class PayrollAdministrationController {
 
   @Get('employees/:employeeId/payment-details')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_READ)
+  @ApiOperation({ summary: 'List masked employee payment details' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listPaymentDetails(
     @CurrentUser() user: AuthenticatedUser,
@@ -247,6 +264,7 @@ export class PayrollAdministrationController {
 
   @Post('employees/:employeeId/payment-details')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_MANAGE)
+  @ApiOperation({ summary: 'Create or replace employee payment details' })
   @ApiCreatedResponse({ type: PayrollMaskedPaymentDetailResponseDto })
   upsertPaymentDetail(
     @CurrentUser() user: AuthenticatedUser,
@@ -260,6 +278,7 @@ export class PayrollAdministrationController {
 
   @Patch('payment-details/:id/status')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_MANAGE)
+  @ApiOperation({ summary: 'Update employee payment detail status' })
   @ApiOkResponse({ type: PayrollMaskedPaymentDetailResponseDto })
   setPaymentDetailStatus(
     @CurrentUser() user: AuthenticatedUser,
@@ -273,6 +292,7 @@ export class PayrollAdministrationController {
 
   @Get('employees/:employeeId/statutory-details')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_READ)
+  @ApiOperation({ summary: 'List masked employee statutory details' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listStatutoryDetails(
     @CurrentUser() user: AuthenticatedUser,
@@ -285,6 +305,7 @@ export class PayrollAdministrationController {
 
   @Post('employees/:employeeId/statutory-details')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_MANAGE)
+  @ApiOperation({ summary: 'Create or replace employee statutory details' })
   @ApiCreatedResponse({ type: PayrollMaskedStatutoryDetailResponseDto })
   upsertStatutoryDetail(
     @CurrentUser() user: AuthenticatedUser,
@@ -298,6 +319,7 @@ export class PayrollAdministrationController {
 
   @Patch('statutory-details/:id/status')
   @RequirePermissions(PERMISSIONS.PAYROLL_PROTECTED_DATA_MANAGE)
+  @ApiOperation({ summary: 'Update employee statutory detail status' })
   @ApiOkResponse({ type: PayrollMaskedStatutoryDetailResponseDto })
   setStatutoryDetailStatus(
     @CurrentUser() user: AuthenticatedUser,
@@ -311,6 +333,7 @@ export class PayrollAdministrationController {
 
   @Get('approval-policies')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_READ)
+  @ApiOperation({ summary: 'List payroll approval policies' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listApprovalPolicies(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(
@@ -320,6 +343,7 @@ export class PayrollAdministrationController {
 
   @Post('approval-policies')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll approval policy' })
   @ApiCreatedResponse({ type: PayrollCommandResponseDto })
   createApprovalPolicy(
     @CurrentUser() user: AuthenticatedUser,
@@ -332,6 +356,7 @@ export class PayrollAdministrationController {
 
   @Patch('approval-policies/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Update a payroll approval policy' })
   @ApiOkResponse({ type: PayrollCommandResponseDto })
   updateApprovalPolicy(
     @CurrentUser() user: AuthenticatedUser,
@@ -345,6 +370,7 @@ export class PayrollAdministrationController {
 
   @Post('approval-policies/:id/versions')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll approval policy version' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createApprovalPolicyVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -358,6 +384,8 @@ export class PayrollAdministrationController {
 
   @Post('approval-policies/:id/versions/:versionId/activate')
   @RequirePermissions(PERMISSIONS.PAYROLL_POLICIES_MANAGE)
+  @ApiOperation({ summary: 'Activate a payroll approval policy version' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
   @ApiCreatedResponse({ type: PayrollStatusCommandResponseDto })
   activateApprovalPolicyVersion(
     @CurrentUser() user: AuthenticatedUser,
@@ -375,6 +403,7 @@ export class PayrollAdministrationController {
 
   @Get('accounting-mappings')
   @RequirePermissions(PERMISSIONS.PAYROLL_ACCOUNTING_READ)
+  @ApiOperation({ summary: 'List payroll accounting mappings' })
   @ApiOkResponse({ type: PayrollListResponseDto })
   listAccountingMappings(@CurrentUser() user: AuthenticatedUser) {
     return this.queryBus.execute(
@@ -384,6 +413,7 @@ export class PayrollAdministrationController {
 
   @Post('accounting-mappings')
   @RequirePermissions(PERMISSIONS.PAYROLL_ACCOUNTING_MANAGE)
+  @ApiOperation({ summary: 'Create a payroll accounting mapping' })
   @ApiCreatedResponse({ type: PayrollVersionedCommandResponseDto })
   createAccountingMapping(
     @CurrentUser() user: AuthenticatedUser,
@@ -396,6 +426,7 @@ export class PayrollAdministrationController {
 
   @Patch('accounting-mappings/:id')
   @RequirePermissions(PERMISSIONS.PAYROLL_ACCOUNTING_MANAGE)
+  @ApiOperation({ summary: 'Update a payroll accounting mapping' })
   @ApiOkResponse({ type: PayrollVersionedCommandResponseDto })
   updateAccountingMapping(
     @CurrentUser() user: AuthenticatedUser,
