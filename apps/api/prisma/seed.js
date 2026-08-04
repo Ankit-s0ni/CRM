@@ -999,7 +999,9 @@ async function main() {
       name: 'Payroll',
       icon: 'wallet-cards',
       dependencyKeys: ['ATTENDANCE'],
-      availability: 'COMING_SOON',
+      availability: 'AVAILABLE',
+      description:
+        'Payroll foundation, compensation configuration, policy setup, and protected employee payroll data',
       catalogOrder: 110,
     },
   ]) {

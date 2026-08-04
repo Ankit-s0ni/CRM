@@ -5,6 +5,7 @@ import { BellRing, Building2, Check, ChevronRight, ShieldCheck, UploadCloud } fr
 import { Link, useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   AdminPage,
@@ -128,7 +129,7 @@ export function NotificationPreferencesView() {
       )}
       action={
         <Link
-          className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary"
+          className="inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515]"
           href="/app/notifications"
         >
           <BellRing className="size-4" /> {tText("Open inbox")}
@@ -169,7 +170,7 @@ export function NotificationPreferencesView() {
                         <button
                           aria-checked={preference.enabled}
                           aria-label={`${preference.label} via ${channel}`}
-                          className={`relative h-6 w-11 rounded-full transition ${preference.enabled ? "bg-primary" : "bg-zinc-300"} disabled:cursor-not-allowed disabled:opacity-60`}
+                          className={`relative h-6 w-11 rounded-full transition ${preference.enabled ? "bg-[#151515]" : "bg-zinc-300"} disabled:cursor-not-allowed disabled:opacity-60`}
                           disabled={preference.mandatory || saving === key}
                           onClick={() => void toggle(preference)}
                           role="switch"
@@ -233,6 +234,41 @@ function writableSettings(settings: Settings) {
   };
 }
 
+function onboardingStepSettings(settings: Settings, nextStep: number) {
+  const progress = {
+    onboardingStep: nextStep,
+    onboardingVersion: 2,
+  };
+  if (nextStep === 2) {
+    return {
+      timezone: settings.timezone,
+      locale: settings.locale,
+      ...progress,
+    };
+  }
+  if (nextStep === 5) {
+    return {
+      weeklyOffs: settings.weeklyOffs,
+      workingDayStart: settings.workingDayStart,
+      workingDayEnd: settings.workingDayEnd,
+      ...progress,
+    };
+  }
+  if (nextStep === 6) {
+    return {
+      requireFacialRecognition: settings.requireFacialRecognition,
+      faceMatchThreshold: settings.faceMatchThreshold,
+      fieldTrackingIntervalMin: settings.fieldTrackingIntervalMin,
+      fieldTrackingEnabled: settings.fieldTrackingEnabled,
+      checkinReminderEnabled: settings.checkinReminderEnabled,
+      checkoutReminderMinutes: settings.checkoutReminderMinutes,
+      absenteeAlertTime: settings.absenteeAlertTime,
+      ...progress,
+    };
+  }
+  return progress;
+}
+
 export function OnboardingWizard() {
   const { tText } = useTenantLocalization();
   const router = useRouter();
@@ -293,19 +329,20 @@ export function OnboardingWizard() {
         return;
       }
       const next = step + 1;
-      await apiClient.patch("/tenant-settings", {
-        ...writableSettings(settings),
-        onboardingStep: next,
-        onboardingVersion: 2,
-      });
+      await apiClient.patch("/tenant-settings", onboardingStepSettings(settings, next));
       setSettings((current) => ({
         ...current,
         onboardingStep: next,
         onboardingVersion: 2,
       }));
       setStep(next);
-    } catch {
-      setError(tText("Your progress could not be saved. Please try again."));
+    } catch (cause) {
+      setError(
+        getApiErrorMessage(
+          cause,
+          tText("Your progress could not be saved. Please try again."),
+        ),
+      );
     } finally {
       setSaving(false);
     }
@@ -348,7 +385,7 @@ export function OnboardingWizard() {
     <div className="min-h-screen bg-surface text-zinc-900">
       <header className="flex h-20 items-center justify-between border-b border-surface-variant bg-white px-8">
         <div className="flex items-center gap-4">
-          <strong className="text-xl text-primary">{tText("DeltCRM")}</strong>
+          <strong className="text-xl text-[#151515]">{tText("DeltCRM")}</strong>
           <span className="h-6 w-px bg-zinc-300" />
           <span className="text-sm text-on-surface-variant">{tText("Setup Wizard")}</span>
         </div>
@@ -360,18 +397,18 @@ export function OnboardingWizard() {
             <div key={label} className="flex flex-1 items-start last:flex-none">
               <div className="grid justify-items-center gap-2">
                 <div
-                  className={`grid size-10 place-items-center rounded-full font-bold ${index + 1 <= step ? "bg-primary text-white" : "bg-surface-variant text-on-surface-variant"}`}
+                  className={`grid size-10 place-items-center rounded-full font-bold ${index + 1 <= step ? "bg-[#151515] text-white" : "bg-surface-variant text-on-surface-variant"}`}
                 >
                   {index + 1 < step ? <Check className="size-4" /> : index + 1}
                 </div>
                 <span
-                  className={`whitespace-nowrap text-xs font-semibold ${index + 1 === step ? "text-primary" : "text-outline"}`}
+                  className={`whitespace-nowrap text-xs font-semibold ${index + 1 === step ? "text-[#151515]" : "text-outline"}`}
                 >
                   {label}
                 </span>
               </div>
               {index < stepDefinitions.length - 1 && (
-                <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-primary" : "bg-surface-variant"}`} />
+                <div className={`mt-5 h-0.5 flex-1 ${index + 1 < step ? "bg-[#151515]" : "bg-surface-variant"}`} />
               )}
             </div>
           ))}
@@ -405,7 +442,7 @@ export function OnboardingWizard() {
               {step === 1 && (
                 <div className="grid gap-6">
                   <label className="flex cursor-pointer items-center gap-5 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-5">
-                    <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-variant text-primary">
+                    <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface-variant text-[#151515]">
                       {logoPreview ? (
                         <img
                           src={logoPreview}
@@ -420,7 +457,7 @@ export function OnboardingWizard() {
                       <strong>{tText("Upload your company logo")}</strong>
                       <p className="text-sm text-outline">{tText("PNG, JPEG or WebP, up to 2 MB")}</p>
                       {settings.companyLogoKey && (
-                        <p className="mt-1 text-xs font-semibold text-emerald-800">{tText("Logo uploaded")}</p>
+                        <p className="mt-1 text-xs font-semibold theme-tone-text theme-tone-emerald">{tText("Logo uploaded")}</p>
                       )}
                     </div>
                     <input
@@ -581,7 +618,7 @@ export function OnboardingWizard() {
               {step === 6 && (
                 <div className="grid gap-5 rounded-xl border border-zinc-300 p-6">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="text-primary" />
+                    <ShieldCheck className="text-[#151515]" />
                     <strong>{tText("Business Admin is ready")}</strong>
                   </div>
                   <p className="text-sm text-on-surface-variant">
@@ -602,7 +639,7 @@ export function OnboardingWizard() {
                     {stepDefinitions.slice(0, 5).map(({ key, label }) => (
                       <div className="flex items-center justify-between" key={key}>
                         <span>{label}</span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-800">
+                        <span className="inline-flex items-center gap-1 font-semibold theme-tone-text theme-tone-emerald">
                           <Check className="size-4" /> {tText("Ready")}
                         </span>
                       </div>
@@ -633,7 +670,7 @@ export function OnboardingWizard() {
                     <Building2 className="size-24 text-white" />
                   )}
                 </div>
-                <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-primary">
+                <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-[#151515]">
                   {tText("Enterprise grade")}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">{tText("Ready to scale with you.")}</h2>
@@ -753,7 +790,7 @@ export function CompanySettingsView() {
                   onChange={(weeklyOffs) => change({ weeklyOffs })}
                 />
               </div>
-              {saved && <p className="mt-4 text-sm font-medium text-emerald-800">{tText("Settings saved.")}</p>}
+              {saved && <p className="mt-4 text-sm font-medium theme-tone-text theme-tone-emerald">{tText("Settings saved.")}</p>}
             </Panel>
             <Panel className="p-7">
               <h2 className="font-semibold">{tText("Company logo")}</h2>
@@ -764,7 +801,7 @@ export function CompanySettingsView() {
                 {logoPreview ? (
                   <img src={logoPreview} alt={tText("Company logo preview")} className="size-full object-contain p-4" />
                 ) : (
-                  <UploadCloud className="size-10 text-primary" />
+                  <UploadCloud className="size-10 text-[#151515]" />
                 )}
                 <input
                   className="hidden"
@@ -884,7 +921,7 @@ export function AttendanceDefaultsView() {
             </Panel>
           </div>
           {saved && (
-            <p className="mt-4 text-sm font-semibold text-emerald-800">{tText("Attendance defaults saved.")}</p>
+            <p className="mt-4 text-sm font-semibold theme-tone-text theme-tone-emerald">{tText("Attendance defaults saved.")}</p>
           )}
           {dirty && (
             <div className="sticky bottom-4 mt-6 flex items-center justify-between rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">
@@ -920,7 +957,7 @@ function Toggle({
         aria-label={label}
         aria-pressed={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-primary" : "bg-surface-variant"}`}
+        className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-[#151515]" : "bg-surface-variant"}`}
       >
         <span
           className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${checked ? "left-[22px]" : "left-0.5"}`}

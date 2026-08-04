@@ -232,7 +232,7 @@ export function SecurityMonitoringView() {
     <div className="mx-auto min-h-[calc(100vh-64px)] w-full max-w-[1440px] px-4 py-8 lg:px-6">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-primary-container">
+          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-[#2a2927]">
             Attendance integrity
           </p>
           <div className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export function SecurityMonitoringView() {
                 key={height + index}
                 className={cn(
                   "flex-1 rounded-t-sm",
-                  index === 6 ? "bg-error" : "bg-primary-container/15",
+                  index === 6 ? "bg-error" : "bg-muted",
                 )}
                 style={{ height: `${height}%` }}
               />
@@ -279,7 +279,7 @@ export function SecurityMonitoringView() {
             className={cn(
               "shrink-0 rounded-full border-0 px-5 text-sm font-semibold",
               type === filter.value
-                ? "bg-primary text-white hover:bg-primary-container hover:text-white"
+                ? "bg-[#151515] text-white hover:bg-[#2a2927] hover:text-white"
                 : "bg-surface-container-high text-on-surface-variant hover:bg-zinc-100",
             )}
           >
@@ -344,7 +344,7 @@ export function SecurityMonitoringView() {
       ) : (
         <Card className="grid min-h-72 place-items-center border-zinc-300 bg-white text-center">
           <div>
-            <ShieldCheck className="mx-auto mb-4 size-12 text-emerald-800" />
+            <ShieldCheck className="mx-auto mb-4 size-12 theme-tone-text" />
             <h2 className="text-xl font-bold">No matching security events</h2>
             <p className="mt-1 text-sm text-outline">
               Change the filters or check back after new attendance attempts.
@@ -431,7 +431,7 @@ function AlertCard({
             </span>
           </div>
           <div className="mb-4 flex items-start gap-4">
-            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
               <AlertTypeIcon type={alert.alertType} />
             </div>
             <div>
@@ -471,7 +471,7 @@ function AlertCard({
           <div className="mt-auto flex flex-wrap gap-3">
             <Button
               onClick={onOpen}
-              className="bg-primary text-white hover:bg-primary-container"
+              className="bg-[#151515] text-white hover:bg-[#2a2927]"
             >
               <Eye className="size-4" /> View verification log
             </Button>
@@ -521,7 +521,7 @@ function AlertDrawer({
       >
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary-container">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2a2927]">
               Verification evidence
             </p>
             <h2 className="mt-1 text-2xl font-bold">{alert.title}</h2>
@@ -726,7 +726,7 @@ function MapPreview({
         </div>
         <a
           aria-label="Open recorded location in OpenStreetMap"
-          className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/70 bg-white/95 text-zinc-800 shadow-md transition hover:bg-white hover:text-primary"
+          className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/70 bg-white/95 text-zinc-800 shadow-md transition hover:bg-white hover:text-[#151515]"
           href={mapsUrl}
           rel="noreferrer"
           target="_blank"
@@ -809,8 +809,8 @@ function statusLabel(status: AlertStatus) {
 
 function severityClass(severity: SecurityAlert["severity"]) {
   if (severity === "CRITICAL") return "bg-error-container text-on-error-container";
-  if (severity === "WARNING") return "bg-amber-200 text-amber-900";
-  return "bg-zinc-100 text-primary";
+  if (severity === "WARNING") return "theme-tone theme-tone-amber";
+  return "bg-zinc-100 text-[#151515]";
 }
 
 function formatDistance(meters: number) {

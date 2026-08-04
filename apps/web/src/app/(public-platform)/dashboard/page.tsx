@@ -28,7 +28,7 @@ export default function DashboardPage() {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <div className="h-8 w-8 bg-indigo-600 rounded flex items-center justify-center">
+                <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
                   <span className="text-white font-bold text-sm">AI</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900">Acme Industries</span>
@@ -41,7 +41,7 @@ export default function DashboardPage() {
                   clearAuth();
                   router.push('/login');
                 }}
-                className="text-sm font-medium text-red-600 hover:text-red-500"
+                className="text-sm font-medium text-destructive hover:text-destructive/80"
               >
                 Sign out
               </button>

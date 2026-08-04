@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useSyncExternalStore } from "react";
 
-type Theme = "default" | "navy" | "emerald" | "teal" | "crimson" | "monochrome" | "charcoal";
+type Theme = "current" | "monochrome";
 
 interface ThemeProviderState {
   theme: Theme;
@@ -10,21 +10,12 @@ interface ThemeProviderState {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "default",
+  theme: "monochrome",
   setTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 const THEME_CHANGE_EVENT = "deltcrm-theme-change";
-const themes = new Set<Theme>([
-  "default",
-  "navy",
-  "emerald",
-  "teal",
-  "crimson",
-  "monochrome",
-  "charcoal",
-]);
 
 function subscribeToTheme(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -37,14 +28,14 @@ function subscribeToTheme(onStoreChange: () => void) {
 
 function readTheme(storageKey: string, defaultTheme: Theme) {
   const storedTheme = localStorage.getItem(storageKey);
-  return themes.has(storedTheme as Theme)
-    ? (storedTheme as Theme)
-    : defaultTheme;
+  if (storedTheme === "current" || storedTheme === "default") return "current";
+  if (storedTheme === "monochrome") return "monochrome";
+  return defaultTheme;
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = "default",
+  defaultTheme = "monochrome",
   storageKey = "deltcrm-ui-theme",
 }: {
   children: React.ReactNode;
@@ -59,10 +50,11 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.removeAttribute("data-theme");
 
-    if (theme !== "default") {
-      root.setAttribute("data-theme", theme);
+    if (theme === "monochrome") {
+      root.setAttribute("data-theme", "monochrome");
+    } else {
+      root.removeAttribute("data-theme");
     }
   }, [theme]);
 

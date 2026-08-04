@@ -55,7 +55,7 @@ export function InvitationAcceptanceForm() {
   if (complete) {
     return (
       <section className="rounded-2xl border border-zinc-300 bg-white p-8 text-center shadow-xl shadow-primary/5">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-900">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl theme-tone theme-tone-emerald">
           <ShieldCheck className="size-7" />
         </div>
         <h1 className="mt-5 text-2xl font-bold text-on-surface">
@@ -66,7 +66,7 @@ export function InvitationAcceptanceForm() {
           password you just created.
         </p>
         <Link
-          className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary font-bold text-white"
+          className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#151515] font-bold text-white"
           href={`/login${loginQuery.size ? `?${loginQuery}` : ""}`}
         >
           Continue to sign in
@@ -77,7 +77,7 @@ export function InvitationAcceptanceForm() {
 
   return (
     <section className="rounded-2xl border border-zinc-300 bg-white p-8 shadow-xl shadow-primary/5">
-      <div className="grid size-14 place-items-center rounded-2xl bg-zinc-50 text-primary">
+      <div className="grid size-14 place-items-center rounded-2xl bg-zinc-50 text-[#151515]">
         <KeyRound className="size-7" />
       </div>
       <h1 className="mt-5 text-2xl font-bold text-on-surface">
@@ -94,7 +94,7 @@ export function InvitationAcceptanceForm() {
         </div>
       )}
       {error && (
-        <div className="mt-5 rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
+        <div className="mt-5 rounded-xl border border-destructive bg-error-container p-4 text-sm text-on-error-container">
           {error}
         </div>
       )}
@@ -104,7 +104,7 @@ export function InvitationAcceptanceForm() {
           <span className="relative">
             <input
               autoComplete="new-password"
-              className="h-12 w-full rounded-xl border border-outline-variant px-4 pr-12 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="h-12 w-full rounded-xl border border-outline-variant px-4 pr-12 outline-none focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/15"
               minLength={8}
               onChange={(event) => setPassword(event.target.value)}
               type={showPassword ? "text" : "password"}
@@ -124,7 +124,7 @@ export function InvitationAcceptanceForm() {
           Confirm password
           <input
             autoComplete="new-password"
-            className="h-12 rounded-xl border border-outline-variant px-4 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-12 rounded-xl border border-outline-variant px-4 outline-none focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/15"
             minLength={8}
             onChange={(event) => setConfirmation(event.target.value)}
             type={showPassword ? "text" : "password"}
@@ -132,7 +132,7 @@ export function InvitationAcceptanceForm() {
           />
         </label>
         <button
-          className="mt-2 h-12 rounded-xl bg-primary font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 h-12 rounded-xl bg-[#151515] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           disabled={busy || !token || password.length < 8 || !confirmation}
           type="submit"
         >

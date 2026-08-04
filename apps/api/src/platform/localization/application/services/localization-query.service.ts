@@ -87,7 +87,7 @@ export class LocalizationQueryService {
         defaultLocale: 'en',
         regionalLocale: 'ar',
         regionalOverrideReason: null,
-        enabledLocales: ['en'],
+        enabledLocales: ['en', 'ar'],
         allowUserPreference: false,
         allowTenantOverrides: false,
         catalogVersion: 1,

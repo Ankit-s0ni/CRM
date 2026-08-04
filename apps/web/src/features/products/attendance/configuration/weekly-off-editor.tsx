@@ -101,7 +101,7 @@ export function WeeklyOffEditor({
       aria-labelledby={`weekly-off-${mode}-title`}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-primary shadow-sm">
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-[#151515] shadow-sm">
           <CalendarDays className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -168,7 +168,7 @@ function CompactEditor({
               aria-pressed={active}
               className={
                 active
-                  ? "border-primary bg-zinc-50 text-primary"
+                  ? "border-[#151515] bg-zinc-50 text-[#151515]"
                   : "bg-white"
               }
               onClick={() => onPreset(preset.days)}
@@ -187,7 +187,7 @@ function CompactEditor({
               htmlFor={`compact-weekly-off-${day.code}`}
               className={`grid cursor-pointer justify-items-center gap-2 rounded-lg border px-2 py-3 text-center transition ${
                 checked
-                  ? "border-primary bg-white text-primary shadow-sm"
+                  ? "border-[#151515] bg-white text-[#151515] shadow-sm"
                   : "border-zinc-200 bg-white/60 text-on-surface-variant hover:border-zinc-400"
               }`}
             >
@@ -253,7 +253,7 @@ function AdvancedEditor({
               {selected && (
                 <select
                   aria-label={`${tText(day.label)} ${tText("recurrence")}`}
-                  className="h-9 rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  className="h-9 rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/15"
                   value={selectedWeeks ? "selected" : "every"}
                   onChange={(event) =>
                     onRecurrenceChange(

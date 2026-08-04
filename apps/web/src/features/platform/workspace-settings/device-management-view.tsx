@@ -134,8 +134,8 @@ export function DeviceManagementView() {
             type="button"
             className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition ${
               filter === item.value
-                ? "border-primary bg-primary text-white"
-                : "border-zinc-300 bg-white text-on-surface-variant hover:border-primary"
+                ? "border-[#151515] bg-[#151515] text-white"
+                : "border-zinc-300 bg-white text-on-surface-variant hover:border-[#151515]"
             }`}
           onClick={() =>
             router.push(
@@ -273,7 +273,7 @@ function DeviceTable({
               className="grid gap-5 p-5 lg:grid-cols-[minmax(220px,1.2fr)_minmax(180px,.8fr)_auto] lg:items-center"
             >
               <div className="flex min-w-0 items-start gap-4">
-                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
                   {device.platform === "IOS" ? (
                     <Smartphone className="size-6" />
                   ) : (
@@ -286,7 +286,7 @@ function DeviceTable({
                       {device.deviceModel || `${device.platform} device`}
                     </h2>
                     {device.isPrimary && (
-                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#151515]">
                         {tText("Primary")}</span>
                     )}
                   </div>
@@ -296,7 +296,7 @@ function DeviceTable({
                   {showEmployee && device.employee && (
                     <Link
                       href={`/app/employees/${device.employee.id}`}
-                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#151515] hover:underline"
                     >
                       <UserRound className="size-4" /> {device.employee.fullName} ·{" "}
                       {device.employee.employeeCode}
@@ -332,7 +332,7 @@ function DeviceTable({
                   {device.status === "ACTIVE" && candidates.length > 0 && (
                     <button
                       type="button"
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary px-4 text-sm font-semibold text-primary"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#151515] px-4 text-sm font-semibold text-[#151515]"
                       onClick={() =>
                         onDecision({ action: "replace", device, candidates })
                       }
@@ -475,9 +475,9 @@ function MetricCard({
   tone?: "neutral" | "warning" | "success" | "danger";
 }) {
   const tones = {
-    neutral: "bg-zinc-50 text-primary",
-    warning: "bg-amber-100 text-amber-900",
-    success: "bg-emerald-100 text-emerald-900",
+    neutral: "bg-zinc-50 text-[#151515]",
+    warning: "theme-tone-icon theme-tone-amber",
+    success: "theme-tone-icon theme-tone-emerald",
     danger: "bg-error-container text-on-error-container",
   };
   return (
@@ -493,9 +493,9 @@ function MetricCard({
 
 function StatusBadge({ status }: { status: DeviceStatus }) {
   const styles: Record<DeviceStatus, string> = {
-    PENDING_APPROVAL: "bg-amber-100 text-amber-900",
-    ACTIVE: "bg-emerald-100 text-emerald-900",
-    BLOCKED: "bg-error-container text-on-error-container",
+    PENDING_APPROVAL: "status-badge status-pending",
+    ACTIVE: "status-badge status-active",
+    BLOCKED: "status-badge status-blocked",
     REPLACED: "bg-zinc-100 text-zinc-500",
   };
   return (

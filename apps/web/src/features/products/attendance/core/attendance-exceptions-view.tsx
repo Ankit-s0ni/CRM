@@ -206,7 +206,7 @@ export function AttendanceExceptionsView() {
     <div className="mx-auto w-full max-w-[1500px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
             {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -235,7 +235,7 @@ export function AttendanceExceptionsView() {
               .length ?? 0
           }
           icon={BriefcaseBusiness}
-          tone="bg-zinc-100 text-primary"
+          tone="bg-zinc-100 text-[#151515]"
         />
         <SummaryCard
           label={tText("Work from home")}
@@ -244,7 +244,7 @@ export function AttendanceExceptionsView() {
             0
           }
           icon={House}
-          tone="bg-sky-100 text-cyan-800"
+          tone="theme-tone-icon theme-tone-teal"
         />
       </section>
       <Panel className="mb-4 flex flex-wrap items-center gap-2 p-3">
@@ -264,7 +264,7 @@ export function AttendanceExceptionsView() {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold",
               type === option.value
-                ? "border-primary bg-primary text-white"
+                ? "border-[#151515] bg-[#151515] text-white"
                 : "border-zinc-200 bg-white text-on-surface-variant",
             )}
           >
@@ -405,7 +405,7 @@ function ExceptionTable({
                     <button
                       aria-label={tText("Edit exception")}
                       onClick={() => onEdit(item)}
-                      className="grid size-8 place-items-center rounded-lg bg-zinc-50 text-primary"
+                      className="grid size-8 place-items-center rounded-lg bg-zinc-50 text-[#151515]"
                     >
                       <Pencil className="size-3.5" />
                     </button>
@@ -463,7 +463,7 @@ function ExceptionEditor({
       >
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-primary-container">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#2a2927]">
               {tText("Attendance exception")}</p>
             <h2 id="exception-title" className="mt-1 text-xl font-bold">
               {editing ? tText("Edit approved period") : tText("Add approved period")}
@@ -505,7 +505,7 @@ function ExceptionEditor({
                   className={cn(
                     "rounded-xl border p-3 text-xs font-semibold",
                     form.exceptionType === value
-                      ? "border-primary bg-zinc-50 text-primary"
+                      ? "border-[#151515] bg-zinc-50 text-[#151515]"
                       : "border-zinc-200",
                   )}
                 >
@@ -538,7 +538,7 @@ function ExceptionEditor({
             </Field>
           </div>
           {overlap && (
-            <div className="rounded-xl border border-red-300 bg-error-container p-3 text-xs text-on-error-container">
+            <div className="rounded-xl border border-destructive bg-error-container p-3 text-xs text-on-error-container">
               {tText("This overlaps an existing")}{" "}
               {label(overlap.exceptionType).toLowerCase()} {tText("exception from")}{" "}
               {overlap.startDate} {tText("to")}{overlap.endDate}.
@@ -546,7 +546,7 @@ function ExceptionEditor({
           )}
           <Field label={tText("Approval reason")}>
             <textarea
-              className="min-h-24 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="min-h-24 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/15"
               maxLength={500}
               value={form.reason}
               onChange={(event) =>
@@ -556,7 +556,7 @@ function ExceptionEditor({
             />
           </Field>
           <div className="rounded-xl bg-zinc-50 p-3 text-xs text-on-surface-variant">
-            <ShieldCheck className="mr-2 inline size-4 text-primary" />
+            <ShieldCheck className="mr-2 inline size-4 text-[#151515]" />
             {tText("Changes are audited and cannot alter payroll-locked attendance periods.")}</div>
           <PrimaryButton disabled={!ready || saving} onClick={onSave}>
             {saving ? tText("Saving…") : editing ? tText("Save changes") : tText("Create exception")}
@@ -571,7 +571,7 @@ function SummaryCard({
   label: title,
   value,
   icon: Icon,
-  tone = "bg-zinc-50 text-primary",
+  tone = "bg-zinc-50 text-[#151515]",
 }: {
   label: string;
   value: number;
@@ -593,9 +593,9 @@ function SummaryCard({
 function TypeBadge({ type }: { type: ExceptionType }) {
   const value =
     type === "WFH"
-      ? "bg-sky-100 text-cyan-800"
+      ? "theme-tone theme-tone-teal border theme-tone-text theme-tone-teal"
       : type === "ON_DUTY"
-        ? "bg-zinc-100 text-primary"
+        ? "bg-zinc-100 text-[#151515]"
         : "bg-zinc-100 text-on-surface-variant";
   return (
     <span

@@ -68,7 +68,7 @@ export function PlatformBillingOverview() {
       description="Authoritative recurring revenue, collections, outstanding balances and subscription movement across DeltCRM."
       action={
         <Link
-          className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white"
+          className="rounded-xl bg-[#151515] px-5 py-3 text-sm font-semibold text-white"
           href="/platform/plans"
         >
           Manage plans
@@ -213,7 +213,7 @@ export function PlatformPlansView() {
       action={
         canManage ? (
           <Button
-            className="bg-primary text-white"
+            className="bg-[#151515] text-white"
             onClick={() => setSelected(null)}
           >
             <Plus />
@@ -260,7 +260,7 @@ export function PlatformPlansView() {
                   </Button>
                 )}
               </div>
-              <div className="mt-6 text-3xl font-bold text-primary">
+              <div className="mt-6 text-3xl font-bold text-[#151515]">
                 {formatMoney(plan.pricePerUser, plan.currency)}
               </div>
               <div className="text-xs text-outline">
@@ -279,7 +279,7 @@ export function PlatformPlansView() {
               <div className="mt-5 flex flex-wrap gap-1.5">
                 {plan.modules.map(({ module }) => (
                   <span
-                    className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-green-700"
+                    className="rounded-lg theme-tone theme-tone-emerald px-2 py-1 text-[10px] font-semibold"
                     key={module.id}
                   >
                     {module.name}
@@ -296,12 +296,12 @@ export function PlatformPlansView() {
                       className="flex items-center gap-2 text-xs"
                       key={capability.id}
                     >
-                      <Check className="size-3.5 text-green-600" />
+                      <Check className="size-3.5 theme-tone-text" />
                       {capability.name}
                     </div>
                   ))}
                   {(plan.capabilities?.length ?? 0) > 6 && (
-                    <div className="text-xs font-semibold text-primary">
+                    <div className="text-xs font-semibold text-[#151515]">
                       +{plan.capabilities.length - 6} more features
                     </div>
                   )}
@@ -632,7 +632,7 @@ export function PlatformDunningView() {
               <BillingPanel key={subscription.id}>
                 <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center">
                   <div className="flex items-start gap-4">
-                    <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-red-100 text-red-700">
+                    <div className="grid size-12 shrink-0 place-items-center rounded-xl theme-tone-icon theme-tone-red">
                       <AlertTriangle />
                     </div>
                     <div>
@@ -659,7 +659,7 @@ export function PlatformDunningView() {
                   </div>
                   {canRetry && (
                     <Button
-                      className="bg-primary text-white"
+                      className="bg-[#151515] text-white"
                       disabled={!invoice || busy === subscription.id}
                       onClick={() => void retry(subscription)}
                     >
@@ -693,7 +693,7 @@ function PlatformBillingNav({ active }: { active: string }) {
           className={cn(
             "whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold",
             active === link.href
-              ? "bg-primary text-white"
+              ? "bg-[#151515] text-white"
               : "text-on-surface-variant hover:bg-zinc-50",
           )}
           href={link.href}
@@ -905,7 +905,7 @@ function PlanEditor({
         onSubmit={submit}
       >
         <div className="flex items-start gap-4">
-          <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+          <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
             <Boxes />
           </div>
           <div>
@@ -933,9 +933,9 @@ function PlanEditor({
               className={cn(
                 "rounded-lg px-3 py-2 text-center text-xs font-semibold",
                 step === index + 1
-                  ? "bg-primary text-white"
+                  ? "bg-[#151515] text-white"
                   : step > index + 1
-                    ? "bg-green-100 text-green-700"
+                    ? "theme-tone theme-tone-emerald"
                     : "bg-zinc-50 text-outline",
               )}
               key={label}
@@ -1058,7 +1058,7 @@ function PlanEditor({
                         <span className="mt-1 block text-xs leading-5 text-outline">
                           {module.description}
                         </span>
-                        <span className="mt-2 block text-[10px] font-semibold uppercase text-primary">
+                        <span className="mt-2 block text-[10px] font-semibold uppercase text-[#151515]">
                           {module.kind === "ADD_ON"
                             ? `Add-on · Requires ${module.dependencyKeys.join(", ")}`
                             : "Product"}
@@ -1107,12 +1107,12 @@ function PlanEditor({
                             {capability.description}
                           </span>
                           {capability.isCore && (
-                            <span className="mt-2 block text-[10px] font-semibold uppercase text-green-700">
+                            <span className="mt-2 block text-[10px] font-semibold uppercase theme-tone-text">
                               Included with Attendance
                             </span>
                           )}
                           {unavailable && (
-                            <span className="mt-2 block text-[10px] font-semibold text-amber-700">
+                            <span className="mt-2 block text-[10px] font-semibold theme-tone-text">
                               Requires{" "}
                               {capability.requiredModuleKeys
                                 .filter(
@@ -1124,7 +1124,7 @@ function PlanEditor({
                           {!unavailable &&
                             !capability.isCore &&
                             capability.dependencyKeys.length > 0 && (
-                              <span className="mt-2 block text-[10px] font-semibold text-primary">
+                              <span className="mt-2 block text-[10px] font-semibold text-[#151515]">
                                 Requires {capability.dependencyKeys.join(", ")}
                               </span>
                             )}
@@ -1147,8 +1147,8 @@ function PlanEditor({
                   impact.removedCapabilityKeys.length ||
                     impact.removedModuleKeys.length ||
                     impact.tenantsOverEmployeeLimit
-                    ? "border-amber-300 bg-amber-50 text-amber-950"
-                    : "border-green-200 bg-green-50 text-green-900",
+                    ? "border theme-tone theme-tone-amber theme-tone-text theme-tone-amber"
+                    : "border theme-tone theme-tone-emerald theme-tone-text theme-tone-emerald",
                 )}
               >
                 <div className="font-semibold">Plan change impact</div>
@@ -1175,7 +1175,7 @@ function PlanEditor({
               </div>
             )}
             <div className="rounded-2xl bg-zinc-50 p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-primary">
+              <div className="text-xs font-bold uppercase tracking-wide text-[#151515]">
                 Commercial summary
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -1204,7 +1204,7 @@ function PlanEditor({
                         className="flex items-center gap-2 rounded-lg border border-surface-variant p-3 text-sm"
                         key={module.id}
                       >
-                        <Check className="size-4 text-green-600" />
+                        <Check className="size-4 theme-tone-text" />
                         {module.name}
                         <span className="ml-auto text-[9px] uppercase text-outline">
                           {module.kind.replace("_", "-")}
@@ -1225,7 +1225,7 @@ function PlanEditor({
                         className="flex items-center gap-2 text-sm"
                         key={capability.id}
                       >
-                        <Check className="size-4 text-green-600" />
+                        <Check className="size-4 theme-tone-text" />
                         {capability.name}
                       </div>
                     ))}
@@ -1262,7 +1262,7 @@ function PlanEditor({
             )}
           </Button>
           <Button
-            className="bg-primary text-white"
+            className="bg-[#151515] text-white"
             disabled={busy || !canContinue}
             type="submit"
           >
@@ -1365,7 +1365,7 @@ function InvoiceDrawer({
           <div className="divide-y divide-outline-variant">
             {invoice.transactions?.map((transaction) => (
               <div className="flex items-center gap-3 p-4" key={transaction.id}>
-                <CreditCard className="size-4 text-primary" />
+                <CreditCard className="size-4 text-[#151515]" />
                 <div className="flex-1 text-sm">
                   <strong>{transaction.gateway}</strong>
                   <div className="text-xs text-outline">

@@ -2,40 +2,21 @@
 
 import { useTheme } from "@/shared/components/theme-provider";
 
-type ThemeName =
-  | "default"
-  | "navy"
-  | "emerald"
-  | "teal"
-  | "crimson"
-  | "monochrome"
-  | "charcoal";
-
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center gap-2">
-      <label
-        htmlFor="theme-select"
-        className="text-xs font-medium text-outline"
-      >
-        Theme
-      </label>
-      <select
-        id="theme-select"
-        value={theme}
-        onChange={(event) => setTheme(event.target.value as ThemeName)}
-        className="h-8 rounded-md border border-outline-variant bg-transparent px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-      >
-        <option value="default">Electric Blue</option>
-        <option value="charcoal">Charcoal</option>
-        <option value="navy">Corporate Navy</option>
-        <option value="emerald">Emerald Green</option>
-        <option value="teal">Vibrant Teal</option>
-        <option value="crimson">Crimson Red</option>
-        <option value="monochrome">Monochrome</option>
-      </select>
-    </div>
+    <select
+      id="theme-select"
+      value={theme}
+      onChange={(event) =>
+        setTheme(event.target.value as "current" | "monochrome")
+      }
+      aria-label="Select theme"
+      className="hidden h-[34px] w-[118px] shrink-0 rounded-md border border-border bg-card px-2 text-[13px] text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/20 md:block"
+    >
+      <option value="monochrome">Theme 2</option>
+      <option value="current">Theme 1</option>
+    </select>
   );
 }

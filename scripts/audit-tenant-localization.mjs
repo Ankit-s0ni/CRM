@@ -13,6 +13,7 @@ const scanRoots = [
   "features/platform/organization",
   "features/platform/workspace-settings",
   "features/products/attendance",
+  "features/products/payroll",
   "shared/components",
   "shared/layouts",
 ];

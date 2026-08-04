@@ -134,7 +134,7 @@ export function CreateTenantDialog({
           </div>
 
           {error && (
-            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mb-5 rounded-lg border theme-tone theme-tone-red border px-4 py-3 text-sm">
               {error}
             </div>
           )}
@@ -173,7 +173,7 @@ export function CreateTenantDialog({
                   required
                 />
               </div>
-              <p className="mt-1 text-xs text-primary font-medium">
+              <p className="mt-1 text-xs text-[#151515] font-medium">
                 Preview: <span className="font-bold">{subdomainPreview}</span>
               </p>
             </label>
@@ -245,7 +245,7 @@ export function CreateTenantDialog({
               <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-outline-variant text-primary"
+                  className="h-4 w-4 rounded border-outline-variant text-[#151515]"
                   checked={setPasswordNow}
                   onChange={(e) => setSetPasswordNow(e.target.checked)}
                 />
@@ -265,7 +265,7 @@ export function CreateTenantDialog({
                   <button
                     type="button"
                     aria-label="Toggle password visibility"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-[#151515]"
                     onClick={() => setShowPassword((s) => !s)}
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -276,7 +276,7 @@ export function CreateTenantDialog({
           </div>
 
           <div className="mt-5 flex gap-3 rounded-lg bg-zinc-50 p-4 text-sm text-on-surface-variant">
-            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 theme-tone-text" />
             <p>
               {setPasswordNow
                 ? "The admin account will be created with the password you set. An invitation email is still sent to verify ownership."
@@ -288,7 +288,7 @@ export function CreateTenantDialog({
             <Button
               type="submit"
               disabled={busy || !plans.length}
-              className="h-12 flex-1 bg-primary text-white hover:bg-primary/90"
+              className="h-12 flex-1 bg-[#151515] text-white hover:bg-[#2a2927]"
             >
               {busy ? "Creating tenant..." : "Create & send invite"}
               <ArrowRight />
@@ -305,7 +305,7 @@ export function CreateTenantDialog({
         </form>
 
         <aside className="border-l border-surface-variant bg-surface-variant p-6">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#151515]">
             <ShieldCheck className="size-4" />
             Admin security
           </div>
@@ -317,7 +317,7 @@ export function CreateTenantDialog({
           <div className="mt-12 rounded-xl border border-zinc-300 bg-white p-4 shadow-sm">
             <div className="mb-3 h-2 w-24 rounded bg-surface-variant" />
             <div className="grid h-28 place-items-center rounded-lg bg-[radial-gradient(#e0e0e0_1px,transparent_1px)] [background-size:12px_12px]">
-              <div className="grid size-10 place-items-center rounded-full bg-zinc-100 text-primary">
+              <div className="grid size-10 place-items-center rounded-full bg-zinc-100 text-[#151515]">
                 <MapPin />
               </div>
             </div>
@@ -329,7 +329,7 @@ export function CreateTenantDialog({
             </p>
           </div>
           <div className="mt-10 h-1.5 overflow-hidden rounded-full bg-white">
-            <div className="h-full w-4/5 bg-emerald-300" />
+            <div className="h-full w-4/5 bg-accent" />
           </div>
           <p className="mt-2 text-[10px] text-outline">
             Tenant setup 80% complete

@@ -76,10 +76,10 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <button className="fixed inset-0 z-40 bg-black/35 lg:hidden" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />
       )}
-      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-primary-container text-white shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-[#2a2927] text-white shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex h-20 items-center gap-3 px-6">
           <img src="/logo-square.png" alt="DeltCRM Logo" className="size-10 object-contain" />
-          <div><div className="text-lg font-bold leading-5">DeltCRM</div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-indigo-100">Super Admin</div></div>
+          <div><div className="text-lg font-bold leading-5">DeltCRM</div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-primary-foreground">Super Admin</div></div>
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button>
         </div>
         <nav className="space-y-1 px-3 pt-5">
@@ -94,28 +94,28 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
             const active = item.enabled && (item.exact ? pathname === item.href : pathname.startsWith(item.href));
             const Icon = item.icon;
             return item.enabled ? (
-              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)} className={cn("flex h-11 items-center gap-4 rounded-lg border-l-4 px-4 text-sm transition", active ? "border-emerald-300 bg-primary/55 text-white" : "border-transparent text-indigo-100 hover:bg-white/10 hover:text-white")}>
+              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)} className={cn("flex h-11 items-center gap-4 rounded-lg border-l-4 px-4 text-sm transition", active ? "border-accent bg-[#2a2927] text-white" : "border-transparent text-primary-foreground hover:bg-white/10 hover:text-white")}>
                 <Icon className="size-[18px]" />{item.label}
               </Link>
             ) : (
-              <span key={item.label} className="flex h-11 cursor-not-allowed items-center gap-4 border-l-4 border-transparent px-4 text-sm text-indigo-200/65" title="Planned for a later Sprint 2 work package"><Icon className="size-[18px]" />{item.label}</span>
+              <span key={item.label} className="flex h-11 cursor-not-allowed items-center gap-4 border-l-4 border-transparent px-4 text-sm text-primary-foreground/65" title="Planned for a later Sprint 2 work package"><Icon className="size-[18px]" />{item.label}</span>
             );
           })}
         </nav>
         <div className="mt-auto space-y-1 border-t border-white/10 px-3 py-5">
-          <span className="flex h-10 items-center gap-4 px-5 text-sm text-indigo-200/70"><Settings className="size-[18px]" />Settings</span>
-          <button onClick={logout} className="flex h-10 w-full items-center gap-4 px-5 text-sm text-indigo-100 hover:text-white"><LogOut className="size-[18px]" />Logout</button>
+          <span className="flex h-10 items-center gap-4 px-5 text-sm text-primary-foreground/70"><Settings className="size-[18px]" />Settings</span>
+          <button onClick={logout} className="flex h-10 w-full items-center gap-4 px-5 text-sm text-primary-foreground hover:text-white"><LogOut className="size-[18px]" />Logout</button>
         </div>
       </aside>
       <div className="lg:pl-[280px]">
         <header className="sticky top-0 z-30 flex h-16 items-center border-b border-surface-variant bg-white/95 px-4 backdrop-blur lg:px-6">
           <button className="mr-3 lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu /></button>
-          <div className="relative hidden w-full max-w-[460px] sm:block"><Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-outline" /><input className="h-10 w-full rounded-full bg-zinc-50 pl-11 pr-4 text-sm outline-none ring-primary focus:ring-2" placeholder="Search tenants, logs, or settings..." /></div>
+          <div className="relative hidden w-full max-w-[460px] sm:block"><Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-outline" /><input className="h-10 w-full rounded-full bg-zinc-50 pl-11 pr-4 text-sm outline-none ring-[#151515] focus:ring-2" placeholder="Search tenants, logs, or settings..." /></div>
           <div className="ml-auto flex items-center gap-5 text-on-surface-variant">
             <div className="hidden sm:block"><ThemeSwitcher /></div>
-            <Bell className="size-[18px]" /><CircleHelp className="size-[18px]" /><div className="h-6 w-px bg-surface-variant" /><div className="grid size-8 place-items-center rounded-full bg-primary-container text-[10px] font-bold text-white">{user?.email.slice(0, 2).toUpperCase()}</div><div className="hidden text-right sm:block"><div className="max-w-40 truncate text-xs font-semibold">{user?.email}</div><div className="text-[10px] text-outline">{user?.role === "SUPER_ADMIN" ? "Super Admin" : "Support"}</div></div><ChevronDown className="size-4" /></div>
+            <Bell className="size-[18px]" /><CircleHelp className="size-[18px]" /><div className="h-6 w-px bg-surface-variant" /><div className="grid size-8 place-items-center rounded-full bg-[#2a2927] text-[10px] font-bold text-white">{user?.email.slice(0, 2).toUpperCase()}</div><div className="hidden text-right sm:block"><div className="max-w-40 truncate text-xs font-semibold">{user?.email}</div><div className="text-[10px] text-outline">{user?.role === "SUPER_ADMIN" ? "Super Admin" : "Support"}</div></div><ChevronDown className="size-4" /></div>
         </header>
-        {impersonation && <div className="flex flex-wrap items-center gap-3 border-b border-orange-300 bg-orange-100 px-5 py-3 text-sm text-orange-950"><ShieldCheck className="size-4" /><span>Impersonation session active: acting as <strong>{impersonation.targetEmail}</strong> for {impersonation.workspaceName}</span><span className="text-xs opacity-70">Ends {new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit" }).format(new Date(impersonation.expiresAt))}</span><Button className="ml-auto h-8 bg-on-surface px-4 text-white" onClick={endImpersonation}>Exit Session</Button></div>}
+        {impersonation && <div className="flex flex-wrap items-center gap-3 border-b theme-tone theme-tone-amber border px-5 py-3 text-sm"><ShieldCheck className="size-4" /><span>Impersonation session active: acting as <strong>{impersonation.targetEmail}</strong> for {impersonation.workspaceName}</span><span className="text-xs opacity-70">Ends {new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit" }).format(new Date(impersonation.expiresAt))}</span><Button className="ml-auto h-8 bg-on-surface px-4 text-white" onClick={endImpersonation}>Exit Session</Button></div>}
         <main>{children}</main>
       </div>
     </div>
