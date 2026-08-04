@@ -135,7 +135,7 @@ export function PasswordResetForm() {
       >
         <div className="mb-8 flex flex-col items-center">
           <div
-            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-emerald-300" : "bg-primary-container"
+            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-emerald-300" : "bg-[#2a2927]"
               }`}
           >
             <span
@@ -181,7 +181,7 @@ export function PasswordResetForm() {
                   <input
                     id="password"
                     type="password"
-                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -225,7 +225,7 @@ export function PasswordResetForm() {
                   <input
                     id="confirmPassword"
                     type="password"
-                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="h-14 w-full rounded-[8px] border border-zinc-300 bg-white pl-12 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     required
@@ -245,7 +245,7 @@ export function PasswordResetForm() {
                 <input
                   id="email"
                   type="email"
-                  className="h-11 w-full rounded-[8px] border border-zinc-300 bg-white pl-10 pr-4 text-zinc-900 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="h-11 w-full rounded-[8px] border border-zinc-300 bg-white pl-10 pr-4 text-zinc-900 outline-none transition-all focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20"
                   placeholder="name@DeltCRM.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
@@ -258,7 +258,7 @@ export function PasswordResetForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-11 w-full items-center justify-center rounded-[8px] bg-primary px-6 text-[14px] font-medium leading-5 text-white shadow-md transition-all hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-11 w-full items-center justify-center rounded-[8px] bg-[#151515] px-6 text-[14px] font-medium leading-5 text-white shadow-md transition-all hover:bg-[#2a2927] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading
               ? isResetState
@@ -272,7 +272,7 @@ export function PasswordResetForm() {
           {!isResetState ? (
             <div className="text-center">
               <Link
-                className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-primary hover:underline"
+                className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-[#151515] hover:underline"
                 href={backToLoginHref}
               >
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>

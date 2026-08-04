@@ -181,7 +181,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
     return (
       <section className="mt-5 rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
         <div className="flex items-center gap-3">
-          <Globe2 className="size-5 text-primary" />
+          <Globe2 className="size-5 text-[#151515]" />
           <div>
             <h2 className="font-semibold">Localization</h2>
             <p className="text-xs text-outline">
@@ -201,7 +201,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
     <section className="mt-5 overflow-hidden rounded-xl border border-surface-variant bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-surface-variant p-5">
         <div className="flex items-start gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-blue-50 text-primary">
+          <span className="grid size-11 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
             <Languages className="size-5" />
           </span>
           <div>
@@ -296,7 +296,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
                   className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-xs"
                   key={office.id}
                 >
-                  <MapPin className="size-3 text-primary" />
+                  <MapPin className="size-3 text-[#151515]" />
                   {office.officeName} · {office.countryCode}
                 </span>
               ))}
@@ -442,7 +442,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             dir={direction}
             lang={previewLocale}
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#151515]">
               {preview["tenant.dashboard.header.eyebrow"] ??
                 "Workspace operations"}
             </p>

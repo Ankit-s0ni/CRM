@@ -1,5 +1,5 @@
-import { PayrollModuleHub } from "@/features/platform/organization/workspace-hubs";
+import { PayrollFoundationWorkspace } from "@/features/products/payroll/payroll-foundation-workspace";
 
 export default function PayrollModulePage() {
-  return <PayrollModuleHub />;
+  return <PayrollFoundationWorkspace />;
 }

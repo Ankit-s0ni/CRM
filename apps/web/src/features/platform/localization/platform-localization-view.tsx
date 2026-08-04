@@ -941,7 +941,7 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
       className={cn(
         "rounded-full px-2 py-1 text-[10px] font-bold",
         status === "PUBLISHED" && "bg-emerald-100 text-emerald-700",
-        status === "REVIEW" && "bg-blue-100 text-blue-700",
+        status === "REVIEW" && "bg-[#ede7dc] text-[#151515]",
         status === "DRAFT" && "bg-amber-100 text-amber-800",
         status === "ARCHIVED" && "bg-zinc-100 text-zinc-600",
       )}

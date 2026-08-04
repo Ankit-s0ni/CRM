@@ -108,12 +108,12 @@ export function SignupForm() {
     <div className="w-full max-w-[392px] pt-[2px]">
       <div className="mb-16">
         <div className="mb-[10px] flex items-center justify-between">
-          <span className="text-[14px] font-bold leading-5 text-primary">Workspace setup</span>
+          <span className="text-[14px] font-bold leading-5 text-[#151515]">Workspace setup</span>
           <span className="text-[12px] font-semibold leading-4 tracking-[0.05em] text-on-surface-variant">{progressPercentage}% Complete</span>
         </div>
         <div className="h-[6px] w-full overflow-hidden rounded-full bg-zinc-200">
           <div 
-            className="h-full bg-primary transition-all duration-300 ease-in-out" 
+            className="h-full bg-[#151515] transition-all duration-300 ease-in-out"
             style={{ width: `${progressPercentage}%` }} 
           />
         </div>
@@ -142,7 +142,7 @@ export function SignupForm() {
           <input
             id="company_name"
             autoComplete="off"
-            className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
+            className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-[#151515] focus:ring-1 focus:ring-[#151515]"
             placeholder="e.g. Acme Tech Solutions"
             value={companyName}
             onChange={(event) => {
@@ -164,7 +164,7 @@ export function SignupForm() {
             id="work_email"
             type="email"
             autoComplete="email"
-            className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
+            className="h-[40px] rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-[#151515] focus:ring-1 focus:ring-[#151515]"
             placeholder="name@company.com"
             value={workEmail}
             onChange={(event) => setWorkEmail(event.target.value)}
@@ -181,14 +181,14 @@ export function SignupForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              className="h-[40px] w-full rounded-[12px] border border-zinc-300 bg-transparent pl-[15px] pr-12 text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
+              className="h-[40px] w-full rounded-[12px] border border-zinc-300 bg-transparent pl-[15px] pr-12 text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-[#151515] focus:ring-1 focus:ring-[#151515]"
               placeholder="Min. 8 characters"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
             />
             <button
-              className="absolute right-4 text-zinc-500 transition-colors hover:text-primary"
+              className="absolute right-4 text-zinc-500 transition-colors hover:text-[#151515]"
               type="button"
               aria-label="Toggle password visibility"
               onClick={() => setShowPassword((current) => !current)}
@@ -208,7 +208,7 @@ export function SignupForm() {
             <div className="relative flex flex-1 items-center">
               <input
                 id="subdomain"
-                className="h-[40px] w-full rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                className="h-[40px] w-full rounded-[12px] border border-zinc-300 bg-transparent px-[15px] text-[16px] text-zinc-800 outline-none transition-all placeholder:text-zinc-300 focus:border-[#151515] focus:ring-1 focus:ring-[#151515]"
                 placeholder="yourcompany"
                 value={subdomain}
                 onChange={(event) => {
@@ -220,7 +220,7 @@ export function SignupForm() {
             </div>
             <span className="ml-4 text-[16px] leading-6 text-on-surface-variant">.{appDomain}</span>
           </div>
-          <p className="mt-[2px] flex items-center gap-1 text-[12px] font-semibold leading-4 tracking-[0.02em] text-primary">
+          <p className="mt-[2px] flex items-center gap-1 text-[12px] font-semibold leading-4 tracking-[0.02em] text-[#151515]">
             <span className="material-symbols-outlined text-[14px]">link</span>
             Live Preview: <span className="font-bold">{subdomainPreview}</span>
           </p>
@@ -233,7 +233,7 @@ export function SignupForm() {
           <div className="relative">
             <select
               id="employee_count"
-              className="h-[40px] w-full cursor-pointer appearance-none rounded-[12px] border border-zinc-300 bg-transparent px-[15px] pr-10 text-[16px] text-zinc-800 outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+              className="h-[40px] w-full cursor-pointer appearance-none rounded-[12px] border border-zinc-300 bg-transparent px-[15px] pr-10 text-[16px] text-zinc-800 outline-none transition-all focus:border-[#151515] focus:ring-1 focus:ring-[#151515]"
               value={employeeCount}
               onChange={(event) => setEmployeeCount(event.target.value)}
               required
@@ -255,18 +255,18 @@ export function SignupForm() {
             <input
               id="terms"
               type="checkbox"
-              className="h-[18px] w-[18px] rounded border-zinc-300 text-primary focus:ring-primary"
+              className="h-[18px] w-[18px] rounded border-zinc-300 text-[#151515] focus:ring-[#151515]"
               checked={acceptedTerms}
               onChange={(event) => setAcceptedTerms(event.target.checked)}
             />
           </div>
           <label className="text-[14px] leading-6 text-on-surface-variant" htmlFor="terms">
             By creating a workspace, you agree to our{" "}
-            <a className="font-medium text-primary hover:underline" href={publicLinks.terms} target="_blank" rel="noreferrer">
+            <a className="font-medium text-[#151515] hover:underline" href={publicLinks.terms} target="_blank" rel="noreferrer">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a className="font-medium text-primary hover:underline" href={publicLinks.privacy} target="_blank" rel="noreferrer">
+            <a className="font-medium text-[#151515] hover:underline" href={publicLinks.privacy} target="_blank" rel="noreferrer">
               Privacy Policy
             </a>
             .
@@ -276,7 +276,7 @@ export function SignupForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-6 flex h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-primary text-[20px] font-semibold leading-7 text-white shadow-[0_10px_24px_rgba(53,37,205,0.22)] transition-all hover:shadow-[0_12px_28px_rgba(53,37,205,0.28)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-6 flex h-[44px] w-full items-center justify-center gap-2 rounded-[12px] bg-[#151515] text-[20px] font-semibold leading-7 text-white shadow-[0_10px_24px_rgba(53,37,205,0.22)] transition-all hover:shadow-[0_12px_28px_rgba(53,37,205,0.28)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? (
             <>
@@ -295,7 +295,7 @@ export function SignupForm() {
       <div className="mt-9 text-center">
         <p className="text-[14px] leading-6 text-on-surface-variant">
           Already have an account?{" "}
-          <Link className="font-bold text-primary hover:underline" href="/login">
+          <Link className="font-bold text-[#151515] hover:underline" href="/login">
             Log in
           </Link>
         </p>

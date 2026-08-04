@@ -2,6 +2,73 @@ import { ConflictException } from '@nestjs/common';
 import { PayrollRunPreparationService } from './payroll-run-preparation.service';
 
 describe('PayrollRunPreparationService imports and readiness', () => {
+  it('imports attendance only for employees in the run pay group', async () => {
+    const tx = createTx();
+    tx.payrollRun.findFirst.mockResolvedValue(run({ payGroupId: 'pay-group-1' }));
+    tx.employeePayrollProfile.findFirst
+      .mockResolvedValueOnce({ id: 'profile-1', payGroupId: 'pay-group-1' })
+      .mockResolvedValueOnce(null);
+    tx.attendanceLog.findMany.mockResolvedValueOnce([
+      {
+        attendanceDate: new Date('2026-08-01T00:00:00.000Z'),
+        attendanceStatus: 'PRESENT',
+        lateMinutes: 0,
+        overtimeMinutes: 45,
+        totalWorkMinutes: 480,
+      },
+      {
+        attendanceDate: new Date('2026-08-02T00:00:00.000Z'),
+        attendanceStatus: 'ABSENT',
+        lateMinutes: 0,
+        overtimeMinutes: 0,
+        totalWorkMinutes: 0,
+      },
+    ]);
+
+    await service(tx).importAttendanceSnapshot(actor(), run().id, {
+      source: 'manual-preview',
+      sourceVersion: 'manual-v1',
+      checksum: 'manual:run',
+      rows: [
+        {
+          employeeId: '0197a91c-7b32-7c65-8c6f-b89f92d4eb42',
+          payableDays: 30,
+          lossOfPayDays: 0,
+          overtimeMinutes: 0,
+        },
+        {
+          employeeId: '0197a91c-7b32-7c65-8c6f-b89f92d4eb45',
+          payableDays: 30,
+          lossOfPayDays: 0,
+          overtimeMinutes: 0,
+        },
+      ],
+    });
+
+    expect(tx.payrollRunEmployee.create).toHaveBeenCalledTimes(1);
+    expect(tx.payrollRunEmployee.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: '0197a91c-7b32-7c65-8c6f-b89f92d4eb42',
+          employeePayrollProfileId: 'profile-1',
+          payableDays: 1,
+          lossOfPayDays: 2,
+          overtimeMinutes: 45,
+        }),
+      }),
+    );
+    expect(tx.attendanceLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          attendanceDate: {
+            gte: run().periodStart,
+            lte: run().periodEnd,
+          },
+        }),
+      }),
+    );
+  });
+
   it('previews CSV rows with validation errors and tenant-scoped import metadata', async () => {
     const tx = createTx();
     tx.payrollRun.findFirst.mockResolvedValue(run());
@@ -112,12 +179,16 @@ function actor() {
   };
 }
 
-function run() {
+function run(overrides: Record<string, unknown> = {}) {
   return {
     id: '0197a91c-7b32-7c65-8c6f-b89f92d4eb43',
     tenantId: actor().tenantId,
+    payGroupId: 'pay-group-1',
+    periodStart: new Date('2026-08-01T00:00:00.000Z'),
+    periodEnd: new Date('2026-08-03T00:00:00.000Z'),
     status: 'DRAFT',
     inputVersion: 1,
+    ...overrides,
   };
 }
 
@@ -129,6 +200,12 @@ function createTx() {
     },
     payGroup: { findFirst: jest.fn() },
     payrollRunTimeline: { create: jest.fn().mockResolvedValue({}) },
+    employeePayrollProfile: { findFirst: jest.fn() },
+    attendanceLog: { findMany: jest.fn().mockResolvedValue([]) },
+    payrollRunEmployee: {
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      create: jest.fn().mockResolvedValue({}),
+    },
     payrollInputImport: {
       findFirst: jest.fn(),
       create: jest.fn(),

@@ -10,9 +10,13 @@ import {
   WalletCards,
   Loader2,
   ArrowRight,
+  Plus,
+  Trash2,
+  Download,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { Link } from "@/i18n/navigation";
 import { useTenantLocalization } from "@/lib/tenant-localization";
 import {
   AdminPage,
@@ -42,7 +46,7 @@ const STATUS_STEPS = [
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-zinc-200 text-zinc-700",
   VALIDATING: "bg-amber-200 text-amber-800",
-  INPUTS_READY: "bg-blue-200 text-blue-800",
+  INPUTS_READY: "bg-[#e2dbcf] text-[#151515]",
   CALCULATING: "bg-purple-200 text-purple-800",
   CALCULATED: "bg-indigo-200 text-indigo-800",
   REVIEWED: "bg-teal-200 text-teal-800",
@@ -54,10 +58,39 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-200 text-red-800",
 };
 
-export function PayrollRunPreparationWorkspace() {
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Add attendance and salary changes",
+  VALIDATING: "Checking payroll",
+  INPUTS_READY: "Ready to calculate",
+  CALCULATING: "Calculating salary",
+  CALCULATED: "Ready for review",
+  REVIEWED: "Ready for approval",
+  APPROVED: "Ready to finalize",
+  FINALIZED: "Ready to generate payslips",
+  OUTPUTS_GENERATED: "Payslips and files ready",
+  PUBLISHED: "Payslips published",
+  PAID: "Salary paid",
+};
+
+type BulkSalaryChangeRow = {
+  amount: string;
+  code: string;
+  currency: string;
+  employeeId: string;
+  id: string;
+  kind: string;
+  reason: string;
+};
+
+export function PayrollRunPreparationWorkspace({
+  initialEmployeeId = "",
+}: {
+  initialEmployeeId?: string;
+} = {}) {
   const { tText } = useTenantLocalization();
   const [runs, setRuns] = useState<Array<Record<string, unknown>>>([]);
   const [activeRunId, setActiveRunId] = useState("");
+  const [activeRunPayGroupId, setActiveRunPayGroupId] = useState("");
   const [activeRunStatus, setActiveRunStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,7 +104,10 @@ export function PayrollRunPreparationWorkspace() {
       setRuns(list);
       if (activeRunId) {
         const current = list.find((r) => r.id === activeRunId);
-        if (current) setActiveRunStatus(String(current.status ?? ""));
+        if (current) {
+          setActiveRunStatus(String(current.status ?? ""));
+          setActiveRunPayGroupId(String(current.payGroupId ?? ""));
+        }
       }
     } catch (refreshError) {
       setError(apiError(refreshError));
@@ -89,8 +125,8 @@ export function PayrollRunPreparationWorkspace() {
 
   return (
     <AdminPage
-      title={tText("Payroll run preparation")}
-      description={tText("Collect and validate immutable payroll inputs before calculation.")}
+      title={tText("Run payroll")}
+      description={tText("Create salary for a pay group, check it, approve it, then generate payslips and payment files.")}
       action={
         <PrimaryButton onClick={refresh}>
           <RefreshCw className="size-4" />
@@ -98,22 +134,21 @@ export function PayrollRunPreparationWorkspace() {
         </PrimaryButton>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="grid gap-5">
-          {error && <ErrorState message={error} />}
+      <div className="grid gap-5">
+        {error && <ErrorState message={error} />}
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.1fr)]">
           <CreateRunForm
-            onCreated={(id) => {
+            onCreated={(id, payGroupId) => {
               setActiveRunId(id);
+              setActiveRunPayGroupId(payGroupId);
               setActiveRunStatus("DRAFT");
               void refresh();
             }}
           />
-          {activeRunId && activeRunStatus && (
-            <Panel className="p-4">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                {tText("Progress")}
-              </h3>
-              <div className="flex flex-wrap gap-1">
+          <Panel className="p-5">
+            <h2 className="text-base font-semibold">{tText("Progress")}</h2>
+            {activeRunId && activeRunStatus ? (
+              <div className="mt-4 flex flex-wrap gap-1">
                 {STATUS_STEPS.map((step, index) => {
                   const isCurrent = step === activeRunStatus;
                   const isDone = index < completedCount;
@@ -122,13 +157,13 @@ export function PayrollRunPreparationWorkspace() {
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           isCurrent
-                            ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
+                            ? "bg-[#151515] text-white ring-2 ring-[#151515]/30"
                             : isDone
                               ? "bg-emerald-100 text-emerald-700"
                               : "bg-zinc-100 text-zinc-400"
                         }`}
                       >
-                        {step.replace(/_/g, " ")}
+                        {tText(step.replace(/_/g, " "))}
                       </span>
                       {index < STATUS_STEPS.length - 1 && (
                         <ArrowRight className="size-3 text-zinc-300" />
@@ -137,20 +172,22 @@ export function PayrollRunPreparationWorkspace() {
                   );
                 })}
               </div>
-            </Panel>
-          )}
-          <RunActionForms
-            activeRunId={activeRunId}
-            activeRunStatus={activeRunStatus}
-            onChanged={refresh}
-          />
+            ) : (
+              <p className="mt-4 text-sm leading-6 text-zinc-500">
+                {tText("Create payroll or select a run to see progress.")}
+              </p>
+            )}
+          </Panel>
         </div>
         <Panel className="overflow-hidden">
-          <div className="border-b border-zinc-100 p-5">
+          <div className="border-b border-[#ded7ca] p-5">
             <div className="flex items-center gap-3">
-              <PlayCircle className="size-5 text-primary" />
+              <PlayCircle className="size-5 text-[#151515]" />
               <h2 className="text-lg font-semibold">{tText("Runs")}</h2>
             </div>
+            <p className="mt-1 text-sm text-zinc-500">
+              {tText("Select a payroll month, then complete the work steps below.")}
+            </p>
           </div>
           {loading ? (
             <div className="p-5">
@@ -158,15 +195,15 @@ export function PayrollRunPreparationWorkspace() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-100 text-sm">
-                <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <table className="min-w-full divide-y divide-[#ded7ca] text-sm">
+                <thead className="bg-[#f3efe6] text-left text-xs font-semibold uppercase text-zinc-500">
                   <tr>
                     {[
                       "Period",
                       "Pay group",
                       "Status",
                       "Source",
-                      "Blockers",
+                      "Issues",
                       "Actions",
                     ].map((item) => (
                       <th className="px-4 py-3" key={item}>
@@ -175,7 +212,7 @@ export function PayrollRunPreparationWorkspace() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100">
+                <tbody className="divide-y divide-[#ede6da] bg-[#fffefa]">
                   {runs.map((run) => {
                     const isSelected = String(run.id) === activeRunId;
                     const status = String(run.status ?? "");
@@ -185,8 +222,8 @@ export function PayrollRunPreparationWorkspace() {
                         key={String(run.id)}
                         className={
                           isSelected
-                            ? "bg-primary/5 ring-1 ring-inset ring-primary/20"
-                            : ""
+                            ? "bg-[#f3efe6] ring-1 ring-inset ring-[#151515]/20"
+                            : "hover:bg-[#fbfaf6]"
                         }
                       >
                         <td className="px-4 py-3">
@@ -210,7 +247,7 @@ export function PayrollRunPreparationWorkspace() {
                           <span
                             className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${badge}`}
                           >
-                            {status.replace(/_/g, " ")}
+                            {tText(STATUS_LABELS[status] ?? status.replace(/_/g, " "))}
                           </span>
                         </td>
                         <td className="px-4 py-3">
@@ -221,9 +258,10 @@ export function PayrollRunPreparationWorkspace() {
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold hover:bg-zinc-50"
+                            className="rounded-lg border border-[#beb8ad] bg-[#fffefa] px-3 py-1.5 text-xs font-semibold text-[#151515] transition hover:bg-[#151515] hover:text-white"
                             onClick={() => {
                               setActiveRunId(String(run.id));
+                              setActiveRunPayGroupId(String(run.payGroupId ?? ""));
                               setActiveRunStatus(String(run.status ?? ""));
                             }}
                             type="button"
@@ -241,12 +279,25 @@ export function PayrollRunPreparationWorkspace() {
             </div>
           )}
         </Panel>
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
+          <RunActionForms
+            activeRunId={activeRunId}
+            activeRunPayGroupId={activeRunPayGroupId}
+            activeRunStatus={activeRunStatus}
+            initialEmployeeId={initialEmployeeId}
+            onChanged={refresh}
+          />
+        </div>
       </div>
     </AdminPage>
   );
 }
 
-function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
+function CreateRunForm({
+  onCreated,
+}: {
+  onCreated: (id: string, payGroupId: string) => void;
+}) {
   const { tText } = useTenantLocalization();
   const [form, setForm] = useState({
     payGroupId: "",
@@ -268,7 +319,9 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
       .get("/payroll/pay-groups")
       .then(({ data }) => {
         if (!active) return;
-        const list = Array.isArray(data?.data) ? data.data : [];
+        const list: Record<string, unknown>[] = Array.isArray(data?.data)
+          ? data.data as Record<string, unknown>[]
+          : [];
         setPayGroups(
           list
             .map((pg: Record<string, unknown>) => ({
@@ -290,7 +343,7 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
 
   return (
     <Panel className="p-5">
-      <h2 className="text-base font-semibold">{tText("Create run")}</h2>
+      <h2 className="text-base font-semibold">{tText("Choose pay group and month")}</h2>
       <div className="mt-4 grid gap-4">
         {error && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -321,21 +374,39 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
               </option>
             ))}
           </select>
+          {form.payGroupId && (
+            <Link
+              className="mt-2 inline-flex text-sm font-semibold text-[#151515] hover:underline"
+              href={`/app/employees?payGroupId=${form.payGroupId}`}
+            >
+              {tText("View employees in this pay group")}
+            </Link>
+          )}
         </Field>
-        <Field label={tText(label("periodKey"))}>
+        <Field label={tText("Salary month")}>
           <input
             className={inputClass}
-            onChange={(event) =>
+            onChange={(event) => {
+              const period = monthPeriod(event.target.value);
               setForm((current) => ({
                 ...current,
                 periodKey: event.target.value,
-              }))
-            }
-            type="text"
+                ...(period
+                  ? {
+                      periodStart: period.start,
+                      periodEnd: period.end,
+                    }
+                  : {}),
+              }));
+            }}
+            type="month"
             value={form.periodKey}
           />
+          <p className="mt-1 text-xs text-zinc-500">
+            {tText("Changing the salary month updates the start and end dates.")}
+          </p>
         </Field>
-        <Field label={tText(label("periodStart"))}>
+        <Field label={tText("Month start")}>
           <input
             className={inputClass}
             onChange={(event) =>
@@ -348,7 +419,7 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
             value={form.periodStart}
           />
         </Field>
-        <Field label={tText(label("periodEnd"))}>
+        <Field label={tText("Month end")}>
           <input
             className={inputClass}
             onChange={(event) =>
@@ -368,7 +439,7 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
             setError("");
             try {
               const response = await apiClient.post("/payroll/runs", form);
-              onCreated(String(response.data?.data?.id ?? ""));
+              onCreated(String(response.data?.data?.id ?? ""), form.payGroupId);
             } catch (submitError) {
               const msg =
                 apiError(submitError) || "Failed to create run.";
@@ -397,7 +468,7 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
                 {tText("Creating...")}
               </span>
             )
-            : tText("Create run")}
+            : tText("Create payroll")}
         </PrimaryButton>
       </div>
     </Panel>
@@ -406,15 +477,19 @@ function CreateRunForm({ onCreated }: { onCreated: (id: string) => void }) {
 
 function RunActionForms({
   activeRunId,
+  activeRunPayGroupId,
   activeRunStatus,
+  initialEmployeeId,
   onChanged,
 }: {
   activeRunId: string;
+  activeRunPayGroupId: string;
   activeRunStatus: string;
-  onChanged: () => void;
+  initialEmployeeId: string;
+  onChanged: () => void | Promise<void>;
 }) {
   const { tText } = useTenantLocalization();
-  const [employeeId, setEmployeeId] = useState("");
+  const [employeeId, setEmployeeId] = useState(initialEmployeeId);
   const [reason, setReason] = useState(
     "Reviewed and approved for payroll processing.",
   );
@@ -422,27 +497,74 @@ function RunActionForms({
   const [message, setMessage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [busy, setBusy] = useState("");
+  const [showBulkChanges, setShowBulkChanges] = useState(false);
+  const [bulkRows, setBulkRows] = useState<BulkSalaryChangeRow[]>([
+    createBulkSalaryChangeRow(),
+  ]);
   const [employees, setEmployees] = useState<
     Array<{ label: string; value: string }>
   >([]);
   const [employeesLoading, setEmployeesLoading] = useState(false);
+  const [payslips, setPayslips] = useState<Array<Record<string, unknown>>>([]);
+  const [payslipsLoading, setPayslipsLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialEmployeeId) setEmployeeId(initialEmployeeId);
+  }, [initialEmployeeId]);
 
   useEffect(() => {
     let active = true;
+    if (!activeRunPayGroupId) {
+      setEmployees([]);
+      setEmployeesLoading(false);
+      return;
+    }
     setEmployeesLoading(true);
     apiClient
       .get("/employees?limit=100")
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (!active) return;
         const list = Array.isArray(data?.data) ? data.data : [];
-        setEmployees(
-          list
-            .map((emp: Record<string, unknown>) => ({
+        const profiles = await Promise.allSettled(
+          list.map((emp: Record<string, unknown>) =>
+            apiClient.get(`/payroll/employees/${String(emp.id ?? "")}/profile`),
+          ),
+        );
+        if (!active) return;
+        const payGroupEmployees = list
+          .map((emp: Record<string, unknown>, index: number): {
+            emp: Record<string, unknown>;
+            profile: Record<string, unknown> | null;
+          } => {
+            const profileResponse = profiles[index];
+            const profile =
+              profileResponse?.status === "fulfilled"
+                ? profileResponse.value.data?.data ?? profileResponse.value.data
+                : null;
+            return {
+              emp,
+              profile:
+                profile && typeof profile === "object"
+                  ? profile as Record<string, unknown>
+                  : null,
+            };
+          })
+          .filter(
+            ({ profile }: {
+              emp: Record<string, unknown>;
+              profile: Record<string, unknown> | null;
+            }) =>
+              String(profile?.payGroupId ?? "") === activeRunPayGroupId,
+          )
+          .map(({ emp }: {
+            emp: Record<string, unknown>;
+            profile: Record<string, unknown> | null;
+          }) => ({
               label: `${String(emp.fullName ?? "Unnamed employee")} (${String(emp.employeeCode ?? "-")})`,
               value: String(emp.id ?? ""),
-            }))
-            .filter((o: { value: string }) => o.value),
-        );
+          }))
+          .filter((o: { value: string }) => o.value);
+        setEmployees(payGroupEmployees);
       })
       .catch(() => {})
       .finally(() => {
@@ -452,15 +574,34 @@ function RunActionForms({
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activeRunPayGroupId]);
 
-  const [csvText, setCsvText] = useState(
-    "employeeId,kind,code,amountMinor,currency,reason\n",
-  );
   const [csvImportId, setCsvImportId] = useState("");
   const [readiness, setReadiness] = useState<Record<string, unknown> | null>(
     null,
   );
+
+  const loadPayslips = useCallback(async () => {
+    if (!activeRunId) {
+      setPayslips([]);
+      return;
+    }
+    setPayslipsLoading(true);
+    try {
+      const response = await apiClient.get(
+        `/payroll/runs/${activeRunId}/payslips`,
+      );
+      setPayslips(rows(response.data));
+    } catch {
+      setPayslips([]);
+    } finally {
+      setPayslipsLoading(false);
+    }
+  }, [activeRunId]);
+
+  useEffect(() => {
+    void Promise.resolve().then(loadPayslips);
+  }, [loadPayslips]);
 
   const noRun = !activeRunId;
   const inputsLocked =
@@ -494,12 +635,13 @@ function RunActionForms({
     try {
       await action();
       setMessage(success);
+      await Promise.resolve(onChanged());
+      await loadPayslips();
     } catch (err) {
       setErrorMsg(apiError(err));
     } finally {
       setBusy("");
     }
-    onChanged();
   };
 
   const spinner = (label: string) =>
@@ -510,45 +652,78 @@ function RunActionForms({
       : null;
 
   const isProcessing = busy !== "";
+  const bulkCsvText = bulkRowsToCsv(bulkRows);
+  const hasCompleteBulkRows = bulkRows.some(
+    (row) =>
+      row.employeeId &&
+      row.kind &&
+      row.code.trim() &&
+      row.amount.trim() &&
+      row.currency.trim(),
+  );
+
+  async function downloadPayslip(payslipId: string) {
+    setMessage("");
+    setErrorMsg("");
+    setBusy(`payslip-${payslipId}`);
+    try {
+      const response = await apiClient.get(
+        `/payroll/payslips/${payslipId}/download`,
+      );
+      const url = String(response.data?.data?.url ?? response.data?.url ?? "");
+      if (url) openDownloadUrl(url);
+      else setErrorMsg(tText("Payslip PDF is not available yet."));
+    } catch (downloadError) {
+      setErrorMsg(apiError(downloadError));
+    } finally {
+      setBusy("");
+    }
+  }
 
   return (
+    <>
     <Panel className="p-5">
-      <h2 className="text-base font-semibold">
-        {tText("Prepare selected run")}
-      </h2>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          {tText("Payroll work steps")}
+        </p>
+        <h2 className="mt-1 font-serif text-2xl font-semibold text-[#151515]">
+          {tText("Work on selected payroll")}
+        </h2>
+      </div>
       <div className="mt-4 grid gap-4">
         {!noRun && activeRunStatus && (
-          <div className="flex items-center gap-2 rounded-md border bg-zinc-50 px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-sm">
             <span className="text-zinc-500">{tText("Status")}:</span>
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[activeRunStatus] ?? "bg-zinc-100 text-zinc-700"}`}
             >
-              {activeRunStatus.replace(/_/g, " ")}
+              {tText(STATUS_LABELS[activeRunStatus] ?? activeRunStatus.replace(/_/g, " "))}
             </span>
             {!canCalculate && !canReview && !canApprove && !canFinalize &&
                 !canGenerate && !canPublish && !canMarkPaid && activeRunStatus === "DRAFT" && (
-              <span className="ml-auto text-xs text-zinc-400">
-                1. {tText("Import snapshot & validate")} →
+              <span className="ml-auto text-xs text-zinc-500">
+                1. {tText("Import attendance, add optional changes, then check")}
               </span>
             )}
             {canCalculate && (
-              <span className="ml-auto text-xs text-zinc-400">
-                2. {tText("Calculate now")} →
+              <span className="ml-auto text-xs text-zinc-500">
+                4. {tText("Calculate salary")}
               </span>
             )}
             {canReview && (
-              <span className="ml-auto text-xs text-zinc-400">
-                3. {tText("Review now")} →
+              <span className="ml-auto text-xs text-zinc-500">
+                5. {tText("Review salary")}
               </span>
             )}
             {(canApprove || canFinalize) && (
-              <span className="ml-auto text-xs text-zinc-400">
-                {tText("Next: approve or finalize")} →
+              <span className="ml-auto text-xs text-zinc-500">
+                {tText("Next: approve or finalize")}
               </span>
             )}
             {canGenerate && (
-              <span className="ml-auto text-xs text-zinc-400">
-                {tText("Next: generate outputs")} →
+              <span className="ml-auto text-xs text-zinc-500">
+                {tText("Next: generate payslips and files")}
               </span>
             )}
           </div>
@@ -573,7 +748,7 @@ function RunActionForms({
           {!activeRunId && (
             <p className="mt-1 text-xs text-zinc-500">
               {tText(
-                "Create a run above or click Select on an existing run from the Runs table.",
+                "Create payroll above or choose an existing month from the Runs table.",
               )}
             </p>
           )}
@@ -582,12 +757,64 @@ function RunActionForms({
             activeRunStatus !== "VALIDATING" && (
               <p className="mt-1 text-xs text-amber-600">
                 {tText(
-                  "Inputs are locked. Create a new run to prepare fresh inputs.",
+                  "Salary inputs are locked. Create a new payroll run to make fresh changes.",
                 )}
               </p>
             )}
         </Field>
-        <Field label={tText("Employee")}>
+        <div className="border-t border-zinc-100 pt-4">
+          <h3 className="text-sm font-semibold text-zinc-700">
+            {tText("1. Import attendance")}
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">
+            {tText("Bring attendance for all employees in this payroll run. Salary changes are added after this, before calculation.")}
+          </p>
+        </div>
+        <div className="rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-xs leading-5 text-[#151515]">
+          {employeesLoading
+            ? tText("Loading employees for this payroll.")
+            : tText(`${employees.length} employees are ready for attendance import.`)}
+        </div>
+        <PrimaryButton
+          disabled={inputsDisabled || employeesLoading || employees.length === 0 || isProcessing}
+          onClick={async () => {
+            await run(
+              "snapshot",
+              async () => {
+                await apiClient.post(
+                  `/payroll/runs/${activeRunId}/attendance-snapshot`,
+                  {
+                    source: "attendance-period",
+                    checksum: `attendance-period:${activeRunId}`,
+                    sourceVersion: "attendance-period-v1",
+                    rows: employees.map((employee) => ({
+                        employeeId: employee.value,
+                        payableDays: 0,
+                        lossOfPayDays: 0,
+                        overtimeMinutes: 0,
+                      })),
+                  },
+                );
+              },
+              "Attendance imported for the selected payroll period.",
+            );
+          }}
+        >
+          {spinner("snapshot")}
+          {tText("Import attendance for this period")}
+        </PrimaryButton>
+        <div className="border-t border-zinc-100 pt-4">
+          <h3 className="text-sm font-semibold text-zinc-700">
+            {tText("2. Salary changes")}
+            <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+              {tText("Optional")}
+            </span>
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">
+            {tText("Skip this if there are no bonuses, deductions, corrections, or final-settlement changes.")}
+          </p>
+        </div>
+        <Field label={tText("Employee for one change")}>
           <select
             className={inputClass}
             disabled={employeesLoading || inputsLocked}
@@ -610,41 +837,12 @@ function RunActionForms({
           disabled={inputsDisabled || !employeeId || isProcessing}
           onClick={async () => {
             await run(
-              "snapshot",
-              async () => {
-                await apiClient.post(
-                  `/payroll/runs/${activeRunId}/attendance-snapshot`,
-                  {
-                    source: "manual-preview",
-                    checksum: `manual:${activeRunId}`,
-                    sourceVersion: "manual-v1",
-                    rows: [
-                      {
-                        employeeId,
-                        payableDays: 30,
-                        lossOfPayDays: 0,
-                        overtimeMinutes: 0,
-                      },
-                    ],
-                  },
-                );
-              },
-              "Snapshot imported.",
-            );
-          }}
-        >
-          {spinner("snapshot")}
-          {tText("Import one-row snapshot")}
-        </PrimaryButton>
-        <PrimaryButton
-          disabled={inputsDisabled || isProcessing}
-          onClick={async () => {
-            await run(
               "input",
               async () => {
                 await apiClient.post(
                   `/payroll/runs/${activeRunId}/inputs`,
                   {
+                    employeeId,
                     kind: "ONE_TIME",
                     code: "ADJUSTMENT",
                     amountMinor: "0",
@@ -652,13 +850,264 @@ function RunActionForms({
                   },
                 );
               },
-              "Sample input added.",
+              "Salary change added.",
             );
           }}
         >
           {spinner("input")}
-          {tText("Add sample input")}
+          {tText("Add employee salary change")}
         </PrimaryButton>
+        <div className="border-t border-zinc-100 pt-4">
+          <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-800">
+                  {tText("Add many employee salary changes")}
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-zinc-500">
+                  {tText("Optional. Use this when many employees have bonuses, deductions, or corrections. For one employee, use Add employee salary change above.")}
+                </p>
+              </div>
+              <button
+                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                onClick={() => setShowBulkChanges((current) => !current)}
+                type="button"
+              >
+                {showBulkChanges ? tText("Hide") : tText("Open")}
+              </button>
+            </div>
+            {showBulkChanges && (
+              <div className="mt-4 grid gap-3">
+                <div className="rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-xs leading-5 text-[#151515]">
+                  <p className="font-semibold">{tText("When to use this")}</p>
+                  <p>{tText("Use this table when many employees need a bonus, deduction, or correction in the same payroll month.")}</p>
+                </div>
+                <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+                  <table className="min-w-[760px] divide-y divide-zinc-100 text-sm">
+                    <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+                      <tr>
+                        {[
+                          "Employee",
+                          "Change type",
+                          "Pay item",
+                          "Amount",
+                          "Reason",
+                          "",
+                        ].map((item) => (
+                          <th className="px-3 py-2" key={item}>
+                            {item ? tText(item) : ""}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100">
+                      {bulkRows.map((row) => (
+                        <tr key={row.id}>
+                          <td className="min-w-48 px-3 py-2">
+                            <select
+                              className={inputClass}
+                              disabled={inputsLocked || employeesLoading}
+                              onChange={(event) => {
+                                setBulkRows((current) =>
+                                  updateBulkRow(current, row.id, {
+                                    employeeId: event.target.value,
+                                  }),
+                                );
+                                setCsvImportId("");
+                              }}
+                              value={row.employeeId}
+                            >
+                              <option value="">
+                                {employeesLoading
+                                  ? tText("Loading employees")
+                                  : tText("Select employee")}
+                              </option>
+                              {employees.map((employee) => (
+                                <option key={employee.value} value={employee.value}>
+                                  {employee.label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="min-w-40 px-3 py-2">
+                            <select
+                              className={inputClass}
+                              disabled={inputsLocked}
+                              onChange={(event) => {
+                                setBulkRows((current) =>
+                                  updateBulkRow(current, row.id, {
+                                    code:
+                                      event.target.value === "DEDUCTION"
+                                        ? "DEDUCTION"
+                                        : "BONUS",
+                                    kind: "ONE_TIME",
+                                  }),
+                                );
+                                setCsvImportId("");
+                              }}
+                              value={row.code === "DEDUCTION" ? "DEDUCTION" : "BONUS"}
+                            >
+                              <option value="BONUS">{tText("Bonus")}</option>
+                              <option value="DEDUCTION">{tText("Deduction")}</option>
+                            </select>
+                          </td>
+                          <td className="min-w-36 px-3 py-2">
+                            <input
+                              className={inputClass}
+                              disabled={inputsLocked}
+                              onChange={(event) => {
+                                setBulkRows((current) =>
+                                  updateBulkRow(current, row.id, {
+                                    code: event.target.value,
+                                  }),
+                                );
+                                setCsvImportId("");
+                              }}
+                              placeholder="BONUS"
+                              value={row.code}
+                            />
+                          </td>
+                          <td className="min-w-32 px-3 py-2">
+                            <input
+                              className={inputClass}
+                              disabled={inputsLocked}
+                              min="0"
+                              onChange={(event) => {
+                                setBulkRows((current) =>
+                                  updateBulkRow(current, row.id, {
+                                    amount: event.target.value,
+                                  }),
+                                );
+                                setCsvImportId("");
+                              }}
+                              placeholder="20.000"
+                              step="0.001"
+                              type="number"
+                              value={row.amount}
+                            />
+                          </td>
+                          <td className="min-w-48 px-3 py-2">
+                            <input
+                              className={inputClass}
+                              disabled={inputsLocked}
+                              onChange={(event) => {
+                                setBulkRows((current) =>
+                                  updateBulkRow(current, row.id, {
+                                    reason: event.target.value,
+                                  }),
+                                );
+                                setCsvImportId("");
+                              }}
+                              placeholder={tText("Monthly bonus")}
+                              value={row.reason}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <button
+                              aria-label={tText("Remove row")}
+                              className="grid size-10 place-items-center rounded-lg border border-zinc-200 text-zinc-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                              disabled={inputsLocked || bulkRows.length === 1}
+                              onClick={() => {
+                                setBulkRows((current) =>
+                                  current.filter((item) => item.id !== row.id),
+                                );
+                                setCsvImportId("");
+                              }}
+                              type="button"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs leading-5 text-zinc-500">
+                  {tText("Amount is entered normally, for example 20.000 OMR. The system converts it for payroll in the background.")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                    disabled={inputsLocked}
+                    onClick={() => {
+                      setBulkRows((current) => [
+                        ...current,
+                        createBulkSalaryChangeRow(),
+                      ]);
+                      setCsvImportId("");
+                    }}
+                    type="button"
+                  >
+                    <Plus className="mr-1 inline size-3" />
+                    {tText("Add row")}
+                  </button>
+                  <button
+                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-red-300 hover:text-red-700"
+                    disabled={inputsLocked}
+                    onClick={() => {
+                      setBulkRows([createBulkSalaryChangeRow()]);
+                      setCsvImportId("");
+                    }}
+                    type="button"
+                  >
+                    {tText("Clear table")}
+                  </button>
+                </div>
+                <PrimaryButton
+                  disabled={inputsDisabled || isProcessing || !hasCompleteBulkRows}
+                  onClick={async () => {
+                    await run("csv-preview", async () => {
+                      const response = await apiClient.post(
+                        `/payroll/runs/${activeRunId}/input-imports/preview`,
+                        {
+                          fileName: "payroll-inputs.csv",
+                          csvText: bulkCsvText,
+                        },
+                      );
+                      const payload = objectOrNull(response.data?.data);
+                      setCsvImportId(String(payload?.id ?? ""));
+                    }, "Rows checked.");
+                  }}
+                >
+                  {spinner("csv-preview")}
+                  {tText("1. Check rows")}
+                </PrimaryButton>
+                {csvImportId
+                  ? (
+                    <>
+                      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                        {tText("Rows are ready to add.")}
+                      </div>
+                      <PrimaryButton
+                        disabled={isProcessing}
+                        onClick={async () => {
+                          await run("csv-commit", async () => {
+                            await apiClient.post(
+                              `/payroll/runs/${activeRunId}/input-imports/${csvImportId}/commit`,
+                            );
+                            setCsvImportId("");
+                          }, "Rows added to payroll.");
+                        }}
+                      >
+                        {spinner("csv-commit")}
+                        {tText("2. Add rows to payroll")}
+                      </PrimaryButton>
+                    </>
+                  )
+                  : null}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="border-t border-zinc-100 pt-4">
+          <h3 className="text-sm font-semibold text-zinc-700">
+            {tText("3. Check payroll")}
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">
+            {tText("Check missing salary, bank details, attendance, and other issues before calculation.")}
+          </p>
+        </div>
         <PrimaryButton
           disabled={inputsDisabled || isProcessing}
           onClick={async () => {
@@ -670,16 +1119,16 @@ function RunActionForms({
                 `/payroll/runs/${activeRunId}/readiness`,
               );
               setReadiness(objectOrNull(response.data?.data));
-            }, "Validation completed.");
+            }, "Payroll checked.");
           }}
         >
           {spinner("validate")}
-          {tText("Validate readiness")}
+          {tText("Check payroll")}
         </PrimaryButton>
         {readiness && (
           <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-700">
             <div className="font-semibold">
-              {tText("Readiness")}: {String(readiness.status ?? "")}
+              {tText("Payroll check")}: {String(readiness.status ?? "")}
             </div>
             <div>
               {tText("Ready")}: {String(readiness.ready ?? false)}
@@ -695,7 +1144,7 @@ function RunActionForms({
                     ? "border-red-100 bg-red-50 text-red-800"
                     : sev === "WARNING"
                     ? "border-amber-100 bg-amber-50 text-amber-800"
-                    : "border-blue-100 bg-blue-50 text-blue-800";
+                    : "border-[#beb8ad] bg-[#f3efe6] text-[#151515]";
                 return (
                   <div
                     key={index}
@@ -711,68 +1160,7 @@ function RunActionForms({
         )}
         <div className="border-t border-zinc-100 pt-4">
           <h3 className="text-sm font-semibold text-zinc-700">
-            {tText("CSV inputs")}
-          </h3>
-          <div className="mt-3 grid gap-3">
-            <Field label={tText("CSV text")}>
-              <textarea
-                className={inputClass}
-                disabled={inputsLocked}
-                onChange={(event) => {
-                  setCsvText(event.target.value);
-                  setCsvImportId("");
-                }}
-                rows={5}
-                value={csvText}
-              />
-            </Field>
-            <PrimaryButton
-              disabled={inputsDisabled || isProcessing}
-              onClick={async () => {
-                await run("csv-preview", async () => {
-                  const response = await apiClient.post(
-                    `/payroll/runs/${activeRunId}/input-imports/preview`,
-                    {
-                      fileName: "payroll-inputs.csv",
-                      csvText,
-                    },
-                  );
-                  const payload = objectOrNull(response.data?.data);
-                  setCsvImportId(String(payload?.id ?? ""));
-                }, `CSV preview: ${csvImportId ? "1 valid" : "done"}`);
-              }}
-            >
-              {spinner("csv-preview")}
-              {tText("1. Validate CSV")}
-            </PrimaryButton>
-            {csvImportId
-              ? (
-                <>
-                  <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                    {tText("Validation passed.")}
-                  </div>
-                  <PrimaryButton
-                    disabled={isProcessing}
-                    onClick={async () => {
-                      await run("csv-commit", async () => {
-                        await apiClient.post(
-                          `/payroll/runs/${activeRunId}/input-imports/${csvImportId}/commit`,
-                        );
-                        setCsvImportId("");
-                      }, "CSV imported.");
-                    }}
-                  >
-                    {spinner("csv-commit")}
-                    {tText("2. Import to run")}
-                  </PrimaryButton>
-                </>
-              )
-              : null}
-          </div>
-        </div>
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
-            {tText("Process")}
+            {tText("4. Calculate and approve")}
           </h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
@@ -785,16 +1173,16 @@ function RunActionForms({
                       apiClient.post(
                         `/payroll/runs/${activeRunId}/calculate`,
                       ),
-                    "Calculation completed.",
+                    "Salary calculated.",
                   )}
               >
                 {spinner("calculate")}
                 <PlayCircle className="size-4" />
-                {tText("Calculate")}
+                {tText("Calculate salary")}
               </PrimaryButton>
               {activeRunId && !canCalculate && (
                 <p className="mt-1 text-xs text-zinc-400">
-                  {tText("Needs INPUTS_READY")}
+                  {tText("Check payroll first")}
                 </p>
               )}
             </div>
@@ -809,16 +1197,16 @@ function RunActionForms({
                         `/payroll/runs/${activeRunId}/review`,
                         { reason },
                       ),
-                    "Run reviewed. A different user must now approve it (4-eyes).",
+                    "Salary reviewed. A different admin must approve it.",
                   )}
               >
                 {spinner("review")}
                 <CheckCircle2 className="size-4" />
-                {tText("Review")}
+                {tText("Review salary")}
               </PrimaryButton>
               {activeRunId && !canReview && (
                 <p className="mt-1 text-xs text-zinc-400">
-                  {tText("Needs CALCULATED")}
+                  {tText("Calculate salary first")}
                 </p>
               )}
             </div>
@@ -835,7 +1223,7 @@ function RunActionForms({
                         `/payroll/runs/${activeRunId}/approve`,
                         { reason },
                       ),
-                    "Run approved.",
+                    "Payroll approved.",
                   )}
               >
                 {spinner("approve")}
@@ -844,12 +1232,12 @@ function RunActionForms({
               </PrimaryButton>
               {activeRunId && canApprove && (
                 <p className="mt-1 text-xs text-amber-600">
-                  {tText("Requires a different admin user (4-eyes policy)")}
+                  {tText("A different admin must approve this payroll.")}
                 </p>
               )}
               {activeRunId && !canApprove && activeRunStatus !== "REVIEWED" && (
                 <p className="mt-1 text-xs text-zinc-400">
-                  {tText("Needs REVIEWED")}
+                  {tText("Review salary first")}
                 </p>
               )}
             </div>
@@ -866,16 +1254,16 @@ function RunActionForms({
                         `/payroll/runs/${activeRunId}/finalize`,
                         { reason },
                       ),
-                    "Run finalized.",
+                    "Payroll finalized.",
                   )}
               >
                 {spinner("finalize")}
                 <ShieldCheck className="size-4" />
-                {tText("Finalize")}
+                {tText("Finalize payroll")}
               </PrimaryButton>
               {activeRunId && !canFinalize && (
                 <p className="mt-1 text-xs text-zinc-400">
-                  {tText("Needs APPROVED")}
+                  {tText("Approve payroll first")}
                 </p>
               )}
             </div>
@@ -889,9 +1277,15 @@ function RunActionForms({
             value={reason}
           />
         </Field>
-        <div className="border-t border-zinc-100 pt-4">
-          <h3 className="text-sm font-semibold text-zinc-700">
-            {tText("Outputs and payment")}
+      </div>
+    </Panel>
+    <Panel className="p-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            {tText("Final outputs")}
+          </p>
+          <h3 className="mt-1 font-serif text-2xl font-semibold text-[#151515]">
+            {tText("Payslips, files, and payment")}
           </h3>
           <div className="mt-3 grid gap-3">
             <Field label={tText("Output kind")}>
@@ -907,7 +1301,7 @@ function RunActionForms({
                   "ACCOUNTING_EXPORT",
                 ].map((kind) => (
                   <option key={kind} value={kind}>
-                    {kind.replace(/_/g, " ")}
+                    {tText(outputLabel(kind))}
                   </option>
                 ))}
               </select>
@@ -927,16 +1321,20 @@ function RunActionForms({
                             adapterKey: "standard-json-v1",
                           },
                         ),
-                      "Output generated.",
+                      outputKind === "PAYSLIP"
+                        ? "Payslips generated."
+                        : "File generated.",
                     )}
                 >
                   {spinner("generate")}
                   <FileOutput className="size-4" />
-                  {tText("Generate")}
+                    {outputKind === "PAYSLIP"
+                      ? tText("Generate payslips")
+                      : tText("Generate file")}
                 </PrimaryButton>
                 {activeRunId && !canGenerate && (
                   <p className="mt-1 text-xs text-zinc-400">
-                    {tText("Needs FINALIZED")}
+                    {tText("Finalize payroll first")}
                   </p>
                 )}
               </div>
@@ -959,7 +1357,7 @@ function RunActionForms({
                 </PrimaryButton>
                 {activeRunId && !canPublish && (
                   <p className="mt-1 text-xs text-zinc-400">
-                    {tText("Needs OUTPUTS_GENERATED")}
+                    {tText("Generate payslips first")}
                   </p>
                 )}
               </div>
@@ -989,15 +1387,112 @@ function RunActionForms({
                 </PrimaryButton>
                 {activeRunId && !canMarkPaid && (
                   <p className="mt-1 text-xs text-zinc-400">
-                    {tText("Needs PUBLISHED")}
+                    {tText("Publish payslips first")}
                   </p>
                 )}
               </div>
             </div>
+            {(message || errorMsg) && (
+              <div
+                className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                  errorMsg
+                    ? "border-red-200 bg-red-50 text-red-800"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                }`}
+              >
+                {errorMsg || message}
+              </div>
+            )}
+            <div className="rounded-xl border border-zinc-200 bg-white">
+              <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-zinc-900">
+                    {tText("Generated payslips")}
+                  </h4>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {tText("Download employee payslip PDFs for this payroll run.")}
+                  </p>
+                </div>
+                <button
+                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515]"
+                  disabled={payslipsLoading || noRun}
+                  onClick={() => void loadPayslips()}
+                  type="button"
+                >
+                  {payslipsLoading ? tText("Loading") : tText("Refresh")}
+                </button>
+              </div>
+              {payslipsLoading ? (
+                <div className="p-4 text-sm text-zinc-500">
+                  {tText("Loading payslips.")}
+                </div>
+              ) : payslips.length ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-zinc-100 text-sm">
+                    <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+                      <tr>
+                        <th className="px-4 py-3">{tText("Employee")}</th>
+                        <th className="px-4 py-3">{tText("Payslip")}</th>
+                        <th className="px-4 py-3">{tText("Net pay")}</th>
+                        <th className="px-4 py-3">{tText("Status")}</th>
+                        <th className="px-4 py-3">{tText("PDF")}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100">
+                      {payslips.map((payslip, index) => {
+                        const payslipId = String(payslip.id ?? "");
+                        const hasPdf = Boolean(payslip.objectKey);
+                        return (
+                          <tr key={payslipId || index}>
+                            <td className="px-4 py-3">
+                              {String(payslip.employeeName ?? payslip.employeeId ?? "-")}
+                            </td>
+                            <td className="px-4 py-3">
+                              {String(payslip.payslipNumber ?? payslip.periodKey ?? "-")}
+                            </td>
+                            <td className="px-4 py-3">
+                              {moneyMinor(payslip.netPayMinor, payslip.currency)}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                {tText(String(payslip.status ?? "Generated"))}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <button
+                                className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:border-[#151515] hover:text-[#151515] disabled:cursor-not-allowed disabled:opacity-50"
+                                disabled={!payslipId || !hasPdf || busy === `payslip-${payslipId}`}
+                                onClick={() => void downloadPayslip(payslipId)}
+                                type="button"
+                              >
+                                {busy === `payslip-${payslipId}` ? (
+                                  <Loader2 className="size-3.5 animate-spin" />
+                                ) : (
+                                  <Download className="size-3.5" />
+                                )}
+                                {tText("Download PDF")}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4 text-sm leading-6 text-zinc-500">
+                  {activeRunStatus === "PAID" ||
+                  activeRunStatus === "PUBLISHED" ||
+                  activeRunStatus === "OUTPUTS_GENERATED"
+                    ? tText("No payslip PDFs are listed for this payroll. Generate payslips before publishing or marking paid.")
+                    : tText("Payslip PDFs will appear here after payroll is finalized and generated.")}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
     </Panel>
+    </>
   );
 }
 
@@ -1026,6 +1521,104 @@ function label(value: string) {
   return value
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function outputLabel(value: string) {
+  const labels: Record<string, string> = {
+    ACCOUNTING_EXPORT: "Accounting file",
+    BANK_EXPORT: "Bank payment file",
+    PAYROLL_REGISTER: "Payroll register",
+    PAYSLIP: "Payslip PDFs",
+  };
+  return labels[value] ?? value.replace(/_/g, " ");
+}
+
+function createBulkSalaryChangeRow(): BulkSalaryChangeRow {
+  return {
+    amount: "",
+    code: "BONUS",
+    currency: "OMR",
+    employeeId: "",
+    id: `bulk-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    kind: "ONE_TIME",
+    reason: "",
+  };
+}
+
+function updateBulkRow(
+  rowsList: BulkSalaryChangeRow[],
+  id: string,
+  patch: Partial<BulkSalaryChangeRow>,
+) {
+  return rowsList.map((row) => (row.id === id ? { ...row, ...patch } : row));
+}
+
+function bulkRowsToCsv(rowsList: BulkSalaryChangeRow[]) {
+  const lines = ["employeeId,kind,code,amountMinor,currency,reason"];
+  rowsList
+    .filter(
+      (row) =>
+        row.employeeId &&
+        row.kind &&
+        row.code.trim() &&
+        row.amount.trim() &&
+        row.currency.trim(),
+    )
+    .forEach((row) => {
+      lines.push(
+        [
+          row.employeeId,
+          row.kind,
+          row.code.trim().toUpperCase(),
+          amountToMinor(row.amount),
+          row.currency.trim().toUpperCase(),
+          row.reason.trim(),
+        ]
+          .map(csvCell)
+          .join(","),
+      );
+    });
+  return `${lines.join("\n")}\n`;
+}
+
+function amountToMinor(value: string) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return "0";
+  return String(Math.round(amount * 1000));
+}
+
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function moneyMinor(value: unknown, currency: unknown) {
+  const amount = Number(value ?? 0) / 1000;
+  const code = String(currency ?? "OMR");
+  if (!Number.isFinite(amount)) return `0.000 ${code}`;
+  return `${amount.toFixed(3)} ${code}`;
+}
+
+function monthPeriod(value: string) {
+  const match = /^(\d{4})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isInteger(year) || month < 1 || month > 12) return null;
+  const endDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return {
+    start: `${value}-01`,
+    end: `${value}-${String(endDay).padStart(2, "0")}`,
+  };
+}
+
+function openDownloadUrl(url: string) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 function apiError(error: unknown) {

@@ -77,7 +77,7 @@ export function PlatformLoginForm() {
       </div>
 
       <div className="mb-7">
-        <div className="mb-4 grid size-12 place-items-center rounded-full bg-surface-variant text-primary">
+        <div className="mb-4 grid size-12 place-items-center rounded-full bg-surface-variant text-[#151515]">
           {challengeToken ? <ShieldCheck /> : <KeyRound />}
         </div>
         <h2 className="text-2xl font-bold">
@@ -157,7 +157,7 @@ export function PlatformLoginForm() {
       <Button
         type="submit"
         disabled={busy}
-        className="mt-7 h-12 w-full bg-primary text-white hover:bg-primary/90"
+        className="mt-7 h-12 w-full bg-[#151515] text-white hover:bg-[#2a2927]"
       >
         {busy
           ? "Please wait..."
@@ -170,7 +170,7 @@ export function PlatformLoginForm() {
       {challengeToken && (
         <button
           type="button"
-          className="mt-4 w-full text-sm font-medium text-primary"
+          className="mt-4 w-full text-sm font-medium text-[#151515]"
           onClick={() => {
             setChallengeToken("");
             setCode("");

@@ -1,5 +1,10 @@
-import { PayrollRunPreparationWorkspace } from "@/features/products/payroll/payroll-run-preparation-workspace";
+import { redirect } from "next/navigation";
 
-export default function PayrollRunsPage() {
-  return <PayrollRunPreparationWorkspace />;
+export default async function PayrollRunsRedirectPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  redirect(`/${lang}/app/payroll/runs`);
 }

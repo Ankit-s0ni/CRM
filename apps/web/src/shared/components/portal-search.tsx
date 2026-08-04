@@ -215,7 +215,7 @@ export function PortalSearch() {
                     onMouseDown={() => navigate(href)}
                     type="button"
                   >
-                    <span className="grid size-9 place-items-center rounded-lg bg-blue-50 text-primary">
+                    <span className="grid size-9 place-items-center rounded-lg bg-[#f3efe6] text-[#151515]">
                       {category === "Insights" ? (
                         <FileBarChart className="size-4" />
                       ) : (
@@ -243,7 +243,7 @@ export function PortalSearch() {
               onMouseDown={() => navigate(`/app/employees/${employee.id}`)}
               type="button"
             >
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-primary">
+              <span className="grid size-9 place-items-center rounded-lg bg-zinc-100 text-[#151515]">
                 <UserRound className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
@@ -264,7 +264,7 @@ export function PortalSearch() {
               onMouseDown={() => navigate(href)}
               type="button"
             >
-              <span className="grid size-9 place-items-center rounded-lg bg-zinc-50 text-primary">
+              <span className="grid size-9 place-items-center rounded-lg bg-zinc-50 text-[#151515]">
                 <Settings2 className="size-4" />
               </span>
               <span className="min-w-0 flex-1">

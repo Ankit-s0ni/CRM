@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ArrowDown,
+  ArrowUp,
   BadgeCheck,
   Banknote,
   CalendarDays,
@@ -8,6 +10,7 @@ import {
   Coins,
   FileClock,
   GitBranch,
+  GripVertical,
   History,
   Layers3,
   LockKeyhole,
@@ -69,6 +72,25 @@ type ResourceState = {
 
 type FormState = Record<string, string | boolean>;
 
+type PayLineAmountType = "fixed" | "percentage" | "formula";
+
+type PayLineRule = {
+  amountType: PayLineAmountType;
+  fixedAmountMinor: string;
+  formulaReference: string;
+  percentage: string;
+};
+
+type AddedPayLine = {
+  amountLabel: string;
+  componentVersionId: string;
+  fixedAmountMinor: string;
+  formulaReference: string;
+  label: string;
+  percentageBasisPoints: string;
+  required: boolean;
+};
+
 export const payrollFoundationTabs: PayrollTab[] = [
   {
     key: "overview",
@@ -76,25 +98,25 @@ export const payrollFoundationTabs: PayrollTab[] = [
     endpoint: "",
     permission: "payroll.settings.read",
     icon: WalletCards,
-    description: "Setup progress and items that still need attention.",
+    description: "See what is ready and what still needs setup.",
   },
   {
     key: "settings",
-    label: "Settings",
+    label: "Company settings",
     endpoint: "/payroll/settings",
     permission: "payroll.settings.read",
     managePermission: "payroll.settings.manage",
     icon: Settings2,
-    description: "Country, currency, frequency, payout and rounding defaults.",
+    description: "Country, currency, pay cycle, payday, and rounding.",
   },
   {
     key: "calendars",
-    label: "Calendars",
+    label: "Pay calendar",
     endpoint: "/payroll/calendars",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: CalendarDays,
-    description: "Versioned period and payout-date rules.",
+    description: "Salary periods and payment dates.",
   },
   {
     key: "pay-groups",
@@ -103,104 +125,104 @@ export const payrollFoundationTabs: PayrollTab[] = [
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: Layers3,
-    description: "Employee cohorts linked to calendars and policy overrides.",
+    description: "Groups of employees paid in the same way.",
   },
   {
     key: "matrix",
-    label: "Policy matrix",
+    label: "Rule source",
     endpoint: "",
     permission: "payroll.policies.read",
     icon: GitBranch,
-    description: "Backend-resolved policy source and override evidence.",
+    description: "See which payroll rule is used for an employee.",
   },
   {
     key: "policies",
-    label: "Policies",
+    label: "Salary rules",
     endpoint: "/payroll/policies",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: ScrollText,
-    description: "Proration, rounding, working-day and reference policies.",
+    description: "Rules for working days, rounding, and partial salary.",
   },
   {
     key: "components",
-    label: "Components",
+    label: "Pay items",
     endpoint: "/payroll/components",
     permission: "payroll.components.read",
     managePermission: "payroll.components.manage",
     icon: Coins,
-    description: "Pay lines such as basic salary, allowance, deduction, and contribution.",
+    description: "Basic salary, allowance, deduction, and contribution.",
   },
   {
     key: "structures",
-    label: "Structures",
+    label: "Salary templates",
     endpoint: "/payroll/salary-structures",
     permission: "payroll.structures.read",
     managePermission: "payroll.structures.manage",
     icon: Banknote,
-    description: "Salary templates made from ready pay lines.",
+    description: "Reusable salary templates made from pay items.",
   },
   {
     key: "employee-profile",
-    label: "Employee profile",
+    label: "Employee payroll fields",
     endpoint: "",
     permission: "payroll.compensation.read",
     managePermission: "payroll.compensation.manage",
     icon: UserRound,
-    description: "Employee payroll enrollment and pay-group assignment.",
+    description: "Employee fields needed before salary can run.",
   },
   {
     key: "compensation",
-    label: "Compensation",
+    label: "Salary changes",
     endpoint: "",
     permission: "payroll.compensation.read",
     managePermission: "payroll.compensation.manage",
     icon: Banknote,
-    description: "Effective compensation revisions using minor-unit storage.",
+    description: "Employee salary revisions and effective dates.",
   },
   {
     key: "payment-details",
-    label: "Payment details",
+    label: "Bank details",
     endpoint: "",
     permission: "payroll.protected-data.read",
     managePermission: "payroll.protected-data.manage",
     icon: LockKeyhole,
-    description: "Masked bank, IBAN and routing details.",
+    description: "Employee bank details used for salary payment.",
   },
   {
     key: "statutory-details",
-    label: "Statutory details",
+    label: "Government IDs",
     endpoint: "",
     permission: "payroll.protected-data.read",
     managePermission: "payroll.protected-data.manage",
     icon: ShieldCheck,
-    description: "Masked country-scoped statutory identifiers.",
+    description: "Employee IDs required for local rules and records.",
   },
   {
     key: "approval-policies",
-    label: "Approvals",
+    label: "Approval flow",
     endpoint: "/payroll/approval-policies",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: BadgeCheck,
-    description: "Four-eyes, maker and approval-level configuration.",
+    description: "Who must check and approve payroll.",
   },
   {
     key: "accounting",
-    label: "Accounting",
+    label: "Accounting links",
     endpoint: "/payroll/accounting-mappings",
     permission: "payroll.accounting.read",
     managePermission: "payroll.accounting.manage",
     icon: FileClock,
-    description: "Pay component to debit/credit mapping configuration.",
+    description: "Connect pay items to debit and credit account codes.",
   },
   {
     key: "audit",
-    label: "Audit",
+    label: "Setup history",
     endpoint: "/payroll/audit?limit=25",
     permission: "payroll.audit.read",
     icon: History,
-    description: "Payroll setup audit history.",
+    description: "Changes made to payroll setup.",
   },
 ];
 
@@ -226,44 +248,34 @@ export function PayrollFoundationWorkspace() {
   return (
     <AdminPage
       title={tText("Payroll setup")}
-      description={tText("Configure payroll settings, calendars, pay groups, policies, compensation data, approvals, accounting, and audit history before running payroll.")}
+      description={tText("Set up payroll once for your organization. Use Payroll runs for monthly salary work and Employees for employee details.")}
     >
       {!visibleTabs.length ? (
         <ErrorState message={tText("Your account does not have Payroll setup permissions.")} />
-      ) : (
-        <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <Panel className="p-2">
-            <div className="grid gap-1">
-              {visibleTabs.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-lg px-3 text-left text-sm font-medium transition",
-                      activeKey === item.key
-                        ? "bg-zinc-900 text-white"
-                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
-                    )}
-                    key={item.key}
-                    onClick={() => setActive(item.key)}
-                    type="button"
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    <span>{tText(item.label)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Panel>
-          {tab && (
-            <PayrollTabPanel
-              employeeId={employeeId}
-              onEmployeeIdChange={setEmployeeId}
-              permissions={permissions}
-              tab={tab}
-            />
-          )}
+      ) : activeKey === "overview" ? (
+        <PayrollOverview
+          onOpen={setActive}
+          permissions={permissions}
+          visibleTabs={visibleTabs}
+        />
+      ) : tab ? (
+        <div className="grid gap-5">
+          <button
+            className="w-fit rounded-lg border border-[#beb8ad] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+            onClick={() => setActive("overview")}
+            type="button"
+          >
+            {tText("Back to payroll setup")}
+          </button>
+          <PayrollTabPanel
+            employeeId={employeeId}
+            onEmployeeIdChange={setEmployeeId}
+            permissions={permissions}
+            tab={tab}
+          />
         </div>
+      ) : (
+        <ErrorState message={tText("This payroll setup page is not available for your role.")} />
       )}
     </AdminPage>
   );
@@ -300,7 +312,7 @@ function PayrollTabPanel({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <tab.icon className="size-5 text-primary" />
+              <tab.icon className="size-5 text-[#151515]" />
               <h2 className="text-xl font-semibold text-zinc-900">
                 {tText(tab.label)}
               </h2>
@@ -326,9 +338,7 @@ function PayrollTabPanel({
           </div>
         )}
       </Panel>
-      {tab.key === "overview" ? (
-        <PayrollOverview permissions={permissions} />
-      ) : tab.key === "matrix" ? (
+      {tab.key === "overview" ? null : tab.key === "matrix" ? (
         <PolicyMatrix employeeId={employeeId} />
       ) : (
         <>
@@ -400,7 +410,15 @@ function usePayrollResource(endpoint: string): ResourceState & { refresh: () => 
   return useMemo(() => ({ ...state, refresh }), [state, refresh]);
 }
 
-function PayrollOverview({ permissions }: { permissions: Set<string> }) {
+function PayrollOverview({
+  onOpen,
+  permissions,
+  visibleTabs,
+}: {
+  onOpen: (tab: PayrollTabKey) => void;
+  permissions: Set<string>;
+  visibleTabs: PayrollTab[];
+}) {
   const { tText } = useTenantLocalization();
   const settings = usePayrollResource("/payroll/settings");
   const calendars = usePayrollResource("/payroll/calendars");
@@ -411,73 +429,239 @@ function PayrollOverview({ permissions }: { permissions: Set<string> }) {
   const approvals = usePayrollResource("/payroll/approval-policies");
   const accounting = usePayrollResource("/payroll/accounting-mappings");
 
-  const cards = [
-    statusCard(tText("Settings"), Boolean(dataObject(settings.data)), "/app/settings/payroll"),
-    statusCard(tText("Active calendar"), rows(calendars.data).some((item) => item.status === "ACTIVE"), ""),
-    countCard(tText("Pay groups"), rows(payGroups.data).length),
-    countCard(tText("Policies"), rows(policies.data).length),
-    countCard(tText("Components"), rows(components.data).length),
-    countCard(tText("Salary structures"), rows(structures.data).length),
-    statusCard(tText("Approval policy"), rows(approvals.data).length > 0, ""),
-    statusCard(tText("Accounting mappings"), rows(accounting.data).length > 0, ""),
+  const tabMap = useMemo(
+    () => new Map(visibleTabs.map((item) => [item.key, item])),
+    [visibleTabs],
+  );
+  const ready = {
+    settings: Boolean(dataObject(settings.data)),
+    calendars: rows(calendars.data).some((item) => item.status === "ACTIVE"),
+    payGroups: rows(payGroups.data).length > 0,
+    policies: rows(policies.data).length > 0,
+    components: rows(components.data).length > 0,
+    structures: rows(structures.data).length > 0,
+    approvals: rows(approvals.data).length > 0,
+    accounting: rows(accounting.data).length > 0,
+  };
+  const setupGroups: Array<{
+    accent: string;
+    description: string;
+    icon: typeof Settings2;
+    items: Array<{ key: PayrollTabKey; label: string; ready?: boolean; note?: string }>;
+    openKey: PayrollTabKey;
+    title: string;
+  }> = [
+    {
+      accent: "bg-[#f0fff7] text-emerald-700",
+      description: tText("Set the foundation for how payroll works in your company."),
+      icon: Settings2,
+      items: [
+        { key: "settings", label: tText("Company settings"), ready: ready.settings },
+        { key: "calendars", label: tText("Pay calendar"), ready: ready.calendars },
+        { key: "pay-groups", label: tText("Pay groups"), ready: ready.payGroups },
+      ],
+      openKey: "settings",
+      title: tText("1. Basic setup"),
+    },
+    {
+      accent: "bg-[#f3edff] text-violet-700",
+      description: tText("Define what employees are paid and how salary is calculated."),
+      icon: WalletCards,
+      items: [
+        { key: "components", label: tText("Pay items"), ready: ready.components },
+        { key: "structures", label: tText("Salary templates"), ready: ready.structures },
+        { key: "policies", label: tText("Salary rules"), ready: ready.policies },
+      ],
+      openKey: "components",
+      title: tText("2. Pay setup"),
+    },
+    {
+      accent: "bg-[#fff6e8] text-amber-700",
+      description: tText("Choose the employee details required before salary can run."),
+      icon: UserRound,
+      items: [
+        { key: "employee-profile", label: tText("Employee payroll fields"), note: tText("Per employee") },
+        { key: "payment-details", label: tText("Bank details"), note: tText("Per employee") },
+        { key: "statutory-details", label: tText("Government IDs"), note: tText("Per employee") },
+      ],
+      openKey: "employee-profile",
+      title: tText("3. Employee payroll setup"),
+    },
+    {
+      accent: "bg-[#eef7ff] text-sky-700",
+      description: tText("Set approval steps and connect payroll to finance records."),
+      icon: ShieldCheck,
+      items: [
+        { key: "approval-policies", label: tText("Approval flow"), ready: ready.approvals },
+        { key: "accounting", label: tText("Accounting links"), ready: ready.accounting },
+        { key: "audit", label: tText("Setup history"), note: tText("View changes") },
+      ],
+      openKey: "approval-policies",
+      title: tText("4. Controls and finance"),
+    },
   ];
+  const readiness = [
+    ready.settings,
+    ready.calendars,
+    ready.payGroups,
+    ready.components,
+    ready.structures,
+    ready.policies,
+    ready.approvals,
+    ready.accounting,
+  ];
+  const readyCount = readiness.filter(Boolean).length;
+  const canOpen = (key: PayrollTabKey) => tabMap.has(key);
 
   return (
-    <div className="grid gap-5">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => (
-          <Panel className="p-5" key={card.label}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium text-zinc-500">
-                  {card.label}
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-zinc-900">
-                  {card.value}
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-semibold",
-                  card.ready
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-amber-50 text-amber-700",
-                )}
-              >
-                {tText(card.ready ? "Ready" : "Needed")}
-              </span>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-5">
+        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="reference-home-hand text-xs font-bold uppercase tracking-[0.18em] text-[#151515]">
+                {tText("Organization setup")}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-[#151515]">
+                {tText("Set up in this order")}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5f6572]">
+                {tText("Create payroll rules once. Employee salary work, payslips, and monthly runs stay outside Modules.")}
+              </p>
             </div>
-          </Panel>
-        ))}
-      </div>
-      <Panel className="p-5">
-        <h3 className="text-base font-semibold">{tText("Setup sequence")}</h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {[
-            tText("Payroll settings"),
-            tText("Payroll calendar"),
-            tText("Pay group"),
-            tText("Policies"),
-            tText("Components"),
-            tText("Salary structure"),
-            tText("Employee payroll profile"),
-            tText("Compensation"),
-            tText("Protected details"),
-            tText("Approval policy"),
-            tText("Accounting mapping"),
-          ].map((item) => (
-            <div className="flex items-center gap-3 text-sm" key={item}>
-              <CheckCircle2 className="size-4 text-primary" />
-              {item}
+            <div className="rounded-full border border-[#beb8ad] bg-[#fbfaf6] px-4 py-2 text-sm font-semibold text-emerald-700">
+              {tText("Setup progress")}: {readyCount} / {readiness.length}
             </div>
-          ))}
+          </div>
+        </Panel>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          {setupGroups.map((group) => {
+            const Icon = group.icon;
+            const openKey = canOpen(group.openKey)
+              ? group.openKey
+              : group.items.find((item) => canOpen(item.key))?.key;
+            return (
+              <Panel className="border-[#beb8ad] bg-[#fffefa] p-5" key={group.title}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className={cn("grid size-12 shrink-0 place-items-center rounded-full", group.accent)}>
+                      <Icon className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#151515]">{group.title}</h3>
+                      <p className="mt-1 text-sm leading-5 text-[#5f6572]">
+                        {group.description}
+                      </p>
+                    </div>
+                  </div>
+                  {openKey && (
+                    <button
+                      className="rounded-lg border border-[#beb8ad] bg-[#fbfaf6] px-4 py-2 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+                      onClick={() => onOpen(openKey)}
+                      type="button"
+                    >
+                      {tText("Open")}
+                    </button>
+                  )}
+                </div>
+                <div className="mt-5 divide-y divide-[#e5dfd2] border-t border-[#e5dfd2]">
+                  {group.items.map((item) => (
+                    <button
+                      className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm transition hover:text-[#151515]"
+                      disabled={!canOpen(item.key)}
+                      key={item.key}
+                      onClick={() => onOpen(item.key)}
+                      type="button"
+                    >
+                      <span className="flex items-center gap-2 font-semibold text-[#151515]">
+                        <CheckCircle2 className="size-4 text-emerald-600" />
+                        {item.label}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-1 text-xs font-bold",
+                          item.note
+                            ? "bg-[#f3efe6] text-[#5f6572]"
+                            : item.ready
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-700",
+                        )}
+                      >
+                        {item.note ?? tText(item.ready ? "Ready" : "Needed")}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </Panel>
+            );
+          })}
         </div>
-        {!permissions.has("payroll.protected-data.read") && (
-          <p className="mt-4 text-sm text-zinc-500">
-            {tText("Protected detail setup is hidden because this user lacks the dedicated protected-data permission.")}
+
+        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
+          <h3 className="text-base font-bold text-[#151515]">{tText("Recommended order")}</h3>
+          <div className="mt-5 grid gap-3 md:grid-cols-5">
+            {[
+              tText("Basic setup"),
+              tText("Pay setup"),
+              tText("Employee payroll setup"),
+              tText("Controls and finance"),
+              tText("Ready for payroll runs"),
+            ].map((item, index) => (
+              <div className="flex items-center gap-3 text-sm font-semibold text-[#151515]" key={item}>
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#beb8ad] bg-[#fbfaf6] text-xs">
+                  {index + 1}
+                </span>
+                {item}
+              </div>
+            ))}
+          </div>
+          {!permissions.has("payroll.protected-data.read") && (
+            <p className="mt-4 text-sm text-[#5f6572]">
+              {tText("Bank details and government IDs are hidden because this user does not have permission to view protected data.")}
+            </p>
+          )}
+        </Panel>
+      </div>
+
+      <div className="grid h-fit gap-5">
+        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
+          <h3 className="text-base font-bold text-[#151515]">{tText("What this page is for")}</h3>
+          <div className="mt-4 grid gap-3 text-sm text-[#5f6572]">
+            {[tText("Company-level payroll setup"), tText("Done once or updated sometimes"), tText("Shared by every payroll run")].map((item) => (
+              <div className="flex items-center gap-3" key={item}>
+                <CheckCircle2 className="size-4 text-emerald-600" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel className="border-[#beb8ad] bg-[#f7fff8] p-5">
+          <h3 className="text-base font-bold text-[#151515]">{tText("Where daily work happens")}</h3>
+          <div className="mt-4 grid gap-3 text-sm">
+            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/employees">
+              {tText("Employee payroll details")} <span aria-hidden="true">→</span>
+            </a>
+            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/payroll/runs">
+              {tText("Monthly salary processing")} <span aria-hidden="true">→</span>
+            </a>
+            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/reports?type=PAYROLL">
+              {tText("Payslips and exports")} <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </Panel>
+
+        <Panel className="border-[#beb8ad] bg-[#fff9ef] p-5">
+          <h3 className="text-base font-bold text-[#151515]">{tText("Need attention")}</h3>
+          <p className="mt-3 text-sm leading-6 text-[#5f6572]">
+            {tText("Check employees missing payroll setup before running salary.")}
           </p>
-        )}
-      </Panel>
+          <a className="mt-4 inline-flex rounded-lg border border-[#beb8ad] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#151515] hover:bg-[#f3efe6]" href="/app/employees">
+            {tText("View employees")}
+          </a>
+        </Panel>
+      </div>
     </div>
   );
 }
@@ -721,6 +905,7 @@ const SCHEMA_BY_CATEGORY: Record<string, string> = {
 
 function PolicyForm({ onSaved }: { onSaved: () => void }) {
   const { tText } = useTenantLocalization();
+  const policies = usePayrollResource("/payroll/policies");
   const [form, setForm] = useState<FormState>({
     code: "PRORATION-DEFAULT",
     name: "Default proration",
@@ -734,6 +919,13 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
   const category = String(form.category ?? "");
   const methodOptions = METHODS_BY_CATEGORY[category] ?? [];
   const schemaVersion = SCHEMA_BY_CATEGORY[category] ?? "";
+  const policyRows = rows(policies.data);
+  const policyOptions = policyRows
+    .map((policy) => ({
+      label: `${text(policy.name, tText("Unnamed rule"))} (${text(policy.code, "-")})`,
+      value: text(policy.id, ""),
+    }))
+    .filter((option) => option.value);
   return (
     <FormPanel
       action={tText("Create policy")}
@@ -803,13 +995,30 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
             })
           }
         />
-        <Field label={tText("Policy ID")}>
-          <input
-            className={inputClass}
-            onChange={(event) => setPolicyId(event.target.value)}
-            value={policyId}
-          />
-        </Field>
+        <OptionSelectField
+          form={{ policyId }}
+          hint={tText("Choose an existing salary rule when you want to add a new version.")}
+          labelText={tText("Existing salary rule")}
+          name="policyId"
+          onValueChange={(value) => {
+            setPolicyId(value);
+            const selected = policyRows.find((policy) => text(policy.id, "") === value);
+            if (!selected) return;
+            setForm((current) => ({
+              ...current,
+              category: text(selected.category, current.category ? String(current.category) : "PRORATION"),
+              code: text(selected.code, current.code ? String(current.code) : ""),
+              name: text(selected.name, current.name ? String(current.name) : ""),
+            }));
+          }}
+          options={policyOptions}
+          placeholder={
+            policies.loading
+              ? tText("Loading salary rules")
+              : tText("Select salary rule")
+          }
+          setForm={() => undefined}
+        />
         {methodOptions.length > 0 ? (
           <SelectField
             form={form}
@@ -839,6 +1048,10 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function PolicyMatrix({ employeeId }: { employeeId: string }) {
+  const { tText } = useTenantLocalization();
+  const employees = usePayrollResource("/employees?limit=100");
+  const payGroups = usePayrollResource("/payroll/pay-groups");
+  const structures = usePayrollResource("/payroll/salary-structures");
   const [form, setForm] = useState<FormState>({
     employeeId,
     payGroupId: "",
@@ -850,17 +1063,87 @@ function PolicyMatrix({ employeeId }: { employeeId: string }) {
     ? `/payroll/policy-matrix/effective?employeeId=${encodeURIComponent(String(form.employeeId))}&policyType=${encodeURIComponent(String(form.policyType))}&effectiveDate=${encodeURIComponent(String(form.effectiveDate))}${form.payGroupId ? `&payGroupId=${encodeURIComponent(String(form.payGroupId))}` : ""}`
     : "";
   const resource = usePayrollResource(endpoint);
+  const employeeOptions = rows(employees.data)
+    .map((employee) => ({
+      label: `${text(employee.fullName, tText("Unnamed employee"))} (${text(employee.employeeCode, "-")})`,
+      value: text(employee.id, ""),
+    }))
+    .filter((option) => option.value);
+  const payGroupOptions = rows(payGroups.data)
+    .map((payGroup) => ({
+      label: `${text(payGroup.name, tText("Unnamed pay group"))} (${text(payGroup.code, "-")})`,
+      value: text(payGroup.id, ""),
+    }))
+    .filter((option) => option.value);
+  const salaryTemplateOptions = rows(structures.data)
+    .flatMap((structure) => {
+      const versions = rows(structure.versions);
+      if (versions.length === 0) {
+        return [];
+      }
+      return versions.map((version) => ({
+        label: `${text(structure.name, tText("Unnamed salary template"))} v${text(version.version, "-")} (${text(version.status, "-")})`,
+        value: text(version.id, ""),
+      }));
+    })
+    .filter((option) => option.value);
   return (
     <div className="grid gap-5">
       <Panel className="p-5">
         <FieldGrid>
-          <TextField form={form} name="employeeId" setForm={setForm} />
-          <TextField form={form} name="payGroupId" setForm={setForm} />
-          <TextField form={form} name="salaryStructureVersionId" setForm={setForm} />
+          <OptionSelectField
+            form={form}
+            labelText={tText("Employee")}
+            name="employeeId"
+            options={employeeOptions}
+            placeholder={
+              employees.loading
+                ? tText("Loading employees")
+                : tText("Select employee")
+            }
+            setForm={setForm}
+          />
+          <OptionSelectField
+            form={form}
+            hint={tText("Optional. Use this only when checking a pay-group rule.")}
+            labelText={tText("Pay group")}
+            name="payGroupId"
+            options={payGroupOptions}
+            placeholder={
+              payGroups.loading
+                ? tText("Loading pay groups")
+                : tText("No pay group")
+            }
+            setForm={setForm}
+          />
+          <OptionSelectField
+            disabled
+            form={form}
+            hint={tText("Shown for context. Rule source is checked by employee, pay group, rule type, and date.")}
+            labelText={tText("Salary template")}
+            name="salaryStructureVersionId"
+            options={salaryTemplateOptions}
+            placeholder={
+              structures.loading
+                ? tText("Loading salary templates")
+                : tText("Not used for this check")
+            }
+            setForm={setForm}
+          />
           <SelectField form={form} name="policyType" options={["PRORATION", "WORKING_DAY_BASIS", "ROUNDING", "OVERTIME_TREATMENT", "LOSS_OF_PAY_TREATMENT", "JOINER_TREATMENT", "LEAVER_TREATMENT"]} setForm={setForm} />
           <TextField form={form} name="effectiveDate" setForm={setForm} type="date" />
         </FieldGrid>
       </Panel>
+      {(employees.error || payGroups.error || structures.error) && (
+        <ErrorState
+          message={
+            employees.error ??
+            payGroups.error ??
+            structures.error ??
+            tText("Could not load dropdown options.")
+          }
+        />
+      )}
       {resource.error && <ErrorState message={resource.error} />}
       {resource.loading ? <LoadingState /> : <PolicyMatrixResult data={resource.data} />}
     </div>
@@ -1035,11 +1318,13 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
     currency: "OMR",
     structureId: "",
     versionId: "",
-    fixedAmountMinor: "0",
-    calculationOrder: "100",
     effectiveFrom: today,
   });
   const [selectedPayLineIds, setSelectedPayLineIds] = useState<string[]>([]);
+  const [payLineRules, setPayLineRules] = useState<Record<string, PayLineRule>>(
+    {},
+  );
+  const [reorderingPayLines, setReorderingPayLines] = useState(false);
   const structureOptions = rows(structures.data).map((structure) => ({
     label: `${text(structure.name, text(structure.code, tText("Unnamed structure")))} (${text(structure.code, "-")})`,
     value: text(structure.id, ""),
@@ -1070,20 +1355,124 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
       )
       .filter(Boolean),
   );
-  const addedPayLineLabels = rows(selectedEditableSetup?.components)
-    .map((item) => {
+  const addedPayLines: AddedPayLine[] = rows(selectedEditableSetup?.components)
+    .sort(
+      (a, b) =>
+        Number(text(a.calculationOrder, "0")) -
+        Number(text(b.calculationOrder, "0")),
+    )
+    .map((item): AddedPayLine | null => {
       const componentVersionId =
         text(item.payComponentVersionId, "") ||
         text(dataObject(item.componentVersion)?.id, "");
       const optionLabel = activeComponentLabelByVersionId.get(componentVersionId);
-      if (optionLabel) return optionLabel;
       const version = dataObject(item.componentVersion);
       const component = dataObject(version?.component);
       const code = text(component?.code, text(item.code, ""));
       const name = text(component?.name, text(item.name, code));
-      return name || code ? `${name}${code ? ` (${code})` : ""}` : "";
+      const labelValue =
+        optionLabel ||
+        (name || code ? `${name}${code ? ` (${code})` : ""}` : "");
+      if (!componentVersionId || !labelValue) return null;
+      return {
+        amountLabel: payLineAmountLabel(item, tText),
+        componentVersionId,
+        fixedAmountMinor: text(item.fixedAmountMinor, ""),
+        formulaReference: text(item.formulaReference, ""),
+        label: labelValue,
+        percentageBasisPoints: text(item.percentageBasisPoints, ""),
+        required: item.required !== false,
+      };
     })
-    .filter(Boolean);
+    .filter((item): item is AddedPayLine => Boolean(item));
+  const existingPercentageTotal = rows(selectedEditableSetup?.components).reduce(
+    (total, item) =>
+      total + Number(text(item.percentageBasisPoints, "0")) / 100,
+    0,
+  );
+  const selectedPercentageTotal = selectedPayLineIds.reduce((total, id) => {
+    const rule = payLineRules[id];
+    if (rule?.amountType !== "percentage") return total;
+    return total + Number(rule.percentage || 0);
+  }, 0);
+  const remainingPercentage = Math.max(
+    0,
+    100 - existingPercentageTotal - selectedPercentageTotal,
+  );
+  const invalidSelectedPayLine =
+    existingPercentageTotal + selectedPercentageTotal > 100 ||
+    selectedPayLineIds.some((id) => payLineRuleInvalid(payLineRules[id]));
+  function selectPayLines(nextIds: string[]) {
+    setSelectedPayLineIds(nextIds);
+    setPayLineRules((current) => {
+      const next: Record<string, PayLineRule> = {};
+      const previousSelectedTotal = selectedPayLineIds.reduce((total, id) => {
+        const rule = current[id];
+        if (rule?.amountType !== "percentage") return total;
+        return total + Number(rule.percentage || 0);
+      }, 0);
+      const previousRemaining = Math.max(
+        0,
+        100 - existingPercentageTotal - previousSelectedTotal,
+      );
+      let newLineUsedRemaining = false;
+      nextIds.forEach((id, index) => {
+        if (current[id]) {
+          next[id] = current[id];
+          return;
+        }
+        const suggestedPercentage = newLineUsedRemaining
+          ? "0"
+          : formatPercentageInput(previousRemaining);
+        newLineUsedRemaining = true;
+        next[id] = {
+          amountType: "percentage",
+          fixedAmountMinor: "0",
+          formulaReference: "",
+          percentage: suggestedPercentage,
+        };
+      });
+      return next;
+    });
+  }
+  function updatePayLineRule(id: string, updates: Partial<PayLineRule>) {
+    setPayLineRules((current) => ({
+      ...current,
+      [id]: {
+        ...defaultPayLineRule(),
+        ...current[id],
+        ...updates,
+      },
+    }));
+  }
+  async function saveAddedPayLineOrder(nextPayLines: AddedPayLine[]) {
+    if (!inferredEditableSetupId) return;
+    setReorderingPayLines(true);
+    try {
+      for (const payLine of addedPayLines) {
+        await apiClient.delete(
+          `/payroll/salary-structures/versions/${inferredEditableSetupId}/components/${payLine.componentVersionId}`,
+        );
+      }
+      for (const [index, payLine] of nextPayLines.entries()) {
+        await apiClient.post(
+          `/payroll/salary-structures/versions/${inferredEditableSetupId}/components`,
+          clean({
+            payComponentVersionId: payLine.componentVersionId,
+            fixedAmountMinor: payLine.fixedAmountMinor,
+            percentageBasisPoints: payLine.percentageBasisPoints,
+            formulaReference: payLine.formulaReference,
+            calculationOrder: (index + 1) * 100,
+            required: payLine.required,
+          }),
+        );
+      }
+      structures.refresh();
+      onSaved();
+    } finally {
+      setReorderingPayLines(false);
+    }
+  }
   const availablePayLineOptions = activeComponentOptions.filter(
     (option) => !addedPayLineIds.has(option.value),
   );
@@ -1106,6 +1495,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
       versionId: editableSetup?.value ?? "",
     }));
     setSelectedPayLineIds([]);
+    setPayLineRules({});
     setMode("edit");
   };
   const selectedEditableStructureId =
@@ -1114,7 +1504,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
   const canMakeReady = Boolean(
     selectedEditableStructureId &&
     inferredEditableSetupId &&
-    addedPayLineLabels.length,
+    addedPayLines.length,
   );
   const hasNoMorePayLinesToAdd = Boolean(
     inferredEditableSetupId &&
@@ -1151,6 +1541,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
             disabled={
               !inferredEditableSetupId ||
               !selectedPayLineIds.length ||
+              invalidSelectedPayLine ||
               hasNoMorePayLinesToAdd
             }
             disabledReason={
@@ -1160,6 +1551,8 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
                   ? tText("Click Start editing selected template first.")
                   : hasNoMorePayLinesToAdd
                     ? tText("All ready pay lines are already in this salary template.")
+                    : invalidSelectedPayLine
+                      ? tText("Complete the amount type and value for each selected pay line.")
                   : tText("Select one or more ready pay lines first.")
             }
             onClick={async () => {
@@ -1167,17 +1560,31 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
                 (payLineId) => !addedPayLineIds.has(payLineId),
               );
               for (const [index, payComponentVersionId] of payLineIdsToAdd.entries()) {
+                const rule =
+                  payLineRules[payComponentVersionId] ??
+                  defaultPayLineRule();
                 await apiClient.post(
                   `/payroll/salary-structures/versions/${inferredEditableSetupId}/components`,
-                  {
+                  clean({
                     payComponentVersionId,
-                    fixedAmountMinor: form.fixedAmountMinor,
-                    calculationOrder: Number(form.calculationOrder) + index,
+                    fixedAmountMinor:
+                      rule.amountType === "fixed"
+                        ? rule.fixedAmountMinor || "0"
+                        : "",
+                    percentageBasisPoints:
+                      rule.amountType === "percentage"
+                        ? String(percentageToBasisPoints(rule.percentage))
+                        : "",
+                    formulaReference:
+                      rule.amountType === "formula" ? rule.formulaReference : "",
+                    calculationOrder:
+                      (addedPayLines.length + index + 1) * 100,
                     required: true,
-                  },
+                  }),
                 );
               }
               setSelectedPayLineIds([]);
+              setPayLineRules({});
               structures.refresh();
               onSaved();
             }}
@@ -1213,14 +1620,15 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
             `/payroll/salary-structures/${structureId}/versions`,
             { effectiveFrom: form.effectiveFrom },
           );
-          setForm((current) => ({
-            ...current,
-            structureId,
-            versionId: text(dataObject(createdVersion.data)?.id, ""),
-          }));
-          setSelectedPayLineIds([]);
-          setMode("edit");
-        }
+              setForm((current) => ({
+                ...current,
+                structureId,
+                versionId: text(dataObject(createdVersion.data)?.id, ""),
+              }));
+              setSelectedPayLineIds([]);
+              setPayLineRules({});
+              setMode("edit");
+            }
         structures.refresh();
         onSaved();
       }}
@@ -1307,21 +1715,27 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
                   versionId: editableSetup?.value ?? "",
                 }));
                 setSelectedPayLineIds([]);
+                setPayLineRules({});
               }}
               options={structureOptions}
               placeholder={structures.loading ? tText("Loading structures") : tText("Select salary template")}
               setForm={setForm}
             />
-            <TextField form={form} hint={tText("Optional default line amount in minor units. Keep 0 when the amount comes from employee compensation.")} name="fixedAmountMinor" setForm={setForm} />
-            <TextField form={form} hint={tText("Controls payslip line order. Basic 100, allowances 200, deductions 900.")} name="calculationOrder" setForm={setForm} />
           </FieldGrid>
           <PayLineChecklist
-            addedLabels={addedPayLineLabels}
+            addedPayLines={addedPayLines}
             disabled={!inferredEditableSetupId}
+            existingPercentageTotal={existingPercentageTotal}
             loading={components.loading}
-            onChange={setSelectedPayLineIds}
+            onChange={selectPayLines}
+            onReorderAdded={(nextPayLines) => void saveAddedPayLineOrder(nextPayLines)}
+            onRuleChange={updatePayLineRule}
             options={availablePayLineOptions}
+            reordering={reorderingPayLines}
+            remainingPercentage={remainingPercentage}
+            rules={payLineRules}
             selected={selectedPayLineIds}
+            selectedPercentageTotal={selectedPercentageTotal}
           />
           {!inferredEditableSetupId && form.structureId ? (
             <p className="mt-3 text-sm text-amber-700">
@@ -1690,7 +2104,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
                 value={nameDraft}
               />
               <button
-                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+                className="rounded-lg bg-[#151515] px-3 py-1.5 text-xs font-semibold text-white"
                 onClick={async () => {
                   setEditingName(false);
                   await apiClient.patch(
@@ -2313,7 +2727,7 @@ function InlineAction({
 
 function SetupHint({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+    <div className="mb-4 rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-4 py-3 text-sm leading-6 text-[#151515]">
       {children}
     </div>
   );
@@ -2484,21 +2898,62 @@ function OptionSelectField({
 }
 
 function PayLineChecklist({
-  addedLabels,
+  addedPayLines,
   disabled,
+  existingPercentageTotal,
   loading,
   onChange,
+  onReorderAdded,
+  onRuleChange,
   options,
+  reordering,
+  remainingPercentage,
+  rules,
   selected,
+  selectedPercentageTotal,
 }: {
-  addedLabels: string[];
+  addedPayLines: AddedPayLine[];
   disabled: boolean;
+  existingPercentageTotal: number;
   loading: boolean;
   onChange: (value: string[]) => void;
+  onReorderAdded: (value: AddedPayLine[]) => void;
+  onRuleChange: (id: string, updates: Partial<PayLineRule>) => void;
   options: Array<{ label: string; value: string }>;
+  reordering: boolean;
+  remainingPercentage: number;
+  rules: Record<string, PayLineRule>;
   selected: string[];
+  selectedPercentageTotal: number;
 }) {
   const { tText } = useTenantLocalization();
+  const [draggedId, setDraggedId] = useState("");
+  const selectedOptions = options.filter((option) =>
+    selected.includes(option.value),
+  );
+  function moveAddedPayLine(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= addedPayLines.length) return;
+    const next = [...addedPayLines];
+    const [item] = next.splice(index, 1);
+    next.splice(targetIndex, 0, item);
+    onReorderAdded(next);
+  }
+  function dropAddedPayLine(targetId: string) {
+    if (!draggedId || draggedId === targetId) return;
+    const fromIndex = addedPayLines.findIndex(
+      (item) => item.componentVersionId === draggedId,
+    );
+    const targetIndex = addedPayLines.findIndex(
+      (item) => item.componentVersionId === targetId,
+    );
+    if (fromIndex < 0 || targetIndex < 0) return;
+    const next = [...addedPayLines];
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(targetIndex, 0, item);
+    onReorderAdded(next);
+    setDraggedId("");
+  }
   return (
     <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 p-4">
       <div>
@@ -2509,15 +2964,51 @@ function PayLineChecklist({
           {tText("A salary template can contain many pay lines. Select all ready pay lines you want to add, then click Add selected pay lines.")}
         </p>
       </div>
-      {addedLabels.length ? (
-        <div className="flex flex-wrap gap-2">
-          {addedLabels.map((labelValue) => (
-            <span
-              className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800"
-              key={labelValue}
+      {addedPayLines.length ? (
+        <div className="grid gap-2">
+          <p className="text-sm font-semibold text-zinc-900">
+            {tText("Drag pay lines to change order")}
+          </p>
+          {addedPayLines.map((line, index) => (
+            <div
+              className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm shadow-sm"
+              draggable={!disabled && !reordering}
+              key={line.componentVersionId}
+              onDragEnd={() => setDraggedId("")}
+              onDragOver={(event) => event.preventDefault()}
+              onDragStart={() => setDraggedId(line.componentVersionId)}
+              onDrop={() => dropAddedPayLine(line.componentVersionId)}
             >
-              {labelValue}
-            </span>
+              <GripVertical className="size-4 shrink-0 text-zinc-400" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-zinc-900">
+                  {line.label}
+                </p>
+                <p className="text-xs text-zinc-500">{line.amountLabel}</p>
+              </div>
+              <button
+                aria-label={tText("Move up")}
+                className="grid size-9 place-items-center rounded-lg border border-zinc-200 text-zinc-600 disabled:opacity-40"
+                disabled={disabled || reordering || index === 0}
+                onClick={() => moveAddedPayLine(index, -1)}
+                type="button"
+              >
+                <ArrowUp className="size-4" />
+              </button>
+              <button
+                aria-label={tText("Move down")}
+                className="grid size-9 place-items-center rounded-lg border border-zinc-200 text-zinc-600 disabled:opacity-40"
+                disabled={
+                  disabled ||
+                  reordering ||
+                  index === addedPayLines.length - 1
+                }
+                onClick={() => moveAddedPayLine(index, 1)}
+                type="button"
+              >
+                <ArrowDown className="size-4" />
+              </button>
+            </div>
           ))}
         </div>
       ) : (
@@ -2527,6 +3018,20 @@ function PayLineChecklist({
             : tText("No pay lines added to this template yet.")}
         </p>
       )}
+      <div className="grid gap-2 rounded-lg border border-[#beb8ad] bg-[#f3efe6] p-3 text-sm text-[#151515] md:grid-cols-3">
+        <div>
+          <span className="font-semibold">{tText("Already used")}: </span>
+          {formatPercentageInput(existingPercentageTotal)}%
+        </div>
+        <div>
+          <span className="font-semibold">{tText("Selected now")}: </span>
+          {formatPercentageInput(selectedPercentageTotal)}%
+        </div>
+        <div>
+          <span className="font-semibold">{tText("Remaining")}: </span>
+          {formatPercentageInput(remainingPercentage)}%
+        </div>
+      </div>
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {loading ? (
           <p className="text-sm text-zinc-500">{tText("Loading pay lines")}</p>
@@ -2557,6 +3062,107 @@ function PayLineChecklist({
           </p>
         )}
       </div>
+      {selectedOptions.length ? (
+        <div className="mt-2 grid gap-3">
+          <h5 className="text-sm font-semibold text-zinc-900">
+            {tText("Amount for selected pay lines")}
+          </h5>
+          {selectedOptions.map((option, index) => {
+            const rule =
+              rules[option.value] ??
+              defaultPayLineRule();
+            return (
+              <div
+                className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-3 lg:grid-cols-[minmax(180px,1fr)_220px_minmax(180px,1fr)]"
+                key={option.value}
+              >
+                <div>
+                  <p className="text-sm font-bold text-zinc-900">
+                    {option.label}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {rule.amountType === "percentage"
+                      ? tText("Uses a percentage of this employee's monthly salary.")
+                      : rule.amountType === "fixed"
+                        ? tText("Uses the same fixed amount every month.")
+                        : tText("Uses an advanced formula.")}
+                  </p>
+                </div>
+                <Field label={tText("Amount type")}>
+                  <select
+                    className={inputClass}
+                    disabled={disabled}
+                    onChange={(event) => {
+                      const amountType = event.target.value as PayLineAmountType;
+                      onRuleChange(option.value, {
+                        amountType,
+                        percentage:
+                          amountType === "percentage" && !rule.percentage
+                            ? formatPercentageInput(remainingPercentage)
+                            : rule.percentage,
+                      });
+                    }}
+                    value={rule.amountType}
+                  >
+                    <option value="percentage">
+                      {tText("Percentage of monthly salary")}
+                    </option>
+                    <option value="fixed">{tText("Fixed amount")}</option>
+                    <option value="formula">{tText("Formula")}</option>
+                  </select>
+                </Field>
+                {rule.amountType === "percentage" ? (
+                  <Field label={tText("Percentage")}>
+                    <input
+                      className={inputClass}
+                      disabled={disabled}
+                      max="100"
+                      min="0"
+                      onChange={(event) =>
+                        onRuleChange(option.value, {
+                          percentage: event.target.value,
+                        })
+                      }
+                      step="0.01"
+                      type="number"
+                      value={rule.percentage}
+                    />
+                  </Field>
+                ) : rule.amountType === "fixed" ? (
+                  <Field label={tText("Fixed amount minor")}>
+                    <input
+                      className={inputClass}
+                      disabled={disabled}
+                      min="0"
+                      onChange={(event) =>
+                        onRuleChange(option.value, {
+                          fixedAmountMinor: event.target.value,
+                        })
+                      }
+                      type="number"
+                      value={rule.fixedAmountMinor}
+                    />
+                  </Field>
+                ) : (
+                  <Field label={tText("Formula")}>
+                    <input
+                      className={inputClass}
+                      disabled={disabled}
+                      onChange={(event) =>
+                        onRuleChange(option.value, {
+                          formulaReference: event.target.value,
+                        })
+                      }
+                      placeholder="baseAmountMinor * 10 / 100"
+                      value={rule.formulaReference}
+                    />
+                  </Field>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2678,6 +3284,54 @@ function label(value: string) {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
+function defaultPayLineRule(): PayLineRule {
+  return {
+    amountType: "percentage",
+    fixedAmountMinor: "0",
+    formulaReference: "",
+    percentage: "0",
+  };
+}
+
+function payLineRuleInvalid(rule: PayLineRule | undefined) {
+  if (!rule) return true;
+  if (rule.amountType === "percentage") {
+    const percentage = Number(rule.percentage);
+    return (
+      !Number.isFinite(percentage) ||
+      percentage < 0 ||
+      percentage > 100
+    );
+  }
+  if (rule.amountType === "fixed") {
+    const fixed = Number(rule.fixedAmountMinor);
+    return !Number.isFinite(fixed) || fixed < 0;
+  }
+  return !rule.formulaReference.trim();
+}
+
+function percentageToBasisPoints(value: string) {
+  return Math.round(Number(value || 0) * 100);
+}
+
+function formatPercentageInput(value: number) {
+  if (!Number.isFinite(value)) return "0";
+  const rounded = Math.round(value * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
+
+function payLineAmountLabel(
+  item: Record<string, unknown>,
+  tText: (value: string) => string,
+) {
+  const percentage = text(item.percentageBasisPoints, "");
+  if (percentage) return `${formatPercentageInput(Number(percentage) / 100)}%`;
+  const formula = text(item.formulaReference, "");
+  if (formula) return tText("Formula");
+  const fixed = text(item.fixedAmountMinor, "");
+  return fixed ? `${tText("Fixed")} ${fixed}` : tText("Fixed 0");
+}
+
 function formatValue(value: unknown, t?: (s: string) => string) {
   const tr = t ?? ((s: string) => s);
   if (value === null || value === undefined || value === "") return "-";
@@ -2687,15 +3341,7 @@ function formatValue(value: unknown, t?: (s: string) => string) {
   return JSON.stringify(value);
 }
 
-function statusCard(labelValue: string, ready: boolean, href: string) {
-  return { label: labelValue, ready, value: ready ? "Ready" : href ? "Start" : "Needed" };
-}
-
-function countCard(labelValue: string, count: number) {
-  return { label: labelValue, ready: count > 0, value: String(count) };
-}
-
-function clean(form: FormState) {
+function clean(form: Record<string, unknown>) {
   return Object.fromEntries(
     Object.entries(form).filter(([, value]) => value !== "" && value !== undefined),
   );

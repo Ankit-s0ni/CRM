@@ -187,7 +187,7 @@ export function SelfAttendanceCard({
       aria-label={t("attendance.self.title", "My attendance")}
     >
       <div className="flex flex-wrap items-center gap-4">
-        <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+        <div className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
           <TimerReset className="size-5" />
         </div>
         <div className="min-w-36 flex-1">
@@ -232,7 +232,7 @@ export function SelfAttendanceCard({
           <button
             disabled={busy || today.isLocked}
             onClick={() => punch(primaryAction)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#151515] px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
           >
             <PrimaryIcon className="size-4" />
             {busy ? t("common.state.saving", "Saving...") : label}
@@ -241,7 +241,7 @@ export function SelfAttendanceCard({
             <button
               disabled={busy || today.isLocked}
               onClick={() => punch("break-start")}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-[#151515]"
             >
               <Coffee className="size-4" />
               {t("attendance.self.startBreak", "Start break")}

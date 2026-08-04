@@ -1,4 +1,5 @@
 import {
+  Blocks,
   Building2,
   ClipboardCheck,
   FileBarChart,
@@ -45,22 +46,22 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
     ],
   },
   {
-    label: "Attendance",
-    localizationKey: "tenant.navigation.attendance",
-    href: "/app/modules/attendance",
-    icon: ClipboardCheck,
-    moduleKey: "ATTENDANCE",
-    anyPermissions: [...attendanceWorkspaceAccessPermissions],
-  },
-  {
-    label: "Payroll",
-    localizationKey: "tenant.navigation.payroll",
-    href: "/app/modules/payroll",
-    icon: WalletCards,
-    moduleKey: "PAYROLL",
+    label: "Modules",
+    localizationKey: "tenant.navigation.modules",
+    href: "/app/modules",
+    icon: Blocks,
     anyPermissions: [
-      "attendance.reports.read",
-      "attendance.reports.generate",
+      "workspace.modules.read",
+      ...attendanceWorkspaceAccessPermissions,
+      "payroll.settings.read",
+      "payroll.policies.read",
+      "payroll.components.read",
+      "payroll.structures.read",
+      "payroll.compensation.read",
+      "payroll.accounting.read",
+      "payroll.runs.read",
+      "payroll.payslips.read",
+      "payroll.reports.generate",
       "attendance.payroll-lock.manage",
     ],
   },
@@ -306,14 +307,7 @@ export function tenantTopLevelActive(pathname: string, href: string) {
   if (href === "/app") return pathname === href;
   const context = tenantNavigationContext(pathname);
   if (href === "/app/employees") return context === "employees";
-  if (href === "/app/modules/attendance")
-    return (
-      pathname === href ||
-      pathname.startsWith("/app/attendance") ||
-      pathname.startsWith("/app/modules/leave") ||
-      pathname.startsWith("/app/leave")
-    );
-  if (href === "/app/modules/payroll") return pathname.startsWith(href);
+  if (href === "/app/modules") return context === "modules";
   if (href === "/app/reports") return context === "reports";
   if (href === "/app/settings") return context === "settings";
   return false;

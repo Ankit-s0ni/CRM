@@ -10,7 +10,7 @@ export default function LoginPage() {
       <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-white shadow-xl shadow-slate-200/70 lg:grid-cols-[1fr_440px]">
         <section className="hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div>
-            <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
+            <div className="inline-flex size-12 items-center justify-center rounded-lg bg-[#151515] text-white shadow-lg shadow-[#151515]/20">
               <Building2 className="size-6" />
             </div>
             <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-white/55">
@@ -47,7 +47,7 @@ export default function LoginPage() {
                 className="flex gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
                 key={title}
               >
-                <Icon className="mt-0.5 size-5 shrink-0 text-blue-300" />
+                <Icon className="mt-0.5 size-5 shrink-0 text-[#beb8ad]" />
                 <div>
                   <div className="text-sm font-semibold">{title}</div>
                   <div className="mt-1 text-xs leading-5 text-white/60">
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
         <section className="p-6 sm:p-10">
           <div className="mb-8 text-center">
-            <div className="mx-auto inline-flex size-14 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
+            <div className="mx-auto inline-flex size-14 items-center justify-center rounded-lg bg-[#151515] text-white shadow-lg shadow-[#151515]/20">
               <Building2 className="size-7" />
             </div>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">

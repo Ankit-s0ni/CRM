@@ -191,7 +191,7 @@ export function TenantAuditView() {
                 {response.pagination.total} matching audit records
               </p>
             </div>
-            <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-primary">
+            <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-[#151515]">
               Read only
             </span>
           </div>

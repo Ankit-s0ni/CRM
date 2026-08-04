@@ -66,7 +66,7 @@ export function AttendanceWorkspaceChrome({
                 className={cn(
                   "shrink-0 border-b-2 px-3 py-3 text-sm font-semibold transition",
                   active
-                    ? "border-primary text-primary"
+                    ? "border-[#151515] text-[#151515]"
                     : "border-transparent text-outline hover:text-zinc-700",
                 )}
                 href={item.href}
@@ -158,7 +158,7 @@ export function AttendanceBreadcrumbs({
               {crumb.label}
             </span>
           ) : (
-            <Link className="hover:text-primary" href={crumb.href}>
+            <Link className="hover:text-[#151515]" href={crumb.href}>
               {crumb.label}
             </Link>
           )}
@@ -187,7 +187,7 @@ export function PermissionAwareLink({
       aria-current={active ? "page" : undefined}
       className={cn(
         "whitespace-nowrap px-3 py-3 text-sm font-semibold transition",
-        active ? "text-primary" : "text-on-surface-variant hover:text-zinc-700",
+        active ? "text-[#151515]" : "text-on-surface-variant hover:text-zinc-700",
       )}
       href={item.href}
     >
@@ -267,7 +267,7 @@ function AttendanceGateState({
       className="mx-auto mt-8 max-w-xl rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm"
       role="alert"
     >
-      <span className="mx-auto grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
+      <span className="mx-auto grid size-12 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
         <Icon className="size-6" />
       </span>
       <h1 className="mt-4 text-2xl font-bold">
@@ -279,7 +279,7 @@ function AttendanceGateState({
           : tText("Your current workspace permissions do not allow this Attendance area.")}
       </p>
       <Link
-        className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
+        className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#151515] px-5 text-sm font-bold text-white"
         href="/app/modules"
       >
         {tText("Back to modules")}</Link>
@@ -310,7 +310,7 @@ export function AttendanceSectionTabs({
               "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
               active
                 ? "bg-zinc-700 text-white"
-                : "text-on-surface-variant hover:bg-zinc-50 hover:text-primary",
+                : "text-on-surface-variant hover:bg-zinc-50 hover:text-[#151515]",
             )}
             href={item.href}
             key={item.href}

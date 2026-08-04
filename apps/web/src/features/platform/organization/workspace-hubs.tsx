@@ -159,7 +159,7 @@ export function ModulesHub() {
     <AdminPage
       title={tText("Modules")}
       description={tText(
-        "Choose a product area, then manage its operations, policies, and controls in one place.",
+        "Choose a module to configure organization-level setup. Daily work stays on Home, Employees, and Reports.",
       )}
     >
       {error && <ErrorState message={error} />}
@@ -169,11 +169,11 @@ export function ModulesHub() {
         <div className="grid gap-5 lg:grid-cols-2">
           {attendance && canAccessAttendanceWorkspace(permissions) && (
             <Link
-              className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-container hover:shadow-md"
+              className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2a2927] hover:shadow-md"
               href="/app/modules/attendance"
             >
               <div className="flex items-start gap-4">
-                <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-primary">
+                <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                   <ClipboardCheck className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -181,11 +181,11 @@ export function ModulesHub() {
                     <h2 className="text-lg font-bold">
                       {tText("Attendance")}
                     </h2>
-                    <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-primary" />
+                    <ChevronRight className="size-5 text-outline transition group-hover:translate-x-1 group-hover:text-[#151515]" />
                   </div>
                   <p className="mt-2 text-sm leading-6 text-zinc-500">
                     {tText(
-                      "Policies, schedules, attendance, leave, device trust, and field monitoring.",
+                      "Attendance setup for policies, offices, shifts, rosters, holidays, devices, and security.",
                     )}
                   </p>
                   <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
@@ -193,7 +193,7 @@ export function ModulesHub() {
                   </span>
                   {attendanceAddOns?.map((module) => (
                     <span
-                      className="ml-2 mt-4 inline-flex rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-primary"
+                      className="ml-2 mt-4 inline-flex rounded-full bg-zinc-50 px-3 py-1 text-xs font-bold text-[#151515]"
                       key={module.key}
                     >
                       {localizedModuleName(module.key, module.name, tText)}
@@ -205,11 +205,11 @@ export function ModulesHub() {
           )}
           {payroll && canOpenPayroll && (
               <Link
-                className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-container hover:shadow-md"
+                className="group rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2a2927] hover:shadow-md"
                 href="/app/modules/payroll"
               >
                 <div className="flex items-start gap-4">
-                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-primary">
+                  <span className="grid size-12 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                     <WalletCards className="size-6" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -221,7 +221,7 @@ export function ModulesHub() {
                     </div>
                     <p className="mt-2 text-sm leading-6 text-zinc-500">
                       {tText(
-                        "Generate payroll evidence, review completed exports, and close finalized Attendance periods.",
+                        "Company payroll setup for pay groups, salary rules, approval steps, and accounting links.",
                       )}
                     </p>
                     <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
@@ -264,7 +264,7 @@ export function ModulesHub() {
             )
             .map((module) => (
               <Link
-                className="rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:border-primary-container hover:shadow-md"
+                className="rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm transition hover:border-[#2a2927] hover:shadow-md"
                 href="/app/settings/modules"
                 key={module.key}
               >
@@ -521,7 +521,7 @@ export function SettingsHub() {
           return (
             <section key={section.title}>
               <div className="mb-4 flex items-start gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#151515] text-sm font-bold text-white">
                   {index + 1}
                 </span>
                 <div>
@@ -538,16 +538,16 @@ export function SettingsHub() {
                     return (
                       <Link
                         className={cn(
-                          "group rounded-xl border border-surface-variant bg-white p-5 shadow-sm transition hover:border-primary-container hover:shadow-md",
+                          "group rounded-xl border border-surface-variant bg-white p-5 shadow-sm transition hover:border-[#2a2927] hover:shadow-md",
                         )}
                         href={href}
                         key={href}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-primary">
+                          <span className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
                             <Icon className="size-5" />
                           </span>
-                          <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-primary" />
+                          <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-[#151515]" />
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                           <h3 className="font-bold">{title}</h3>
@@ -637,7 +637,7 @@ function WorkspaceLaunchChecklist({
   return (
     <Panel className="mb-8 overflow-hidden border-zinc-200">
       <div className="border-b border-surface-variant bg-zinc-50 p-5">
-        <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#151515]">
           {tText("Workspace launch checklist")}
         </p>
         <h2 className="mt-1 text-xl font-bold">
@@ -661,20 +661,20 @@ function WorkspaceLaunchChecklist({
                   step.complete
                     ? "bg-emerald-50 text-emerald-800"
                     : index === firstIncomplete
-                      ? "bg-primary text-white"
+                      ? "bg-[#151515] text-white"
                       : "bg-zinc-100 text-outline",
                 )}
               >
                 {step.complete ? <Check className="size-4" /> : index + 1}
               </span>
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
                 <strong className="block text-sm">{step.title}</strong>
                 <span className="text-xs text-outline">{step.description}</span>
               </span>
-              <span className="ml-auto shrink-0 text-xs font-semibold text-primary">
+              <span className="ml-auto shrink-0 text-xs font-semibold text-[#151515]">
                 {step.complete
                   ? tText("Complete")
                   : index === firstIncomplete
@@ -782,91 +782,10 @@ export function PayrollModuleHub() {
     useAuthStore((state) => state.user?.permissions ?? EMPTY_PERMISSIONS),
   );
   const { health, error } = useModuleHealth("PAYROLL");
-  const foundationPermissions = [
-    "payroll.settings.read",
-    "payroll.policies.read",
-    "payroll.components.read",
-    "payroll.structures.read",
-    "payroll.compensation.read",
-    "payroll.accounting.read",
-  ];
-  const runPermissions = ["payroll.runs.read", "payroll.inputs.manage"];
-  const processingPermissions = [
-    "payroll.runs.calculate",
-    "payroll.runs.approve",
-    "payroll.runs.finalize",
-  ];
-  const payslipPermissions = [
-    "payroll.payslips.read",
-    "payroll.payslips.publish",
-    "payroll.payslips.self",
-  ];
-  const exportPermissions = [
-    "payroll.reports.generate",
-    "attendance.reports.read",
-    "attendance.reports.generate",
-  ];
-  const closePermissions = ["attendance.payroll-lock.manage"];
-  const visibleWorkflows = [
-    hasAnyPermission(permissions, foundationPermissions) && {
-      description:
-        "Configure settings, calendars, pay groups, policies, components, salary structures, employee payroll profiles, protected details, approvals, accounting mappings, and audit evidence.",
-      href: "/app/modules/payroll/setup",
-      icon: WalletCards,
-      title: "Payroll setup",
-    },
-    hasAnyPermission(permissions, runPermissions) && {
-      description:
-        "Create monthly payroll runs, import locked attendance snapshots, add salary inputs, preview CSV imports, and validate readiness before calculation.",
-      href: "/app/modules/payroll/runs",
-      icon: PlayCircle,
-      title: "Run preparation",
-    },
-    hasAnyPermission(permissions, processingPermissions) && {
-      description:
-        "Calculate employee payroll results, review variances, approve or finalize runs, and track processing jobs.",
-      href: "/app/modules/payroll/processing",
-      icon: Calculator,
-      title: "Payroll processing",
-    },
-    hasAnyPermission(permissions, payslipPermissions) && {
-      description:
-        "Generate payslip outputs, publish employee payslips, and use private signed downloads for sensitive files.",
-      href: "/app/modules/payroll/payslips",
-      icon: ReceiptText,
-      title: "Payslips",
-    },
-    hasAnyPermission(permissions, exportPermissions) && {
-      description:
-        "Generate payroll registers, payroll reports, bank export payloads, accounting export payloads, and downloadable export files.",
-      href: "/app/modules/payroll/exports",
-      icon: FileSpreadsheet,
-      title: "Payroll exports",
-    },
-    hasAnyPermission(permissions, closePermissions) && {
-      description:
-        "Lock a completed payroll month against its export or reopen it later with an audited reason.",
-      href: "/app/attendance/payroll",
-      icon: LockKeyhole,
-      title: "Period close",
-    },
-    {
-      description:
-        "Review Attendance and Leave dependencies that affect payroll readiness, reporting evidence, and month-end close.",
-      href: "/app/settings/payroll",
-      icon: Settings2,
-      title: "Readiness and dependencies",
-    },
-  ].filter(Boolean) as Array<{
-    description: string;
-    href: string;
-    icon: typeof ClipboardCheck;
-    title: string;
-  }>;
   return (
     <AdminPage
-      title={tText("Payroll")}
-      description={tText("Create immutable payroll exports and close finalized Attendance periods.")}
+      title={tText("Payroll organization setup")}
+      description={tText("Set the payroll rules for the whole company. Use Home, Employees, and Reports for daily payroll work.")}
     >
       {error && <ErrorState message={error} />}
       {!health && !error ? (
@@ -882,33 +801,88 @@ export function PayrollModuleHub() {
               workspace module and refresh the session before running payroll.
             </Panel>
           )}
-          <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            {["attendance.reports.read", "attendance.reports.generate"].some(
-              (permission) => permissions.has(permission),
-            ) && (
-              <WorkflowLink
-                description={tText("Generate and download a snapshot-based payroll CSV for a selected period.")}
-                href="/app/reports?type=PAYROLL"
-                icon={FileSpreadsheet}
-                key="reports"
-                title={tText("Payroll exports")}
-              />
-            )}
+          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <Panel className="overflow-hidden">
+              <div className="border-b border-border bg-gradient-to-r from-[#fffefa] via-[#f3efe6] to-[#fffefa] p-5">
+                <h2 className="text-lg font-bold">{tText("Company payroll setup")}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {tText("Set these once, then update only when company rules change.")}
+                </p>
+              </div>
+              <div className="grid gap-3 p-5 md:grid-cols-2">
+                <WorkflowLink
+                  description={tText("Country, currency, pay cycle, pay calendar, and pay groups.")}
+                  href="/app/modules/payroll"
+                  icon={WalletCards}
+                  title={tText("Basic setup")}
+                />
+                <WorkflowLink
+                  description={tText("Pay items, salary templates, and salary calculation rules.")}
+                  href="/app/modules/payroll"
+                  icon={Calculator}
+                  title={tText("Salary setup")}
+                />
+                <WorkflowLink
+                  description={tText("Fields every employee needs before payroll can run.")}
+                  href="/app/modules/payroll"
+                  icon={UserPlus}
+                  title={tText("Employee requirements")}
+                />
+                <WorkflowLink
+                  description={tText("Approval steps, account codes, and setup history.")}
+                  href="/app/modules/payroll"
+                  icon={FileSpreadsheet}
+                  title={tText("Control and accounting")}
+                />
+              </div>
+            </Panel>
+            <Panel className="h-fit p-5">
+              <h2 className="font-bold">{tText("Where daily work happens")}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {tText("This module is only for setup. Use these places for regular payroll tasks.")}
+              </p>
+              <div className="mt-5 grid gap-3">
+                {permissions.has("payroll.runs.read") && (
+                  <WorkflowLink
+                    description={tText("Create a monthly salary run by pay group.")}
+                    href="/app/payroll/runs"
+                    icon={PlayCircle}
+                    title={tText("Run payroll")}
+                  />
+                )}
+                {permissions.has("payroll.payslips.read") && (
+                  <WorkflowLink
+                    description={tText("Create and download employee payslips.")}
+                    href="/app/modules/payroll/payslips"
+                    icon={ReceiptText}
+                    title={tText("Payslips")}
+                  />
+                )}
+                <WorkflowLink
+                  description={tText("Payroll register, bank file, and accounting file.")}
+                  href="/app/reports?type=PAYROLL"
+                  icon={FileSpreadsheet}
+                  title={tText("Reports and files")}
+                />
+              </div>
+            </Panel>
+          </div>
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
             {permissions.has("attendance.payroll-lock.manage") && (
               <WorkflowLink
-                description={tText("Lock a completed month against its export or reopen it with an audited reason.")}
+                description={tText("Lock a finished salary month or reopen it with a reason.")}
                 href="/app/attendance/payroll"
                 icon={LockKeyhole}
                 key="close"
-                title={tText("Period close")}
+                title={tText("Close month")}
               />
             )}
             <WorkflowLink
-              description={tText("Review the Attendance and Leave inputs that determine payroll evidence.")}
+              description={tText("Check attendance and leave data before salary is run.")}
               href="/app/settings/payroll"
               icon={Settings2}
               key="settings"
-              title={tText("Readiness and dependencies")}
+              title={tText("Payroll readiness")}
             />
           </div>
         </>
@@ -1069,7 +1043,7 @@ function ModuleHealthCard({
   return (
     <Panel className="p-6">
       <div className="flex items-start gap-4">
-        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
           <Blocks className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -1085,7 +1059,7 @@ function ModuleHealthCard({
       {health && <ModuleReadiness health={health} compact />}
       {href && (
         <Link
-          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-primary"
+          className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#151515]"
           href={href}
         >
           {tText("Open configuration")}<ChevronRight className="size-4" />
@@ -1112,7 +1086,7 @@ function ModuleReadiness({
     >
       {!compact && (
         <div className="flex items-center gap-3">
-          <Activity className="size-5 text-primary" />
+          <Activity className="size-5 text-[#151515]" />
           <h2 className="font-bold">{tText("Configuration health")}</h2>
           <HealthPill value={health.status} />
         </div>
@@ -1155,14 +1129,14 @@ function WorkflowLink({
 }) {
   return (
     <Link
-      className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-primary-container hover:shadow-md"
+      className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-[#2a2927] hover:shadow-md"
       href={href}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+        <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
           <Icon className="size-5" />
         </span>
-        <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-primary" />
+        <ChevronRight className="ml-auto size-5 text-zinc-400 group-hover:text-[#151515]" />
       </div>
       <h2 className="mt-5 font-bold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-zinc-500">{description}</p>

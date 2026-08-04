@@ -53,7 +53,7 @@ export function FeatureInfo({
               "min-h-11 min-w-11 gap-2 rounded-full",
               tone === "inverse"
                 ? "text-surface-variant hover:bg-white/10 hover:text-white"
-                : "text-on-surface-variant hover:bg-zinc-50 hover:text-primary",
+                : "text-on-surface-variant hover:bg-zinc-50 hover:text-[#151515]",
               label && "px-3",
               className,
             )}
@@ -100,7 +100,7 @@ export function FeatureHelpDrawer({
           <ol className="space-y-3">
             {entry.steps.map((step, index) => (
               <li className="flex gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-primary">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-[#151515]">
                   {index + 1}
                 </span>
                 <span className="pt-0.5">{step}</span>
@@ -112,7 +112,7 @@ export function FeatureHelpDrawer({
         {entry.effect && (
           <div className="rounded-xl border border-zinc-300 bg-zinc-50 p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold">
-              <ShieldCheck className="size-4 text-primary" />
+              <ShieldCheck className="size-4 text-[#151515]" />
               What it affects
             </h3>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
@@ -145,7 +145,7 @@ export function FeatureHelpDrawer({
             <div className="flex flex-wrap gap-2">
               {entry.related.map((related) => (
                 <Link
-                  className="rounded-full border border-outline-variant px-3 py-2 text-xs font-semibold text-primary hover:bg-zinc-50"
+                  className="rounded-full border border-outline-variant px-3 py-2 text-xs font-semibold text-[#151515] hover:bg-zinc-50"
                   href={related.href}
                   key={related.href}
                 >

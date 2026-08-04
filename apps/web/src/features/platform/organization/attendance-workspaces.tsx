@@ -477,7 +477,7 @@ export function AttendanceSetupIndex() {
         !capabilities.fieldTrackingEntitled &&
         granted.has("billing.subscription.manage") && (
           <div className="mb-6 flex gap-3 rounded-xl border border-zinc-300 bg-zinc-50 p-4">
-            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-primary" />
+            <LockKeyhole className="mt-0.5 size-5 shrink-0 text-[#151515]" />
             <div>
               <p className="text-sm font-bold">
                 {tText("Field Tracking is not included in this workspace")}</p>
@@ -518,7 +518,7 @@ function SummaryCard({
     success: "border-emerald-200 bg-emerald-50 text-emerald-800",
     danger: "border-red-200 bg-red-50 text-red-800",
     warning: "border-amber-300 bg-amber-50 text-amber-800",
-    neutral: "border-zinc-300 bg-white text-primary",
+    neutral: "border-zinc-300 bg-white text-[#151515]",
   };
   return (
     <Link
@@ -624,11 +624,11 @@ export function AttendanceTaskCard({
 }) {
   return (
     <div className="flex min-h-16 items-center gap-3 px-5 py-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-zinc-50 text-primary">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-zinc-50 text-[#151515]">
         <Icon className="size-4" />
       </span>
       <Link
-        className="min-w-0 flex-1 font-semibold hover:text-primary"
+        className="min-w-0 flex-1 font-semibold hover:text-[#151515]"
         href={href}
       >
         {label}
@@ -683,11 +683,11 @@ function QuickActions({ permissions }: { permissions: ReadonlySet<string> }) {
       <div className="mt-4 grid gap-2">
         {actions.map(({ label, href, icon: Icon }) => (
           <Link
-            className="flex min-h-11 items-center gap-3 rounded-lg border border-surface-variant px-4 text-sm font-semibold transition hover:border-primary hover:bg-zinc-50"
+            className="flex min-h-11 items-center gap-3 rounded-lg border border-surface-variant px-4 text-sm font-semibold transition hover:border-[#151515] hover:bg-zinc-50"
             href={href}
             key={href}
           >
-            <Icon className="size-4 text-primary" />
+            <Icon className="size-4 text-[#151515]" />
             {label}
             <ArrowRight className="ml-auto size-4 text-zinc-400" />
           </Link>
@@ -787,7 +787,7 @@ function SetupHealth({
             {tText("Core configuration reported by current setup APIs.")}</p>
         </div>
         <Link
-          className="text-xs font-bold text-primary"
+          className="text-xs font-bold text-[#151515]"
           href="/app/attendance/setup"
         >
           {tText("Open setup")}</Link>
@@ -851,7 +851,7 @@ function MonthEndReadiness({
         </div>
       </div>
       <Link
-        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-primary"
+        className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#151515]"
         href={
           canPayroll ? "/app/attendance/payroll" : "/app/attendance/reports"
         }
@@ -893,7 +893,7 @@ function SetupGroupCard({
       <div className="mt-5 flex flex-wrap gap-2">
         {group.links.map((link) => (
           <Link
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
             href={link.href}
             key={link.href}
           >

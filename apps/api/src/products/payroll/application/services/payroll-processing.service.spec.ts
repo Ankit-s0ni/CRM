@@ -118,14 +118,195 @@ describe('PayrollProcessingService calculation and self-service', () => {
 
   it('uses tenant scope on administrative payslip listing', async () => {
     const tx = createProcessingTx();
-    tx.payrollPayslip.findMany.mockResolvedValue([]);
+    tx.payrollPayslip.findMany.mockResolvedValue([
+      {
+        id: 'payslip-1',
+        employeeId: employeeId(),
+        netPayMinor: 100000n,
+      },
+    ]);
+    tx.employee.findMany.mockResolvedValue([
+      {
+        id: employeeId(),
+        employeeCode: 'ACME-001',
+        fullName: 'Acme Employee 01',
+      },
+    ]);
 
-    await service(tx).listPayslips(actor().tenantId, run().id);
+    const result = await service(tx).listPayslips(actor().tenantId, run().id);
 
     expect(tx.payrollPayslip.findMany).toHaveBeenCalledWith({
       where: { tenantId: actor().tenantId, payrollRunId: run().id },
       orderBy: { payslipNumber: 'asc' },
     });
+    expect(tx.employee.findMany).toHaveBeenCalledWith({
+      where: { tenantId: actor().tenantId, id: { in: [employeeId()] } },
+      select: { id: true, employeeCode: true, fullName: true },
+    });
+    expect(result.data[0]).toMatchObject({
+      employeeCode: 'ACME-001',
+      employeeName: 'Acme Employee 01',
+    });
+  });
+
+  it('rejects payslip generation before salary is calculated', async () => {
+    const tx = createProcessingTx();
+    tx.payrollRun.findFirst.mockResolvedValue({ ...run(), status: 'FINALIZED' });
+    tx.payrollEmployeeResult.findMany.mockResolvedValue([]);
+
+    await expect(
+      service(tx).generateOutput(actor(), run().id, {
+        kind: 'PAYSLIP',
+        adapterKey: 'PDF',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(tx.payrollOutputExport.create).not.toHaveBeenCalled();
+  });
+
+  it('uses employee codes for unique payslip numbers when employee ids share a prefix', async () => {
+    const tx = createProcessingTx();
+    const firstEmployeeId = '019fad8f-dc0e-7775-a0af-f716d929f776';
+    const secondEmployeeId = '019fad8f-dc17-70a7-bcf1-e8d83672fdb9';
+    tx.payrollRun.findFirst.mockResolvedValue({ ...run(), status: 'FINALIZED' });
+    tx.payrollEmployeeResult.findMany.mockResolvedValue([
+      {
+        id: 'result-1',
+        employeeId: firstEmployeeId,
+        grossPayMinor: 100000n,
+        taxablePayMinor: 100000n,
+        deductionMinor: 0n,
+        netPayMinor: 100000n,
+        currency: 'OMR',
+        components: [],
+      },
+      {
+        id: 'result-2',
+        employeeId: secondEmployeeId,
+        grossPayMinor: 120000n,
+        taxablePayMinor: 120000n,
+        deductionMinor: 0n,
+        netPayMinor: 120000n,
+        currency: 'OMR',
+        components: [],
+      },
+    ]);
+    tx.employee.findMany.mockResolvedValue([
+      { id: firstEmployeeId, employeeCode: 'ACME-001' },
+      { id: secondEmployeeId, employeeCode: 'ACME-002' },
+    ]);
+    tx.payrollPayslip.findFirst.mockResolvedValue(null);
+    tx.payrollPayslip.upsert.mockImplementation(({ create }) =>
+      Promise.resolve({ id: `payslip-${create.employeeId}`, ...create }),
+    );
+    tx.payrollPayslip.count.mockResolvedValue(2);
+    tx.payrollOutputExport.create.mockResolvedValue({
+      id: 'output-1',
+      kind: 'PAYSLIP',
+    });
+    tx.payrollOutputExport.update.mockResolvedValue({
+      id: 'output-1',
+      kind: 'PAYSLIP',
+    });
+    tx.payrollRun.update.mockResolvedValue({
+      ...run(),
+      status: 'OUTPUTS_GENERATED',
+    });
+
+    await service(tx).generateOutput(actor(), run().id, {
+      kind: 'PAYSLIP',
+      adapterKey: 'PDF',
+    });
+
+    const payslipCreates = tx.payrollPayslip.upsert.mock.calls.map(
+      ([args]) => args.create,
+    );
+    expect(payslipCreates.map((create) => create.payslipNumber)).toEqual([
+      '2026-07-ACME-001',
+      '2026-07-ACME-002',
+    ]);
+    expect(new Set(payslipCreates.map((create) => create.payslipNumber)).size).toBe(
+      2,
+    );
+  });
+
+  it('adds a run suffix when a payslip number belongs to another run', async () => {
+    const tx = createProcessingTx();
+    const firstEmployeeId = '019fad8f-dc0e-7775-a0af-f716d929f776';
+    tx.payrollRun.findFirst.mockResolvedValue({ ...run(), status: 'FINALIZED' });
+    tx.payrollEmployeeResult.findMany.mockResolvedValue([
+      {
+        id: 'result-1',
+        employeeId: firstEmployeeId,
+        grossPayMinor: 100000n,
+        taxablePayMinor: 100000n,
+        deductionMinor: 0n,
+        netPayMinor: 100000n,
+        currency: 'OMR',
+        components: [],
+      },
+    ]);
+    tx.employee.findMany.mockResolvedValue([
+      { id: firstEmployeeId, employeeCode: 'ACME-001' },
+    ]);
+    tx.payrollPayslip.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        payrollRunId: 'old-run-id',
+        employeeId: firstEmployeeId,
+      });
+    tx.payrollPayslip.upsert.mockImplementation(({ create }) =>
+      Promise.resolve({ id: `payslip-${create.employeeId}`, ...create }),
+    );
+    tx.payrollPayslip.count.mockResolvedValue(1);
+    tx.payrollOutputExport.create.mockResolvedValue({
+      id: 'output-1',
+      kind: 'PAYSLIP',
+    });
+    tx.payrollOutputExport.update.mockResolvedValue({
+      id: 'output-1',
+      kind: 'PAYSLIP',
+    });
+    tx.payrollRun.update.mockResolvedValue({
+      ...run(),
+      status: 'OUTPUTS_GENERATED',
+    });
+
+    await service(tx).generateOutput(actor(), run().id, {
+      kind: 'PAYSLIP',
+      adapterKey: 'PDF',
+    });
+
+    const payslipCreate = firstCallArg<{ create: { payslipNumber: string } }>(
+      tx.payrollPayslip.upsert,
+    ).create;
+    expect(payslipCreate.payslipNumber).toBe(
+      `2026-07-ACME-001-${run().id.slice(-8).toUpperCase()}`,
+    );
+  });
+
+  it('rejects publishing when no generated payslip PDFs exist', async () => {
+    const tx = createProcessingTx();
+    tx.payrollRun.findFirst.mockResolvedValue({
+      ...run(),
+      status: 'OUTPUTS_GENERATED',
+    });
+    tx.payrollPayslip.findMany.mockResolvedValue([]);
+
+    await expect(service(tx).publish(actor(), run().id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    expect(tx.payrollPayslip.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('rejects marking paid when no published payslip PDFs exist', async () => {
+    const tx = createProcessingTx();
+    tx.payrollRun.findFirst.mockResolvedValue({ ...run(), status: 'PUBLISHED' });
+    tx.payrollPayslip.count.mockResolvedValue(0);
+
+    await expect(
+      service(tx).markPaid(actor(), run().id, { status: 'PAID' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(tx.payrollPaymentBatch.create).not.toHaveBeenCalled();
   });
 
   it('creates signed admin payslip downloads only through tenant-scoped private objects', async () => {
@@ -290,6 +471,7 @@ function createProcessingTx() {
     payrollPayslip: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      count: jest.fn(),
       upsert: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
@@ -304,7 +486,7 @@ function createProcessingTx() {
       findFirst: jest.fn(),
     },
     payrollAccountingMapping: { findMany: jest.fn() },
-    employee: { findFirst: jest.fn() },
+    employee: { findFirst: jest.fn(), findMany: jest.fn() },
   };
 }
 

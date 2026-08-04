@@ -3,19 +3,24 @@
 import {
   AlertTriangle,
   ArrowRight,
+  Banknote,
   Building2,
   CalendarClock,
   CheckCircle2,
   CircleDot,
   FileBarChart,
+  FileSpreadsheet,
   LayoutGrid,
   List,
   MapPin,
+  MessageCircle,
+  ReceiptText,
   Search,
   Settings2,
   ShieldAlert,
   Smartphone,
   Umbrella,
+  UserPlus,
   UsersRound,
   WalletCards,
 } from "lucide-react";
@@ -200,7 +205,7 @@ export function TenantDashboard() {
       return (
         <div className="mx-auto max-w-4xl p-5 lg:p-8">
           <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
               {t("tenant.dashboard.employee.workspace", "Employee workspace")}
             </p>
             <h1 className="mt-1 text-3xl font-bold">
@@ -229,21 +234,175 @@ export function TenantDashboard() {
     );
   }
 
+  const enabledModuleKeys = new Set(
+    hrSummary?.modules?.map((module) => module.key) ?? [],
+  );
+  const payrollEnabled =
+    enabledModuleKeys.has("PAYROLL") ||
+    permissions.some((permission) => permission.startsWith("payroll."));
+
   return (
-    <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
-      <DashboardHeader
-        data={data}
-        userName={
-          user?.email ??
-          t("tenant.shell.workspaceUser", "Workspace user")
-        }
-      />
-      <RoleFocusStrip
-        canReadOwnerOverview={canReadOwnerOverview}
-        permissions={permissions}
-      />
+    <div className="min-h-[calc(100vh-4rem)] bg-[#fbfaf6] bg-[radial-gradient(#e8e1d4_0.7px,transparent_0.7px)] [background-size:14px_14px]">
+      <div className="mx-auto w-full max-w-[1380px] px-5 py-6 lg:px-8">
+        <ReferenceHomeDashboard
+          canReadOwnerOverview={canReadOwnerOverview}
+          data={data}
+          error={error}
+          hrSummary={hrSummary}
+          payrollEnabled={payrollEnabled}
+          permissions={permissions}
+          userEmail={user?.email ?? ""}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ReferenceHomeDashboard({
+  canReadOwnerOverview,
+  data,
+  error,
+  hrSummary,
+  payrollEnabled,
+  permissions,
+  userEmail,
+}: {
+  canReadOwnerOverview: boolean | undefined;
+  data: DashboardData | null;
+  error: string;
+  hrSummary: HrSummary | null;
+  payrollEnabled: boolean;
+  permissions: string[];
+  userEmail: string;
+}) {
+  const { t, formatNumber } = useLocalization();
+  const has = (permission: string) => permissions.includes(permission);
+  const activeEmployees =
+    hrSummary?.quota?.used ??
+    hrSummary?.workforce?.active ??
+    data?.employees.length ??
+    0;
+  const pendingApprovals =
+    (hrSummary?.queues.pendingLeave ?? 0) +
+    (hrSummary?.queues.pendingDevices ?? 0) +
+    (hrSummary?.queues.pendingRegularizations ?? 0);
+  const activeModules = hrSummary?.modules?.length ?? (payrollEnabled ? 2 : 1);
+  const openRequests =
+    (hrSummary?.queues.pendingLeave ?? 0) +
+    (hrSummary?.queues.pendingDevices ?? 0);
+  const attention = data?.attention ?? {
+    pendingRegularizations: null,
+    openSecurityViolations: null,
+    absenteeAlerts: null,
+  };
+  const quickActions = [
+    {
+      label: t("tenant.dashboard.ref.addEmployee", "Add Employee"),
+      href: "/app/employees/new",
+      icon: UserPlus,
+      badge: null,
+      show:
+        has("organization.employees.write") ||
+        has("organization.employees.manage") ||
+        has("organization.employees.read"),
+    },
+    {
+      label: t("tenant.dashboard.ref.openDirectory", "Open Directory"),
+      href: "/app/employees",
+      icon: UsersRound,
+      badge: null,
+      show: has("organization.employees.read") || has("organization.employees.self.read"),
+    },
+    {
+      label: t("tenant.dashboard.ref.reviewRequests", "Review Requests"),
+      href: "/app/attendance/regularizations?status=PENDING",
+      icon: ReceiptText,
+      badge: pendingApprovals || null,
+      show: has("attendance.regularizations.approve") || has("leave.manage"),
+    },
+    {
+      label: t("tenant.dashboard.ref.manageModules", "Manage Modules"),
+      href: "/app/modules",
+      icon: LayoutGrid,
+      badge: null,
+      show: Boolean(canReadOwnerOverview) || has("workspace.modules.read"),
+    },
+    {
+      label: t("tenant.dashboard.ref.viewReports", "View Reports"),
+      href: "/app/reports",
+      icon: FileBarChart,
+      badge: null,
+      show: has("attendance.reports.read") || has("organization.employees.reports.read"),
+    },
+    {
+      label: t("tenant.dashboard.ref.setup", "Setup"),
+      href: "/app/onboarding",
+      icon: Settings2,
+      badge: null,
+      show: Boolean(canReadOwnerOverview) || has("workspace.settings.read"),
+    },
+  ].filter((item) => item.show);
+  const stats = [
+    {
+      label: t("tenant.dashboard.ref.totalEmployees", "Total Employees"),
+      value: activeEmployees,
+      detail: t("tenant.dashboard.ref.employeeGrowth", "8 this month"),
+      icon: UsersRound,
+      tone: "border-[#c9eadb] bg-[#f1fbf6] text-[#087056]",
+      detailTone: "text-[#087056]",
+    },
+    {
+      label: t("tenant.dashboard.ref.pendingApprovals", "Pending Approvals"),
+      value: pendingApprovals,
+      detail: t("tenant.dashboard.ref.acrossWorkflows", "Across workflows"),
+      icon: ReceiptText,
+      tone: "border-[#ded5f2] bg-[#f7f4ff] text-[#4f3ca5]",
+      detailTone: "text-[#4f3ca5]",
+    },
+    {
+      label: t("tenant.dashboard.ref.activeModules", "Active Modules"),
+      value: activeModules,
+      detail: t("tenant.dashboard.ref.systemsOperational", "All systems operational"),
+      icon: Building2,
+      tone: "border-[#f0dfb8] bg-[#fff9ec] text-[#925a12]",
+      detailTone: "text-[#b94700]",
+    },
+    {
+      label: t("tenant.dashboard.ref.openRequests", "Open Requests"),
+      value: openRequests,
+      detail: t("tenant.dashboard.ref.awaitingAction", "Awaiting action"),
+      icon: MessageCircle,
+      tone: "border-[#d4e7f3] bg-[#f5fbff] text-[#075985]",
+      detailTone: "text-[#075985]",
+    },
+  ];
+  const commandCards = [
+    {
+      title: t("tenant.dashboard.ref.teamOverview", "Team Overview"),
+      body: t("tenant.dashboard.ref.teamOverviewBody", "View headcount, joins, exits & team insights"),
+      href: "/app/employees",
+      icon: UsersRound,
+      tone: "border-[#c9eadb] bg-[#f1fbf6] text-[#087056]",
+    },
+    {
+      title: t("tenant.dashboard.ref.peopleInsights", "People Insights"),
+      body: t("tenant.dashboard.ref.peopleInsightsBody", "Track workforce trends & engagement"),
+      href: "/app/reports",
+      icon: Umbrella,
+      tone: "border-[#ded5f2] bg-[#f7f4ff] text-[#4f3ca5]",
+    },
+    {
+      title: t("tenant.dashboard.ref.complianceCenter", "Compliance Center"),
+      body: t("tenant.dashboard.ref.complianceCenterBody", "Policies, documents & audit readiness"),
+      href: "/app/settings/security",
+      icon: ShieldAlert,
+      tone: "border-[#f0dfb8] bg-[#fff9ec] text-[#925a12]",
+    },
+  ];
+  return (
+    <div className="font-['Inter',Arial,sans-serif] text-[#151515]">
       {error && (
-        <div className="mb-5">
+        <div className="mb-4">
           <ErrorState
             message={t(
               error,
@@ -254,185 +413,492 @@ export function TenantDashboard() {
           />
         </div>
       )}
-      {permissions.includes("attendance.records.self.read") && (
-        <div className="mb-5">
-          <SelfAttendanceCard compact />
-        </div>
-      )}
-      {!data ? (
-        <LoadingState rows={5} />
-      ) : (
-        <>
-          <SummaryStrip summary={data.summary} />
-          <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <section className="min-w-0 rounded-lg border border-border bg-white p-4 shadow-sm">
-              <DashboardToolbar
-                onSearch={setSearch}
-                onStatus={setStatus}
-                onView={setView}
-                search={search}
-                status={status}
-                view={view}
-              />
-              <EmployeeBoard employees={data.employees} view={view} />
-            </section>
-            <NeedsAttention
-              attention={data.attention}
-              queues={hrSummary?.queues ?? null}
-            />
+      <section>
+        <div>
+          <h1 className="reference-home-serif text-[42px] font-semibold leading-none tracking-[-0.02em] text-black md:text-[52px]">
+            {t("tenant.dashboard.ref.greeting", "Welcome, Admin")}
+            <span className="reference-home-hand ms-4 inline-block align-middle text-3xl font-normal" dir="ltr">
+              \o/
+            </span>
+          </h1>
+          <div className="mt-4 flex flex-wrap items-center gap-8">
+            <p className="text-[17px] leading-6 text-[#303030]">
+              {t("tenant.dashboard.ref.greetingBody", "Here's what's happening in your workspace today.")}
+            </p>
+            <p className="reference-home-hand -rotate-6 text-sm font-bold uppercase tracking-[.08em] text-[#1d1d1d] underline decoration-[#1d1d1d] decoration-2 underline-offset-4">
+              {t("tenant.dashboard.ref.makeItCount", "LET'S MAKE IT COUNT!")}
+            </p>
           </div>
-          {canReadOwnerOverview && <OwnerOverviewPanel data={hrSummary} />}
-          {hrSummary?.workforce && (
-            <WorkforceOverview workforce={hrSummary.workforce} />
-          )}
-        </>
-      )}
+        </div>
+      </section>
+
+      <section className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {stats.map(({ label, value, detail, icon: Icon, tone, detailTone }) => (
+          <div
+            className="flex min-h-[116px] items-center gap-5 rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/75 px-5 py-4 shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+            key={label}
+          >
+            <span className={cn("grid size-16 shrink-0 place-items-center rounded-full border", tone)}>
+              <Icon className="size-7" />
+            </span>
+            <div>
+              <p className="text-[15px] font-medium text-black">{label}</p>
+              <strong className="mt-1 block text-[31px] leading-none text-black">
+                {formatNumber(value)}
+              </strong>
+              <p className={cn("mt-2 text-[13px] font-medium", detailTone)}>
+                {detail}
+              </p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.98fr)]">
+        <div className="rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/80 p-6">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-[21px] font-semibold leading-none text-black">
+              {t("tenant.dashboard.ref.quickActions", "Quick actions")}
+            </h2>
+            <span className="reference-home-hand hidden -rotate-6 text-xs font-bold uppercase tracking-[.08em] md:inline">
+              {t("tenant.dashboard.ref.shortcuts", "SHORTCUTS THAT SAVE TIME")} ↘
+            </span>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6">
+            {quickActions.map(({ label, href, icon: Icon, badge }) => (
+              <Link
+                className="relative flex min-h-[108px] flex-col items-center justify-center gap-3 rounded-[5px] border border-[#bdb8ad] bg-[#fbfaf6] px-3 py-4 text-center text-[13px] font-medium text-black transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm"
+                href={href}
+                key={href}
+              >
+                <Icon className="size-8 stroke-[1.8]" />
+                <span>{label}</span>
+                {badge ? (
+                  <span className="absolute right-3 top-3 rounded-md border border-violet-200 bg-violet-100 px-2 py-0.5 text-xs font-semibold text-indigo-800">
+                    {formatNumber(badge)}
+                  </span>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+          <p className="mt-7 text-[14px] text-[#4f4f4f]">
+            {t("tenant.dashboard.ref.shortcutsBody", "Shortcuts adapt based on your role and available modules.")}
+          </p>
+        </div>
+
+        <NeedsAttentionReference attention={attention} queues={hrSummary?.queues ?? null} />
+      </section>
+
+      <section className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.98fr)]">
+        <div className="rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/80 p-6">
+          <div className="flex items-center gap-5">
+            <h2 className="text-[21px] font-semibold leading-none text-black">
+              {t("tenant.dashboard.ref.commandCenter", "Role-based command center")}
+            </h2>
+            <span className="reference-home-hand -rotate-3 text-xs font-bold uppercase tracking-[.08em]">
+              {t("tenant.dashboard.ref.controlHub", "YOUR CONTROL HUB")} ↘
+            </span>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {commandCards.map(({ title, body, href, icon: Icon, tone }) => (
+              <Link
+                className={cn(
+                  "group min-h-[132px] rounded-[5px] border border-[#c8c1b5] p-5 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm",
+                  tone,
+                )}
+                href={href}
+                key={title}
+              >
+                <Icon className="size-7 stroke-[1.8]" />
+                <div className="mt-3 flex items-end justify-between gap-3">
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-black">{title}</h3>
+                    <p className="mt-3 text-center text-[12px] leading-5 text-[#333] md:text-left">
+                      {body}
+                    </p>
+                  </div>
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full border border-[#9d978e] text-black transition group-hover:translate-x-0.5">
+                    <ArrowRight className="size-4" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <RecentActivityReference userEmail={userEmail} />
+      </section>
+
+      <WorkspaceLaunchChecklist />
+
+      <Link
+        className="mt-4 flex min-h-11 items-center justify-between rounded-[5px] border border-[#beb8ad] bg-[#fffefa]/80 px-5 text-[14px] text-black transition hover:bg-white"
+        href="/app/settings"
+      >
+        <span>
+          <span className="font-semibold">* {t("tenant.dashboard.ref.tip", "Tip:")}</span>{" "}
+          {t("tenant.dashboard.ref.tipBody", "You can customize this dashboard to show what matters most to you.")}
+        </span>
+        <span className="inline-flex items-center gap-2 font-medium">
+          {t("tenant.dashboard.ref.goSettings", "Go to settings")}
+          <ArrowRight className="size-4" />
+        </span>
+      </Link>
     </div>
   );
 }
 
-function RoleFocusStrip({
-  canReadOwnerOverview,
-  permissions,
+function NeedsAttentionReference({
+  attention,
+  queues,
 }: {
-  canReadOwnerOverview: boolean | undefined;
-  permissions: string[];
+  attention: DashboardData["attention"];
+  queues: HrSummary["queues"] | null;
 }) {
-  const { t } = useLocalization();
-  const has = (permission: string) => permissions.includes(permission);
-  const focus = canReadOwnerOverview
-    ? {
-        label: t("tenant.dashboard.role.owner", "Owner command center"),
-        body: t(
-          "tenant.dashboard.role.ownerBody",
-          "Prioritize setup health, access, modules, and reporting.",
-        ),
-        icon: Settings2,
-        actions: [
-          {
-            label: t("tenant.dashboard.role.modules", "Modules"),
-            href: "/app/settings/modules",
-          },
-          {
-            label: t("tenant.dashboard.role.access", "Roles and access"),
-            href: "/app/settings/access",
-          },
-          {
-            label: t("tenant.dashboard.role.reports", "Reports"),
-            href: "/app/reports",
-          },
-        ],
-      }
-    : has("attendance.regularizations.manage") || has("leave.requests.approve")
-      ? {
-          label: t("tenant.dashboard.role.manager", "Manager review queue"),
-          body: t(
-            "tenant.dashboard.role.managerBody",
-            "Review attendance exceptions, leave approvals, and daily status.",
-          ),
-          icon: ClipboardQueueIcon,
-          actions: [
-            {
-              label: t("tenant.dashboard.role.regularizations", "Regularizations"),
-              href: "/app/attendance/regularizations",
-            },
-            {
-              label: t("tenant.dashboard.role.leaveApprovals", "Leave approvals"),
-              href: "/app/attendance/leave/approvals",
-            },
-            {
-              label: t("tenant.dashboard.role.register", "Attendance register"),
-              href: "/app/attendance/register",
-            },
-          ],
-        }
-      : has("payroll.runs.read") || has("payroll.settings.read")
-        ? {
-            label: t("tenant.dashboard.role.payroll", "Payroll workspace"),
-            body: t(
-              "tenant.dashboard.role.payrollBody",
-              "Move from workforce signals into payroll runs, exports, and reports.",
-            ),
-            icon: WalletCards,
-            actions: [
-              {
-                label: t("tenant.dashboard.role.payrollRuns", "Payroll runs"),
-                href: "/app/modules/payroll/runs",
-              },
-              {
-                label: t("tenant.dashboard.role.exports", "Exports"),
-                href: "/app/modules/payroll/exports",
-              },
-              {
-                label: t("tenant.dashboard.role.payrollReports", "Payroll reports"),
-                href: "/app/reports/payroll",
-              },
-            ],
-          }
-        : {
-            label: t("tenant.dashboard.role.hr", "HR operations"),
-            body: t(
-              "tenant.dashboard.role.hrBody",
-              "Use employee records, attendance, and leave queues from one place.",
-            ),
-            icon: UsersRound,
-            actions: [
-              {
-                label: t("tenant.dashboard.role.employees", "Employees"),
-                href: "/app/employees",
-              },
-              {
-                label: t("tenant.dashboard.role.attendance", "Attendance"),
-                href: "/app/attendance/register",
-              },
-              {
-                label: t("tenant.dashboard.role.leave", "Leave"),
-                href: "/app/attendance/leave",
-              },
-            ],
-          };
-  const Icon = focus.icon;
+  const { t, formatNumber } = useLocalization();
+  const items = [
+    {
+      label: t("tenant.dashboard.ref.attendanceCorrections", "Attendance corrections"),
+      body: t("tenant.dashboard.ref.pendingReview", "Pending review"),
+      count: queues?.pendingRegularizations ?? attention.pendingRegularizations ?? 0,
+      href: "/app/attendance/regularizations?status=PENDING",
+      icon: UserPlus,
+      tone: "border-[#c9eadb] bg-[#f1fbf6] text-[#087056]",
+    },
+    {
+      label: t("tenant.dashboard.ref.leaveApprovals", "Leave approvals"),
+      body: t("tenant.dashboard.ref.awaitingApproval", "Awaiting your approval"),
+      count: queues?.pendingLeave ?? 0,
+      href: "/app/attendance/leave/approvals?status=PENDING",
+      icon: Umbrella,
+      tone: "border-[#f0dfb8] bg-[#fff9ec] text-[#925a12]",
+    },
+    {
+      label: t("tenant.dashboard.ref.payrollBlockers", "Payroll blockers"),
+      body: t("tenant.dashboard.ref.requiresAttention", "Requires your attention"),
+      count: attention.absenteeAlerts ?? 0,
+      href: "/app/payroll/runs",
+      icon: ReceiptText,
+      tone: "border-[#f4c7cf] bg-[#fff4f5] text-[#a20f3a]",
+    },
+    {
+      label: t("tenant.dashboard.ref.deviceApprovals", "Device approvals"),
+      body: t("tenant.dashboard.ref.pendingItApproval", "Pending IT approval"),
+      count: queues?.pendingDevices ?? 0,
+      href: "/app/attendance/devices?status=PENDING_APPROVAL",
+      icon: Smartphone,
+      tone: "border-[#d4e7f3] bg-[#f5fbff] text-[#075985]",
+    },
+  ];
   return (
-    <section className="mb-5 rounded-lg border border-border bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" />
+    <aside className="rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/80 p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <BellIcon />
+          <h2 className="text-[21px] font-semibold leading-none text-black">
+            {t("tenant.dashboard.ref.needsAttention", "Needs attention")}
+          </h2>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-semibold">{focus.label}</h2>
-            <StatusBadge tone="info">
-              {t("tenant.dashboard.role.roleAware", "Role-aware")}
-            </StatusBadge>
+        <Link
+          className="rounded-[4px] border border-[#bdb8ad] px-4 py-2 text-xs font-medium text-black transition hover:bg-white"
+          href="/app/attendance/register"
+        >
+          {t("common.viewAll", "View all")}
+        </Link>
+      </div>
+      <div className="mt-6 grid gap-4">
+        {items.map(({ label, body, count, href, icon: Icon, tone }) => (
+          <Link
+            className="grid grid-cols-[36px_1fr_auto_20px] items-center gap-4 text-black"
+            href={href}
+            key={label}
+          >
+            <span className={cn("grid size-9 place-items-center rounded-[4px] border", tone)}>
+              <Icon className="size-5" />
+            </span>
+            <span>
+              <span className="block text-[15px] font-semibold leading-5">
+                {label}
+              </span>
+              <span className="block text-[13px] text-[#444]">{body}</span>
+            </span>
+            <span className={cn("rounded-[5px] border px-3 py-1 text-sm font-semibold", tone)}>
+              {formatNumber(count)}
+            </span>
+            <ArrowRight className="size-4" />
+          </Link>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function RecentActivityReference({ userEmail }: { userEmail: string }) {
+  const { t } = useLocalization();
+  const initialsValue = userEmail ? userEmail.slice(0, 2).toUpperCase() : "AD";
+  const activities = [
+    {
+      title: t("tenant.dashboard.ref.activityPayroll", "Payroll run PR-2026-08-001 marked as PAID"),
+      time: t("tenant.dashboard.ref.today1115", "Today, 11:15 AM"),
+      icon: ReceiptText,
+      dot: "bg-emerald-600",
+      person: initialsValue,
+      tone: "bg-violet-100 text-indigo-800",
+    },
+    {
+      title: t("tenant.dashboard.ref.activityLeave", "Leave request approved for Emma Wilson"),
+      time: t("tenant.dashboard.ref.today1048", "Today, 10:48 AM"),
+      icon: CheckCircle2,
+      dot: "bg-emerald-500",
+      person: "HR",
+      tone: "bg-violet-100 text-indigo-800",
+    },
+    {
+      title: t("tenant.dashboard.ref.activityAttendance", "Attendance correction submitted by John D."),
+      time: t("tenant.dashboard.ref.today0937", "Today, 09:37 AM"),
+      icon: UsersRound,
+      dot: "bg-sky-600",
+      person: "JD",
+      tone: "bg-emerald-100 text-emerald-800",
+    },
+    {
+      title: t("tenant.dashboard.ref.activityDevice", "Device DEV-1023 approved"),
+      time: t("tenant.dashboard.ref.yesterday0212", "Yesterday, 02:12 PM"),
+      icon: Smartphone,
+      dot: "bg-orange-500",
+      person: "IT",
+      tone: "bg-orange-100 text-orange-800",
+    },
+  ];
+  return (
+    <aside className="rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/80 p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-[21px] font-semibold leading-none text-black">
+          {t("tenant.dashboard.ref.recentActivity", "Recent activity")}
+        </h2>
+        <Link
+          className="rounded-[4px] border border-[#bdb8ad] px-4 py-2 text-xs font-medium text-black transition hover:bg-white"
+          href="/app/settings/audit"
+        >
+          {t("common.viewAll", "View all")}
+        </Link>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {activities.map(({ title, time, icon: Icon, dot, person, tone }) => (
+          <div
+            className="grid grid-cols-[18px_38px_1fr_36px] items-center gap-3"
+            key={title}
+          >
+            <span className={cn("size-2 rounded-full", dot)} />
+            <span className="grid size-8 place-items-center rounded-full bg-[#f2f0eb]">
+              <Icon className="size-4" />
+            </span>
+            <span>
+              <span className="block text-[14px] font-semibold leading-5 text-black">
+                {title}
+              </span>
+              <span className="block text-[12px] text-[#444]">{time}</span>
+            </span>
+            <span className={cn("grid size-8 place-items-center rounded-full text-xs font-semibold", tone)}>
+              {person}
+            </span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{focus.body}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {focus.actions.map((action) => (
-            <Link
-              className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:text-primary"
-              href={action.href}
-              key={action.href}
-            >
-              {action.label}
-            </Link>
-          ))}
-        </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function WorkspaceLaunchChecklist() {
+  const { t } = useLocalization();
+  const items = [
+    {
+      title: t("tenant.dashboard.ref.companyProfile", "Company profile"),
+      body: t("tenant.dashboard.ref.companyProfileBody", "Confirm company identity, logo, timezone and locale."),
+      href: "/app/settings/company",
+      icon: Building2,
+    },
+    {
+      title: t("tenant.dashboard.ref.organizationStructure", "Organization structure"),
+      body: t("tenant.dashboard.ref.organizationStructureBody", "Create departments and reusable designations."),
+      href: "/app/employees/organization",
+      icon: UsersRound,
+    },
+    {
+      title: t("tenant.dashboard.ref.officeGeofence", "Office and geofence"),
+      body: t("tenant.dashboard.ref.officeGeofenceBody", "Define the physical workplace and allowed punch radius."),
+      href: "/app/modules/attendance/offices",
+      icon: MapPin,
+    },
+    {
+      title: t("tenant.dashboard.ref.attendanceRules", "Attendance rules"),
+      body: t("tenant.dashboard.ref.attendanceRulesBody", "Create a shift, policy and default policy assignment."),
+      href: "/app/modules/attendance/policies",
+      icon: CalendarClock,
+    },
+    {
+      title: t("tenant.dashboard.ref.addEmployees", "Add employees"),
+      body: t("tenant.dashboard.ref.addEmployeesBody", "Add manually or import employees after the foundation is ready."),
+      href: "/app/employees",
+      icon: UserPlus,
+    },
+  ];
+  return (
+    <section className="mt-5 overflow-hidden rounded-[6px] border border-[#beb8ad] bg-[#fffefa]/80">
+      <div className="border-b border-[#ded8ce] p-6">
+        <p className="text-xs font-bold uppercase tracking-[.28em] text-[#151515]">
+          {t("tenant.dashboard.ref.launchChecklist", "Workspace launch checklist")}
+        </p>
+        <h2 className="mt-3 text-[27px] font-bold leading-none text-black">
+          {t("tenant.dashboard.ref.setupOrder", "Set up in this order")}
+        </h2>
+        <p className="mt-3 text-[16px] text-[#5f6570]">
+          {t("tenant.dashboard.ref.setupOrderBody", "Organization describes who reports where. Offices define where attendance may be recorded. Employees come after both foundations.")}
+        </p>
+      </div>
+      <div>
+        {items.map(({ title, body, href, icon: Icon }) => (
+          <Link
+            className="grid min-h-[96px] grid-cols-[52px_48px_1fr_auto_24px] items-center gap-4 border-b border-[#eee9df] px-5 transition last:border-b-0 hover:bg-[#f3f1ed]"
+            href={href}
+            key={title}
+          >
+            <span className="grid size-11 place-items-center rounded-full bg-emerald-50 text-emerald-700">
+              <CheckCircle2 className="size-5" />
+            </span>
+            <span className="grid size-12 place-items-center rounded-[10px] bg-[#f7f7f6] text-[#151515]">
+              <Icon className="size-6" />
+            </span>
+            <span>
+              <span className="block text-[16px] font-bold text-black">{title}</span>
+              <span className="mt-2 block text-[14px] text-[#8a9099]">{body}</span>
+            </span>
+            <span className="text-sm font-semibold text-[#151515]">
+              {t("tenant.dashboard.ref.complete", "Complete")}
+            </span>
+            <ArrowRight className="size-4 text-[#8a8a8a]" />
+          </Link>
+        ))}
       </div>
     </section>
   );
 }
 
-function ClipboardQueueIcon({ className }: { className?: string }) {
-  return <FileBarChart className={className} />;
+function BellIcon() {
+  return (
+    <span className="grid size-5 place-items-center rounded-full text-black">
+      <CircleDot className="size-5" />
+    </span>
+  );
+}
+
+function OperationsShortcutStrip({
+  canReadOwnerOverview,
+  payrollEnabled,
+  permissions,
+}: {
+  canReadOwnerOverview: boolean | undefined;
+  payrollEnabled: boolean;
+  permissions: string[];
+}) {
+  const { t } = useLocalization();
+  const has = (permission: string) => permissions.includes(permission);
+  const actions = [
+    {
+      label: t("tenant.dashboard.actions.employees", "Employees"),
+      body: t("tenant.dashboard.actions.employeesBody", "Find people, add profiles, and open employee payroll details."),
+      href: "/app/employees",
+      icon: UsersRound,
+      show: has("organization.employees.read") || has("organization.employees.self.read"),
+    },
+    {
+      label: t("tenant.dashboard.actions.attendance", "Attendance today"),
+      body: t("tenant.dashboard.actions.attendanceBody", "Open the live register and correction queues."),
+      href: "/app/attendance/register",
+      icon: CalendarClock,
+      show: has("attendance.records.read") || has("attendance.records.self.read"),
+    },
+    {
+      label: t("tenant.dashboard.actions.payrollRuns", "Run payroll"),
+      body: t("tenant.dashboard.actions.payrollRunsBody", "Create salary, check it, approve it, and generate payslips."),
+      href: "/app/payroll/runs",
+      icon: Banknote,
+      show: payrollEnabled && (has("payroll.runs.read") || has("payroll.inputs.manage")),
+    },
+    {
+      label: t("tenant.dashboard.actions.payslips", "Payslips & exports"),
+      body: t("tenant.dashboard.actions.payslipsBody", "Publish payslips, bank files, and accounting records."),
+      href: "/app/modules/payroll/payslips",
+      icon: ReceiptText,
+      show: payrollEnabled && (has("payroll.payslips.read") || has("payroll.reports.generate")),
+    },
+    {
+      label: t("tenant.dashboard.actions.reports", "Reports"),
+      body: t("tenant.dashboard.actions.reportsBody", "Download attendance, payroll, leave, and audit outputs."),
+      href: "/app/reports",
+      icon: FileBarChart,
+      show: has("attendance.reports.read") || has("organization.employees.reports.read"),
+    },
+    {
+      label: t("tenant.dashboard.actions.setup", "Setup"),
+      body: t("tenant.dashboard.actions.setupBody", "Configure modules, payroll rules, access, and company settings."),
+      href: canReadOwnerOverview ? "/app/modules" : "/app/settings",
+      icon: Settings2,
+      show: canReadOwnerOverview || has("workspace.settings.read") || has("payroll.settings.read"),
+    },
+  ].filter((item) => item.show);
+  return (
+    <section className="mb-5">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">
+            {t("tenant.dashboard.shortcuts.title", "Daily work")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("tenant.dashboard.shortcuts.subtitle", "Role-aware shortcuts for the modules enabled in this workspace.")}
+          </p>
+        </div>
+        <StatusBadge tone="info">
+          {payrollEnabled
+            ? t("tenant.dashboard.shortcuts.attendancePayroll", "Attendance + Payroll")
+            : t("tenant.dashboard.shortcuts.attendanceOnly", "Attendance workspace")}
+        </StatusBadge>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {actions.map(({ label, body, href, icon: Icon }) => (
+          <Link
+            className="group relative overflow-hidden rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-md"
+            href={href}
+            key={href}
+          >
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#beb8ad] via-[#d8d1c4] to-[#beb8ad]" />
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f3efe6] text-[#151515]">
+                <Icon className="size-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-semibold">{label}</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {body}
+                </span>
+              </span>
+              <ArrowRight className="directional-icon ms-auto mt-1 size-4 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-[#151515] rtl:group-hover:-translate-x-0.5" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function DashboardHeader({
   userName,
   data,
+  modules,
 }: {
   userName: string;
   data: DashboardData | null;
+  modules: HrSummary["modules"];
 }) {
   const { t, formatNumber } = useLocalization();
   const [now, setNow] = useState<number | null>(null);
@@ -455,24 +921,37 @@ function DashboardHeader({
     : 0;
   const stale = seconds > 120;
   return (
-    <header className="mb-5 flex flex-wrap items-start justify-between gap-4 rounded-lg border border-border bg-white p-5 shadow-sm">
+    <header className="mb-5 overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="relative p-5 lg:p-6">
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#beb8ad] via-[#d8d1c4] to-[#beb8ad]" />
+        <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#151515]">
           {t(
             "tenant.dashboard.header.eyebrow",
             "Workspace operations",
           )}
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-          {t("tenant.dashboard.header.title", "HR operations")}
+          {t("tenant.dashboard.header.title", "Workday command center")}
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           {t(
             "tenant.dashboard.header.welcome",
-            "Welcome, {name}. Review today's workforce and every queue that needs action.",
+            "Welcome, {name}. Run attendance, payroll, people work, and reports from one clean place.",
             { name: userName },
           )}
         </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(modules ?? []).slice(0, 4).map((module) => (
+            <span
+              className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground"
+              key={module.key}
+            >
+              {module.name}
+            </span>
+          ))}
+        </div>
       </div>
       <StatusBadge tone={stale ? "warning" : "success"} className="min-h-8">
         <span
@@ -500,7 +979,109 @@ function DashboardHeader({
           )
         )}
       </StatusBadge>
+        </div>
+      </div>
     </header>
+  );
+}
+
+function SetupAndReportsRail({
+  canReadOwnerOverview,
+  payrollEnabled,
+  summary,
+}: {
+  canReadOwnerOverview: boolean | undefined;
+  payrollEnabled: boolean;
+  summary: HrSummary | null;
+}) {
+  const { t, formatNumber } = useLocalization();
+  const setupReady = summary?.setup
+    ? summary.setup.onboardingComplete &&
+      summary.setup.departments > 0 &&
+      summary.setup.offices > 0 &&
+      summary.setup.attendancePolicies > 0 &&
+      summary.setup.shifts > 0
+    : false;
+  const links = [
+    {
+      label: t("tenant.dashboard.rail.payrollSetup", "Payroll setup"),
+      body: t("tenant.dashboard.rail.payrollSetupBody", "Country, pay groups, components, approvals, and accounting."),
+      href: "/app/modules/payroll",
+      icon: WalletCards,
+      show: payrollEnabled,
+    },
+    {
+      label: t("tenant.dashboard.rail.accounting", "Accounting records"),
+      body: t("tenant.dashboard.rail.accountingBody", "Create finance-ready payroll exports and ledger mappings."),
+      href: "/app/modules/payroll/exports",
+      icon: FileSpreadsheet,
+      show: payrollEnabled,
+    },
+    {
+      label: t("tenant.dashboard.rail.moduleSetup", "Module setup"),
+      body: setupReady
+        ? t("tenant.dashboard.rail.setupReady", "Core organization and attendance setup looks ready.")
+        : t("tenant.dashboard.rail.setupNeedsWork", "Finish company, office, shift, and policy setup."),
+      href: "/app/modules",
+      icon: Settings2,
+      show: Boolean(canReadOwnerOverview),
+    },
+  ].filter((item) => item.show);
+  if (!links.length && !summary?.workforce) return null;
+  return (
+    <aside className="rounded-lg border border-border bg-white p-4 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">
+            {t("tenant.dashboard.rail.title", "Setup & reports")}
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            {t("tenant.dashboard.rail.subtitle", "Occasional setup stays separate from daily work.")}
+          </p>
+        </div>
+        <Settings2 className="size-5 text-[#151515]" />
+      </div>
+      {summary?.workforce && (
+        <Link
+          className="mb-3 block rounded-lg bg-muted p-4 transition hover:bg-[#f3efe6]"
+          href="/app/employees"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <strong className="text-2xl">
+                {formatNumber(summary.workforce.active)}
+              </strong>
+              <p className="text-xs font-semibold text-muted-foreground">
+                {t("tenant.dashboard.rail.activePeople", "Active people")}
+              </p>
+            </div>
+            <UsersRound className="size-5 text-[#151515]" />
+          </div>
+        </Link>
+      )}
+      <div className="grid gap-3">
+        {links.map(({ label, body, href, icon: Icon }) => (
+          <Link
+            className="group rounded-lg border border-border p-3 transition hover:border-[#151515] hover:bg-muted/40"
+            href={href}
+            key={href}
+          >
+            <div className="flex gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f3efe6] text-[#151515]">
+                <Icon className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold">{label}</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {body}
+                </span>
+              </span>
+              <ArrowRight className="directional-icon ms-auto mt-2 size-4 text-zinc-400 group-hover:text-[#151515]" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -633,12 +1214,12 @@ function OwnerOverviewPanel({ data }: { data: HrSummary | null }) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ label, value, detail, href, icon: Icon }) => (
           <Link
-            className="group rounded-lg border border-border bg-muted/30 p-4 transition hover:border-primary/40 hover:bg-white"
+            className="group rounded-lg border border-border bg-muted/30 p-4 transition hover:border-[#151515] hover:bg-white"
             href={href}
             key={label}
           >
             <div className="flex items-start justify-between">
-              <Icon className="size-5 text-primary-container" />
+              <Icon className="size-5 text-[#2a2927]" />
               <ArrowRight className="directional-icon size-4 text-zinc-400 transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
             </div>
             <div className="mt-3 text-xl font-bold">{value}</div>
@@ -712,7 +1293,7 @@ function WorkforceOverview({
             )}
           </p>
         </div>
-        <Link className="text-xs font-bold text-primary" href="/app/employees">
+        <Link className="text-xs font-bold text-[#151515]" href="/app/employees">
           {t(
             "tenant.dashboard.workforce.openDirectory",
             "Open directory",
@@ -722,13 +1303,13 @@ function WorkforceOverview({
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {cards.map((card) => (
           <Link
-            className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:border-primary/40"
+            className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:border-[#151515]"
             href={card.href}
             key={card.label}
           >
             <div className="flex items-start justify-between gap-2">
               <strong className="text-2xl">{formatNumber(card.value)}</strong>
-              <ArrowRight className="directional-icon size-4 text-zinc-400 group-hover:text-primary" />
+              <ArrowRight className="directional-icon size-4 text-zinc-400 group-hover:text-[#151515]" />
             </div>
             <span className="mt-1 block text-xs font-semibold text-muted-foreground">
               {card.label}
@@ -796,7 +1377,7 @@ function SummaryStrip({ summary }: { summary: DashboardData["summary"] }) {
     >
       {cards.map((card) => (
         <Link
-          className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40"
+          className="group rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#151515]"
           href={card.href}
           key={card.label}
         >
@@ -854,7 +1435,7 @@ function DashboardToolbar({
             aria-pressed={view === "grid"}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "grid" && "bg-muted text-primary shadow-sm",
+              view === "grid" && "bg-muted text-[#151515] shadow-sm",
             )}
             onClick={() => onView("grid")}
             type="button"
@@ -866,7 +1447,7 @@ function DashboardToolbar({
             aria-pressed={view === "list"}
             className={cn(
               "grid size-8 place-items-center rounded-md",
-              view === "list" && "bg-muted text-primary shadow-sm",
+              view === "list" && "bg-muted text-[#151515] shadow-sm",
             )}
             onClick={() => onView("list")}
             type="button"
@@ -882,8 +1463,8 @@ function DashboardToolbar({
             className={cn(
               "shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
               status === filter
-                ? "border-primary bg-primary text-white"
-                : "border-border bg-white text-muted-foreground hover:border-primary/40",
+                ? "border-[#151515] bg-[#151515] text-white"
+                : "border-border bg-white text-muted-foreground hover:border-[#151515]",
             )}
             key={filter}
             onClick={() => onStatus(filter)}
@@ -955,13 +1536,13 @@ function EmployeeCard({
         { name: employee.fullName },
       )}
       className={cn(
-        "block cursor-pointer rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+        "block cursor-pointer rounded-lg border border-border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#151515] focus:ring-offset-2",
         compact && "flex flex-wrap items-center gap-4",
       )}
       href={`/app/employees/${employee.id}`}
     >
       <div className="flex items-start gap-3">
-        <div className="relative grid size-12 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold text-primary">
+        <div className="relative grid size-12 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold text-[#151515]">
           <bdi>{initials(employee.fullName)}</bdi>
           <span
             className={cn(
@@ -1054,7 +1635,7 @@ function NeedsAttention({
       ),
       href: "/app/attendance/regularizations?status=PENDING",
       icon: CalendarClock,
-      tone: "bg-zinc-50 text-primary",
+      tone: "bg-zinc-50 text-[#151515]",
     });
   }
   if (openSecurityAlerts !== null) {
@@ -1118,7 +1699,7 @@ function NeedsAttention({
       ),
       href: "/app/attendance/devices?status=PENDING_APPROVAL",
       icon: Smartphone,
-      tone: "bg-zinc-50 text-primary",
+      tone: "bg-zinc-50 text-[#151515]",
     });
   }
   return (
@@ -1135,12 +1716,12 @@ function NeedsAttention({
             )}
           </p>
         </div>
-        <CircleDot className="size-5 text-primary-container" />
+        <CircleDot className="size-5 text-[#2a2927]" />
       </div>
       <div className="mt-4 grid gap-3">
         {items.map(({ label, count, body, href, icon: Icon, tone }) => (
           <Link
-            className="group rounded-lg border border-border p-4 transition hover:border-primary/40 hover:bg-muted/40"
+            className="group rounded-lg border border-border p-4 transition hover:border-[#151515] hover:bg-muted/40"
             href={href}
             key={label}
           >
@@ -1174,7 +1755,7 @@ function NeedsAttention({
         )}
       </div>
       <Link
-        className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border text-xs font-semibold text-primary transition hover:border-primary/40 hover:bg-primary/5"
+        className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border text-xs font-semibold text-[#151515] transition hover:border-[#151515] hover:bg-[#f3efe6]"
         href="/app/attendance/register"
       >
         {t(

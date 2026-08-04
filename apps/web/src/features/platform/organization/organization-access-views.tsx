@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Banknote,
   Building2,
   CheckCircle2,
   ClipboardCheck,
@@ -15,6 +16,7 @@ import {
   ShieldCheck,
   Trash2,
   UserRoundPlus,
+  WalletCards,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -70,6 +72,19 @@ type Employee = {
     office: { id: string; officeName: string; timezone?: string | null };
   }>;
 };
+type PayrollPayGroup = {
+  id: string;
+  code?: string;
+  name: string;
+};
+type EmployeePayrollProfile = {
+  id?: string;
+  employeeId?: string;
+  payGroupId?: string | null;
+  salaryHold?: boolean | null;
+  paymentMethod?: string | null;
+  status?: string | null;
+};
 type EmployeePage = {
   data: Employee[];
   pagination: {
@@ -85,6 +100,31 @@ function employeeStatusTone(status: string) {
   if (status === "ON_NOTICE") return "warning";
   if (status === "TERMINATED") return "neutral";
   return "info";
+}
+
+function payrollStatus(profile?: EmployeePayrollProfile | null) {
+  if (!profile) {
+    return {
+      label: "Missing setup",
+      tone: "danger" as const,
+    };
+  }
+  if (!profile.payGroupId) {
+    return {
+      label: "Missing pay group",
+      tone: "warning" as const,
+    };
+  }
+  if (profile.salaryHold) {
+    return {
+      label: "On hold",
+      tone: "warning" as const,
+    };
+  }
+  return {
+    label: "Ready",
+    tone: "success" as const,
+  };
 }
 
 function importStatusTone(status: string) {
@@ -401,7 +441,7 @@ export function OrganizationView({
         <div className="grid gap-6">
           {showSetupHint && (
             <Panel className="flex flex-wrap items-center gap-4 border-zinc-200 bg-zinc-50 p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                 <Info className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
@@ -413,7 +453,7 @@ export function OrganizationView({
                 </p>
               </div>
               <Link
-                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
+                className="inline-flex h-10 items-center rounded-lg bg-[#151515] px-4 text-sm font-semibold text-white"
                 href="/app/attendance/offices"
               >
                 {tText("Continue to office setup")}
@@ -424,7 +464,7 @@ export function OrganizationView({
             <Panel className="p-7">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">{tText("Departments")}</h2>
-                <Building2 className="text-primary" />
+                <Building2 className="text-[#151515]" />
               </div>
               <div className="mb-5 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
                 <input
@@ -547,7 +587,7 @@ function DepartmentNode({
         className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-variant bg-white px-4 py-3"
         style={{ marginLeft: depth * 24 }}
       >
-        <div className="grid size-8 place-items-center rounded-lg bg-zinc-100 text-primary">
+        <div className="grid size-8 place-items-center rounded-lg bg-zinc-100 text-[#151515]">
           <Building2 className="size-4" />
         </div>
         {editing ? (
@@ -584,7 +624,7 @@ function DepartmentNode({
                 ))}
             </select>
             <button
-              className="text-xs font-bold text-primary"
+              className="text-xs font-bold text-[#151515]"
               disabled={name.trim().length < 2}
               onClick={async () => {
                 await onRename(department.id, name);
@@ -706,7 +746,7 @@ function DesignationRow({
       {editing ? (
         <>
           <button
-            className="text-xs font-bold text-primary"
+            className="text-xs font-bold text-[#151515]"
             disabled={name.trim().length < 2}
             onClick={async () => {
               await onRename(designation.id, name);
@@ -762,9 +802,19 @@ export function EmployeesView() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [moduleKeys, setModuleKeys] = useState<Set<string>>(new Set());
+  const [payGroups, setPayGroups] = useState<PayrollPayGroup[]>([]);
+  const [payrollProfiles, setPayrollProfiles] = useState<
+    Record<string, EmployeePayrollProfile | null>
+  >({});
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const payrollEnabled = moduleKeys.has("PAYROLL");
   useEffect(() => {
+    const employeeParams = new URLSearchParams(query);
+    employeeParams.delete("payGroupId");
+    const employeeQuery = employeeParams.toString() || "page=1&limit=25";
     apiClient
-      .get(`/employees?${query || "page=1&limit=25"}`)
+      .get(`/employees?${employeeQuery}`)
       .then(({ data }) => {
         setResult({
           data: data.data,
@@ -774,6 +824,43 @@ export function EmployeesView() {
       })
       .catch(() => setError(tText("Employees could not be loaded.")));
   }, [query]);
+  useEffect(() => {
+    apiClient
+      .get<{ modules: Array<{ key: string }> }>("/workspace/modules")
+      .then(({ data }) =>
+        setModuleKeys(new Set(data.modules.map(({ key }) => key))),
+      )
+      .catch(() => setModuleKeys(new Set()));
+  }, []);
+  useEffect(() => {
+    if (!payrollEnabled) {
+      setPayGroups([]);
+      setPayrollProfiles({});
+      return;
+    }
+    let active = true;
+    apiClient
+      .get("/payroll/pay-groups")
+      .then(({ data }) => {
+        if (!active) return;
+        const list = Array.isArray(data?.data) ? data.data : [];
+        setPayGroups(
+          list
+            .map((item: Record<string, unknown>) => ({
+              id: String(item.id ?? ""),
+              code: item.code ? String(item.code) : undefined,
+              name: String(item.name ?? item.code ?? "Unnamed pay group"),
+            }))
+            .filter((item: PayrollPayGroup) => item.id),
+        );
+      })
+      .catch(() => {
+        if (active) setPayGroups([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [payrollEnabled]);
   function updateQuery(updates: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(updates)) {
@@ -787,6 +874,61 @@ export function EmployeesView() {
     updateQuery({ search: search.trim() || null, page: "1" });
   }
   const data = result?.data ?? null;
+  const employeeIdsKey = data?.map((employee) => employee.id).join(",") ?? "";
+  useEffect(() => {
+    const employees = data ?? [];
+    if (!payrollEnabled || !employees.length) {
+      setPayrollProfiles({});
+      return;
+    }
+    let active = true;
+    Promise.allSettled(
+      employees.map((employee) =>
+        apiClient.get(`/payroll/employees/${employee.id}/profile`),
+      ),
+    ).then((responses) => {
+      if (!active) return;
+      const next: Record<string, EmployeePayrollProfile | null> = {};
+      responses.forEach((response, index) => {
+        const employeeId = employees[index]?.id;
+        if (!employeeId) return;
+        if (response.status === "fulfilled") {
+          const profile = response.value.data?.data ?? response.value.data;
+          next[employeeId] = profile
+            ? {
+                id: profile.id ? String(profile.id) : undefined,
+                employeeId,
+                payGroupId: profile.payGroupId
+                  ? String(profile.payGroupId)
+                  : null,
+                salaryHold: Boolean(profile.salaryHold),
+                paymentMethod: profile.paymentMethod
+                  ? String(profile.paymentMethod)
+                  : null,
+                status: profile.status ? String(profile.status) : null,
+              }
+            : null;
+          return;
+        }
+        next[employeeId] = null;
+      });
+      setPayrollProfiles(next);
+    });
+    return () => {
+      active = false;
+    };
+  }, [data, employeeIdsKey, payrollEnabled]);
+  const selectedPayGroupId = searchParams.get("payGroupId") ?? "";
+  const payGroupNameById = new Map(
+    payGroups.map((payGroup) => [payGroup.id, payGroup.name]),
+  );
+  const visibleEmployees =
+    payrollEnabled && selectedPayGroupId
+      ? data?.filter(
+          (employee) =>
+            payrollProfiles[employee.id]?.payGroupId === selectedPayGroupId,
+        ) ?? null
+      : data;
   return (
     <AdminPage
       title={tText("Employees")}
@@ -795,7 +937,7 @@ export function EmployeesView() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             aria-label={tText("How employee onboarding works")}
-            className="grid size-11 place-items-center rounded-xl border border-zinc-300 bg-white text-zinc-600 transition hover:border-primary hover:bg-zinc-50 hover:text-primary"
+            className="grid size-11 place-items-center rounded-xl border border-zinc-300 bg-white text-zinc-600 transition hover:border-[#151515] hover:bg-zinc-50 hover:text-[#151515]"
             onClick={() => setOnboardingOpen(true)}
             title={tText("How employee onboarding works")}
             type="button"
@@ -803,7 +945,7 @@ export function EmployeesView() {
             <Info className="size-5" />
           </button>
           <Link
-            className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
+            className="inline-flex h-11 items-center rounded-xl border border-zinc-300 px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
             href="/app/imports/employees"
           >
             <FileUp className="mr-2 size-4" />
@@ -813,6 +955,15 @@ export function EmployeesView() {
               <UserRoundPlus className="size-4" />
               {tText("Add employee")}</PrimaryButton>
           </Link>
+          {payrollEnabled && permissions.includes("payroll.runs.read") && (
+            <Link
+              className="inline-flex h-11 items-center rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+              href="/app/payroll/runs"
+            >
+              <Banknote className="mr-2 size-4" />
+              {tText("Run payroll")}
+            </Link>
+          )}
         </div>
       }
     >
@@ -821,9 +972,61 @@ export function EmployeesView() {
         <LoadingState />
       ) : (
         <div>
+          {payrollEnabled && (
+            <div className="mb-5 grid gap-4 lg:grid-cols-3">
+              <Link
+                className="group rounded-[6px] border border-[#c9eadb] bg-[#f1fbf6] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                href="/app/payroll/runs"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#c9eadb] bg-[#fffefa] text-[#151515] shadow-sm">
+                    <Banknote className="size-5" />
+                  </span>
+                  <span>
+                    <span className="block font-bold">{tText("Run payroll")}</span>
+                    <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                      {tText("Choose a pay group, calculate salaries, approve, and generate payslips.")}
+                    </span>
+                  </span>
+                </div>
+              </Link>
+              <Link
+                className="group rounded-[6px] border border-[#ded5f2] bg-[#f7f4ff] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                href="/app/modules/payroll/payslips"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#ded5f2] bg-[#fffefa] text-[#151515]">
+                    <WalletCards className="size-5" />
+                  </span>
+                  <span>
+                    <span className="block font-bold">{tText("Payslips")}</span>
+                    <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                      {tText("Publish payslips after salary approval.")}
+                    </span>
+                  </span>
+                </div>
+              </Link>
+              <Link
+                className="group rounded-[6px] border border-[#f0dfb8] bg-[#fff9ec] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                href="/app/reports?type=PAYROLL"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#f0dfb8] bg-[#fffefa] text-[#151515]">
+                    <ClipboardCheck className="size-5" />
+                  </span>
+                  <span>
+                    <span className="block font-bold">{tText("Payroll reports")}</span>
+                    <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                      {tText("Download payroll register, bank, and accounting outputs.")}
+                    </span>
+                  </span>
+                </div>
+              </Link>
+            </div>
+          )}
           <Panel className="overflow-hidden">
             <Toolbar className="rounded-none border-x-0 border-t-0 shadow-none">
-              <div className="grid w-full items-end gap-3 lg:grid-cols-[minmax(360px,1fr)_180px_180px_132px]">
+              <div className="grid w-full items-end gap-3 lg:grid-cols-[minmax(320px,1fr)_170px_190px_170px_132px]">
                 <form className="grid gap-1.5" onSubmit={submitSearch}>
                   <FilterField label={tText("Search employees")}>
                   <div className="flex gap-2">
@@ -838,7 +1041,7 @@ export function EmployeesView() {
                       />
                     </div>
                     <button
-                      className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-95"
+                      className="h-11 rounded-xl bg-[#151515] px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-95"
                       type="submit"
                     >
                       {tText("Search")}</button>
@@ -863,6 +1066,28 @@ export function EmployeesView() {
                     <option value="TERMINATED">{tText("Terminated")}</option>
                   </select>
                 </FilterField>
+                {payrollEnabled && (
+                  <FilterField label={tText("Pay group")}>
+                    <select
+                      aria-label={tText("Filter by pay group")}
+                      className={inputClass}
+                      onChange={(event) =>
+                        updateQuery({
+                          payGroupId: event.target.value || null,
+                          page: "1",
+                        })
+                      }
+                      value={selectedPayGroupId}
+                    >
+                      <option value="">{tText("All pay groups")}</option>
+                      {payGroups.map((payGroup) => (
+                        <option key={payGroup.id} value={payGroup.id}>
+                          {payGroup.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FilterField>
+                )}
                 <FilterField label={tText("Sort by")}>
                   <select
                     aria-label={tText("Sort employees")}
@@ -894,7 +1119,7 @@ export function EmployeesView() {
                 </FilterField>
               </div>
             </Toolbar>
-            <DataTable className="rounded-none border-x-0 border-t-0 shadow-none" minWidth="1180px">
+            <DataTable className="rounded-none border-x-0 border-t-0 shadow-none" minWidth={payrollEnabled ? "1380px" : "1180px"}>
                 <DataTableHeader>
                   <tr>
                     <DataTableHeadCell>{tText("Employee")}</DataTableHeadCell>
@@ -905,48 +1130,77 @@ export function EmployeesView() {
                     <DataTableHeadCell>{tText("Designation")}</DataTableHeadCell>
                     <DataTableHeadCell>{tText("Manager")}</DataTableHeadCell>
                     <DataTableHeadCell>{tText("Work type")}</DataTableHeadCell>
+                    {payrollEnabled && (
+                      <>
+                        <DataTableHeadCell>{tText("Pay group")}</DataTableHeadCell>
+                        <DataTableHeadCell>{tText("Payroll status")}</DataTableHeadCell>
+                      </>
+                    )}
                     <DataTableHeadCell>{tText("Status")}</DataTableHeadCell>
                   </tr>
                 </DataTableHeader>
                 <tbody>
-                  {data.map((employee) => (
-                    <DataTableRow
-                      key={employee.id}
-                    >
-                      <DataTableCell>
-                        <Link
-                          href={`/app/employees/${employee.id}`}
-                          className="font-semibold text-primary hover:underline"
-                        >
-                          {employee.fullName}
-                        </Link>
-                        <div className="text-xs text-muted-foreground">
-                          {employee.phone || tText("No phone")}
-                        </div>
-                      </DataTableCell>
-                      <DataTableCell>{employee.employeeCode}</DataTableCell>
-                      <DataTableCell>{employee.user?.email || "-"}</DataTableCell>
-                      <DataTableCell>
-                        {employee.officeAssignments?.[0]?.office.officeName ||
-                          "-"}
-                      </DataTableCell>
-                      <DataTableCell>{employee.department?.name || "-"}</DataTableCell>
-                      <DataTableCell>{employee.designation?.name || "-"}</DataTableCell>
-                      <DataTableCell>{employee.manager?.fullName || "-"}</DataTableCell>
-                      <DataTableCell>{employee.workType}</DataTableCell>
-                      <DataTableCell>
-                        <StatusBadge tone={employeeStatusTone(employee.status)}>
-                          {employee.status}
-                        </StatusBadge>
-                      </DataTableCell>
-                    </DataTableRow>
-                  ))}
+                  {(visibleEmployees ?? []).map((employee) => {
+                    const profile = payrollProfiles[employee.id];
+                    const status = payrollStatus(profile);
+                    const payGroupName = profile?.payGroupId
+                      ? payGroupNameById.get(profile.payGroupId) ?? tText("Pay group not found")
+                      : tText("No pay group");
+                    return (
+                      <DataTableRow key={employee.id}>
+                        <DataTableCell>
+                          <Link
+                            href={`/app/employees/${employee.id}`}
+                            className="font-semibold text-[#151515] hover:underline"
+                          >
+                            {employee.fullName}
+                          </Link>
+                          <div className="text-xs text-muted-foreground">
+                            {employee.phone || tText("No phone")}
+                          </div>
+                        </DataTableCell>
+                        <DataTableCell>{employee.employeeCode}</DataTableCell>
+                        <DataTableCell>{employee.user?.email || "-"}</DataTableCell>
+                        <DataTableCell>
+                          {employee.officeAssignments?.[0]?.office.officeName ||
+                            "-"}
+                        </DataTableCell>
+                        <DataTableCell>{employee.department?.name || "-"}</DataTableCell>
+                        <DataTableCell>{employee.designation?.name || "-"}</DataTableCell>
+                        <DataTableCell>{employee.manager?.fullName || "-"}</DataTableCell>
+                        <DataTableCell>{employee.workType}</DataTableCell>
+                        {payrollEnabled && (
+                          <>
+                            <DataTableCell>{payGroupName}</DataTableCell>
+                            <DataTableCell>
+                              <StatusBadge tone={status.tone}>
+                                {tText(status.label)}
+                              </StatusBadge>
+                            </DataTableCell>
+                          </>
+                        )}
+                        <DataTableCell>
+                          <StatusBadge tone={employeeStatusTone(employee.status)}>
+                            {employee.status}
+                          </StatusBadge>
+                        </DataTableCell>
+                      </DataTableRow>
+                    );
+                  })}
                 </tbody>
             </DataTable>
-            {!data.length && (
+            {!visibleEmployees?.length && (
               <EmptyState
-                title={tText("No employees")}
-                body={tText("Add employees individually or use the bulk import wizard.")}
+                title={
+                  selectedPayGroupId
+                    ? tText("No employees in this pay group")
+                    : tText("No employees")
+                }
+                body={
+                  selectedPayGroupId
+                    ? tText("Choose another pay group or update the employee payroll setup.")
+                    : tText("Add employees individually or use the bulk import wizard.")
+                }
               />
             )}
             {result && result.pagination.total > 0 && (
@@ -991,7 +1245,7 @@ export function EmployeesView() {
                 className="flex gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4"
                 key={number}
               >
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#151515] text-sm font-bold text-white">
                   {number}
                 </span>
                 <span>
@@ -1004,7 +1258,7 @@ export function EmployeesView() {
             ))}
           </ol>
           <Link
-            className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white"
+            className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#151515] px-4 text-sm font-bold text-white"
             href="/app/employees/new"
           >
             {tText("Add an employee")}</Link>
@@ -1235,7 +1489,7 @@ export function EmployeeEditorView() {
           </div>
         </Panel>
         <Panel className="p-7">
-          <div className="grid size-14 place-items-center rounded-xl bg-zinc-100 text-primary">
+          <div className="grid size-14 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
             <ShieldCheck />
           </div>
           <h2 className="mt-5 text-lg font-semibold">{tText("What happens next?")}</h2>
@@ -1247,7 +1501,7 @@ export function EmployeeEditorView() {
               "Approve their registered device if required",
             ].map((step, index) => (
               <li className="flex items-start gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-primary">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-50 text-xs font-bold text-[#151515]">
                   {index + 2}
                 </span>
                 <span className="pt-0.5 text-zinc-600">{step}</span>
@@ -1279,7 +1533,7 @@ export function EmployeeEditorView() {
               </p>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 text-sm font-bold text-primary"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 text-sm font-bold text-[#151515]"
               onClick={async () => {
                 await navigator.clipboard.writeText(
                   `Email: ${createdAccount.email}\nTemporary password: ${createdAccount.password}`,
@@ -1480,16 +1734,16 @@ export function EmployeeImportView() {
           </div>
         )}
       </Panel>
-      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center">
+      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-[#beb8ad] bg-[#f3efe6] p-8 text-center">
         <div className="max-w-xl">
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white text-primary shadow-sm">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white text-[#151515] shadow-sm">
             <FileUp className="size-7" />
           </div>
           <h2 className="mt-5 text-xl font-semibold">
             {tText("Upload employee CSV")}</h2>
           <p className="mt-2 text-sm text-outline">
             {tText("CSV UTF-8 up to 5 MB. The header must match the downloaded template. Validation results will appear in the import history below.")}</p>
-          <label className="mt-5 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90">
+          <label className="mt-5 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-[#151515] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2a2927]">
             {uploading ? tText("Uploading...") : tText("Choose CSV")}
             <input
               type="file"
@@ -1542,7 +1796,7 @@ export function EmployeeImportView() {
                 </div>
                 {job.errorRows > 0 && (
                   <button
-                    className="text-sm font-semibold text-primary hover:underline"
+                    className="text-sm font-semibold text-[#151515] hover:underline"
                     onClick={() => void showErrors(job.id)}
                     type="button"
                   >
@@ -1564,7 +1818,7 @@ export function EmployeeImportView() {
           <div className="flex items-center justify-between border-b border-surface-variant bg-zinc-50 px-6 py-4">
             <h2 className="font-semibold">{tText("Rows that need correction")}</h2>
             <button
-              className="text-sm font-semibold text-primary"
+              className="text-sm font-semibold text-[#151515]"
               onClick={() => {
                 setSelectedJobId(null);
                 setRowErrors(null);
@@ -1718,7 +1972,7 @@ export function UsersRolesView() {
         <div className="flex flex-wrap gap-2">
           {canCreateRoles && (
             <button
-              className="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary hover:bg-zinc-50"
+              className="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] hover:bg-zinc-50"
               onClick={() => setCreateRoleOpen(true)}
               type="button"
             >
@@ -1750,7 +2004,7 @@ export function UsersRolesView() {
                 {tText("Create and invite employees from the employee directory. Their Employee self-service role is assigned automatically.")}</p>
             </div>
             <Link
-              className="text-sm font-bold text-primary"
+              className="text-sm font-bold text-[#151515]"
               href="/app/employees"
             >
               {tText("Open employees →")}</Link>
@@ -1794,7 +2048,7 @@ export function UsersRolesView() {
                   <Link
                     key={role.id}
                     href={`/app/access/roles/${role.id}`}
-                    className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-primary"
+                    className="flex items-center justify-between rounded-lg border border-surface-variant p-4 hover:border-[#151515]"
                   >
                     <div>
                       <div className="font-semibold">{role.name}</div>
@@ -1806,7 +2060,7 @@ export function UsersRolesView() {
                           `${role.permissionKeys?.length ?? 0} configured capabilities.`}
                       </p>
                     </div>
-                    <ShieldCheck className="size-5 text-primary" />
+                    <ShieldCheck className="size-5 text-[#151515]" />
                   </Link>
                 ))}
               </div>
@@ -2016,7 +2270,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
       ) : role.isSystem ? (
         <div className="grid gap-6">
           <div className="flex items-start gap-3 rounded-xl border border-zinc-300 bg-white p-5 text-sm text-zinc-600">
-            <Info className="mt-0.5 size-5 shrink-0 text-primary" />
+            <Info className="mt-0.5 size-5 shrink-0 text-[#151515]" />
             <div>
               <strong className="text-zinc-800">{tText("Built-in role")}</strong>
               <p className="mt-1 leading-6">
@@ -2038,7 +2292,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
               {selected.size} {tText("protected capabilities included")}</p>
             {role.name === "EMPLOYEE" && (
               <Link
-                className="mt-5 inline-flex text-sm font-bold text-primary"
+                className="mt-5 inline-flex text-sm font-bold text-[#151515]"
                 href="/app/employees"
               >
                 {tText("Manage employee accounts →")}</Link>
@@ -2054,7 +2308,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {ROLE_PRESETS.map((preset) => (
                 <button
-                  className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-primary hover:bg-zinc-50"
+                  className="rounded-xl border border-zinc-300 p-4 text-left transition hover:border-[#151515] hover:bg-zinc-50"
                   key={preset.id}
                   onClick={() => applyPreset(preset.keys)}
                   type="button"

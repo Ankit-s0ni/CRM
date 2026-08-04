@@ -5,7 +5,10 @@ import { PayrollProcessingController } from './payroll-processing.controller';
 import { PayrollRunPreparationController } from './payroll-run-preparation.controller';
 import { PERMISSIONS } from '../../../../shared/authorization/permissions.constants';
 import { REQUIRED_MODULE_KEY } from '../../../../shared/authorization/require-module.decorator';
-import { REQUIRED_PERMISSIONS_KEY } from '../../../../shared/authorization/require-permissions.decorator';
+import {
+  REQUIRED_ANY_PERMISSIONS_KEY,
+  REQUIRED_PERMISSIONS_KEY,
+} from '../../../../shared/authorization/require-permissions.decorator';
 
 describe('Payroll route security metadata', () => {
   it('requires the payroll module entitlement on payroll controllers', () => {
@@ -121,11 +124,6 @@ describe('Payroll route security metadata', () => {
     ],
     [
       PayrollProcessingController,
-      'generateOutput',
-      PERMISSIONS.PAYROLL_REPORTS_GENERATE,
-    ],
-    [
-      PayrollProcessingController,
       'markPaid',
       PERMISSIONS.PAYROLL_PAYMENTS_MANAGE,
     ],
@@ -137,5 +135,17 @@ describe('Payroll route security metadata', () => {
         controller.prototype[methodName as keyof typeof controller.prototype],
       ),
     ).toEqual([expectedPermission]);
+  });
+
+  it('allows payslip publishers or report generators to create payroll outputs', () => {
+    expect(
+      Reflect.getMetadata(
+        REQUIRED_ANY_PERMISSIONS_KEY,
+        PayrollProcessingController.prototype.generateOutput,
+      ),
+    ).toEqual([
+      PERMISSIONS.PAYROLL_PAYSLIPS_PUBLISH,
+      PERMISSIONS.PAYROLL_REPORTS_GENERATE,
+    ]);
   });
 });

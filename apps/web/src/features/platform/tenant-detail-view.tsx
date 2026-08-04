@@ -335,7 +335,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
       <div className="mx-auto max-w-[1500px] p-5 lg:p-8">
         <Link
           href="/platform/tenants"
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-primary"
+          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-[#151515]"
         >
           <ArrowLeft className="size-4" />
           Back to tenants
@@ -347,7 +347,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
         )}
         <section className="rounded-xl border border-surface-variant bg-white px-5 pt-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="grid size-14 place-items-center rounded-xl border border-outline-variant bg-surface text-primary">
+            <div className="grid size-14 place-items-center rounded-xl border border-outline-variant bg-surface text-[#151515]">
               <Building2 />
             </div>
             <div>
@@ -360,7 +360,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap gap-4 text-xs text-on-surface-variant">
-                <span className="text-primary">
+                <span className="text-[#151515]">
                   {tenant.subdomain}.{APP_DOMAIN}
                 </span>
                 <span>
@@ -377,7 +377,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               {permissions.includes("platform.impersonation.create") && (
                 <Button
                   onClick={openImpersonation}
-                  className="h-10 bg-primary px-4 text-white"
+                  className="h-10 bg-[#151515] px-4 text-white"
                 >
                   <Shield />
                   Impersonate Admin
@@ -397,7 +397,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </div>
           </div>
           <div className="mt-6 flex gap-1 overflow-x-auto border-t border-outline-variant">
-            <button className="flex h-14 items-center gap-2 border-b-2 border-primary px-4 text-sm font-semibold text-primary">
+            <button className="flex h-14 items-center gap-2 border-b-2 border-[#151515] px-4 text-sm font-semibold text-[#151515]">
               <Activity className="size-4" />
               Overview
             </button>
@@ -420,7 +420,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
           <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-outline">
               <span>Current plan</span>
-              <CreditCard className="size-4 text-primary" />
+              <CreditCard className="size-4 text-[#151515]" />
             </div>
             <h2 className="mt-4 text-lg font-semibold">
               {subscription?.plan.name || "No active plan"}
@@ -505,14 +505,14 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   Manage overrides
                 </Button>
               ) : (
-                <Package className="size-5 text-primary" />
+                <Package className="size-5 text-[#151515]" />
               )}
             </div>
             <div className="mb-4 flex flex-wrap gap-2">
               {(entitlements?.products ?? []).map((product) => (
                 <span
                   key={product.key}
-                  className="rounded-full bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-primary"
+                  className="rounded-full bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-[#151515]"
                 >
                   {product.name}
                   {product.kind === "ADD_ON" ? " add-on" : ""}
@@ -555,7 +555,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               Primary administrator
             </p>
             <div className="mt-5 flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded-full bg-zinc-100 text-primary">
+              <div className="grid size-11 place-items-center rounded-full bg-zinc-100 text-[#151515]">
                 <Mail className="size-5" />
               </div>
               <div className="min-w-0">
@@ -724,7 +724,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                         {capability.description ||
                           "Controls access to this Attendance feature."}
                       </span>
-                      <span className="mt-1 block text-[11px] font-medium text-primary">
+                      <span className="mt-1 block text-[11px] font-medium text-[#151515]">
                         Currently {capability.included ? "enabled" : "disabled"}
                         {capability.source === "PLAN"
                           ? ` by ${entitlements.plan?.name ?? "the plan"}`
@@ -756,7 +756,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Reason for this tenant exception
               <textarea
-                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="mt-2 min-h-24 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-[#151515]"
                 value={overrideReason}
                 onChange={(event) => setOverrideReason(event.target.value)}
                 minLength={10}
@@ -769,7 +769,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 Cancel
               </Button>
               <Button
-                className="bg-primary text-white"
+                className="bg-[#151515] text-white"
                 disabled={busy || overrideReason.trim().length < 10}
                 onClick={saveOverrides}
               >
@@ -798,7 +798,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             <label className="mt-5 block text-sm font-semibold">
               Reason
               <textarea
-                className="mt-2 min-h-28 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="mt-2 min-h-28 w-full rounded-lg border border-outline-variant p-3 text-sm outline-none focus:ring-2 focus:ring-[#151515]"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 minLength={10}
@@ -961,7 +961,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   !targetUserId ||
                   impersonationReason.trim().length < 10
                 }
-                className="bg-primary text-white"
+                className="bg-[#151515] text-white"
                 onClick={startImpersonation}
               >
                 {busy ? "Starting..." : "Start session"}

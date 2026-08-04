@@ -20,7 +20,10 @@ import { ModuleGuard } from '../../../../shared/authorization/module.guard';
 import { PERMISSIONS } from '../../../../shared/authorization/permissions.constants';
 import { PermissionsGuard } from '../../../../shared/authorization/permissions.guard';
 import { RequireModule } from '../../../../shared/authorization/require-module.decorator';
-import { RequirePermissions } from '../../../../shared/authorization/require-permissions.decorator';
+import {
+  RequireAnyPermissions,
+  RequirePermissions,
+} from '../../../../shared/authorization/require-permissions.decorator';
 import type { AuthenticatedUser } from '../../../../shared/http/authenticated-user';
 import { CurrentUser } from '../../../../shared/http/current-user.decorator';
 import {
@@ -123,7 +126,10 @@ export class PayrollProcessingController {
   }
 
   @Post('runs/:id/outputs')
-  @RequirePermissions(PERMISSIONS.PAYROLL_REPORTS_GENERATE)
+  @RequireAnyPermissions(
+    PERMISSIONS.PAYROLL_PAYSLIPS_PUBLISH,
+    PERMISSIONS.PAYROLL_REPORTS_GENERATE,
+  )
   @ApiOperation({
     summary: 'Generate payslip, register, bank, or accounting outputs',
   })

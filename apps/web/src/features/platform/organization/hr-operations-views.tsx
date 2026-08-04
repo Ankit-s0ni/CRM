@@ -1,14 +1,18 @@
 "use client";
 
 import {
+  Banknote,
   Bell,
   CalendarCheck,
   Check,
+  Clock3,
   Download,
   FileSpreadsheet,
   LockKeyhole,
   Plus,
   RotateCcw,
+  ShieldAlert,
+  UsersRound,
   X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -266,7 +270,7 @@ export function RegularizationDetailView({ returnTo }: { returnTo: string }) {
         "Compare immutable attendance evidence with the requested correction.",
       )}
       action={
-        <Link className="text-sm font-semibold text-primary" href={returnTo}>
+        <Link className="text-sm font-semibold text-[#151515]" href={returnTo}>
           {tText("Back to queue")}
         </Link>
       }
@@ -386,6 +390,43 @@ export function ReportsCenterView({
   ];
   const visibleJobs =
     status === "ALL" ? jobs : jobs?.filter((job) => job.status === status);
+  const reportCards = [
+    {
+      type: "MUSTER" as const,
+      title: tText("Attendance register"),
+      body: tText("Daily present, absent, late, overtime, break, and shift details."),
+      icon: CalendarCheck,
+      show: true,
+    },
+    {
+      type: "PAYROLL" as const,
+      title: tText("Payroll register"),
+      body: tText("Salary-ready attendance snapshot for payroll runs and finance review."),
+      icon: Banknote,
+      show: moduleKeys.has("PAYROLL"),
+    },
+    {
+      type: "LATE_OT" as const,
+      title: tText("Late & overtime"),
+      body: tText("Late minutes, early exits, overtime, and payable time review."),
+      icon: Clock3,
+      show: true,
+    },
+    {
+      type: "VIOLATIONS" as const,
+      title: tText("Violations"),
+      body: tText("Geofence, verification, exception, and security-related attendance issues."),
+      icon: ShieldAlert,
+      show: true,
+    },
+    {
+      type: "FIELD_DISTANCE" as const,
+      title: tText("Field distance"),
+      body: tText("Route distance and field movement export for mobile workers."),
+      icon: UsersRound,
+      show: true,
+    },
+  ].filter(({ show }) => show);
   const load = () =>
     apiClient
       .get("/reports?page=1&limit=100")
@@ -433,9 +474,9 @@ export function ReportsCenterView({
   }
   return (
     <AdminPage
-      title={tText("Attendance reports")}
+      title={tText("Reports")}
       description={tText(
-        "Export daily status, check-in, checkout, worked time, breaks, late time, early leave, and overtime.",
+        "Generate attendance, payroll, field, and audit-ready exports from one place.",
       )}
       action={
         <div className="flex flex-wrap gap-2">
@@ -470,6 +511,47 @@ export function ReportsCenterView({
       }
     >
       {error && <ErrorState message={error} />}
+      <div className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {reportCards.map(({ type: cardType, title, body, icon: Icon }) => (
+          <Panel
+            className="relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-md"
+            key={cardType}
+          >
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#beb8ad] via-[#d8d1c4] to-[#beb8ad]" />
+            <div className="flex items-start gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
+                <Icon className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-bold">{title}</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {body}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button
+                className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+                onClick={() => setType(cardType)}
+                type="button"
+              >
+                {tText("Select")}
+              </button>
+              {canGenerate && (
+                <button
+                  className="inline-flex min-h-10 items-center rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-50"
+                  disabled={busy}
+                  onClick={() => create(cardType)}
+                  type="button"
+                >
+                  <Plus className="mr-2 size-4" />
+                  {tText("Generate")}
+                </button>
+              )}
+            </div>
+          </Panel>
+        ))}
+      </div>
       <Toolbar className="mb-5">
         <FilterField label={tText("Job status")} className="min-w-48">
           <select
@@ -479,7 +561,9 @@ export function ReportsCenterView({
           >
             {["ALL", "PENDING", "RUNNING", "COMPLETED", "FAILED"].map(
               (value) => (
-                <option key={value}>{reportStatusLabel(value, tText)}</option>
+                <option key={value} value={value}>
+                  {reportStatusLabel(value, tText)}
+                </option>
               ),
             )}
           </select>
@@ -516,7 +600,7 @@ export function ReportsCenterView({
                 >
                   <div>
                     <div className="flex items-center gap-2 font-semibold">
-                      <FileSpreadsheet className="size-4 text-primary" />
+                      <FileSpreadsheet className="size-4 text-[#151515]" />
                       {reportLabel(job.reportType, job.contractVersion, tText)}
                     </div>
                     <div className="mt-1 text-xs text-outline">
@@ -545,7 +629,7 @@ export function ReportsCenterView({
                   <StatusPill value={expired ? "EXPIRED" : job.status} />
                   {legacyAttendanceExport && canGenerate ? (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary"
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515]"
                       disabled={busy}
                       onClick={() => create("MUSTER", job.period)}
                     >
@@ -554,7 +638,7 @@ export function ReportsCenterView({
                     </button>
                   ) : job.status === "FAILED" && canGenerate ? (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary"
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515]"
                       disabled={busy}
                       onClick={() => create(job.reportType, job.period)}
                     >
@@ -563,7 +647,7 @@ export function ReportsCenterView({
                     </button>
                   ) : (
                     <button
-                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-primary disabled:opacity-40"
+                      className="h-10 rounded-lg border border-zinc-300 text-sm font-semibold text-[#151515] disabled:opacity-40"
                       disabled={job.status !== "COMPLETED" || Boolean(expired)}
                       onClick={() => download(job.id)}
                     >
@@ -588,7 +672,7 @@ export function ReportsCenterView({
           )}
         </Panel>
       )}
-      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-primary">
+      <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-[#151515]">
         <Link href="/app/attendance/register">
           {tText("Open Attendance register")}
         </Link>
@@ -655,7 +739,7 @@ export function PayrollLockView() {
       )}
       action={
         <Link
-          className="text-sm font-semibold text-primary"
+          className="text-sm font-semibold text-[#151515]"
           href="/app/attendance/reports"
         >
           {tText("Open reports center")}
@@ -828,7 +912,7 @@ export function LeaveBalancesView() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {balances.map((balance) => (
             <Panel className="p-6" key={balance.id}>
-              <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
+              <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                 <CalendarCheck />
               </div>
               <div className="mt-5 text-sm text-outline">
@@ -1011,7 +1095,7 @@ export function LeaveRequestsView({
       }
       action={
         returnTo ? (
-          <Link className="text-sm font-bold text-primary" href={returnTo}>
+          <Link className="text-sm font-bold text-[#151515]" href={returnTo}>
             {tText("Back to employee")}
           </Link>
         ) : undefined
@@ -1029,7 +1113,7 @@ export function LeaveRequestsView({
             )}
           </p>
           <Link
-            className="mt-5 inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-white"
+            className="mt-5 inline-flex h-11 items-center rounded-xl bg-[#151515] px-5 text-sm font-bold text-white"
             href="/app/attendance/setup/leave"
           >
             {tText("Set up leave policies")}
@@ -1068,7 +1152,7 @@ export function LeaveRequestsView({
                         {tText("Reject")}
                       </button>
                       <button
-                        className="h-9 flex-1 rounded-lg bg-primary text-xs font-semibold text-white"
+                        className="h-9 flex-1 rounded-lg bg-[#151515] text-xs font-semibold text-white"
                         onClick={() => decision(item, "approve")}
                       >
                         {tText("Approve")}
@@ -1152,7 +1236,7 @@ export function NotificationsInboxView() {
       )}
       action={
         <button
-          className="text-sm font-semibold text-primary"
+          className="text-sm font-semibold text-[#151515]"
           onClick={() =>
             apiClient.post("/notifications/read-all", {}).then(load)
           }
@@ -1325,7 +1409,7 @@ export function LeavePoliciesView() {
           {policies.map((policy) => (
             <Panel className="p-6" key={policy.id}>
               <div className="flex items-start justify-between gap-3">
-                <CalendarCheck className="size-6 text-primary" />
+                <CalendarCheck className="size-6 text-[#151515]" />
                 <StatusPill value={policy.isActive ? "ACTIVE" : "INACTIVE"} />
               </div>
               <h2 className="mt-5 text-lg font-bold">{policy.name}</h2>
@@ -1354,7 +1438,7 @@ export function LeavePoliciesView() {
                 </div>
               </div>
               <button
-                className="mt-5 text-sm font-bold text-primary"
+                className="mt-5 text-sm font-bold text-[#151515]"
                 onClick={() => beginEdit(policy)}
                 type="button"
               >
@@ -1403,7 +1487,7 @@ export function LeavePoliciesView() {
                 {Number(balance.remainingDays)} {tText("days")}
               </strong>
               <button
-                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-primary"
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-[#151515]"
                 onClick={() => adjustBalance(balance)}
                 type="button"
               >
@@ -1548,11 +1632,11 @@ export function LeaveModuleHub() {
           .filter((item) => item.show)
           .map((item) => (
             <Link
-              className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-primary"
+              className="group rounded-xl border border-surface-variant bg-white p-6 shadow-sm transition hover:border-[#151515]"
               href={item.href}
               key={item.href}
             >
-              <CalendarCheck className="size-6 text-primary" />
+              <CalendarCheck className="size-6 text-[#151515]" />
               <h2 className="mt-5 text-lg font-bold">{item.title}</h2>
               <p className="mt-2 text-sm leading-6 text-zinc-500">
                 {item.body}
@@ -1593,7 +1677,7 @@ function Comparison({
     <div className="grid grid-cols-3 border-b border-surface-variant px-5 py-4 text-sm last:border-0">
       <strong>{label}</strong>
       <span>{current}</span>
-      <span className="font-semibold text-primary">{requested}</span>
+      <span className="font-semibold text-[#151515]">{requested}</span>
     </div>
   );
 }

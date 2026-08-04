@@ -26,7 +26,7 @@ export function ThemeSwitcher() {
         id="theme-select"
         value={theme}
         onChange={(event) => setTheme(event.target.value as ThemeName)}
-        className="h-8 rounded-md border border-outline-variant bg-transparent px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+        className="h-8 rounded-md border border-outline-variant bg-transparent px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-[#151515] focus:ring-offset-1"
       >
         <option value="default">Electric Blue</option>
         <option value="charcoal">Charcoal</option>

@@ -6,8 +6,8 @@ const statusTones: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-800",
   PAID: "bg-emerald-100 text-emerald-800",
   SUCCEEDED: "bg-emerald-100 text-emerald-800",
-  OPEN: "bg-blue-100 text-blue-800",
-  TRIALING: "bg-blue-100 text-blue-800",
+  OPEN: "bg-[#ede7dc] text-[#151515]",
+  TRIALING: "bg-[#ede7dc] text-[#151515]",
   PENDING: "bg-amber-100 text-amber-800",
   REMINDED: "bg-amber-100 text-amber-800",
   GRACE: "bg-orange-100 text-orange-800",
@@ -21,7 +21,7 @@ const statusTones: Record<string, string> = {
 };
 
 export function BillingPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
-  return <div className="mx-auto w-full max-w-[1500px] space-y-6 p-5 lg:p-8"><header className="flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 text-[11px] font-bold uppercase tracking-[.18em] text-primary-container">Revenue operations</div><h1 className="text-3xl font-bold tracking-tight text-zinc-900">{title}</h1><p className="mt-1 max-w-3xl text-sm text-on-surface-variant">{description}</p></div>{action}</header>{children}</div>;
+  return <div className="mx-auto w-full max-w-[1500px] space-y-6 p-5 lg:p-8"><header className="flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#2a2927]">Revenue operations</div><h1 className="text-3xl font-bold tracking-tight text-zinc-900">{title}</h1><p className="mt-1 max-w-3xl text-sm text-on-surface-variant">{description}</p></div>{action}</header>{children}</div>;
 }
 
 export function BillingPanel({ title, description, action, children, className }: { title?: string; description?: string; action?: ReactNode; children: ReactNode; className?: string }) {
@@ -34,12 +34,12 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 export function MetricCard({ label, value, detail, icon }: { label: string; value: string; detail: string; icon: ReactNode }) {
-  return <article className="rounded-2xl border border-surface-variant bg-white p-5 shadow-sm"><div className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-primary">{icon}</div><div className="mt-5 text-2xl font-bold tracking-tight">{value}</div><div className="mt-1 text-xs font-semibold text-on-surface-variant">{label}</div><p className="mt-3 text-[11px] leading-5 text-outline">{detail}</p></article>;
+  return <article className="rounded-2xl border border-surface-variant bg-white p-5 shadow-sm"><div className="grid size-10 place-items-center rounded-xl bg-zinc-50 text-[#151515]">{icon}</div><div className="mt-5 text-2xl font-bold tracking-tight">{value}</div><div className="mt-1 text-xs font-semibold text-on-surface-variant">{label}</div><p className="mt-3 text-[11px] leading-5 text-outline">{detail}</p></article>;
 }
 
 export function BillingNotice({ tone = "info", children }: { tone?: "info" | "success" | "warning" | "danger"; children: ReactNode }) {
   const styles = {
-    info: "border-blue-200 bg-blue-50 text-blue-900",
+    info: "border-[#beb8ad] bg-[#f3efe6] text-[#151515]",
     success: "border-emerald-200 bg-emerald-50 text-emerald-900",
     warning: "border-amber-200 bg-amber-50 text-amber-900",
     danger: "border-red-200 bg-red-50 text-red-900",

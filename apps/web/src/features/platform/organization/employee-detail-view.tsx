@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  Banknote,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
@@ -22,6 +23,7 @@ import {
   Upload,
   UserMinus,
   UserRound,
+  WalletCards,
   X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -204,6 +206,7 @@ type EmployeeTab =
   | "assignments"
   | "attendance"
   | "leave"
+  | "payroll"
   | "access"
   | "trust"
   | "documents"
@@ -221,6 +224,7 @@ function employeeTabFromParam(value: string | null): EmployeeTab {
     "assignments",
     "attendance",
     "leave",
+    "payroll",
     "access",
     "trust",
     "documents",
@@ -246,6 +250,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
     employeeTabFromParam(searchParams.get("tab")),
   );
   const [biometrics, setBiometrics] = useState<BiometricStatus | null>(null);
+  const [moduleKeys, setModuleKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
@@ -309,6 +314,15 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
     };
   }, [employeeId, canReadBiometrics]);
 
+  useEffect(() => {
+    apiClient
+      .get<{ modules: Array<{ key: string }> }>("/workspace/modules")
+      .then(({ data }) =>
+        setModuleKeys(new Set(data.modules.map(({ key }) => key))),
+      )
+      .catch(() => setModuleKeys(new Set()));
+  }, []);
+
   if (loading) {
     return (
       <AdminPage
@@ -340,6 +354,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       {employee && workspace && (
         <EmployeeWorkspaceTabs
           active={activeTab}
+          payrollEnabled={moduleKeys.has("PAYROLL")}
           onChange={changeTab}
           permissions={permissions}
         />
@@ -377,6 +392,13 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
       {employee && workspace && activeTab === "leave" && (
         <LeavePanel employeeId={employeeId} workspace={workspace} />
       )}
+      {employee && workspace && activeTab === "payroll" && moduleKeys.has("PAYROLL") && (
+        <EmployeePayrollPanel
+          employee={workspace.employee}
+          employeeId={employeeId}
+          permissions={permissions}
+        />
+      )}
       {employee && workspace && activeTab === "access" && (
         <AccountPanel
           employee={workspace.employee}
@@ -403,7 +425,7 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
           </div>
 
           <Panel className="h-fit p-6">
-            <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
+            <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
               <Fingerprint className="size-6" />
             </div>
             <h2 className="mt-5 text-xl font-bold">{tText("Biometric identity")}</h2>
@@ -473,10 +495,12 @@ export function EmployeeDetailView({ employeeId }: { employeeId: string }) {
 function EmployeeWorkspaceTabs({
   active,
   onChange,
+  payrollEnabled,
   permissions,
 }: {
   active: EmployeeTab;
   onChange: (tab: EmployeeTab) => void;
+  payrollEnabled: boolean;
   permissions: string[];
 }) {
   const { tText } = useTenantLocalization();
@@ -496,6 +520,16 @@ function EmployeeWorkspaceTabs({
       key: "leave",
       label: tText("Leave"),
       permissions: ["leave.self", "leave.approve", "leave.manage"],
+    },
+    {
+      key: "payroll",
+      label: tText("Payroll"),
+      permissions: [
+        "payroll.compensation.read",
+        "payroll.payslips.read",
+        "payroll.runs.read",
+        "payroll.payslips.self",
+      ],
     },
     {
       key: "access",
@@ -528,12 +562,13 @@ function EmployeeWorkspaceTabs({
             !required ||
             required.some((permission) => permissions.includes(permission)),
         )
+        .filter((item) => item.key !== "payroll" || payrollEnabled)
         .map((item) => (
           <button
             aria-current={active === item.key ? "page" : undefined}
             className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${
               active === item.key
-                ? "bg-primary text-white"
+                ? "bg-[#151515] text-white"
                 : "text-zinc-500 hover:bg-zinc-50"
             }`}
             key={item.key}
@@ -545,6 +580,1197 @@ function EmployeeWorkspaceTabs({
         ))}
     </nav>
   );
+}
+
+function EmployeePayrollPanel({
+  employee,
+  employeeId,
+  permissions,
+}: {
+  employee: EmployeeWorkspace["employee"];
+  employeeId: string;
+  permissions: string[];
+}) {
+  const { tText } = useTenantLocalization();
+  const canReadPayroll = permissions.some((permission) =>
+    [
+      "payroll.compensation.read",
+      "payroll.runs.read",
+      "payroll.payslips.read",
+      "payroll.payslips.self",
+    ].includes(permission),
+  );
+  const canManagePayroll = permissions.includes("payroll.compensation.manage");
+  const canReadPayslips =
+    permissions.includes("payroll.payslips.read") ||
+    permissions.includes("payroll.payslips.self");
+  const canReadProtected = permissions.includes("payroll.protected-data.read");
+  const canManageProtected = permissions.includes("payroll.protected-data.manage");
+  const [section, setSection] = useState<
+    "pay" | "salary" | "payment" | "government" | "payslips"
+  >("pay");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
+  const [salaryHistory, setSalaryHistory] = useState<Array<Record<string, unknown>>>([]);
+  const [paymentDetails, setPaymentDetails] = useState<Array<Record<string, unknown>>>([]);
+  const [governmentDetails, setGovernmentDetails] = useState<Array<Record<string, unknown>>>([]);
+  const [payGroups, setPayGroups] = useState<Array<Record<string, unknown>>>([]);
+  const [payslips, setPayslips] = useState<Array<Record<string, unknown>>>([]);
+  const [salaryStructures, setSalaryStructures] = useState<Array<Record<string, unknown>>>([]);
+  const [payForm, setPayForm] = useState<Record<string, string | boolean>>({
+    effectiveFrom: todayForPayroll(),
+    paymentMethod: "BANK_TRANSFER",
+    payGroupId: "",
+    payrollCountry: "OM",
+    payrollStatus: "ACTIVE",
+    salaryHold: false,
+    version: "1",
+  });
+  const [salaryForm, setSalaryForm] = useState<Record<string, string>>({
+    amount: "",
+    currency: "OMR",
+    effectiveFrom: todayForPayroll(),
+    reason: "Employee salary updated",
+    salaryStructureVersionId: "",
+  });
+  const [paymentForm, setPaymentForm] = useState<Record<string, string>>({
+    accountHolderName: employee.fullName,
+    accountNumber: "",
+    bankName: "",
+    iban: "",
+    paymentMethod: "BANK_TRANSFER",
+    routingNumber: "",
+    swiftBic: "",
+  });
+  const [governmentForm, setGovernmentForm] = useState<Record<string, string>>({
+    countryCode: "OM",
+    identifier: "",
+    identifierType: "CIVIL_ID",
+  });
+
+  async function loadPayroll() {
+    if (!canReadPayroll) return;
+    setLoading(true);
+    setError("");
+    try {
+      const protectedRequests = canReadProtected
+        ? [
+            apiClient.get(`/payroll/employees/${employeeId}/payment-details`),
+            apiClient.get(`/payroll/employees/${employeeId}/statutory-details`),
+          ]
+        : [Promise.resolve(null), Promise.resolve(null)];
+      const [
+        profileResponse,
+        salaryResponse,
+        payGroupResponse,
+        structureResponse,
+        paymentResponse,
+        governmentResponse,
+      ] = await Promise.all([
+        apiClient.get(`/payroll/employees/${employeeId}/profile`),
+        apiClient.get(`/payroll/employees/${employeeId}/compensation/history`),
+        apiClient.get("/payroll/pay-groups"),
+        apiClient.get("/payroll/salary-structures"),
+        ...protectedRequests,
+      ]);
+      const loadedProfile = payrollFirst(profileResponse);
+      setProfile(loadedProfile);
+      setSalaryHistory(payrollRows(salaryResponse));
+      setPayGroups(payrollRows(payGroupResponse));
+      setSalaryStructures(payrollRows(structureResponse));
+      setPaymentDetails(payrollRows(paymentResponse));
+      setGovernmentDetails(payrollRows(governmentResponse));
+      if (canReadPayslips) {
+        setPayslips(await loadEmployeePayslips(employeeId));
+      } else {
+        setPayslips([]);
+      }
+      setPayForm({
+        effectiveFrom: payrollText(
+          loadedProfile?.effectiveFrom,
+          todayForPayroll(),
+        ).slice(0, 10),
+        paymentMethod: payrollText(loadedProfile?.paymentMethod, "BANK_TRANSFER"),
+        payGroupId: payrollText(loadedProfile?.payGroupId, ""),
+        payrollCountry: payrollText(loadedProfile?.payrollCountry, "OM"),
+        payrollStatus: payrollText(loadedProfile?.payrollStatus, "ACTIVE"),
+        salaryHold: Boolean(loadedProfile?.salaryHold),
+        version: payrollText(loadedProfile?.version, "1"),
+      });
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(caught, tText("Employee payroll could not be loaded.")),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadPayroll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId, canReadPayroll, canReadProtected]);
+
+  async function savePaySetup() {
+    setSaving("pay");
+    setError("");
+    setMessage("");
+    try {
+      const method = profile ? "patch" : "post";
+      await apiClient[method](`/payroll/employees/${employeeId}/profile`, {
+        effectiveFrom: String(payForm.effectiveFrom),
+        paymentMethod: String(payForm.paymentMethod),
+        payGroupId: payrollEmptyToUndefined(payForm.payGroupId),
+        payrollCountry: String(payForm.payrollCountry),
+        payrollStatus: String(payForm.payrollStatus),
+        salaryHold: Boolean(payForm.salaryHold),
+        ...(profile ? { version: Number(payForm.version) } : {}),
+      });
+      setMessage(tText("Pay setup saved."));
+      await loadPayroll();
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, tText("Pay setup could not be saved.")));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function saveSalary() {
+    setSaving("salary");
+    setError("");
+    setMessage("");
+    try {
+      await apiClient.post(`/payroll/employees/${employeeId}/compensation`, {
+        baseAmountMinor: payrollDecimalToMinor(salaryForm.amount, salaryForm.currency),
+        currency: salaryForm.currency,
+        effectiveFrom: salaryForm.effectiveFrom,
+        reason: salaryForm.reason,
+        salaryStructureVersionId: salaryForm.salaryStructureVersionId,
+      });
+      setMessage(tText("Salary saved."));
+      setSalaryForm((current) => ({
+        ...current,
+        amount: "",
+        reason: "Employee salary updated",
+      }));
+      await loadPayroll();
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, tText("Salary could not be saved.")));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function savePayment() {
+    setSaving("payment");
+    setError("");
+    setMessage("");
+    try {
+      await apiClient.post(
+        `/payroll/employees/${employeeId}/payment-details`,
+        payrollClean(paymentForm),
+      );
+      setMessage(tText("Bank details saved."));
+      setPaymentForm((current) => ({
+        ...current,
+        accountNumber: "",
+        iban: "",
+        routingNumber: "",
+      }));
+      await loadPayroll();
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, tText("Bank details could not be saved.")));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function saveGovernmentDetails() {
+    setSaving("government");
+    setError("");
+    setMessage("");
+    try {
+      await apiClient.post(
+        `/payroll/employees/${employeeId}/statutory-details`,
+        payrollClean(governmentForm),
+      );
+      setMessage(tText("Government ID saved."));
+      setGovernmentForm((current) => ({ ...current, identifier: "" }));
+      await loadPayroll();
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, tText("Government ID could not be saved.")));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function downloadPayslip(payslipId: string) {
+    setSaving(`payslip-${payslipId}`);
+    setError("");
+    try {
+      await downloadEmployeePayslip(payslipId);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, tText("Payslip PDF could not be opened.")));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  const currentSalary = salaryHistory[0];
+  const latestPayment = paymentDetails[0];
+  const latestGovernmentId = governmentDetails[0];
+  const latestPayslip = payslips[0];
+  const selectedPayGroup = payGroups.find(
+    (item) => payrollText(item.id, "") === payrollText(profile?.payGroupId, ""),
+  );
+  const salaryOptions = salaryStructures.flatMap((structure) =>
+    payrollRows(structure.versions)
+      .filter((version) => payrollText(version.status, "") === "ACTIVE")
+      .map((version) => ({
+        label: `${payrollText(structure.name, payrollText(structure.code, tText("Salary template")))} v${payrollText(version.version, "1")}`,
+        value: payrollText(version.id, ""),
+      })),
+  );
+  const missing = [
+    !profile && tText("Pay setup"),
+    !currentSalary && tText("Salary"),
+    canReadProtected && !latestPayment && tText("Bank details"),
+    canReadProtected && !latestGovernmentId && tText("Government ID"),
+  ].filter(Boolean) as string[];
+  const ready = missing.length === 0;
+
+  if (!canReadPayroll) {
+    return (
+      <ErrorState message={tText("You do not have permission to view employee payroll.")} />
+    );
+  }
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <Panel className="overflow-hidden">
+        <div className="border-b border-border bg-gradient-to-r from-[#fffefa] via-[#f3efe6] to-[#fffefa] p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold">{tText("Employee payroll")}</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {tText("View and update payroll details for this employee. Company payroll rules stay in Modules.")}
+              </p>
+              {message && (
+                <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+                  {message}
+                </p>
+              )}
+              {error && (
+                <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                  {error}
+                </p>
+              )}
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${
+                ready
+                  ? "bg-emerald-100 text-emerald-900"
+                  : "bg-amber-100 text-amber-900"
+              }`}
+            >
+              {ready ? tText("Ready") : tText("Needs details")}
+            </span>
+          </div>
+          {permissions.includes("payroll.runs.read") && (
+            <Link
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+              href={`/app/payroll/runs?employeeId=${employeeId}`}
+            >
+              <Banknote className="mr-2 size-4" />
+              {tText("Run payroll for this employee")}
+            </Link>
+          )}
+        </div>
+        {loading ? (
+          <div className="p-6">
+            <LoadingState />
+          </div>
+        ) : (
+          <div className="grid gap-6 p-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <PayrollMiniCard
+                icon={WalletCards}
+                label={tText("Pay group")}
+                ready={Boolean(profile?.payGroupId)}
+                value={payrollText(selectedPayGroup?.name, tText("Not selected"))}
+              />
+              <PayrollMiniCard
+                icon={BriefcaseBusiness}
+                label={tText("Current salary")}
+                ready={Boolean(currentSalary)}
+                value={currentSalary ? payrollMoney(currentSalary) : tText("Not added")}
+              />
+              <PayrollMiniCard
+                icon={Banknote}
+                label={tText("Payment")}
+                ready={Boolean(profile?.paymentMethod)}
+                value={payrollText(profile?.paymentMethod, tText("Not selected"))}
+              />
+              <PayrollMiniCard
+                icon={ShieldCheck}
+                label={tText("Salary hold")}
+                ready={!profile?.salaryHold}
+                value={profile?.salaryHold ? tText("On hold") : tText("No hold")}
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto rounded-xl border border-border bg-zinc-50 p-1">
+              {[
+                ["pay", tText("Pay setup")],
+                ["salary", tText("Salary")],
+                ["payment", tText("Bank details")],
+                ["government", tText("Government IDs")],
+                ["payslips", tText("Payslip history")],
+              ].map(([key, labelValue]) => (
+                <button
+                  aria-current={section === key ? "page" : undefined}
+                  className={`min-h-10 whitespace-nowrap rounded-lg px-3 text-sm font-semibold transition ${
+                    section === key
+                      ? "bg-white text-[#151515] shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-900"
+                  }`}
+                  key={key}
+                  onClick={() => setSection(key as typeof section)}
+                  type="button"
+                >
+                  {labelValue}
+                </button>
+              ))}
+            </div>
+
+            {section === "pay" && (
+              <PayrollEditSection
+                canEdit={canManagePayroll}
+                description={tText("Choose how this employee is included in payroll.")}
+                icon={WalletCards}
+                title={tText("Pay setup")}
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <PayrollSelect
+                    label={tText("Pay group")}
+                    onChange={(value) =>
+                      setPayForm((current) => ({ ...current, payGroupId: value }))
+                    }
+                    options={payGroups.map((item) => ({
+                      label: payrollText(item.name, payrollText(item.code, tText("Pay group"))),
+                      value: payrollText(item.id, ""),
+                    }))}
+                    value={String(payForm.payGroupId)}
+                  />
+                  <PayrollSelect
+                    label={tText("Payroll status")}
+                    onChange={(value) =>
+                      setPayForm((current) => ({ ...current, payrollStatus: value }))
+                    }
+                    options={["ACTIVE", "ON_HOLD", "STOPPED"].map((value) => ({
+                      label: value,
+                      value,
+                    }))}
+                    value={String(payForm.payrollStatus)}
+                  />
+                  <PayrollInput
+                    label={tText("Country")}
+                    onChange={(value) =>
+                      setPayForm((current) => ({
+                        ...current,
+                        payrollCountry: value.toUpperCase().slice(0, 2),
+                      }))
+                    }
+                    value={String(payForm.payrollCountry)}
+                  />
+                  <PayrollSelect
+                    label={tText("Payment method")}
+                    onChange={(value) =>
+                      setPayForm((current) => ({ ...current, paymentMethod: value }))
+                    }
+                    options={["BANK_TRANSFER", "CASH", "CHEQUE"].map((value) => ({
+                      label: value,
+                      value,
+                    }))}
+                    value={String(payForm.paymentMethod)}
+                  />
+                  <PayrollInput
+                    label={tText("Start date")}
+                    onChange={(value) =>
+                      setPayForm((current) => ({ ...current, effectiveFrom: value }))
+                    }
+                    type="date"
+                    value={String(payForm.effectiveFrom)}
+                  />
+                  <label className="flex min-h-11 items-center gap-3 rounded-lg border border-zinc-300 px-3 text-sm font-semibold">
+                    <input
+                      checked={Boolean(payForm.salaryHold)}
+                      onChange={(event) =>
+                        setPayForm((current) => ({
+                          ...current,
+                          salaryHold: event.target.checked,
+                        }))
+                      }
+                      type="checkbox"
+                    />
+                    {tText("Put salary on hold")}
+                  </label>
+                </div>
+                {canManagePayroll && (
+                  <PrimaryButton
+                    disabled={saving === "pay" || !payForm.payGroupId}
+                    onClick={() => void savePaySetup()}
+                  >
+                    {saving === "pay" ? tText("Saving") : tText("Save pay setup")}
+                  </PrimaryButton>
+                )}
+              </PayrollEditSection>
+            )}
+
+            {section === "salary" && (
+              <PayrollEditSection
+                canEdit={canManagePayroll}
+                description={tText("Add a new salary amount for this employee.")}
+                icon={BriefcaseBusiness}
+                title={tText("Salary")}
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <PayrollSelect
+                    label={tText("Salary template")}
+                    onChange={(value) =>
+                      setSalaryForm((current) => ({
+                        ...current,
+                        salaryStructureVersionId: value,
+                      }))
+                    }
+                    options={salaryOptions}
+                    value={salaryForm.salaryStructureVersionId}
+                  />
+                  <PayrollInput
+                    label={tText("Current salary")}
+                    onChange={(value) =>
+                      setSalaryForm((current) => ({ ...current, amount: value }))
+                    }
+                    placeholder="650.000"
+                    value={salaryForm.amount}
+                  />
+                  <PayrollInput
+                    label={tText("Currency")}
+                    onChange={(value) =>
+                      setSalaryForm((current) => ({
+                        ...current,
+                        currency: value.toUpperCase().slice(0, 3),
+                      }))
+                    }
+                    value={salaryForm.currency}
+                  />
+                  <PayrollInput
+                    label={tText("Start date")}
+                    onChange={(value) =>
+                      setSalaryForm((current) => ({ ...current, effectiveFrom: value }))
+                    }
+                    type="date"
+                    value={salaryForm.effectiveFrom}
+                  />
+                  <div className="md:col-span-2">
+                    <PayrollInput
+                      label={tText("Reason")}
+                      onChange={(value) =>
+                        setSalaryForm((current) => ({ ...current, reason: value }))
+                      }
+                      value={salaryForm.reason}
+                    />
+                  </div>
+                </div>
+                {canManagePayroll && (
+                  <PrimaryButton
+                    disabled={
+                      saving === "salary" ||
+                      !salaryForm.salaryStructureVersionId ||
+                      !salaryForm.amount ||
+                      salaryForm.reason.length < 10
+                    }
+                    onClick={() => void saveSalary()}
+                  >
+                    {saving === "salary" ? tText("Saving") : tText("Save salary")}
+                  </PrimaryButton>
+                )}
+                <PayrollHistory rows={salaryHistory} />
+              </PayrollEditSection>
+            )}
+
+            {section === "payment" && (
+              <PayrollEditSection
+                canEdit={canManageProtected}
+                description={tText("Add or replace bank details for salary payment. Saved account numbers stay hidden.")}
+                icon={Banknote}
+                title={tText("Bank details")}
+              >
+                {!canReadProtected ? (
+                  <p className="text-sm text-zinc-500">
+                    {tText("You do not have permission to view bank details.")}
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <PayrollSelect
+                        label={tText("Payment method")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({
+                            ...current,
+                            paymentMethod: value,
+                          }))
+                        }
+                        options={["BANK_TRANSFER", "CASH", "CHEQUE"].map((value) => ({
+                          label: value,
+                          value,
+                        }))}
+                        value={paymentForm.paymentMethod}
+                      />
+                      <PayrollInput
+                        label={tText("Bank name")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({ ...current, bankName: value }))
+                        }
+                        value={paymentForm.bankName}
+                      />
+                      <PayrollInput
+                        label={tText("Account holder")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({
+                            ...current,
+                            accountHolderName: value,
+                          }))
+                        }
+                        value={paymentForm.accountHolderName}
+                      />
+                      <PayrollInput
+                        label={tText("Account number")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({
+                            ...current,
+                            accountNumber: value,
+                          }))
+                        }
+                        value={paymentForm.accountNumber}
+                      />
+                      <PayrollInput
+                        label={tText("IBAN")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({ ...current, iban: value }))
+                        }
+                        value={paymentForm.iban}
+                      />
+                      <PayrollInput
+                        label={tText("SWIFT/BIC")}
+                        onChange={(value) =>
+                          setPaymentForm((current) => ({
+                            ...current,
+                            swiftBic: value,
+                          }))
+                        }
+                        value={paymentForm.swiftBic}
+                      />
+                    </div>
+                    {latestPayment && (
+                      <PayrollExistingDetail
+                        rows={[
+                          [tText("Bank"), payrollText(latestPayment.bankName, tText("Not added"))],
+                          [tText("Account"), payrollText(latestPayment.accountNumberMasked, tText("Hidden"))],
+                          [tText("IBAN"), payrollText(latestPayment.ibanMasked, tText("Hidden"))],
+                          [tText("Status"), payrollText(latestPayment.status, tText("Saved"))],
+                        ]}
+                      />
+                    )}
+                    {canManageProtected && (
+                      <PrimaryButton
+                        disabled={saving === "payment"}
+                        onClick={() => void savePayment()}
+                      >
+                        {saving === "payment" ? tText("Saving") : tText("Save bank details")}
+                      </PrimaryButton>
+                    )}
+                  </>
+                )}
+              </PayrollEditSection>
+            )}
+
+            {section === "government" && (
+              <PayrollEditSection
+                canEdit={canManageProtected}
+                description={tText("Add local ID details needed for payroll records. Saved numbers stay hidden.")}
+                icon={FileText}
+                title={tText("Government IDs")}
+              >
+                {!canReadProtected ? (
+                  <p className="text-sm text-zinc-500">
+                    {tText("You do not have permission to view government IDs.")}
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <PayrollInput
+                        label={tText("Country")}
+                        onChange={(value) =>
+                          setGovernmentForm((current) => ({
+                            ...current,
+                            countryCode: value.toUpperCase().slice(0, 2),
+                          }))
+                        }
+                        value={governmentForm.countryCode}
+                      />
+                      <PayrollSelect
+                        label={tText("ID type")}
+                        onChange={(value) =>
+                          setGovernmentForm((current) => ({
+                            ...current,
+                            identifierType: value,
+                          }))
+                        }
+                        options={[
+                          "CIVIL_ID",
+                          "NATIONAL_ID",
+                          "PASSPORT",
+                          "RESIDENCE_PERMIT",
+                          "LABOR_CARD",
+                        ].map((value) => ({ label: value, value }))}
+                        value={governmentForm.identifierType}
+                      />
+                      <PayrollInput
+                        label={tText("ID number")}
+                        onChange={(value) =>
+                          setGovernmentForm((current) => ({
+                            ...current,
+                            identifier: value,
+                          }))
+                        }
+                        value={governmentForm.identifier}
+                      />
+                    </div>
+                    {latestGovernmentId && (
+                      <PayrollExistingDetail
+                        rows={[
+                          [tText("Country"), payrollText(latestGovernmentId.countryCode, "-")],
+                          [tText("ID type"), payrollText(latestGovernmentId.identifierType, "-")],
+                          [tText("ID number"), payrollText(latestGovernmentId.identifierMasked, tText("Hidden"))],
+                          [tText("Status"), payrollText(latestGovernmentId.status, tText("Saved"))],
+                        ]}
+                      />
+                    )}
+                    {canManageProtected && (
+                      <PrimaryButton
+                        disabled={
+                          saving === "government" || governmentForm.identifier.length < 2
+                        }
+                        onClick={() => void saveGovernmentDetails()}
+                      >
+                        {saving === "government"
+                          ? tText("Saving")
+                          : tText("Save government ID")}
+                      </PrimaryButton>
+                    )}
+                  </>
+                )}
+              </PayrollEditSection>
+            )}
+
+            {section === "payslips" && (
+              <PayrollEditSection
+                canEdit={false}
+                description={tText("Download generated payslip PDFs for this employee. Published payslips are visible to the employee.")}
+                icon={FileText}
+                title={tText("Payslip history")}
+              >
+                {!canReadPayslips ? (
+                  <p className="text-sm text-zinc-500">
+                    {tText("You do not have permission to view payslips.")}
+                  </p>
+                ) : payslips.length ? (
+                  <div className="grid gap-4">
+                    {latestPayslip && (
+                      <div className="rounded-2xl border border-[#beb8ad] bg-gradient-to-br from-primary/5 via-white to-emerald-50 p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#151515]">
+                              {tText("Latest payslip")}
+                            </p>
+                            <h3 className="mt-2 text-lg font-bold text-zinc-950">
+                              {payrollText(
+                                latestPayslip.periodKey,
+                                payrollText(
+                                  latestPayslip.payslipNumber,
+                                  tText("Latest payroll"),
+                                ),
+                              )}
+                            </h3>
+                            <p className="mt-1 text-sm text-zinc-500">
+                              {tText("Net salary")}:{" "}
+                              <span className="font-semibold text-zinc-900">
+                                {payrollMinorMoney(latestPayslip.netPayMinor, latestPayslip.currency)}
+                              </span>
+                            </p>
+                          </div>
+                          <PayslipStatusBadge status={payrollText(latestPayslip.status, "GENERATED")} />
+                        </div>
+                        <button
+                          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#151515] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={
+                            saving === `payslip-${payrollText(latestPayslip.id, "")}` ||
+                            !latestPayslip.objectKey
+                          }
+                          onClick={() =>
+                            void downloadPayslip(payrollText(latestPayslip.id, ""))
+                          }
+                          type="button"
+                        >
+                          <Download className="mr-2 size-4" />
+                          {tText("Download PDF")}
+                        </button>
+                        {!latestPayslip.objectKey && (
+                          <p className="mt-2 text-xs text-amber-700">
+                            {tText("PDF is not available yet. Generate payslips from the payroll run first.")}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <PayslipHistoryTable
+                      onDownload={downloadPayslip}
+                      payslips={payslips}
+                      saving={saving}
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-500">
+                    <h3 className="font-bold text-zinc-900">{tText("No payslips yet")}</h3>
+                    <p className="mt-2 leading-6">
+                      {tText("After payroll is finalized and payslips are generated, this employee's PDFs will appear here.")}
+                    </p>
+                  </div>
+                )}
+              </PayrollEditSection>
+            )}
+          </div>
+        )}
+      </Panel>
+      <Panel className="h-fit p-6">
+        <div className="grid size-12 place-items-center rounded-2xl bg-zinc-100 text-[#151515]">
+          <UserRound className="size-6" />
+        </div>
+        <h2 className="mt-5 text-lg font-bold">{tText("Payroll context")}</h2>
+        <div className="mt-4 grid gap-3 text-sm">
+          <IdentityRow
+            label={tText("Department")}
+            value={employee.department?.name ?? tText("Not assigned")}
+            positive={Boolean(employee.department?.name)}
+          />
+          <IdentityRow
+            label={tText("Designation")}
+            value={employee.designation?.name ?? tText("Not assigned")}
+            positive={Boolean(employee.designation?.name)}
+          />
+          <IdentityRow
+            label={tText("Work type")}
+            value={employee.workType}
+            positive
+          />
+        </div>
+        <div className="mt-5 rounded-xl border border-border bg-zinc-50 p-4">
+          <h3 className="text-sm font-bold">{tText("Missing details")}</h3>
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+            {missing.length
+              ? missing.join(", ")
+              : tText("This employee has the payroll details needed.")}
+          </p>
+        </div>
+        <div className="mt-5 rounded-xl border border-[#beb8ad] bg-[#f3efe6] p-4">
+          <h3 className="text-sm font-bold">{tText("Company payroll rules")}</h3>
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+            {tText("To change pay groups, salary templates, salary rules, approvals, or accounting links, go to Modules.")}
+          </p>
+          <Link
+            className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#151515] px-3 text-sm font-semibold text-white"
+            href="/app/modules/payroll"
+          >
+            {tText("Open Payroll Setup")}
+          </Link>
+        </div>
+        <p className="mt-5 text-xs leading-5 text-muted-foreground">
+          {tText("Use this page for this employee only. Use Modules for company setup.")}
+        </p>
+      </Panel>
+    </div>
+  );
+}
+
+function PayrollMiniCard({
+  icon: Icon,
+  label,
+  ready,
+  value,
+}: {
+  icon: typeof UserRound;
+  label: string;
+  ready: boolean;
+  value: string;
+}) {
+  const { tText } = useTenantLocalization();
+  return (
+    <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <span className="grid size-10 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
+          <Icon className="size-5" />
+        </span>
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+            ready
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-amber-50 text-amber-800"
+          }`}
+        >
+          {ready ? tText("Ready") : tText("Missing")}
+        </span>
+      </div>
+      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-zinc-400">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-sm font-bold text-zinc-900">{value}</p>
+    </div>
+  );
+}
+
+function PayrollEditSection({
+  canEdit,
+  children,
+  description,
+  icon: Icon,
+  title,
+}: {
+  canEdit: boolean;
+  children: ReactNode;
+  description: string;
+  icon: typeof UserRound;
+  title: string;
+}) {
+  const { tText } = useTenantLocalization();
+  return (
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
+            <Icon className="size-5" />
+          </span>
+          <div>
+            <h3 className="font-bold">{title}</h3>
+            <p className="mt-1 text-sm leading-6 text-zinc-500">
+              {description}
+            </p>
+          </div>
+        </div>
+        {!canEdit && (
+          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-500">
+            {tText("View only")}
+          </span>
+        )}
+      </div>
+      <div className="grid gap-5">{children}</div>
+    </div>
+  );
+}
+
+function PayrollInput({
+  label,
+  onChange,
+  placeholder,
+  type = "text",
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+  value: string;
+}) {
+  return (
+    <Field label={label}>
+      <input
+        className={inputClass}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        type={type}
+        value={value}
+      />
+    </Field>
+  );
+}
+
+function PayrollSelect({
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  options: Array<{ label: string; value: string }>;
+  value: string;
+}) {
+  const { tText } = useTenantLocalization();
+  return (
+    <Field label={label}>
+      <select
+        className={inputClass}
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        <option value="">{tText("Select")}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
+function PayrollExistingDetail({ rows }: { rows: string[][] }) {
+  return (
+    <div className="grid gap-2 rounded-xl bg-zinc-50 p-4 text-sm">
+      {rows.map(([label, value]) => (
+        <div className="flex justify-between gap-4" key={label}>
+          <span className="text-zinc-500">{label}</span>
+          <span className="font-semibold text-zinc-900">{value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PayrollHistory({ rows }: { rows: Array<Record<string, unknown>> }) {
+  const { tText } = useTenantLocalization();
+  if (!rows.length) {
+    return (
+      <p className="rounded-xl bg-zinc-50 p-4 text-sm text-zinc-500">
+        {tText("No salary history yet.")}
+      </p>
+    );
+  }
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div className="grid grid-cols-4 bg-zinc-50 px-4 py-3 text-xs font-bold uppercase tracking-wide text-zinc-500">
+        <span>{tText("Salary")}</span>
+        <span>{tText("From")}</span>
+        <span>{tText("To")}</span>
+        <span>{tText("Reason")}</span>
+      </div>
+      {rows.slice(0, 5).map((row, index) => (
+        <div
+          className="grid grid-cols-4 border-t border-border px-4 py-3 text-sm"
+          key={payrollText(row.id, String(index))}
+        >
+          <span className="font-semibold">{payrollMoney(row)}</span>
+          <span>{payrollText(row.effectiveFrom, "-").slice(0, 10)}</span>
+          <span>{payrollText(row.effectiveTo, tText("Current")).slice(0, 10)}</span>
+          <span className="truncate">{payrollText(row.reason, "-")}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PayslipHistoryTable({
+  onDownload,
+  payslips,
+  saving,
+}: {
+  onDownload: (payslipId: string) => Promise<void>;
+  payslips: Array<Record<string, unknown>>;
+  saving: string;
+}) {
+  const { tText } = useTenantLocalization();
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] bg-zinc-50 px-4 py-3 text-xs font-bold uppercase tracking-wide text-zinc-500">
+        <span>{tText("Month")}</span>
+        <span>{tText("Net salary")}</span>
+        <span>{tText("Status")}</span>
+        <span>{tText("Published")}</span>
+        <span>{tText("Action")}</span>
+      </div>
+      {payslips.map((payslip) => {
+        const payslipId = payrollText(payslip.id, "");
+        const hasPdf = Boolean(payslip.objectKey);
+        return (
+          <div
+            className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] items-center border-t border-border px-4 py-3 text-sm"
+            key={payslipId}
+          >
+            <span className="font-semibold">
+              {payslipMonthLabel(payslip)}
+            </span>
+            <span>{payrollMinorMoney(payslip.netPayMinor, payslip.currency)}</span>
+            <span>
+              <PayslipStatusBadge status={payrollText(payslip.status, "GENERATED")} />
+            </span>
+            <span>{payrollText(payslip.publishedAt, tText("Not published")).slice(0, 10)}</span>
+            <button
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-300 px-3 text-xs font-semibold text-[#151515] disabled:cursor-not-allowed disabled:text-zinc-400"
+              disabled={!hasPdf || saving === `payslip-${payslipId}`}
+              onClick={() => void onDownload(payslipId)}
+              type="button"
+            >
+              <Download className="mr-1.5 size-3.5" />
+              {tText("Download PDF")}
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function PayslipStatusBadge({ status }: { status: string }) {
+  const { tText } = useTenantLocalization();
+  const colors =
+    status === "PUBLISHED"
+      ? "bg-emerald-100 text-emerald-900"
+      : status === "GENERATED"
+        ? "bg-[#ede7dc] text-[#151515]"
+        : "bg-zinc-100 text-zinc-700";
+  const label =
+    status === "PUBLISHED"
+      ? "Published"
+      : status === "GENERATED"
+        ? "Generated"
+        : status.replace(/_/g, " ");
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${colors}`}>
+      {tText(label)}
+    </span>
+  );
+}
+
+function payslipMonthLabel(payslip: Record<string, unknown>) {
+  const payload =
+    payslip.payload && typeof payslip.payload === "object"
+      ? (payslip.payload as Record<string, unknown>)
+      : {};
+  return payrollText(
+    payslip.periodKey ??
+      payload.periodKey ??
+      payload.period ??
+      payslip.payslipNumber ??
+      payslip.createdAt,
+    "-",
+  ).slice(0, 10);
+}
+
+async function loadEmployeePayslips(employeeId: string) {
+  const runResponse = await apiClient.get("/payroll/runs");
+  const recentRuns = payrollRows(runResponse).slice(0, 12);
+  const payslipResponses = await Promise.allSettled(
+    recentRuns.map((run) =>
+      apiClient.get(`/payroll/runs/${payrollText(run.id, "")}/payslips`),
+    ),
+  );
+  return payslipResponses
+    .flatMap((result) =>
+      result.status === "fulfilled" ? payrollRows(result.value) : [],
+    )
+    .filter((payslip) => payrollText(payslip.employeeId, "") === employeeId)
+    .sort((a, b) =>
+      payrollText(b.createdAt, "").localeCompare(payrollText(a.createdAt, "")),
+    );
+}
+
+function payrollFirst(value: unknown) {
+  return payrollRows(value)[0] ?? null;
+}
+
+function payrollRows(value: unknown): Array<Record<string, unknown>> {
+  const response = value as { data?: unknown };
+  const data =
+    response?.data && typeof response.data === "object"
+      ? (response.data as { data?: unknown }).data ?? response.data
+      : response?.data ?? value;
+  if (Array.isArray(data)) {
+    return data.map((item) =>
+      item && typeof item === "object"
+        ? (item as Record<string, unknown>)
+        : { value: item },
+    );
+  }
+  if (data && typeof data === "object") return [data as Record<string, unknown>];
+  return [];
+}
+
+function payrollText(value: unknown, fallback: string) {
+  return value === null || value === undefined || value === ""
+    ? fallback
+    : String(value);
+}
+
+function openPayrollDownloadUrl(url: string) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function downloadEmployeePayslip(payslipId: string) {
+  const response = await apiClient.get(`/payroll/payslips/${payslipId}/download`);
+  const url = payrollText(response.data?.data?.url ?? response.data?.url, "");
+  if (!url) {
+    throw new Error("Payslip PDF is not available yet.");
+  }
+  openPayrollDownloadUrl(url);
+}
+
+function payrollMoney(row: Record<string, unknown>) {
+  const currency = payrollText(row.currency, "OMR");
+  const minor = payrollText(row.baseAmountMinor, "");
+  if (!minor) return "-";
+  const scale = currency === "OMR" ? 3 : 2;
+  const padded = minor.padStart(scale + 1, "0");
+  return `${currency} ${padded.slice(0, -scale)}.${padded.slice(-scale)}`;
+}
+
+function payrollMinorMoney(value: unknown, currencyValue: unknown) {
+  const currency = payrollText(currencyValue, "OMR");
+  const minor = payrollText(value, "");
+  if (!minor) return "-";
+  const scale = currency === "OMR" ? 3 : 2;
+  const padded = minor.padStart(scale + 1, "0");
+  return `${currency} ${padded.slice(0, -scale)}.${padded.slice(-scale)}`;
+}
+
+function payrollDecimalToMinor(value: string, currency: string) {
+  const scale = currency === "OMR" ? 3 : 2;
+  const [whole = "0", fraction = ""] = value.replace(/[^\d.]/g, "").split(".");
+  return `${whole || "0"}${fraction.padEnd(scale, "0").slice(0, scale)}`.replace(
+    /^0+(?=\d)/,
+    "",
+  );
+}
+
+function payrollClean(values: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== ""),
+  );
+}
+
+function payrollEmptyToUndefined(value: unknown) {
+  return value === "" ? undefined : value;
+}
+
+function todayForPayroll() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function EmploymentProfile({
@@ -560,7 +1786,7 @@ function EmploymentProfile({
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="grid size-14 place-items-center rounded-2xl bg-zinc-100 text-primary">
+          <div className="grid size-14 place-items-center rounded-2xl bg-zinc-100 text-[#151515]">
             <UserRound className="size-7" />
           </div>
           <div>
@@ -672,7 +1898,7 @@ function TodaySummary({
             className={`grid size-12 place-items-center rounded-2xl ${
               positive
                 ? "bg-emerald-100 text-emerald-800"
-                : "bg-white text-primary"
+                : "bg-white text-[#151515]"
             }`}
           >
             <Clock3 className="size-6" />
@@ -755,7 +1981,7 @@ function EmployeeLifecyclePanel({
         <div className="flex flex-wrap gap-2">
           {canUpdate && employee.status !== "TERMINATED" && (
             <button
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-primary"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515]"
               onClick={() => setDialog("edit")}
               type="button"
             >
@@ -1224,7 +2450,7 @@ function ReadinessPanel({
           <p className="mt-1 text-sm text-outline">
             {tText("Complete these steps before the employee starts using attendance.")}</p>
         </div>
-        <span className="rounded-full bg-zinc-50 px-3 py-1 text-sm font-bold text-primary">
+        <span className="rounded-full bg-zinc-50 px-3 py-1 text-sm font-bold text-[#151515]">
           {complete}/{total}
         </span>
       </div>
@@ -1260,7 +2486,7 @@ function ReadinessPanel({
                   {ready ? tText("Complete") : step.description}
                 </span>
                 {!ready && (
-                  <span className="mt-2 block text-xs font-bold text-primary">
+                  <span className="mt-2 block text-xs font-bold text-[#151515]">
                     {step.action} →
                   </span>
                 )}
@@ -1281,7 +2507,7 @@ function AccountSummary({
   const { tText } = useTenantLocalization();
   return (
     <Panel className="h-fit p-6">
-      <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-primary">
+      <div className="grid size-12 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
         <KeyRound className="size-6" />
       </div>
       <h2 className="mt-5 text-xl font-bold">{tText("Account access")}</h2>
@@ -1365,7 +2591,7 @@ function AssignmentsPanel({
           ))}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-primary"
+          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
           href="/app/attendance/rosters"
         >
           {tText("Manage shifts and rosters")}</Link>
@@ -1399,7 +2625,7 @@ function AssignmentsPanel({
             {tText("No tenant, department, or employee policy currently resolves for this employee.")}</p>
         )}
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-primary"
+          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
           href={`/app/attendance/policies?employeeId=${employeeId}&returnTo=${encodeURIComponent(`/app/employees/${employeeId}?tab=assignments`)}`}
         >
           {tText("Change this employee&apos;s policy")}</Link>
@@ -1423,7 +2649,7 @@ function AssignmentsPanel({
           )}
         </div>
         <Link
-          className="mt-5 inline-flex text-sm font-bold text-primary"
+          className="mt-5 inline-flex text-sm font-bold text-[#151515]"
           href="/app/attendance/setup/leave"
         >
           {tText("Manage Leave policies")}</Link>
@@ -1491,7 +2717,7 @@ function LeavePanel({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-bold">{tText("Recent requests")}</h2>
           <Link
-            className="text-sm font-bold text-primary"
+            className="text-sm font-bold text-[#151515]"
             href={`/app/attendance/leave/requests?employeeId=${employeeId}&returnTo=/app/employees/${employeeId}`}
           >
             {tText("Open full history")}</Link>
@@ -1571,7 +2797,7 @@ function AccountPanel({
                 <div className="mt-2 flex flex-wrap gap-2">
                   {elevatedRoles.map(({ role }) => (
                     <span
-                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-primary"
+                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-[#151515]"
                       key={role.id}
                     >
                       {role.name.replaceAll("_", " ")}
@@ -1837,7 +3063,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
     <Panel className="p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ListChecks className="size-5 text-primary" />
+          <ListChecks className="size-5 text-[#151515]" />
           <div>
             <h2 className="text-lg font-bold">{tText("Employee history")}</h2>
             <p className="text-sm text-outline">
@@ -1879,7 +3105,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
               key={entry.id}
             >
               <div className="flex items-start gap-4">
-                <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
+                <Clock3 className="mt-0.5 size-4 shrink-0 text-[#151515]" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold">{entry.title}</p>
@@ -1937,7 +3163,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
       </div>
       {nextCursor && !loading && (
         <button
-          className="mt-5 w-full rounded-xl border border-surface-variant px-4 py-3 text-sm font-semibold text-primary disabled:opacity-50"
+          className="mt-5 w-full rounded-xl border border-surface-variant px-4 py-3 text-sm font-semibold text-[#151515] disabled:opacity-50"
           disabled={loadingMore}
           onClick={loadMore}
           type="button"
@@ -1969,7 +3195,12 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   const canManage = permissions.includes(
     "organization.employee-documents.manage",
   );
+  const canReadPayslips =
+    permissions.includes("payroll.payslips.read") ||
+    permissions.includes("payroll.payslips.self");
   const [documents, setDocuments] = useState<EmployeeDocument[] | null>(null);
+  const [payslips, setPayslips] = useState<Array<Record<string, unknown>>>([]);
+  const [payslipsLoading, setPayslipsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [documentType, setDocumentType] = useState("EMPLOYMENT");
@@ -1983,18 +3214,38 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
   } | null>(null);
   const [uploadStage, setUploadStage] = useState<DocumentUploadStage>("idle");
   const [error, setError] = useState("");
+  const [payslipError, setPayslipError] = useState("");
+  const [payslipSaving, setPayslipSaving] = useState("");
 
   const load = () =>
     apiClient
       .get<{ data: EmployeeDocument[] }>(`/employees/${employeeId}/documents`)
       .then(({ data }) => setDocuments(data.data))
       .catch(() => setError(tText("Employee documents could not be loaded.")));
+
+  async function loadPayslips() {
+    if (!canReadPayslips) return;
+    setPayslipsLoading(true);
+    setPayslipError("");
+    try {
+      setPayslips(await loadEmployeePayslips(employeeId));
+    } catch (caught) {
+      setPayslipError(
+        getApiErrorMessage(caught, tText("Generated payslips could not be loaded.")),
+      );
+    } finally {
+      setPayslipsLoading(false);
+    }
+  }
+
   useEffect(() => {
     apiClient
       .get<{ data: EmployeeDocument[] }>(`/employees/${employeeId}/documents`)
       .then(({ data }) => setDocuments(data.data))
       .catch(() => setError(tText("Employee documents could not be loaded.")));
-  }, [employeeId]);
+    void loadPayslips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employeeId, canReadPayslips]);
 
   async function upload() {
     if (!file || title.trim().length < 2) return;
@@ -2106,6 +3357,20 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
       .catch(() => setError(tText("The document could not be deleted.")));
   }
 
+  async function downloadPayslip(payslipId: string) {
+    setPayslipSaving(`payslip-${payslipId}`);
+    setPayslipError("");
+    try {
+      await downloadEmployeePayslip(payslipId);
+    } catch (caught) {
+      setPayslipError(
+        getApiErrorMessage(caught, tText("Payslip PDF could not be opened.")),
+      );
+    } finally {
+      setPayslipSaving("");
+    }
+  }
+
   return (
     <div className="grid gap-5">
       <Panel className="overflow-hidden">
@@ -2167,7 +3432,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <Field label={tText("Private file")}>
                 <input
                   accept="application/pdf,image/jpeg,image/png,image/webp"
-                  className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-primary"
+                  className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-semibold file:text-[#151515]"
                   onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                   type="file"
                 />
@@ -2226,7 +3491,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               key={document.id}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-primary">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-[#151515]">
                   <FileText className="size-5" />
                 </span>
                 <div className="min-w-0">
@@ -2249,7 +3514,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               <div className="flex gap-2">
                 <button
                   aria-label={`View ${document.title}`}
-                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-primary disabled:opacity-50"
+                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-[#151515] disabled:opacity-50"
                   disabled={previewLoadingId === document.id}
                   onClick={() => view(document)}
                   type="button"
@@ -2262,7 +3527,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 </button>
                 <button
                   aria-label={`Download ${document.title}`}
-                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-primary"
+                  className="grid size-10 place-items-center rounded-lg border border-zinc-300 text-[#151515]"
                   onClick={() => download(document)}
                   type="button"
                 >
@@ -2286,6 +3551,50 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             {tText("No private documents are stored for this employee yet.")}</p>
         )}
       </Panel>
+      {canReadPayslips && (
+        <Panel className="overflow-hidden">
+          <div className="flex flex-wrap items-start justify-between gap-4 p-6">
+            <div>
+              <h2 className="text-lg font-bold">{tText("Generated payslips")}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-outline">
+                {tText("Payslip PDFs generated from payroll runs appear here for this employee.")}
+              </p>
+            </div>
+            <button
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-[#151515] disabled:opacity-50"
+              disabled={payslipsLoading}
+              onClick={() => void loadPayslips()}
+              type="button"
+            >
+              <RotateCcw className={`size-4 ${payslipsLoading ? "animate-spin" : ""}`} />
+              {payslipsLoading ? tText("Loading") : tText("Refresh")}
+            </button>
+          </div>
+          {payslipError && (
+            <div className="px-6 pb-4">
+              <ErrorState message={payslipError} />
+            </div>
+          )}
+          <div className="border-t border-surface-variant p-6">
+            {payslipsLoading ? (
+              <LoadingState />
+            ) : payslips.length ? (
+              <PayslipHistoryTable
+                onDownload={downloadPayslip}
+                payslips={payslips}
+                saving={payslipSaving}
+              />
+            ) : (
+              <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-500">
+                <h3 className="font-bold text-zinc-900">{tText("No generated payslips yet")}</h3>
+                <p className="mt-2 leading-6">
+                  {tText("After payroll is finalized and payslips are generated, this employee's PDF will appear here.")}
+                </p>
+              </div>
+            )}
+          </div>
+        </Panel>
+      )}
       {preview && (
         <div
           aria-modal="true"
@@ -2298,7 +3607,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
             onClick={(event) => event.stopPropagation()}
           >
             <header className="flex flex-wrap items-center gap-4 border-b border-surface-variant p-5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 text-primary">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                 <FileText className="size-5" />
               </span>
               <div className="min-w-0">
@@ -2312,7 +3621,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-4 text-sm font-semibold text-primary"
+                  className="inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-4 text-sm font-semibold text-[#151515]"
                   onClick={() => window.location.assign(preview.url)}
                   type="button"
                 >
@@ -2385,7 +3694,7 @@ function EmployeeActionDialog({
             className={`grid size-11 shrink-0 place-items-center rounded-xl ${
               tone === "danger"
                 ? "bg-error-container text-on-error-container"
-                : "bg-zinc-50 text-primary"
+                : "bg-zinc-50 text-[#151515]"
             }`}
           >
             {tone === "danger" ? (
@@ -2442,7 +3751,7 @@ function DialogActions({
         {tText("Cancel")}</button>
       <button
         className={`min-h-11 rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50 ${
-          danger ? "bg-error" : "bg-primary"
+          danger ? "bg-error" : "bg-[#151515]"
         }`}
         disabled={busy || confirmDisabled}
         onClick={() => void onConfirm()}
@@ -2583,7 +3892,7 @@ function Detail({
 }) {
   return (
     <div className="rounded-xl bg-zinc-50 p-4">
-      <Icon className="size-5 text-primary" />
+      <Icon className="size-5 text-[#151515]" />
       <p className="mt-3 text-xs font-bold uppercase tracking-wide text-outline">
         {label}
       </p>

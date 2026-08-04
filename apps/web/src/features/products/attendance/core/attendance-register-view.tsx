@@ -167,7 +167,7 @@ export function AttendanceRegisterView() {
     <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
             {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -264,7 +264,7 @@ export function AttendanceRegisterView() {
                 {tText("Missing checkout")}</option>
             </select>
           </FilterField>
-          <span className="grid size-11 place-items-center rounded-lg bg-muted text-primary">
+          <span className="grid size-11 place-items-center rounded-lg bg-muted text-[#151515]">
             <Filter className="size-4" />
           </span>
       </Toolbar>
@@ -348,7 +348,7 @@ function RegisterTable({
               >
                 <Td>
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-lg bg-muted text-xs font-bold text-primary">
+                    <div className="grid size-10 place-items-center rounded-lg bg-muted text-xs font-bold text-[#151515]">
                       {initials(row.employee.fullName)}
                     </div>
                     <div>
@@ -429,7 +429,7 @@ function RegisterTable({
                 <Td>
                   <Link
                     href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#151515]"
                   >
                     {tText("View")}<ChevronRight className="size-3" />
                   </Link>
@@ -491,7 +491,7 @@ function Metric({
   label,
   value,
   icon: Icon,
-  tone = "text-primary bg-zinc-50",
+  tone = "text-[#151515] bg-zinc-50",
 }: {
   label: string;
   value: string;

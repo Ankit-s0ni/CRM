@@ -133,22 +133,65 @@ export class PayrollRunPreparationService {
       await tx.payrollRunEmployee.deleteMany({
         where: { tenantId: actor.tenantId, payrollRunId: run.id },
       });
+      let importedCount = 0;
+      const periodDays = daysInclusive(run.periodStart, run.periodEnd);
       for (const row of dto.rows) {
         const profile = await tx.employeePayrollProfile.findFirst({
-          where: { tenantId: actor.tenantId, employeeId: row.employeeId },
+          where: {
+            tenantId: actor.tenantId,
+            employeeId: row.employeeId,
+            payGroupId: run.payGroupId,
+          },
         });
+        if (!profile) continue;
+        const attendanceLogs = await tx.attendanceLog.findMany({
+          where: {
+            tenantId: actor.tenantId,
+            employeeId: row.employeeId,
+            attendanceDate: {
+              gte: run.periodStart,
+              lte: run.periodEnd,
+            },
+          },
+          select: {
+            attendanceDate: true,
+            attendanceStatus: true,
+            lateMinutes: true,
+            overtimeMinutes: true,
+            totalWorkMinutes: true,
+          },
+          orderBy: { attendanceDate: 'asc' },
+        });
+        const payableDays = Math.round(
+          attendanceLogs.reduce(
+            (total, log) =>
+              total + payrollPayableFraction(String(log.attendanceStatus)),
+            0,
+          ),
+        );
+        const overtimeMinutes = attendanceLogs.reduce(
+          (total, log) => total + log.overtimeMinutes,
+          0,
+        );
         await tx.payrollRunEmployee.create({
           data: {
             tenantId: actor.tenantId,
             payrollRunId: run.id,
             employeeId: row.employeeId,
             employeePayrollProfileId: profile?.id,
-            attendanceSnapshot: json(row.snapshot ?? {}),
-            payableDays: row.payableDays,
-            lossOfPayDays: row.lossOfPayDays ?? 0,
-            overtimeMinutes: row.overtimeMinutes ?? 0,
+            attendanceSnapshot: json({
+              ...(row.snapshot ?? {}),
+              logCount: attendanceLogs.length,
+              periodStart: run.periodStart.toISOString().slice(0, 10),
+              periodEnd: run.periodEnd.toISOString().slice(0, 10),
+              statusCounts: attendanceStatusCounts(attendanceLogs),
+            }),
+            payableDays,
+            lossOfPayDays: Math.max(0, periodDays - payableDays),
+            overtimeMinutes,
           },
         });
+        importedCount += 1;
       }
       const updated = await tx.payrollRun.update({
         where: { id: run.id },
@@ -169,7 +212,7 @@ export class PayrollRunPreparationService {
         {
           source: dto.source,
           sourceVersion: dto.sourceVersion,
-          rowCount: dto.rows.length,
+          rowCount: importedCount,
         },
       );
       return { data: serializeBigInt(updated) };
@@ -354,6 +397,16 @@ export class PayrollRunPreparationService {
             message: 'Employee is missing a Payroll profile for this run.',
           });
           continue;
+        }
+        const attendanceSnapshot = objectValue(employee.attendanceSnapshot);
+        if (Number(attendanceSnapshot.logCount ?? 0) === 0) {
+          blockers.push({
+            employeeId: employee.employeeId,
+            severity: 'BLOCKER',
+            code: 'ATTENDANCE_RECORDS_MISSING',
+            message:
+              'Employee has no attendance records for this payroll period.',
+          });
         }
         const compensation = await tx.employeeCompensationVersion.findFirst({
           where: {
@@ -715,6 +768,47 @@ function objectValue(value: Prisma.JsonValue) {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function daysInclusive(start: Date, end: Date) {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const startUtc = Date.UTC(
+    start.getUTCFullYear(),
+    start.getUTCMonth(),
+    start.getUTCDate(),
+  );
+  const endUtc = Date.UTC(
+    end.getUTCFullYear(),
+    end.getUTCMonth(),
+    end.getUTCDate(),
+  );
+  return Math.max(1, Math.floor((endUtc - startUtc) / dayMs) + 1);
+}
+
+function payrollPayableFraction(status: string) {
+  if (
+    [
+      'PRESENT',
+      'PRESENT_OPEN',
+      'ON_LEAVE',
+      'HOLIDAY',
+      'WEEKLY_OFF',
+      'ON_DUTY',
+    ].includes(status)
+  ) {
+    return 1;
+  }
+  return status === 'HALF_DAY' ? 0.5 : 0;
+}
+
+function attendanceStatusCounts(
+  logs: Array<{ attendanceStatus: unknown }>,
+) {
+  return logs.reduce<Record<string, number>>((counts, log) => {
+    const status = String(log.attendanceStatus);
+    counts[status] = (counts[status] ?? 0) + 1;
+    return counts;
+  }, {});
 }
 
 function notFound(code: string, name: string): never {

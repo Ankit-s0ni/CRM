@@ -39,6 +39,49 @@ type StructureComponentInput = {
 type FormulaContext = Record<string, bigint>;
 const calculationVersion = 'deterministic-fixed-v1';
 
+function payslipEmployeeSuffix(
+  employeeCode: string | null | undefined,
+  employeeId: string,
+) {
+  const source = employeeCode?.trim() || employeeId;
+  return (
+    source
+      .toUpperCase()
+      .replace(/[^A-Z0-9-]+/g, '-')
+      .replace(/^-+|-+$/g, '') || employeeId
+  );
+}
+
+function payslipNumber(
+  periodKey: string,
+  employeeCode: string | null | undefined,
+  employeeId: string,
+) {
+  return `${periodKey}-${payslipEmployeeSuffix(employeeCode, employeeId)}`;
+}
+
+async function uniquePayslipNumber(
+  tx: PrismaTransaction,
+  tenantId: string,
+  payrollRunId: string,
+  employeeId: string,
+  preferred: string,
+) {
+  const existing = await tx.payrollPayslip.findFirst({
+    where: { tenantId, payslipNumber: preferred },
+    select: { payrollRunId: true, employeeId: true },
+  });
+  if (
+    !existing ||
+    (existing.payrollRunId === payrollRunId && existing.employeeId === employeeId)
+  ) {
+    return preferred;
+  }
+
+  const runSuffix = payrollRunId.slice(-8).toUpperCase();
+  return `${preferred}-${runSuffix}`;
+}
+
 @Injectable()
 export class PayrollProcessingService {
   constructor(
@@ -432,6 +475,11 @@ export class PayrollProcessingService {
         where: { tenantId: actor.tenantId, payrollRunId: run.id },
         include: { components: true },
       });
+      if (!results.length) {
+        invalidState(
+          'Calculate salary before generating payslips or payroll files.',
+        );
+      }
       const job = await startJob(
         tx,
         actor,
@@ -443,6 +491,14 @@ export class PayrollProcessingService {
         await assertAccountingMappings(tx, actor.tenantId, results);
       }
       if (dto.kind === 'PAYSLIP') {
+        const employeeIds = [...new Set(results.map((result) => result.employeeId))];
+        const employees = await tx.employee.findMany({
+          where: { tenantId: actor.tenantId, id: { in: employeeIds } },
+          select: { id: true, employeeCode: true },
+        });
+        const employeeCodeById = new Map(
+          employees.map((employee) => [employee.id, employee.employeeCode]),
+        );
         for (const result of results) {
           const existing = await tx.payrollPayslip.findFirst({
             where: {
@@ -465,6 +521,20 @@ export class PayrollProcessingService {
                 pdfBody,
               )
             : undefined;
+          const preferredPayslipNumber = payslipNumber(
+            run.periodKey,
+            employeeCodeById.get(result.employeeId),
+            result.employeeId,
+          );
+          const currentPayslipNumber =
+            existing?.payslipNumber ??
+            (await uniquePayslipNumber(
+              tx,
+              actor.tenantId,
+              run.id,
+              result.employeeId,
+              preferredPayslipNumber,
+            ));
           const payslip = await tx.payrollPayslip.upsert({
             where: {
               tenantId_payrollRunId_employeeId: {
@@ -477,7 +547,7 @@ export class PayrollProcessingService {
               tenantId: actor.tenantId,
               payrollRunId: run.id,
               employeeId: result.employeeId,
-              payslipNumber: `${run.periodKey}-${result.employeeId.slice(0, 8)}`,
+              payslipNumber: currentPayslipNumber,
               grossPayMinor: result.grossPayMinor,
               netPayMinor: result.netPayMinor,
               currency: result.currency,
@@ -485,6 +555,7 @@ export class PayrollProcessingService {
               objectKey,
             },
             update: {
+              payslipNumber: currentPayslipNumber,
               grossPayMinor: result.grossPayMinor,
               netPayMinor: result.netPayMinor,
               payload: json({ result, components: result.components }),
@@ -503,6 +574,18 @@ export class PayrollProcessingService {
               data: { objectKey: createdObjectKey },
             });
           }
+        }
+        const payslipCount = await tx.payrollPayslip.count({
+          where: {
+            tenantId: actor.tenantId,
+            payrollRunId: run.id,
+            objectKey: { not: null },
+          },
+        });
+        if (payslipCount !== results.length) {
+          invalidState(
+            'Payslip PDFs could not be generated for every employee.',
+          );
         }
       }
       const payload = outputPayload(dto.kind, run.periodKey, results);
@@ -560,6 +643,16 @@ export class PayrollProcessingService {
           'Payslips can be published only after outputs are generated.',
         );
       }
+      const generatedPayslips = await tx.payrollPayslip.findMany({
+        where: {
+          tenantId: actor.tenantId,
+          payrollRunId: run.id,
+          objectKey: { not: null },
+        },
+      });
+      if (!generatedPayslips.length) {
+        invalidState('Generate payslip PDFs before publishing payslips.');
+      }
       await tx.payrollPayslip.updateMany({
         where: { tenantId: actor.tenantId, payrollRunId: run.id },
         data: { status: 'PUBLISHED', publishedAt: new Date() },
@@ -582,6 +675,17 @@ export class PayrollProcessingService {
       const run = await requireRun(tx, actor.tenantId, runId);
       if (!['PUBLISHED', 'PAID'].includes(run.status)) {
         invalidState('Payroll can be marked paid only after publishing.');
+      }
+      const publishedPayslips = await tx.payrollPayslip.count({
+        where: {
+          tenantId: actor.tenantId,
+          payrollRunId: run.id,
+          status: 'PUBLISHED',
+          objectKey: { not: null },
+        },
+      });
+      if (!publishedPayslips) {
+        invalidState('Publish generated payslip PDFs before marking paid.');
       }
       if (dto.reference) {
         const existing = await tx.payrollPaymentBatch.findFirst({
@@ -641,14 +745,30 @@ export class PayrollProcessingService {
   }
 
   listPayslips(tenantId: string, runId: string) {
-    return this.prisma.forTenant(async (tx) =>
-      serializeBigInt({
-        data: await tx.payrollPayslip.findMany({
-          where: { tenantId, payrollRunId: runId },
-          orderBy: { payslipNumber: 'asc' },
+    return this.prisma.forTenant(async (tx) => {
+      const payslips = await tx.payrollPayslip.findMany({
+        where: { tenantId, payrollRunId: runId },
+        orderBy: { payslipNumber: 'asc' },
+      });
+      const employeeIds = [...new Set(payslips.map((item) => item.employeeId))];
+      const employees = await tx.employee.findMany({
+        where: { tenantId, id: { in: employeeIds } },
+        select: { id: true, employeeCode: true, fullName: true },
+      });
+      const employeeById = new Map(
+        employees.map((employee) => [employee.id, employee]),
+      );
+      return serializeBigInt({
+        data: payslips.map((payslip) => {
+          const employee = employeeById.get(payslip.employeeId);
+          return {
+            ...payslip,
+            employeeCode: employee?.employeeCode ?? null,
+            employeeName: employee?.fullName ?? null,
+          };
         }),
-      }),
-    );
+      });
+    });
   }
 
   downloadPayslip(actor: Actor, payslipId: string) {

@@ -8,7 +8,7 @@ export default function AcceptInvitationPage() {
       <div className="absolute -bottom-32 right-0 size-[28rem] rounded-full bg-emerald-100/55 blur-3xl" />
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-7 text-center">
-          <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary text-xl font-black text-white shadow-lg shadow-primary/20">
+          <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#151515] text-xl font-black text-white shadow-lg shadow-[#151515]/20">
             D
           </div>
           <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="mt-3 h-7 w-auto" />
