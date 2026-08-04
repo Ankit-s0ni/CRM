@@ -44,18 +44,18 @@ const STATUS_STEPS = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-zinc-200 text-zinc-700",
-  VALIDATING: "bg-amber-200 text-amber-800",
-  INPUTS_READY: "bg-[#e2dbcf] text-[#151515]",
-  CALCULATING: "bg-purple-200 text-purple-800",
-  CALCULATED: "bg-indigo-200 text-indigo-800",
-  REVIEWED: "bg-teal-200 text-teal-800",
-  APPROVED: "bg-green-200 text-green-800",
-  FINALIZED: "bg-emerald-200 text-emerald-800",
-  OUTPUTS_GENERATED: "bg-sky-200 text-sky-800",
-  PUBLISHED: "bg-cyan-200 text-cyan-800",
-  PAID: "bg-green-300 text-green-900",
-  CANCELLED: "bg-red-200 text-red-800",
+  DRAFT: "theme-tone theme-tone-neutral",
+  VALIDATING: "theme-tone theme-tone-amber",
+  INPUTS_READY: "theme-tone theme-tone-neutral",
+  CALCULATING: "theme-tone theme-tone-violet",
+  CALCULATED: "theme-tone theme-tone-violet",
+  REVIEWED: "theme-tone theme-tone-teal",
+  APPROVED: "theme-tone theme-tone-emerald",
+  FINALIZED: "theme-tone theme-tone-emerald",
+  OUTPUTS_GENERATED: "theme-tone theme-tone-blue",
+  PUBLISHED: "theme-tone theme-tone-teal",
+  PAID: "theme-tone theme-tone-emerald",
+  CANCELLED: "theme-tone theme-tone-red",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -159,8 +159,8 @@ export function PayrollRunPreparationWorkspace({
                           isCurrent
                             ? "bg-[#151515] text-white ring-2 ring-[#151515]/30"
                             : isDone
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-zinc-100 text-zinc-400"
+                                ? "theme-tone theme-tone-emerald"
+                                : "bg-zinc-100 text-zinc-400"
                         }`}
                       >
                         {tText(step.replace(/_/g, " "))}
@@ -180,7 +180,7 @@ export function PayrollRunPreparationWorkspace({
           </Panel>
         </div>
         <Panel className="overflow-hidden">
-          <div className="border-b border-[#ded7ca] p-5">
+            <div className="border-b border-outline-variant p-5">
             <div className="flex items-center gap-3">
               <PlayCircle className="size-5 text-[#151515]" />
               <h2 className="text-lg font-semibold">{tText("Runs")}</h2>
@@ -195,8 +195,8 @@ export function PayrollRunPreparationWorkspace({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-[#ded7ca] text-sm">
-                <thead className="bg-[#f3efe6] text-left text-xs font-semibold uppercase text-zinc-500">
+              <table className="min-w-full divide-y divide-outline-variant text-sm">
+                <thead className="theme-table-header text-left text-xs font-semibold uppercase text-zinc-500">
                   <tr>
                     {[
                       "Period",
@@ -212,18 +212,18 @@ export function PayrollRunPreparationWorkspace({
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#ede6da] bg-[#fffefa]">
+                <tbody className="divide-y divide-outline-variant bg-card">
                   {runs.map((run) => {
                     const isSelected = String(run.id) === activeRunId;
                     const status = String(run.status ?? "");
-                    const badge = STATUS_COLORS[status] ?? "bg-zinc-100 text-zinc-700";
+                    const badge = STATUS_COLORS[status] ?? "theme-tone theme-tone-neutral";
                     return (
                       <tr
                         key={String(run.id)}
                         className={
                           isSelected
-                            ? "bg-[#f3efe6] ring-1 ring-inset ring-[#151515]/20"
-                            : "hover:bg-[#fbfaf6]"
+                            ? "theme-table-row bg-muted ring-1 ring-inset ring-foreground/20"
+                            : "theme-table-row hover:bg-background"
                         }
                       >
                         <td className="px-4 py-3">
@@ -258,7 +258,7 @@ export function PayrollRunPreparationWorkspace({
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            className="rounded-lg border border-[#beb8ad] bg-[#fffefa] px-3 py-1.5 text-xs font-semibold text-[#151515] transition hover:bg-[#151515] hover:text-white"
+                            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-white"
                             onClick={() => {
                               setActiveRunId(String(run.id));
                               setActiveRunPayGroupId(String(run.payGroupId ?? ""));
@@ -346,7 +346,7 @@ function CreateRunForm({
       <h2 className="text-base font-semibold">{tText("Choose pay group and month")}</h2>
       <div className="mt-4 grid gap-4">
         {error && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="rounded-lg theme-tone theme-tone-amber border p-3 text-sm">
             {error}
           </div>
         )}
@@ -693,10 +693,10 @@ function RunActionForms({
       </div>
       <div className="mt-4 grid gap-4">
         {!noRun && activeRunStatus && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-sm">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl theme-tone theme-tone-neutral border px-3 py-2 text-sm">
             <span className="text-zinc-500">{tText("Status")}:</span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[activeRunStatus] ?? "bg-zinc-100 text-zinc-700"}`}
+              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[activeRunStatus] ?? "theme-tone theme-tone-neutral"}`}
             >
               {tText(STATUS_LABELS[activeRunStatus] ?? activeRunStatus.replace(/_/g, " "))}
             </span>
@@ -729,14 +729,14 @@ function RunActionForms({
           </div>
         )}
         {errorMsg && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
-            {errorMsg}
-          </div>
+            <div className="rounded-md theme-tone theme-tone-red border px-3 py-2 text-sm font-medium">
+              {errorMsg}
+            </div>
         )}
         {message && (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-            {message}
-          </div>
+            <div className="rounded-md theme-tone theme-tone-emerald border px-3 py-2 text-sm font-medium">
+              {message}
+            </div>
         )}
         <Field label={tText("Run ID")}>
           <input
@@ -755,7 +755,7 @@ function RunActionForms({
           {activeRunId &&
             activeRunStatus !== "DRAFT" &&
             activeRunStatus !== "VALIDATING" && (
-              <p className="mt-1 text-xs text-amber-600">
+              <p className="mt-1 text-xs theme-tone-text">
                 {tText(
                   "Salary inputs are locked. Create a new payroll run to make fresh changes.",
                 )}
@@ -770,7 +770,7 @@ function RunActionForms({
             {tText("Bring attendance for all employees in this payroll run. Salary changes are added after this, before calculation.")}
           </p>
         </div>
-        <div className="rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-xs leading-5 text-[#151515]">
+        <div className="rounded-lg theme-tone theme-tone-neutral border px-3 py-2 text-xs leading-5">
           {employeesLoading
             ? tText("Loading employees for this payroll.")
             : tText(`${employees.length} employees are ready for attendance import.`)}
@@ -878,7 +878,7 @@ function RunActionForms({
             </div>
             {showBulkChanges && (
               <div className="mt-4 grid gap-3">
-                <div className="rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-3 py-2 text-xs leading-5 text-[#151515]">
+                <div className="rounded-lg theme-tone theme-tone-neutral border px-3 py-2 text-xs leading-5">
                   <p className="font-semibold">{tText("When to use this")}</p>
                   <p>{tText("Use this table when many employees need a bonus, deduction, or correction in the same payroll month.")}</p>
                 </div>
@@ -1005,7 +1005,7 @@ function RunActionForms({
                           <td className="px-3 py-2">
                             <button
                               aria-label={tText("Remove row")}
-                              className="grid size-10 place-items-center rounded-lg border border-zinc-200 text-zinc-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                              className="grid size-10 place-items-center rounded-lg border border-zinc-200 text-zinc-500 transition hover:theme-tone-red"
                               disabled={inputsLocked || bulkRows.length === 1}
                               onClick={() => {
                                 setBulkRows((current) =>
@@ -1043,7 +1043,7 @@ function RunActionForms({
                     {tText("Add row")}
                   </button>
                   <button
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-red-300 hover:text-red-700"
+                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition"
                     disabled={inputsLocked}
                     onClick={() => {
                       setBulkRows([createBulkSalaryChangeRow()]);
@@ -1076,7 +1076,7 @@ function RunActionForms({
                 {csvImportId
                   ? (
                     <>
-                      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                      <div className="rounded-md theme-tone theme-tone-emerald border px-3 py-2 text-sm">
                         {tText("Rows are ready to add.")}
                       </div>
                       <PrimaryButton
@@ -1141,10 +1141,10 @@ function RunActionForms({
                 const sev = String(issue.severity ?? "");
                 const colors =
                   sev === "BLOCKER"
-                    ? "border-red-100 bg-red-50 text-red-800"
+                    ? "theme-tone theme-tone-red border"
                     : sev === "WARNING"
-                    ? "border-amber-100 bg-amber-50 text-amber-800"
-                    : "border-[#beb8ad] bg-[#f3efe6] text-[#151515]";
+                    ? "theme-tone theme-tone-amber border"
+                    : "theme-tone theme-tone-neutral border";
                 return (
                   <div
                     key={index}
@@ -1231,7 +1231,7 @@ function RunActionForms({
                 {tText("Approve")}
               </PrimaryButton>
               {activeRunId && canApprove && (
-                <p className="mt-1 text-xs text-amber-600">
+                <p className="mt-1 text-xs theme-tone-text">
                   {tText("A different admin must approve this payroll.")}
                 </p>
               )}
@@ -1394,10 +1394,10 @@ function RunActionForms({
             </div>
             {(message || errorMsg) && (
               <div
-                className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                className={`rounded-md theme-tone border px-3 py-2 text-sm font-medium ${
                   errorMsg
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    ? "theme-tone-red"
+                    : "theme-tone-emerald"
                 }`}
               >
                 {errorMsg || message}
@@ -1454,7 +1454,7 @@ function RunActionForms({
                               {moneyMinor(payslip.netPayMinor, payslip.currency)}
                             </td>
                             <td className="px-4 py-3">
-                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                              <span className="rounded-full theme-tone theme-tone-emerald px-2 py-0.5 text-xs font-semibold">
                                 {tText(String(payslip.status ?? "Generated"))}
                               </span>
                             </td>

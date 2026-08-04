@@ -55,17 +55,17 @@ export function PasswordResetForm() {
     if (strength.passed === 2) {
       return {
         width: "66%",
-        bar: "bg-amber-900",
+        bar: "bg-accent",
         text: "Security level: Moderate",
-        textColor: "text-amber-900",
+        textColor: "text-accent-foreground",
       };
     }
 
     return {
       width: "100%",
-      bar: "bg-emerald-800",
+      bar: "bg-accent",
       text: "Security level: Strong",
-      textColor: "text-emerald-800",
+      textColor: "text-accent-foreground",
     };
   }
 
@@ -135,11 +135,11 @@ export function PasswordResetForm() {
       >
         <div className="mb-8 flex flex-col items-center">
           <div
-            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-emerald-300" : "bg-[#2a2927]"
+            className={`mb-4 flex h-16 w-16 items-center justify-center rounded-[12px] shadow-sm ${isResetState ? "bg-accent/40" : "bg-[#2a2927]"
               }`}
           >
             <span
-              className={`material-symbols-outlined text-[32px] ${isResetState ? "text-emerald-900" : "text-zinc-100"
+              className={`material-symbols-outlined text-[32px] ${isResetState ? "text-foreground" : "text-zinc-100"
                 }`}
             >
               {isResetState ? "shield_lock" : "lock_reset"}
@@ -162,7 +162,7 @@ export function PasswordResetForm() {
         ) : null}
 
         {message && !toastVisible ? (
-          <div className="mb-5 rounded-[12px] border border-emerald-800/15 bg-emerald-300/20 px-4 py-3 text-sm text-emerald-900">
+          <div className="mb-5 rounded-[12px] border border-accent/15 bg-accent/20 px-4 py-3 text-sm text-foreground">
             {message}
           </div>
         ) : null}
@@ -194,19 +194,19 @@ export function PasswordResetForm() {
               </div>
 
               <div className="grid grid-cols-1 gap-2 rounded-[8px] border border-zinc-300/30 bg-white/50 px-4 py-4">
-                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[0] ? "text-emerald-800" : "text-on-surface-variant"}`}>
+                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[0] ? "text-accent-foreground" : "text-on-surface-variant"}`}>
                   <span className="material-symbols-outlined text-[16px]">
                     {strength.checks[0] ? "check_circle" : "circle"}
                   </span>
                   8+ characters
                 </div>
-                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[1] ? "text-emerald-800" : "text-on-surface-variant"}`}>
+                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[1] ? "text-accent-foreground" : "text-on-surface-variant"}`}>
                   <span className="material-symbols-outlined text-[16px]">
                     {strength.checks[1] ? "check_circle" : "circle"}
                   </span>
                   At least one number
                 </div>
-                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[2] ? "text-emerald-800" : "text-on-surface-variant"}`}>
+                <div className={`flex items-center gap-2 text-[13px] transition-colors ${strength.checks[2] ? "text-accent-foreground" : "text-on-surface-variant"}`}>
                   <span className="material-symbols-outlined text-[16px]">
                     {strength.checks[2] ? "check_circle" : "circle"}
                   </span>
@@ -293,7 +293,7 @@ export function PasswordResetForm() {
           }`}
       >
         <span
-          className="material-symbols-outlined text-emerald-300"
+          className="material-symbols-outlined text-foreground"
           style={{ fontVariationSettings: "'FILL' 1" }}
         >
           check_circle

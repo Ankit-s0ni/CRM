@@ -662,7 +662,7 @@ function DepartmentNode({
               <Pencil className="size-4" />
             </button>
             <button
-              className="rounded-lg p-2 text-red-700 hover:bg-red-50"
+              className="rounded-lg p-2 text-destructive hover:bg-error-container"
               onClick={() => {
                 if (window.confirm(`Delete ${department.name}?`)) {
                   void onDelete(department.id);
@@ -776,7 +776,7 @@ function DesignationRow({
             <Pencil className="size-4" />
           </button>
           <button
-            className="rounded-lg p-2 text-red-700 hover:bg-red-50"
+            className="rounded-lg p-2 text-destructive hover:bg-error-container"
             onClick={() => {
               if (window.confirm(`Delete ${designation.name}?`)) {
                 void onDelete(designation.id);
@@ -957,7 +957,7 @@ export function EmployeesView() {
           </Link>
           {payrollEnabled && permissions.includes("payroll.runs.read") && (
             <Link
-              className="inline-flex h-11 items-center rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+              className="inline-flex h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-container"
               href="/app/payroll/runs"
             >
               <Banknote className="mr-2 size-4" />
@@ -975,11 +975,11 @@ export function EmployeesView() {
           {payrollEnabled && (
             <div className="mb-5 grid gap-4 lg:grid-cols-3">
               <Link
-                className="group rounded-[6px] border border-[#c9eadb] bg-[#f1fbf6] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                className="group rounded-[6px] theme-tone theme-tone-emerald border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/payroll/runs"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#c9eadb] bg-[#fffefa] text-[#151515] shadow-sm">
+                  <span className="grid size-10 place-items-center rounded-[5px] theme-tone-icon theme-tone-emerald shadow-sm">
                     <Banknote className="size-5" />
                   </span>
                   <span>
@@ -991,11 +991,11 @@ export function EmployeesView() {
                 </div>
               </Link>
               <Link
-                className="group rounded-[6px] border border-[#ded5f2] bg-[#f7f4ff] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                className="group rounded-[6px] theme-tone theme-tone-violet border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/modules/payroll/payslips"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#ded5f2] bg-[#fffefa] text-[#151515]">
+                  <span className="grid size-10 place-items-center rounded-[5px] theme-tone-icon theme-tone-violet shadow-sm">
                     <WalletCards className="size-5" />
                   </span>
                   <span>
@@ -1007,11 +1007,11 @@ export function EmployeesView() {
                 </div>
               </Link>
               <Link
-                className="group rounded-[6px] border border-[#f0dfb8] bg-[#fff9ec] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-[#151515] hover:bg-[#fffefa]"
+                className="group rounded-[6px] theme-tone theme-tone-amber border p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-primary hover:bg-card"
                 href="/app/reports?type=PAYROLL"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid size-10 place-items-center rounded-[5px] border border-[#f0dfb8] bg-[#fffefa] text-[#151515]">
+                  <span className="grid size-10 place-items-center rounded-[5px] theme-tone-icon theme-tone-amber shadow-sm">
                     <ClipboardCheck className="size-5" />
                   </span>
                   <span>
@@ -1517,7 +1517,7 @@ export function EmployeeEditorView() {
           }
           title={tText("Employee login created")}
         >
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          <div className="rounded-xl border theme-tone theme-tone-emerald p-4 text-sm">
             {tText("The Employee self-service role is already assigned. No role setup is required.")}</div>
           <div className="mt-4 grid gap-4 rounded-xl border border-zinc-200 p-5">
             <div>
@@ -1729,12 +1729,12 @@ export function EmployeeImportView() {
                 ))}
               </tbody>
             </table>
-            <div className="border-t border-surface-variant bg-amber-50 px-5 py-4 text-sm text-zinc-500">
+            <div className="border-t border-surface-variant theme-tone theme-tone-amber px-5 py-4 text-sm text-zinc-500">
               {schema.notes.join(" ")} {tText("Maximum")}{schema.maxRows} {tText("employee rows.")}</div>
           </div>
         )}
       </Panel>
-      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-[#beb8ad] bg-[#f3efe6] p-8 text-center">
+      <Panel className="grid min-h-64 place-items-center border-2 border-dashed border-border bg-muted p-8 text-center">
         <div className="max-w-xl">
           <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white text-[#151515] shadow-sm">
             <FileUp className="size-7" />
@@ -1755,11 +1755,11 @@ export function EmployeeImportView() {
           </label>
           <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
-              <ClipboardCheck className="size-3.5 text-emerald-700" />
+              <ClipboardCheck className="size-3.5 theme-tone-text" />
               {tText("Headers checked")}
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 shadow-sm">
-              <AlertTriangle className="size-3.5 text-amber-700" />
+              <AlertTriangle className="size-3.5 theme-tone-text" />
               {tText("Row errors reported")}
             </span>
           </div>
@@ -1790,7 +1790,7 @@ export function EmployeeImportView() {
                   {job.status}
                 </StatusBadge>
                 <div className="min-w-48 text-xs">
-                  <span className="text-emerald-800">
+                  <span className="theme-tone-text">
                     {job.successRows} {tText("imported")}</span>{" "}
                   · <span className="text-error">{job.errorRows} {tText("errors")}</span>
                 </div>
@@ -2033,7 +2033,7 @@ export function UsersRolesView() {
                         tText("No role")}
                     </div>
                   </div>
-                  <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                  <span className="rounded-full theme-tone theme-tone-emerald px-3 py-1 text-xs font-semibold">
                     {user.status}
                   </span>
                 </button>
@@ -2074,7 +2074,7 @@ export function UsersRolesView() {
           onClose={() => setInviteOpen(false)}
         >
           {sent ? (
-            <div className="rounded-xl bg-emerald-100 p-5 text-sm text-emerald-900">
+            <div className="rounded-xl theme-tone theme-tone-emerald p-5 text-sm">
               {tText("Invitation created successfully. Delivery is handled by the configured notification provider.")}</div>
           ) : (
             <div className="grid gap-4">
@@ -2337,7 +2337,7 @@ export function RoleEditorView({ roleId }: { roleId: string }) {
               {tText("Show technical names")}</label>
           </div>
           {saved && (
-            <div className="flex items-center gap-2 rounded-xl bg-emerald-100 p-4 text-sm font-semibold text-emerald-900">
+            <div className="flex items-center gap-2 rounded-xl theme-tone theme-tone-emerald p-4 text-sm font-semibold">
               <CheckCircle2 className="size-5" /> {tText("Role access saved.")}</div>
           )}
           <Panel className="overflow-hidden">

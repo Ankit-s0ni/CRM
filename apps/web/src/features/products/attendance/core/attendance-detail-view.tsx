@@ -267,10 +267,10 @@ export function AttendanceDetailView({
 function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
   const { tText } = useTenantLocalization();
   const values = [
-    { label: tText("Present"), value: data.present, color: "text-emerald-800" },
+    { label: tText("Present"), value: data.present, color: "theme-tone-text" },
     { label: tText("Absent"), value: data.absent, color: "text-error" },
-    { label: tText("Half days"), value: data.halfDays, color: "text-amber-800" },
-    { label: tText("Late days"), value: data.lateDays, color: "text-amber-800" },
+    { label: tText("Half days"), value: data.halfDays, color: "theme-tone-text" },
+    { label: tText("Late days"), value: data.lateDays, color: "theme-tone-text" },
     {
       label: tText("Worked"),
       value: formatMinutes(data.workMinutes),
@@ -279,7 +279,7 @@ function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
     {
       label: tText("Overtime"),
       value: formatMinutes(data.overtimeMinutes),
-      color: "text-sky-700",
+      color: "theme-tone-text",
     },
   ];
   return (

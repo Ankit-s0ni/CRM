@@ -476,8 +476,8 @@ function MetricCard({
 }) {
   const tones = {
     neutral: "bg-zinc-50 text-[#151515]",
-    warning: "bg-amber-100 text-amber-900",
-    success: "bg-emerald-100 text-emerald-900",
+    warning: "theme-tone-icon theme-tone-amber",
+    success: "theme-tone-icon theme-tone-emerald",
     danger: "bg-error-container text-on-error-container",
   };
   return (
@@ -493,9 +493,9 @@ function MetricCard({
 
 function StatusBadge({ status }: { status: DeviceStatus }) {
   const styles: Record<DeviceStatus, string> = {
-    PENDING_APPROVAL: "bg-amber-100 text-amber-900",
-    ACTIVE: "bg-emerald-100 text-emerald-900",
-    BLOCKED: "bg-error-container text-on-error-container",
+    PENDING_APPROVAL: "status-badge status-pending",
+    ACTIVE: "status-badge status-active",
+    BLOCKED: "status-badge status-blocked",
     REPLACED: "bg-zinc-100 text-zinc-500",
   };
   return (

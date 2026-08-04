@@ -312,7 +312,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
   if (!detail)
     return (
       <div className="mx-auto max-w-[1500px] p-8">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-700">
+        <div className="rounded-xl border theme-tone theme-tone-red p-5 text-destructive">
           {error || "Tenant not found."}
         </div>
       </div>
@@ -341,7 +341,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
           Back to tenants
         </Link>
         {error && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-5 rounded-xl border theme-tone theme-tone-red p-4 text-sm theme-tone-text theme-tone-red">
             {error}
           </div>
         )}
@@ -354,7 +354,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold">{tenant.companyName}</h1>
                 <span
-                  className={`rounded-full px-2 py-1 text-[10px] font-bold ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                  className={`rounded-full px-2 py-1 text-[10px] font-bold ${active ? "status-badge status-active" : "status-badge status-blocked"}`}
                 >
                   {tenant.status}
                 </span>
@@ -386,7 +386,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               {canLifecycle && tenant.status !== "CHURNED" && (
                 <Button
                   variant="outline"
-                  className={`h-10 px-4 ${active ? "border-red-200 bg-red-50 text-red-700" : "border-green-200 bg-green-50 text-green-700"}`}
+                  className={`h-10 px-4 ${active ? "border theme-tone theme-tone-red theme-tone-text theme-tone-red" : "border theme-tone theme-tone-emerald theme-tone-text theme-tone-emerald"}`}
                   onClick={() =>
                     setLifecycle(active ? "suspend" : "reactivate")
                   }
@@ -440,19 +440,19 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
           <section className="rounded-xl border border-surface-variant bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-outline">
               <span>License usage</span>
-              <Users className="size-4 text-green-600" />
+              <Users className="size-4 theme-tone-text" />
             </div>
             <div className="mt-4 flex items-end justify-between">
               <span className="text-lg font-semibold">
                 {usage.employees} / {usage.seats}
               </span>
-              <span className="text-xs font-semibold text-green-700">
+              <span className="text-xs font-semibold theme-tone-text">
                 {usage.percentage}% used
               </span>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-200">
               <div
-                className="h-full rounded-full bg-emerald-300"
+                className="h-full rounded-full theme-tone theme-tone-emerald"
                 style={{ width: `${Math.min(100, usage.percentage)}%` }}
               />
             </div>
@@ -528,7 +528,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                   key={capability.key}
                   className="flex items-center gap-3 rounded-lg border border-surface-variant p-3"
                 >
-                  <span className="grid size-8 place-items-center rounded-full bg-green-100 text-green-700">
+                  <span className="grid size-8 place-items-center rounded-full theme-tone-icon theme-tone-emerald">
                     <Check className="size-4" />
                   </span>
                   <div className="min-w-0">
@@ -579,15 +579,15 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </div>
           </section>
         </div>
-        <section className="relative mt-5 overflow-hidden rounded-xl border border-red-200 bg-red-50 p-5">
-          <AlertTriangle className="absolute right-6 top-5 size-16 text-red-100" />
-          <h2 className="font-semibold text-red-700">Danger Zone</h2>
+        <section className="relative mt-5 overflow-hidden rounded-xl border theme-tone theme-tone-red p-5">
+          <AlertTriangle className="absolute right-6 top-5 size-16 text-error-container" />
+          <h2 className="font-semibold text-destructive">Danger Zone</h2>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-on-surface-variant">
             Lifecycle actions revoke access immediately and are written to the
             platform audit trail.
           </p>
           {tenant.status !== "CHURNED" && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-red-100 bg-white p-4">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-error-container bg-white p-4">
               <div>
                 <div className="text-sm font-semibold">
                   {active ? "Suspend tenant" : "Reactivate tenant"}
@@ -602,8 +602,8 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 <Button
                   className={
                     active
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-green-600 text-white hover:bg-green-700"
+                      ? "theme-tone theme-tone-red text-white"
+                      : "theme-tone theme-tone-emerald text-white"
                   }
                   onClick={() =>
                     setLifecycle(active ? "suspend" : "reactivate")
@@ -614,7 +614,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               )}
             </div>
           )}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-red-200 bg-white p-4">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-destructive bg-white p-4">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold">
                 Delete tenant data{" "}
@@ -629,7 +629,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 identities, and retain legally required billing/audit evidence.
               </div>
               {deletionJob?.legalHoldUntil && (
-                <div className="mt-2 text-xs font-medium text-amber-700">
+                <div className="mt-2 text-xs font-medium theme-tone-text">
                   Legal hold until{" "}
                   {new Intl.DateTimeFormat("en", {
                     dateStyle: "medium",
@@ -638,7 +638,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 </div>
               )}
               {deletionJob?.completedAt && (
-                <div className="mt-2 text-xs font-medium text-green-700">
+                <div className="mt-2 text-xs font-medium theme-tone-text">
                   Completed{" "}
                   {new Intl.DateTimeFormat("en", {
                     dateStyle: "medium",
@@ -648,14 +648,14 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 </div>
               )}
               {deletionJob?.failureCode && (
-                <div className="mt-2 text-xs font-medium text-red-700">
+                <div className="mt-2 text-xs font-medium text-destructive">
                   Failure: {deletionJob.failureCode}
                 </div>
               )}
             </div>
             {canLifecycle && !deletionJob && (
               <Button
-                className="bg-red-700 text-white hover:bg-red-800"
+                className="theme-tone theme-tone-red text-white"
                 onClick={() => setDeletionOpen(true)}
               >
                 Schedule deletion
@@ -663,7 +663,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             )}
             {canLifecycle && deletionJob?.status === "FAILED" && (
               <Button
-                className="bg-red-700 text-white hover:bg-red-800"
+                className="theme-tone theme-tone-red text-white"
                 disabled={busy}
                 onClick={retryDeletion}
               >
@@ -700,7 +700,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </button>
             </div>
             {overrideError && (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <div className="mt-4 rounded-lg border theme-tone theme-tone-red p-3 text-sm theme-tone-text theme-tone-red">
                 {overrideError}
               </div>
             )}
@@ -820,8 +820,8 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 disabled={busy || reason.trim().length < 10}
                 className={
                   lifecycle === "suspend"
-                    ? "bg-red-600 text-white"
-                    : "bg-green-600 text-white"
+                    ? "theme-tone theme-tone-red text-white"
+                    : "theme-tone theme-tone-emerald text-white"
                 }
                 onClick={applyLifecycle}
               >
@@ -843,7 +843,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             aria-modal="true"
             aria-labelledby="tenant-deletion-title"
           >
-            <div className="grid size-12 place-items-center rounded-full bg-red-100 text-red-700">
+            <div className="grid size-12 place-items-center rounded-full theme-tone-icon theme-tone-red">
               <AlertTriangle />
             </div>
             <h2 id="tenant-deletion-title" className="mt-4 text-xl font-bold">
@@ -876,7 +876,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 onChange={(e) => setLegalHoldUntil(e.target.value)}
               />
             </label>
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs leading-5 text-red-800">
+            <div className="mt-4 rounded-lg border theme-tone theme-tone-red p-3 text-xs leading-5 theme-tone-text theme-tone-red">
               This is destructive and cannot restore purged biometric or
               personal data.
             </div>
@@ -893,7 +893,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               </Button>
               <Button
                 disabled={busy || deletionReason.trim().length < 10}
-                className="bg-red-700 text-white hover:bg-red-800"
+                className="theme-tone theme-tone-red text-white"
                 onClick={scheduleDeletion}
               >
                 {busy ? "Scheduling..." : "Suspend and schedule"}
@@ -944,7 +944,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
                 placeholder="Describe the support issue..."
               />
             </label>
-            <div className="mt-4 rounded-lg bg-orange-50 p-3 text-xs leading-5 text-orange-900">
+            <div className="mt-4 rounded-lg theme-tone theme-tone-amber p-3 text-xs leading-5 theme-tone-text theme-tone-amber">
               Allowed scopes: employee directory read and workspace module read.
               Billing, identity changes and platform routes remain blocked.
             </div>

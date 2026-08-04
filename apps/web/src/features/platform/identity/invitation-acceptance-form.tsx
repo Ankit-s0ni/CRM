@@ -55,7 +55,7 @@ export function InvitationAcceptanceForm() {
   if (complete) {
     return (
       <section className="rounded-2xl border border-zinc-300 bg-white p-8 text-center shadow-xl shadow-primary/5">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-900">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl theme-tone theme-tone-emerald">
           <ShieldCheck className="size-7" />
         </div>
         <h1 className="mt-5 text-2xl font-bold text-on-surface">
@@ -94,7 +94,7 @@ export function InvitationAcceptanceForm() {
         </div>
       )}
       {error && (
-        <div className="mt-5 rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
+        <div className="mt-5 rounded-xl border border-destructive bg-error-container p-4 text-sm text-on-error-container">
           {error}
         </div>
       )}

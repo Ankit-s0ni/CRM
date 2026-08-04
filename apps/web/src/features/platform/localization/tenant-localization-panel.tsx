@@ -201,7 +201,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
     <section className="mt-5 overflow-hidden rounded-xl border border-surface-variant bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-surface-variant p-5">
         <div className="flex items-start gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
+          <span className="grid size-11 place-items-center rounded-xl bg-muted text-[#151515]">
             <Languages className="size-5" />
           </span>
           <div>
@@ -236,12 +236,12 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
         </div>
       </div>
       {error && (
-        <div className="border-b border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="border-b theme-tone theme-tone-red border p-4 text-sm">
           {error}
         </div>
       )}
       {notice && (
-        <div className="border-b border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <div className="border-b theme-tone theme-tone-emerald border p-4 text-sm">
           {notice}
         </div>
       )}
@@ -271,14 +271,14 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             <span className="text-sm font-semibold">Market suggestion</span>
             <div className="mt-2 flex h-11 items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm">
               <span>{localeNames[data.suggestedRegionalLocale]}</span>
-              <ShieldCheck className="size-4 text-emerald-600" />
+              <ShieldCheck className="size-4 theme-tone-text" />
             </div>
           </div>
           {regionOverridden && (
             <label className="grid gap-2 text-sm font-semibold md:col-span-2">
               Required override reason
               <textarea
-                className="min-h-20 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm"
+                className="min-h-20 rounded-lg border theme-tone theme-tone-amber border p-3 text-sm"
                 disabled={!canManage}
                 onChange={(event) => setOverrideReason(event.target.value)}
                 placeholder="Explain why this tenant does not use its office-country locale..."
@@ -301,7 +301,7 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
                 </span>
               ))}
               {!data.offices.length && (
-                <span className="text-xs text-amber-700">
+                <span className="text-xs theme-tone-text">
                   No office country is configured; base Arabic is suggested.
                 </span>
               )}

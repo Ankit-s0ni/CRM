@@ -25,7 +25,7 @@ export function AdminPage({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-[calc(100vh-76px)] bg-[#fbfaf6] bg-[radial-gradient(#e8e1d4_0.7px,transparent_0.7px)] p-4 [background-size:14px_14px] md:p-5 lg:p-8">
+    <div className="tenant-page-pattern min-h-[calc(100vh-76px)] p-4 md:p-5 lg:p-8">
       <div className="mx-auto w-full max-w-[1440px]">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -147,7 +147,7 @@ export function LoadingState({
       {Array.from({ length: rows }, (_, item) => (
         <div
           key={item}
-          className="h-16 animate-pulse rounded-[6px] border border-[#ded7ca] bg-[#f3efe6]"
+          className="h-16 animate-pulse rounded-[6px] border border-outline-variant bg-muted"
         />
       ))}
     </div>
@@ -164,10 +164,10 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid min-h-56 place-items-center rounded-[6px] border border-dashed border-[#beb8ad] bg-[#fffefa] p-8 text-center">
+    <div className="grid min-h-56 place-items-center rounded-[6px] border border-dashed border-border bg-card p-8 text-center">
       <div>
         <h3 className={uxTypography.sectionTitle}>{title}</h3>
-        <p className="mt-2 max-w-md text-sm leading-6 text-[#5f6572]">{body}</p>
+        <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{body}</p>
         {action && <div className="mt-5">{action}</div>}
       </div>
     </div>
@@ -183,7 +183,7 @@ export function ErrorState({
 }) {
   return (
     <div
-      className="rounded-[6px] border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-[0_2px_8px_rgba(20,20,20,0.04)]"
+      className="rounded-[6px] border p-4 text-sm shadow-[0_2px_8px_rgba(20,20,20,0.04)] dashboard-tone dashboard-tone-red"
       role="alert"
     >
       <div>{message}</div>
@@ -212,7 +212,7 @@ export function PageSection({
           <div>
             {title && <h2 className={uxTypography.sectionTitle}>{title}</h2>}
             {description && (
-              <p className="mt-1 text-sm leading-6 text-[#5f6572]">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 {description}
               </p>
             )}
@@ -235,7 +235,7 @@ export function Toolbar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-[6px] border border-[#beb8ad] bg-[#fffefa] p-3 shadow-[0_2px_8px_rgba(20,20,20,0.04)]",
+        "flex flex-wrap items-center gap-2 rounded-[6px] border border-border bg-card p-3 shadow-[0_2px_8px_rgba(20,20,20,0.04)]",
         className,
       )}
     >
@@ -293,8 +293,8 @@ export function StepList({
             className={cn(
               "flex min-w-0 gap-3 rounded-md border p-3",
               active
-                ? "border-[#151515] bg-[#f3efe6]"
-                : "border-[#ded7ca] bg-[#fbfaf6]",
+                ? "border-primary bg-muted"
+                : "border-outline-variant bg-background",
             )}
             key={step.title}
           >
@@ -302,8 +302,8 @@ export function StepList({
               className={cn(
                 "grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold",
                 complete || active
-                  ? "bg-[#151515] text-white"
-                  : "bg-[#f3efe6] text-[#5f6572]",
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground",
               )}
             >
               {index + 1}

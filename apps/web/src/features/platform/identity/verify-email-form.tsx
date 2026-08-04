@@ -143,7 +143,7 @@ export function VerifyEmailForm() {
 
         <div className="mb-6 flex justify-center">
           <div className="relative flex h-24 w-24 items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-[#f3efe6]" />
+            <div className="absolute inset-0 rounded-full bg-muted" />
             <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-[#151515]">mail</span>
           </div>
         </div>
@@ -161,7 +161,7 @@ export function VerifyEmailForm() {
         ) : null}
 
         {message ? (
-          <div className="mb-5 rounded-[12px] border border-emerald-800/15 bg-emerald-300/20 px-4 py-3 text-left text-sm text-emerald-900">
+          <div className="mb-5 rounded-[12px] border border-accent/15 bg-accent/20 px-4 py-3 text-left text-sm text-foreground">
             {message}
           </div>
         ) : null}

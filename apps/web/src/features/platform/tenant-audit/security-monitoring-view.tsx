@@ -260,7 +260,7 @@ export function SecurityMonitoringView() {
                 key={height + index}
                 className={cn(
                   "flex-1 rounded-t-sm",
-                  index === 6 ? "bg-error" : "bg-[#f3efe6]",
+                  index === 6 ? "bg-error" : "bg-muted",
                 )}
                 style={{ height: `${height}%` }}
               />
@@ -344,7 +344,7 @@ export function SecurityMonitoringView() {
       ) : (
         <Card className="grid min-h-72 place-items-center border-zinc-300 bg-white text-center">
           <div>
-            <ShieldCheck className="mx-auto mb-4 size-12 text-emerald-800" />
+            <ShieldCheck className="mx-auto mb-4 size-12 theme-tone-text" />
             <h2 className="text-xl font-bold">No matching security events</h2>
             <p className="mt-1 text-sm text-outline">
               Change the filters or check back after new attendance attempts.
@@ -809,7 +809,7 @@ function statusLabel(status: AlertStatus) {
 
 function severityClass(severity: SecurityAlert["severity"]) {
   if (severity === "CRITICAL") return "bg-error-container text-on-error-container";
-  if (severity === "WARNING") return "bg-amber-200 text-amber-900";
+  if (severity === "WARNING") return "theme-tone theme-tone-amber";
   return "bg-zinc-100 text-[#151515]";
 }
 

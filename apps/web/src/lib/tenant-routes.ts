@@ -41,6 +41,7 @@ export function resolveTenantLoginDestination(input: {
   savedLanguage?: string | null;
   defaultLanguage: AppLanguage;
   enabledLanguages: AppLanguage[];
+  onboardingCompletedAt?: string | null;
 }) {
   const safeNext = safeLocalizedNextPath(input.nextPath);
   const nextLanguage = safeNext
@@ -58,5 +59,6 @@ export function resolveTenantLoginDestination(input: {
     savedLanguage && input.enabledLanguages.includes(savedLanguage)
       ? savedLanguage
       : input.defaultLanguage;
-  return localizedTenantPath("/app/onboarding", language);
+  const destination = input.onboardingCompletedAt ? "/app" : "/app/onboarding";
+  return localizedTenantPath(destination, language);
 }

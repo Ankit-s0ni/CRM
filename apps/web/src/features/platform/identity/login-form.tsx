@@ -175,6 +175,7 @@ export function LoginForm() {
           savedLanguage,
           defaultLanguage,
           enabledLanguages,
+          onboardingCompletedAt: (user as Record<string, unknown>).onboardingCompletedAt as string | undefined,
         }),
       );
     } catch (error: unknown) {
@@ -203,7 +204,7 @@ export function LoginForm() {
   return (
     <div className="flex w-full flex-col gap-6 rounded-lg border border-border bg-white p-6 shadow-sm sm:p-8">
       {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" id="error-banner" role="alert">
+        <div className="flex items-center gap-3 rounded-lg border theme-tone theme-tone-red border p-4 text-sm" id="error-banner" role="alert">
           <span className="material-symbols-outlined text-error">report</span>
           <span className="font-medium">{error}</span>
         </div>

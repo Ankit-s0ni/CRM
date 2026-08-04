@@ -34,8 +34,8 @@ export default async function WorkspaceUnavailablePage({
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-surface px-6 py-6">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-[#f3efe6] blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-emerald-300/10 blur-[150px]" />
+        <div className="absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-muted blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-accent/10 blur-[150px]" />
       </div>
 
       <main className="relative z-10 flex w-full max-w-[600px] flex-col items-center text-center">
@@ -107,7 +107,7 @@ export default async function WorkspaceUnavailablePage({
             Contact support
           </Link>
           <Link
-            className="rounded-[12px] border-2 border-[#beb8ad] bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-[#151515] transition-all duration-300 hover:bg-[#f3efe6] active:scale-95"
+            className="rounded-[12px] border-2 border-[#beb8ad] bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-[#151515] transition-all duration-300 hover:bg-muted active:scale-95"
             href="/"
           >
             Go to main site

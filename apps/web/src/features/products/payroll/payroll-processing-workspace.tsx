@@ -237,7 +237,7 @@ function PayrollTable({
           {tableRows.map((row, index) => {
             const id = String(row.id ?? index);
             return (
-              <tr className={activeRunId === id ? "bg-[#f3efe6]" : undefined} key={id}>
+              <tr className={activeRunId === id ? "bg-muted" : undefined} key={id}>
                 {columns.map((column) => (
                   <td className="px-4 py-3" key={column}>
                     {column.toLowerCase().includes("status") ? (

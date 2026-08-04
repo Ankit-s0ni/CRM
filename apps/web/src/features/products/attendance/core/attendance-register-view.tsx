@@ -198,19 +198,19 @@ export function AttendanceRegisterView() {
               (summary?.statuses.PRESENT_OPEN ?? 0),
           )}
           icon={CheckCircle2}
-          tone="text-emerald-800 bg-emerald-100"
+          tone="theme-tone-icon theme-tone-emerald"
         />
         <Metric
           label={tText("Late minutes")}
           value={formatMinutes(summary?.totals.lateMinutes ?? 0)}
           icon={Clock3}
-          tone="text-amber-800 bg-amber-200"
+          tone="theme-tone-icon theme-tone-amber"
         />
         <Metric
           label={tText("Overtime")}
           value={formatMinutes(summary?.totals.overtimeMinutes ?? 0)}
           icon={ShieldAlert}
-          tone="text-sky-700 bg-sky-200"
+          tone="theme-tone-icon theme-tone-teal"
         />
       </section>
       <Toolbar className="mb-5 items-end">
@@ -404,10 +404,10 @@ function RegisterTable({
                   </span>
                 </Td>
                 <Td>
-                  <span className="text-xs text-amber-800">
+                  <span className="text-xs theme-tone-text theme-tone-amber">
                     L {formatMinutes(row.lateMinutes)}
                   </span>
-                  <span className="ml-2 text-xs text-sky-700">
+                  <span className="ml-2 text-xs theme-tone-text theme-tone-teal">
                     OT {formatMinutes(row.overtimeMinutes)}
                   </span>
                 </Td>
@@ -419,7 +419,7 @@ function RegisterTable({
                     {row.evidence.verification.failed > 0 ? (
                       <ShieldAlert className="size-4 text-error" />
                     ) : (
-                      <CheckCircle2 className="size-4 text-emerald-800" />
+                      <CheckCircle2 className="size-4 theme-tone-text theme-tone-emerald" />
                     )}
                     <span className="text-[10px] text-muted-foreground">
                       {row.evidence.sources.join(", ") || tText("Calculated")}

@@ -138,7 +138,7 @@ export function SelfAttendanceCard({
     );
   if (!today)
     return error ? (
-      <div className="rounded-xl border border-red-300 bg-error-container p-4 text-sm text-on-error-container">
+      <div className="rounded-xl border border-error bg-error-container p-4 text-sm text-on-error-container">
         {error}
       </div>
     ) : null;

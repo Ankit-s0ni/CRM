@@ -379,7 +379,7 @@ export function TenantBillingView() {
                   <div className="flex flex-wrap items-center gap-2">
                     <strong className="text-sm">{method.displayName}</strong>
                     {method.isDefault && (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800">
+                      <span className="rounded-full theme-tone theme-tone-emerald px-2 py-0.5 text-[9px] font-bold">
                         DEFAULT
                       </span>
                     )}
@@ -397,7 +397,7 @@ export function TenantBillingView() {
                   size="icon"
                   onClick={() => void revokeMethod(method)}
                 >
-                  <Trash2 className="text-red-600" />
+                  <Trash2 className="text-destructive" />
                 </Button>
               </div>
             ))}

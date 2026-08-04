@@ -261,7 +261,7 @@ export function PayrollFoundationWorkspace() {
       ) : tab ? (
         <div className="grid gap-5">
           <button
-            className="w-fit rounded-lg border border-[#beb8ad] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+            className="w-fit rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
             onClick={() => setActive("overview")}
             type="button"
           >
@@ -312,7 +312,7 @@ function PayrollTabPanel({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <tab.icon className="size-5 text-[#151515]" />
+              <tab.icon className="size-5 text-foreground" />
               <h2 className="text-xl font-semibold text-zinc-900">
                 {tText(tab.label)}
               </h2>
@@ -452,7 +452,7 @@ function PayrollOverview({
     title: string;
   }> = [
     {
-      accent: "bg-[#f0fff7] text-emerald-700",
+      accent: "theme-tone-icon theme-tone-emerald",
       description: tText("Set the foundation for how payroll works in your company."),
       icon: Settings2,
       items: [
@@ -464,7 +464,7 @@ function PayrollOverview({
       title: tText("1. Basic setup"),
     },
     {
-      accent: "bg-[#f3edff] text-violet-700",
+      accent: "theme-tone-icon theme-tone-violet",
       description: tText("Define what employees are paid and how salary is calculated."),
       icon: WalletCards,
       items: [
@@ -476,7 +476,7 @@ function PayrollOverview({
       title: tText("2. Pay setup"),
     },
     {
-      accent: "bg-[#fff6e8] text-amber-700",
+      accent: "theme-tone-icon theme-tone-amber",
       description: tText("Choose the employee details required before salary can run."),
       icon: UserRound,
       items: [
@@ -488,7 +488,7 @@ function PayrollOverview({
       title: tText("3. Employee payroll setup"),
     },
     {
-      accent: "bg-[#eef7ff] text-sky-700",
+      accent: "theme-tone-icon theme-tone-sky",
       description: tText("Set approval steps and connect payroll to finance records."),
       icon: ShieldCheck,
       items: [
@@ -516,20 +516,20 @@ function PayrollOverview({
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="grid gap-5">
-        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
+        <Panel className="border-border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="reference-home-hand text-xs font-bold uppercase tracking-[0.18em] text-[#151515]">
+              <p className="reference-home-hand text-xs font-bold uppercase tracking-[0.18em] text-foreground">
                 {tText("Organization setup")}
               </p>
-              <h2 className="mt-2 text-2xl font-bold text-[#151515]">
+              <h2 className="mt-2 text-2xl font-bold text-foreground">
                 {tText("Set up in this order")}
               </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5f6572]">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                 {tText("Create payroll rules once. Employee salary work, payslips, and monthly runs stay outside Modules.")}
               </p>
             </div>
-            <div className="rounded-full border border-[#beb8ad] bg-[#fbfaf6] px-4 py-2 text-sm font-semibold text-emerald-700">
+            <div className="rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold theme-tone-text theme-tone-emerald">
               {tText("Setup progress")}: {readyCount} / {readiness.length}
             </div>
           </div>
@@ -542,22 +542,22 @@ function PayrollOverview({
               ? group.openKey
               : group.items.find((item) => canOpen(item.key))?.key;
             return (
-              <Panel className="border-[#beb8ad] bg-[#fffefa] p-5" key={group.title}>
+              <Panel className="border-border bg-card p-5" key={group.title}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className={cn("grid size-12 shrink-0 place-items-center rounded-full", group.accent)}>
                       <Icon className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-[#151515]">{group.title}</h3>
-                      <p className="mt-1 text-sm leading-5 text-[#5f6572]">
+                      <h3 className="text-lg font-bold text-foreground">{group.title}</h3>
+                      <p className="mt-1 text-sm leading-5 text-muted-foreground">
                         {group.description}
                       </p>
                     </div>
                   </div>
                   {openKey && (
                     <button
-                      className="rounded-lg border border-[#beb8ad] bg-[#fbfaf6] px-4 py-2 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+                      className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
                       onClick={() => onOpen(openKey)}
                       type="button"
                     >
@@ -565,27 +565,27 @@ function PayrollOverview({
                     </button>
                   )}
                 </div>
-                <div className="mt-5 divide-y divide-[#e5dfd2] border-t border-[#e5dfd2]">
+                <div className="mt-5 divide-y divide-outline-variant border-t border-outline-variant">
                   {group.items.map((item) => (
                     <button
-                      className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm transition hover:text-[#151515]"
+                      className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm transition hover:text-foreground"
                       disabled={!canOpen(item.key)}
                       key={item.key}
                       onClick={() => onOpen(item.key)}
                       type="button"
                     >
-                      <span className="flex items-center gap-2 font-semibold text-[#151515]">
-                        <CheckCircle2 className="size-4 text-emerald-600" />
+                      <span className="flex items-center gap-2 font-semibold text-foreground">
+                        <CheckCircle2 className="size-4 theme-tone-text theme-tone-emerald" />
                         {item.label}
                       </span>
                       <span
                         className={cn(
                           "rounded-full px-2.5 py-1 text-xs font-bold",
                           item.note
-                            ? "bg-[#f3efe6] text-[#5f6572]"
+                            ? "bg-muted text-muted-foreground"
                             : item.ready
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50 text-amber-700",
+                              ? "status-badge status-enabled"
+                              : "status-badge status-pending",
                         )}
                       >
                         {item.note ?? tText(item.ready ? "Ready" : "Needed")}
@@ -598,8 +598,8 @@ function PayrollOverview({
           })}
         </div>
 
-        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
-          <h3 className="text-base font-bold text-[#151515]">{tText("Recommended order")}</h3>
+        <Panel className="border-border bg-card p-5">
+          <h3 className="text-base font-bold text-foreground">{tText("Recommended order")}</h3>
           <div className="mt-5 grid gap-3 md:grid-cols-5">
             {[
               tText("Basic setup"),
@@ -608,8 +608,8 @@ function PayrollOverview({
               tText("Controls and finance"),
               tText("Ready for payroll runs"),
             ].map((item, index) => (
-              <div className="flex items-center gap-3 text-sm font-semibold text-[#151515]" key={item}>
-                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#beb8ad] bg-[#fbfaf6] text-xs">
+              <div className="flex items-center gap-3 text-sm font-semibold text-foreground" key={item}>
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-border bg-background text-xs">
                   {index + 1}
                 </span>
                 {item}
@@ -617,7 +617,7 @@ function PayrollOverview({
             ))}
           </div>
           {!permissions.has("payroll.protected-data.read") && (
-            <p className="mt-4 text-sm text-[#5f6572]">
+            <p className="mt-4 text-sm text-muted-foreground">
               {tText("Bank details and government IDs are hidden because this user does not have permission to view protected data.")}
             </p>
           )}
@@ -625,39 +625,39 @@ function PayrollOverview({
       </div>
 
       <div className="grid h-fit gap-5">
-        <Panel className="border-[#beb8ad] bg-[#fffefa] p-5">
-          <h3 className="text-base font-bold text-[#151515]">{tText("What this page is for")}</h3>
-          <div className="mt-4 grid gap-3 text-sm text-[#5f6572]">
+        <Panel className="border-border bg-card p-5">
+          <h3 className="text-base font-bold text-foreground">{tText("What this page is for")}</h3>
+          <div className="mt-4 grid gap-3 text-sm text-muted-foreground">
             {[tText("Company-level payroll setup"), tText("Done once or updated sometimes"), tText("Shared by every payroll run")].map((item) => (
               <div className="flex items-center gap-3" key={item}>
-                <CheckCircle2 className="size-4 text-emerald-600" />
+                <CheckCircle2 className="size-4 theme-tone-text theme-tone-emerald" />
                 {item}
               </div>
             ))}
           </div>
         </Panel>
 
-        <Panel className="border-[#beb8ad] bg-[#f7fff8] p-5">
-          <h3 className="text-base font-bold text-[#151515]">{tText("Where daily work happens")}</h3>
+        <Panel className="border-border bg-[#f7fff8] p-5">
+          <h3 className="text-base font-bold text-foreground">{tText("Where daily work happens")}</h3>
           <div className="mt-4 grid gap-3 text-sm">
-            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/employees">
+            <a className="flex items-center justify-between text-foreground hover:text-foreground" href="/app/employees">
               {tText("Employee payroll details")} <span aria-hidden="true">→</span>
             </a>
-            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/payroll/runs">
+            <a className="flex items-center justify-between text-foreground hover:text-foreground" href="/app/payroll/runs">
               {tText("Monthly salary processing")} <span aria-hidden="true">→</span>
             </a>
-            <a className="flex items-center justify-between text-[#151515] hover:text-[#151515]" href="/app/reports?type=PAYROLL">
+            <a className="flex items-center justify-between text-foreground hover:text-foreground" href="/app/reports?type=PAYROLL">
               {tText("Payslips and exports")} <span aria-hidden="true">→</span>
             </a>
           </div>
         </Panel>
 
-        <Panel className="border-[#beb8ad] bg-[#fff9ef] p-5">
-          <h3 className="text-base font-bold text-[#151515]">{tText("Need attention")}</h3>
-          <p className="mt-3 text-sm leading-6 text-[#5f6572]">
+        <Panel className="border-border bg-[#fff9ef] p-5">
+          <h3 className="text-base font-bold text-foreground">{tText("Need attention")}</h3>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {tText("Check employees missing payroll setup before running salary.")}
           </p>
-          <a className="mt-4 inline-flex rounded-lg border border-[#beb8ad] bg-[#fffefa] px-4 py-2 text-sm font-semibold text-[#151515] hover:bg-[#f3efe6]" href="/app/employees">
+          <a className="mt-4 inline-flex rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted" href="/app/employees">
             {tText("View employees")}
           </a>
         </Panel>
@@ -858,7 +858,7 @@ function PayGroupForm({ onSaved }: { onSaved: () => void }) {
         <TextField form={form} name="effectiveFrom" setForm={setForm} type="date" />
       </FieldGrid>
       {calendars.error && (
-        <p className="mt-3 text-sm text-red-700">{calendars.error}</p>
+        <p className="mt-3 text-sm text-destructive">{calendars.error}</p>
       )}
     </FormPanel>
   );
@@ -1301,7 +1301,7 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
         <TextField form={form} name="effectiveFrom" setForm={setForm} type="date" />
       </FieldGrid>
       {components.error && (
-        <p className="mt-3 text-sm text-red-700">{components.error}</p>
+        <p className="mt-3 text-sm text-destructive">{components.error}</p>
       )}
     </FormPanel>
   );
@@ -1678,15 +1678,15 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
             <TextField form={form} name="effectiveFrom" setForm={setForm} type="date" />
           </FieldGrid>
           {existingStructureByCode ? (
-            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <p className="text-sm font-semibold text-amber-900">
+            <div className="mt-4 rounded-lg border theme-tone theme-tone-amber p-4">
+              <p className="text-sm font-semibold theme-tone-text theme-tone-amber">
                 {tText("This salary template already exists")}
               </p>
-              <p className="mt-1 text-sm leading-6 text-amber-800">
+              <p className="mt-1 text-sm leading-6 theme-tone-text theme-tone-amber">
                 {tText("Use the existing salary template instead of creating another one with the same code.")}
               </p>
               <button
-                className="mt-3 inline-flex min-h-10 items-center rounded-lg bg-amber-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-amber-700"
+                className="mt-3 inline-flex min-h-10 items-center rounded-lg theme-button-primary px-4 text-sm font-semibold shadow-sm"
                 onClick={selectExistingStructure}
                 type="button"
               >
@@ -1738,16 +1738,16 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
             selectedPercentageTotal={selectedPercentageTotal}
           />
           {!inferredEditableSetupId && form.structureId ? (
-            <p className="mt-3 text-sm text-amber-700">
+            <p className="mt-3 text-sm theme-tone-text theme-tone-amber">
               {tText("Click Start editing selected template before adding pay lines.")}
             </p>
           ) : null}
           {canMakeReady ? (
-            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <p className="text-sm font-semibold text-amber-900">
+            <div className="mt-4 rounded-lg border theme-tone theme-tone-amber p-4">
+              <p className="text-sm font-semibold theme-tone-text theme-tone-amber">
                 {tText("Next step: make this salary template ready")}
               </p>
-              <p className="mt-1 text-sm leading-6 text-amber-800">
+              <p className="mt-1 text-sm leading-6 theme-tone-text theme-tone-amber">
                 {tText("Employees cannot use this template in Compensation until you click Make template ready.")}
               </p>
             </div>
@@ -1755,15 +1755,15 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
         </>
       ) : null}
       {!activeComponentOptions.length && (
-        <p className="mt-3 text-sm text-amber-700">
+        <p className="mt-3 text-sm theme-tone-text theme-tone-amber">
           {tText("No ready pay lines yet. Go to Components, create BASIC, then click Make pay line ready.")}
         </p>
       )}
       {structures.error && (
-        <p className="mt-3 text-sm text-red-700">{structures.error}</p>
+        <p className="mt-3 text-sm text-destructive">{structures.error}</p>
       )}
       {components.error && (
-        <p className="mt-3 text-sm text-red-700">{components.error}</p>
+        <p className="mt-3 text-sm text-destructive">{components.error}</p>
       )}
     </FormPanel>
   );
@@ -1847,7 +1847,7 @@ function EmployeeProfileForm({ current, employeeId, onSaved }: { current: Record
         {current && <TextField form={form} name="version" setForm={setForm} />}
       </FieldGrid>
       {payGroups.error && (
-        <p className="mt-3 text-sm text-red-700">{payGroups.error}</p>
+        <p className="mt-3 text-sm text-destructive">{payGroups.error}</p>
       )}
     </FormPanel>
   );
@@ -1938,14 +1938,14 @@ function CompensationForm({ employeeId, onSaved }: { employeeId: string; onSaved
         <TextField form={form} name="reason" setForm={setForm} />
       </FieldGrid>
       {!form.salaryStructureVersionId && (
-        <p className="mt-3 text-sm text-amber-700">
+        <p className="mt-3 text-sm theme-tone-text theme-tone-amber">
           {structureVersionOptions.length
             ? tText("Select a salary structure version before creating compensation.")
             : tText("Activate a salary structure version before creating compensation.")}
         </p>
       )}
       {structures.error && (
-        <p className="mt-3 text-sm text-red-700">{structures.error}</p>
+        <p className="mt-3 text-sm text-destructive">{structures.error}</p>
       )}
     </FormPanel>
   );
@@ -2082,7 +2082,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
         }
         title={tText("Approval policy")}
       >
-        <p className="text-sm text-amber-700">
+        <p className="text-sm theme-tone-text theme-tone-amber">
           {tText("No approval policy exists. Create one to define who can approve payroll runs.")}
         </p>
       </FormPanel>
@@ -2104,7 +2104,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
                 value={nameDraft}
               />
               <button
-                className="rounded-lg bg-[#151515] px-3 py-1.5 text-xs font-semibold text-white"
+                className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-semibold text-white"
                 onClick={async () => {
                   setEditingName(false);
                   await apiClient.patch(
@@ -2471,18 +2471,18 @@ function ResourceNextStep({
       ? tText("After this, go to Structures and add it to a salary template.")
       : tText("After this, go to Compensation and assign it to employees.");
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border theme-tone theme-tone-amber px-4 py-3">
       <div>
-        <p className="text-sm font-semibold text-amber-950">
+        <p className="text-sm font-semibold theme-tone-text theme-tone-amber">
           {tText("Next step")}: {readyLabel}
         </p>
-        <p className="mt-1 text-sm leading-6 text-amber-800">
+        <p className="mt-1 text-sm leading-6 theme-tone-text theme-tone-amber">
           {draft.name ? `${draft.name}: ` : ""}
           {body} {after}
         </p>
       </div>
       <button
-        className="inline-flex min-h-10 items-center rounded-lg bg-amber-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-amber-700"
+        className="inline-flex min-h-10 items-center rounded-lg theme-button-primary px-4 text-sm font-semibold shadow-sm"
         onClick={() => {
           const confirmText =
             tabKey === "components"
@@ -2500,7 +2500,7 @@ function ResourceNextStep({
       >
         {readyLabel}
       </button>
-      {error ? <p className="basis-full text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="basis-full text-sm text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -2568,7 +2568,7 @@ function RowActions({
         </button>
       ))}
       </div>
-      {error ? <p className="text-xs text-red-700">{error}</p> : null}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -2673,7 +2673,7 @@ function FormPanel({
               {action}
             </PrimaryButton>
             {submitDisabled && submitDisabledReason ? (
-              <p className="max-w-72 text-xs text-amber-700">
+              <p className="max-w-72 text-xs theme-tone-text theme-tone-amber">
                 {submitDisabledReason}
               </p>
             ) : null}
@@ -2681,7 +2681,7 @@ function FormPanel({
         </div>
       </div>
       <div className="mt-4">{children}</div>
-      {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+      {message && <p className="mt-3 text-sm theme-tone-text theme-tone-emerald">{message}</p>}
       {error && <div className="mt-3"><ErrorState message={error} /></div>}
     </Panel>
   );
@@ -2718,16 +2718,16 @@ function InlineAction({
         {tText(action)}
       </button>
       {disabled && disabledReason ? (
-        <p className="max-w-72 text-xs text-amber-700">{disabledReason}</p>
+        <p className="max-w-72 text-xs theme-tone-text theme-tone-amber">{disabledReason}</p>
       ) : null}
-      {error && <p className="max-w-72 text-xs text-red-700">{error}</p>}
+      {error && <p className="max-w-72 text-xs text-destructive">{error}</p>}
     </div>
   );
 }
 
 function SetupHint({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-4 rounded-lg border border-[#beb8ad] bg-[#f3efe6] px-4 py-3 text-sm leading-6 text-[#151515]">
+    <div className="mb-4 rounded-lg border border-border bg-muted px-4 py-3 text-sm leading-6 text-foreground">
       {children}
     </div>
   );
@@ -2779,7 +2779,7 @@ function EmployeeSelect({
           />
         </Field>
       )}
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
@@ -3012,13 +3012,13 @@ function PayLineChecklist({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-amber-700">
+        <p className="text-sm theme-tone-text theme-tone-amber">
           {disabled
             ? tText("Create or select an editable salary template first.")
             : tText("No pay lines added to this template yet.")}
         </p>
       )}
-      <div className="grid gap-2 rounded-lg border border-[#beb8ad] bg-[#f3efe6] p-3 text-sm text-[#151515] md:grid-cols-3">
+      <div className="grid gap-2 rounded-lg border border-border bg-muted p-3 text-sm text-foreground md:grid-cols-3">
         <div>
           <span className="font-semibold">{tText("Already used")}: </span>
           {formatPercentageInput(existingPercentageTotal)}%

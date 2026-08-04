@@ -53,7 +53,7 @@ export function FeatureInfo({
               "min-h-11 min-w-11 gap-2 rounded-full",
               tone === "inverse"
                 ? "text-surface-variant hover:bg-white/10 hover:text-white"
-                : "text-on-surface-variant hover:bg-zinc-50 hover:text-[#151515]",
+                : "text-on-surface-variant hover:bg-zinc-50 hover:text-foreground",
               label && "px-3",
               className,
             )}
@@ -100,7 +100,7 @@ export function FeatureHelpDrawer({
           <ol className="space-y-3">
             {entry.steps.map((step, index) => (
               <li className="flex gap-3" key={step}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-[#151515]">
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-bold text-foreground">
                   {index + 1}
                 </span>
                 <span className="pt-0.5">{step}</span>
@@ -112,7 +112,7 @@ export function FeatureHelpDrawer({
         {entry.effect && (
           <div className="rounded-xl border border-zinc-300 bg-zinc-50 p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold">
-              <ShieldCheck className="size-4 text-[#151515]" />
+              <ShieldCheck className="size-4 text-foreground" />
               What it affects
             </h3>
             <p className="mt-2 text-sm leading-6 text-zinc-500">

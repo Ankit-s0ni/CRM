@@ -515,9 +515,9 @@ function SummaryCard({
   tone: "success" | "danger" | "warning" | "neutral";
 }) {
   const styles = {
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    danger: "border-red-200 bg-red-50 text-red-800",
-    warning: "border-amber-300 bg-amber-50 text-amber-800",
+    success: "theme-tone theme-tone-emerald border",
+    danger: "theme-tone theme-tone-red border",
+    warning: "theme-tone theme-tone-amber border",
     neutral: "border-zinc-300 bg-white text-[#151515]",
   };
   return (
@@ -637,7 +637,7 @@ export function AttendanceTaskCard({
       <span
         className={cn(
           "grid min-w-8 place-items-center rounded-full px-2 py-1 text-xs font-bold",
-          value ? "bg-amber-200 text-amber-800" : "bg-emerald-100 text-emerald-800",
+          value ? "theme-tone theme-tone-amber" : "theme-tone theme-tone-emerald",
         )}
       >
         {value}
@@ -799,7 +799,7 @@ function SetupHealth({
               <Icon
                 className={cn(
                   "size-4",
-                  ready ? "text-emerald-800" : "text-amber-800",
+                  ready ? "theme-tone-text" : "theme-tone-text",
                 )}
               />
               <span className="text-xs font-semibold">{label}</span>
@@ -912,8 +912,8 @@ export function SetupHealthBadge({
   status: "ready" | "attention" | "unknown";
 }) {
   const values = {
-    ready: ["Ready", "bg-emerald-100 text-emerald-800"],
-    attention: ["Needs setup", "bg-amber-200 text-amber-800"],
+    ready: ["Ready", "theme-tone theme-tone-emerald"],
+    attention: ["Needs setup", "theme-tone theme-tone-amber"],
     unknown: ["Review", "bg-zinc-100 text-on-surface-variant"],
   } as const;
   return (

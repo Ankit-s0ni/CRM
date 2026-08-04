@@ -181,7 +181,7 @@ export function TenantDirectory() {
           </button>
         </div>
         {error && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-5 rounded-xl border theme-tone theme-tone-red p-4 text-sm theme-tone-text theme-tone-red">
             {error}
           </div>
         )}
@@ -279,7 +279,7 @@ export function TenantDirectory() {
                   </div>
                   <div>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${tenant.status === "ACTIVE" ? "bg-green-100 text-green-700" : tenant.status === "SUSPENDED" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${tenant.status === "ACTIVE" ? "status-badge status-active" : tenant.status === "SUSPENDED" ? "status-badge status-blocked" : "status-badge status-pending"}`}
                     >
                       <span className="size-1.5 rounded-full bg-current" />
                       {tenant.status === "TRIAL"

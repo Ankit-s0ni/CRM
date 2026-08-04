@@ -457,7 +457,7 @@ export function OnboardingWizard() {
                       <strong>{tText("Upload your company logo")}</strong>
                       <p className="text-sm text-outline">{tText("PNG, JPEG or WebP, up to 2 MB")}</p>
                       {settings.companyLogoKey && (
-                        <p className="mt-1 text-xs font-semibold text-emerald-800">{tText("Logo uploaded")}</p>
+                        <p className="mt-1 text-xs font-semibold theme-tone-text theme-tone-emerald">{tText("Logo uploaded")}</p>
                       )}
                     </div>
                     <input
@@ -639,7 +639,7 @@ export function OnboardingWizard() {
                     {stepDefinitions.slice(0, 5).map(({ key, label }) => (
                       <div className="flex items-center justify-between" key={key}>
                         <span>{label}</span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-800">
+                        <span className="inline-flex items-center gap-1 font-semibold theme-tone-text theme-tone-emerald">
                           <Check className="size-4" /> {tText("Ready")}
                         </span>
                       </div>
@@ -790,7 +790,7 @@ export function CompanySettingsView() {
                   onChange={(weeklyOffs) => change({ weeklyOffs })}
                 />
               </div>
-              {saved && <p className="mt-4 text-sm font-medium text-emerald-800">{tText("Settings saved.")}</p>}
+              {saved && <p className="mt-4 text-sm font-medium theme-tone-text theme-tone-emerald">{tText("Settings saved.")}</p>}
             </Panel>
             <Panel className="p-7">
               <h2 className="font-semibold">{tText("Company logo")}</h2>
@@ -921,7 +921,7 @@ export function AttendanceDefaultsView() {
             </Panel>
           </div>
           {saved && (
-            <p className="mt-4 text-sm font-semibold text-emerald-800">{tText("Attendance defaults saved.")}</p>
+            <p className="mt-4 text-sm font-semibold theme-tone-text theme-tone-emerald">{tText("Attendance defaults saved.")}</p>
           )}
           {dirty && (
             <div className="sticky bottom-4 mt-6 flex items-center justify-between rounded-xl border border-zinc-300 bg-white p-4 shadow-xl">

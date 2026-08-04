@@ -24,7 +24,7 @@ function canonicalizePlatformHost(request: NextRequest) {
   return NextResponse.redirect(destination);
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isPlatformRoute(pathname)) {

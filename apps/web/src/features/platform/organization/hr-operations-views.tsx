@@ -517,9 +517,9 @@ export function ReportsCenterView({
             className="relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:border-[#151515] hover:shadow-md"
             key={cardType}
           >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#beb8ad] via-[#d8d1c4] to-[#beb8ad]" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-border via-border to-border" />
             <div className="flex items-start gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-[#151515]">
                 <Icon className="size-5" />
               </span>
               <div className="min-w-0">
@@ -531,7 +531,7 @@ export function ReportsCenterView({
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               <button
-                className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-semibold text-[#151515] transition hover:bg-[#f3efe6]"
+                className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-semibold text-[#151515] transition hover:bg-muted"
                 onClick={() => setType(cardType)}
                 type="button"
               >
@@ -758,7 +758,7 @@ export function PayrollLockView() {
             </h2>
             <FeatureInfo helpKey="payroll-lock" />
           </div>
-          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+          <div className="mt-4 rounded-xl border theme-tone theme-tone-amber p-4 text-sm leading-6">
             {tText(
               "Locking freezes attendance, corrections, OD/WFH changes, and leave integration for the selected period. Confirm the completed payroll export and affected month before continuing.",
             )}

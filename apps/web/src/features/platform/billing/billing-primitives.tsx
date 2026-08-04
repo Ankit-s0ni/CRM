@@ -3,18 +3,18 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const statusTones: Record<string, string> = {
-  ACTIVE: "bg-emerald-100 text-emerald-800",
-  PAID: "bg-emerald-100 text-emerald-800",
-  SUCCEEDED: "bg-emerald-100 text-emerald-800",
+  ACTIVE: "theme-tone theme-tone-emerald",
+  PAID: "theme-tone theme-tone-emerald",
+  SUCCEEDED: "theme-tone theme-tone-emerald",
   OPEN: "bg-[#ede7dc] text-[#151515]",
   TRIALING: "bg-[#ede7dc] text-[#151515]",
-  PENDING: "bg-amber-100 text-amber-800",
-  REMINDED: "bg-amber-100 text-amber-800",
-  GRACE: "bg-orange-100 text-orange-800",
-  PAST_DUE: "bg-orange-100 text-orange-800",
-  SUSPEND_PENDING: "bg-red-100 text-red-800",
-  SUSPENDED: "bg-red-100 text-red-800",
-  FAILED: "bg-red-100 text-red-800",
+  PENDING: "theme-tone theme-tone-amber",
+  REMINDED: "theme-tone theme-tone-amber",
+  GRACE: "theme-tone theme-tone-amber",
+  PAST_DUE: "theme-tone theme-tone-amber",
+  SUSPEND_PENDING: "theme-tone theme-tone-red",
+  SUSPENDED: "theme-tone theme-tone-red",
+  FAILED: "theme-tone theme-tone-red",
   VOID: "bg-slate-100 text-slate-700",
   UNCOLLECTIBLE: "bg-slate-100 text-slate-700",
   INACTIVE: "bg-slate-100 text-slate-700",
@@ -39,10 +39,10 @@ export function MetricCard({ label, value, detail, icon }: { label: string; valu
 
 export function BillingNotice({ tone = "info", children }: { tone?: "info" | "success" | "warning" | "danger"; children: ReactNode }) {
   const styles = {
-    info: "border-[#beb8ad] bg-[#f3efe6] text-[#151515]",
-    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    warning: "border-amber-200 bg-amber-50 text-amber-900",
-    danger: "border-red-200 bg-red-50 text-red-900",
+    info: "border-border bg-muted text-[#151515]",
+    success: "theme-tone theme-tone-emerald border",
+    warning: "theme-tone theme-tone-amber border",
+    danger: "theme-tone theme-tone-red border",
   };
   const Icon = tone === "success" ? CheckCircle2 : tone === "info" ? Clock3 : AlertCircle;
   return <div className={cn("flex items-start gap-3 rounded-xl border p-4 text-sm", styles[tone])}><Icon className="mt-0.5 size-4 shrink-0" /><div>{children}</div></div>;

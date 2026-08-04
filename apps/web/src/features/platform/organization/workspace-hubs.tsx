@@ -188,7 +188,7 @@ export function ModulesHub() {
                       "Attendance setup for policies, offices, shifts, rosters, holidays, devices, and security.",
                     )}
                   </p>
-                  <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
+                  <span className="mt-4 inline-flex rounded-full theme-tone theme-tone-emerald px-3 py-1 text-xs font-bold">
                     {tText("Enabled")}
                   </span>
                   {attendanceAddOns?.map((module) => (
@@ -224,7 +224,7 @@ export function ModulesHub() {
                         "Company payroll setup for pay groups, salary rules, approval steps, and accounting links.",
                       )}
                     </p>
-                    <span className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
+                    <span className="mt-4 inline-flex rounded-full theme-tone theme-tone-emerald px-3 py-1 text-xs font-bold">
                       {tText("Enabled")}
                     </span>
                   </div>
@@ -232,19 +232,19 @@ export function ModulesHub() {
               </Link>
             )}
           {shouldShowPayrollEnablement && (
-            <Panel className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+            <Panel className="rounded-2xl border theme-tone theme-tone-amber p-6">
               <div className="flex items-start gap-4">
-                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white text-amber-800">
+                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white theme-tone-text">
                   <WalletCards className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-bold">Payroll</h2>
-                  <p className="mt-2 text-sm leading-6 text-amber-900">
+                  <p className="mt-2 text-sm leading-6 theme-tone-text">
                     Your role has payroll permissions, but Payroll is not
                     enabled for this workspace yet. Enable the PAYROLL module
                     from platform tenant modules before using payroll screens.
                   </p>
-                  <span className="mt-4 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-amber-900">
+                  <span className="mt-4 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold theme-tone-text">
                     Needs workspace enablement
                   </span>
                 </div>
@@ -557,7 +557,7 @@ export function SettingsHub() {
                           {description}
                         </p>
                         {readiness?.issues[0] && (
-                          <p className="mt-3 text-xs font-medium text-amber-800">
+                          <p className="mt-3 text-xs font-medium theme-tone-text">
                             {readiness.issues[0].message}
                           </p>
                         )}
@@ -659,7 +659,7 @@ function WorkspaceLaunchChecklist({
                 className={cn(
                   "grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold",
                   step.complete
-                    ? "bg-emerald-50 text-emerald-800"
+                    ? "theme-tone theme-tone-emerald"
                     : index === firstIncomplete
                       ? "bg-[#151515] text-white"
                       : "bg-zinc-100 text-outline",
@@ -795,7 +795,7 @@ export function PayrollModuleHub() {
           {health ? (
             <ModuleReadiness health={health} />
           ) : (
-            <Panel className="border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900">
+            <Panel className="border theme-tone theme-tone-amber p-5 text-sm leading-6 theme-tone-text">
               Payroll screens are available in the frontend, but this workspace
               has not passed the PAYROLL module health check. Enable the
               workspace module and refresh the session before running payroll.
@@ -803,7 +803,7 @@ export function PayrollModuleHub() {
           )}
           <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
             <Panel className="overflow-hidden">
-              <div className="border-b border-border bg-gradient-to-r from-[#fffefa] via-[#f3efe6] to-[#fffefa] p-5">
+              <div className="border-b border-border bg-gradient-to-r from-card via-muted to-card p-5">
                 <h2 className="text-lg font-bold">{tText("Company payroll setup")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {tText("Set these once, then update only when company rules change.")}
@@ -1103,7 +1103,7 @@ function ModuleReadiness({
       </div>
       {health.issues.map((issue) => (
         <Link
-          className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
+          className="mt-3 flex items-start gap-2 rounded-lg theme-tone theme-tone-amber p-3 text-sm"
           href={issue.actionHref}
           key={issue.code}
         >
@@ -1154,12 +1154,12 @@ function HealthPill({ value }: { value: string }) {
       className={cn(
         "rounded-full px-3 py-1 text-xs font-bold",
         ready
-          ? "bg-emerald-100 text-emerald-900"
+          ? "theme-tone theme-tone-emerald"
           : blocked
-            ? "bg-red-100 text-on-error-container"
+            ? "theme-tone theme-tone-red"
             : neutral
               ? "bg-zinc-100 text-zinc-500"
-              : "bg-amber-100 text-amber-900",
+              : "theme-tone theme-tone-amber",
       )}
     >
       {healthStatusLabel(value, t)}

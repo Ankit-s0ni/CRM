@@ -35,10 +35,9 @@ export default function RootLayout({
         <Script id="public-theme-bootstrap" strategy="beforeInteractive">
           {`
               try {
-                let theme = localStorage.getItem('deltcrm-ui-theme') || 'default';
-                if (theme !== 'default') {
-                  document.documentElement.setAttribute('data-theme', theme);
-                }
+                var theme = localStorage.getItem('deltcrm-ui-theme');
+                if (theme === 'current' || theme === 'default') return;
+                document.documentElement.setAttribute('data-theme', 'monochrome');
               } catch (e) {}
             `}
         </Script>

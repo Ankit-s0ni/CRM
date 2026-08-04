@@ -244,7 +244,7 @@ export function AttendanceExceptionsView() {
             0
           }
           icon={House}
-          tone="bg-sky-100 text-cyan-800"
+          tone="theme-tone-icon theme-tone-teal"
         />
       </section>
       <Panel className="mb-4 flex flex-wrap items-center gap-2 p-3">
@@ -538,7 +538,7 @@ function ExceptionEditor({
             </Field>
           </div>
           {overlap && (
-            <div className="rounded-xl border border-red-300 bg-error-container p-3 text-xs text-on-error-container">
+            <div className="rounded-xl border border-destructive bg-error-container p-3 text-xs text-on-error-container">
               {tText("This overlaps an existing")}{" "}
               {label(overlap.exceptionType).toLowerCase()} {tText("exception from")}{" "}
               {overlap.startDate} {tText("to")}{overlap.endDate}.
@@ -593,7 +593,7 @@ function SummaryCard({
 function TypeBadge({ type }: { type: ExceptionType }) {
   const value =
     type === "WFH"
-      ? "bg-sky-100 text-cyan-800"
+      ? "theme-tone theme-tone-teal border theme-tone-text theme-tone-teal"
       : type === "ON_DUTY"
         ? "bg-zinc-100 text-[#151515]"
         : "bg-zinc-100 text-on-surface-variant";

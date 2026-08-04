@@ -162,7 +162,7 @@ export function ModuleManagement() {
       </header>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mb-4 rounded-xl border theme-tone theme-tone-red p-4 text-sm theme-tone-text theme-tone-red">
           {error}
         </div>
       )}
@@ -290,7 +290,7 @@ export function ModuleManagement() {
                             aria-checked={active}
                             aria-label={`${active ? "Disable" : "Enable"} ${item.name} for ${tenant.companyName}`}
                             className={`relative h-6 w-11 rounded-full transition ${
-                              active ? "bg-green-600" : "bg-zinc-200"
+                              active ? "theme-tone theme-tone-emerald" : "bg-zinc-200"
                             } disabled:opacity-55`}
                             disabled={disabled}
                             onClick={() => void toggle(tenant.id, item)}
@@ -365,12 +365,12 @@ function ProductButton({
       onClick={() => onSelect(product.key)}
       type="button"
     >
-      <span className="grid size-10 place-items-center rounded-lg bg-green-100 text-green-700">
+      <span className="grid size-10 place-items-center rounded-lg theme-tone-icon theme-tone-emerald">
         <Icon className="size-5" />
       </span>
       <span>
         <span className="block text-sm font-semibold">{product.name}</span>
-        <span className="text-[10px] uppercase text-green-700">
+        <span className="text-[10px] uppercase theme-tone-text theme-tone-emerald">
           Available product
         </span>
       </span>
@@ -403,7 +403,7 @@ function ProductDetail({ product }: { product: PlatformModule }) {
             key={capability.id}
           >
             <div className="flex items-start gap-2">
-              <span className="mt-0.5 grid size-5 place-items-center rounded-full bg-green-100 text-[10px] font-bold text-green-700">
+              <span className="mt-0.5 grid size-5 place-items-center rounded-full theme-tone-icon theme-tone-emerald text-[10px] font-bold">
                 ✓
               </span>
               <div>

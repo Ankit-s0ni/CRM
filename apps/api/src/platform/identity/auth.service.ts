@@ -767,13 +767,14 @@ export class AuthService {
     return { message: 'Password updated successfully' };
   }
 
-  private async buildSession(
+    private async buildSession(
     user: {
       id: string;
       email: string;
       tenantId: string;
       tenant?: {
         subdomain: string;
+        onboardingCompletedAt?: Date | null;
         localePolicy?: {
           defaultLocale: string;
           enabledLocales: string[];
@@ -826,6 +827,7 @@ export class AuthService {
         email: user.email,
         tenantId: user.tenantId,
         workspace: user.tenant?.subdomain ?? '',
+        onboardingCompletedAt: user.tenant?.onboardingCompletedAt ?? null,
         defaultLanguage: publicLanguageForLocale(
           user.tenant?.localePolicy?.defaultLocale ?? 'en',
         ),

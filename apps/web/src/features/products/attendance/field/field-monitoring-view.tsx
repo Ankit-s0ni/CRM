@@ -168,7 +168,7 @@ export function FieldMonitoringView() {
                 type="button"
               >
                 <div className="flex items-center gap-3">
-                  <span className={cn("size-2.5 rounded-full", employee.presence === "LIVE" ? "bg-emerald-700" : employee.presence === "STALE" ? "bg-amber-600" : "bg-outline")} />
+                  <span className={cn("size-2.5 rounded-full", employee.presence === "LIVE" ? "theme-tone theme-tone-emerald" : employee.presence === "STALE" ? "theme-tone theme-tone-amber" : "bg-outline")} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold">{employee.fullName}</div>
                     <div className="truncate text-xs text-outline">{employee.designation ?? employee.employeeCode} · {employee.department.name}</div>
@@ -211,7 +211,7 @@ async function fetchLiveEmployees() {
 }
 
 function Stat({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Activity; tone?: "green" | "amber" }) {
-  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]", tone === "green" && "bg-emerald-100 text-emerald-700", tone === "amber" && "bg-amber-100 text-amber-700")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></div></Panel>;
+  return <Panel className="flex items-center gap-4 p-4"><span className={cn("grid size-11 place-items-center rounded-xl bg-zinc-50 text-[#151515]", tone === "green" && "theme-tone-icon theme-tone-emerald", tone === "amber" && "theme-tone-icon theme-tone-amber")}><Icon className="size-5" /></span><div><div className="text-2xl font-bold">{value}</div><div className="text-xs text-outline">{label}</div></div></Panel>;
 }
 
 function relativeTime(value: string) {

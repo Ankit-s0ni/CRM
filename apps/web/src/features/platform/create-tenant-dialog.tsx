@@ -134,7 +134,7 @@ export function CreateTenantDialog({
           </div>
 
           {error && (
-            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mb-5 rounded-lg border theme-tone theme-tone-red border px-4 py-3 text-sm">
               {error}
             </div>
           )}
@@ -276,7 +276,7 @@ export function CreateTenantDialog({
           </div>
 
           <div className="mt-5 flex gap-3 rounded-lg bg-zinc-50 p-4 text-sm text-on-surface-variant">
-            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 theme-tone-text" />
             <p>
               {setPasswordNow
                 ? "The admin account will be created with the password you set. An invitation email is still sent to verify ownership."
@@ -329,7 +329,7 @@ export function CreateTenantDialog({
             </p>
           </div>
           <div className="mt-10 h-1.5 overflow-hidden rounded-full bg-white">
-            <div className="h-full w-4/5 bg-emerald-300" />
+            <div className="h-full w-4/5 bg-accent" />
           </div>
           <p className="mt-2 text-[10px] text-outline">
             Tenant setup 80% complete

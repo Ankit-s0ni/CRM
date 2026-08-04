@@ -851,7 +851,7 @@ function EmployeePayrollPanel({
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
       <Panel className="overflow-hidden">
-        <div className="border-b border-border bg-gradient-to-r from-[#fffefa] via-[#f3efe6] to-[#fffefa] p-6">
+        <div className="border-b border-border bg-gradient-to-r from-card via-muted to-card p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold">{tText("Employee payroll")}</h2>
@@ -859,12 +859,12 @@ function EmployeePayrollPanel({
                 {tText("View and update payroll details for this employee. Company payroll rules stay in Modules.")}
               </p>
               {message && (
-                <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+                <p className="mt-3 rounded-lg theme-tone theme-tone-emerald px-3 py-2 text-sm font-semibold">
                   {message}
                 </p>
               )}
               {error && (
-                <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                <p className="mt-3 rounded-lg theme-tone theme-tone-red px-3 py-2 text-sm font-semibold">
                   {error}
                 </p>
               )}
@@ -872,8 +872,8 @@ function EmployeePayrollPanel({
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${
                 ready
-                  ? "bg-emerald-100 text-emerald-900"
-                  : "bg-amber-100 text-amber-900"
+                  ? "theme-tone theme-tone-emerald"
+                  : "theme-tone theme-tone-amber"
               }`}
             >
               {ready ? tText("Ready") : tText("Needs details")}
@@ -881,7 +881,7 @@ function EmployeePayrollPanel({
           </div>
           {permissions.includes("payroll.runs.read") && (
             <Link
-              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-container"
               href={`/app/payroll/runs?employeeId=${employeeId}`}
             >
               <Banknote className="mr-2 size-4" />
@@ -934,8 +934,8 @@ function EmployeePayrollPanel({
                   aria-current={section === key ? "page" : undefined}
                   className={`min-h-10 whitespace-nowrap rounded-lg px-3 text-sm font-semibold transition ${
                     section === key
-                      ? "bg-white text-[#151515] shadow-sm"
-                      : "text-zinc-500 hover:text-zinc-900"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   key={key}
                   onClick={() => setSection(key as typeof section)}
@@ -1291,7 +1291,7 @@ function EmployeePayrollPanel({
                 ) : payslips.length ? (
                   <div className="grid gap-4">
                     {latestPayslip && (
-                      <div className="rounded-2xl border border-[#beb8ad] bg-gradient-to-br from-primary/5 via-white to-emerald-50 p-5">
+                      <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-muted/50 p-5">
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div>
                             <p className="text-xs font-bold uppercase tracking-wide text-[#151515]">
@@ -1330,7 +1330,7 @@ function EmployeePayrollPanel({
                           {tText("Download PDF")}
                         </button>
                         {!latestPayslip.objectKey && (
-                          <p className="mt-2 text-xs text-amber-700">
+                          <p className="mt-2 text-xs theme-tone-text">
                             {tText("PDF is not available yet. Generate payslips from the payroll run first.")}
                           </p>
                         )}
@@ -1385,7 +1385,7 @@ function EmployeePayrollPanel({
               : tText("This employee has the payroll details needed.")}
           </p>
         </div>
-        <div className="mt-5 rounded-xl border border-[#beb8ad] bg-[#f3efe6] p-4">
+        <div className="mt-5 rounded-xl theme-card-muted p-4">
           <h3 className="text-sm font-bold">{tText("Company payroll rules")}</h3>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
             {tText("To change pay groups, salary templates, salary rules, approvals, or accounting links, go to Modules.")}
@@ -1420,14 +1420,14 @@ function PayrollMiniCard({
   return (
     <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-[#f3efe6] text-[#151515]">
+        <span className="grid size-10 place-items-center rounded-xl bg-muted text-foreground">
           <Icon className="size-5" />
         </span>
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-bold ${
             ready
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-amber-50 text-amber-800"
+              ? "theme-tone theme-tone-emerald"
+              : "theme-tone theme-tone-amber"
           }`}
         >
           {ready ? tText("Ready") : tText("Missing")}
@@ -1636,7 +1636,7 @@ function PayslipStatusBadge({ status }: { status: string }) {
   const { tText } = useTenantLocalization();
   const colors =
     status === "PUBLISHED"
-      ? "bg-emerald-100 text-emerald-900"
+      ? "theme-tone theme-tone-emerald"
       : status === "GENERATED"
         ? "bg-[#ede7dc] text-[#151515]"
         : "bg-zinc-100 text-zinc-700";
@@ -1799,10 +1799,10 @@ function EmploymentProfile({
         <span
           className={`rounded-full px-3 py-1 text-xs font-bold ${
             employee.status === "TERMINATED"
-              ? "bg-red-100 text-on-error-container"
+              ? "theme-tone theme-tone-red"
               : employee.status === "ON_NOTICE"
-                ? "bg-amber-100 text-amber-900"
-                : "bg-emerald-100 text-emerald-900"
+                ? "theme-tone theme-tone-amber"
+                : "theme-tone theme-tone-emerald"
           }`}
         >
           {employee.status}
@@ -1885,7 +1885,7 @@ function TodaySummary({
 
   return (
     <Panel className="overflow-hidden">
-      <div className={`p-6 ${positive ? "bg-emerald-50" : "bg-zinc-50"}`}>
+      <div className={`p-6 ${positive ? "theme-tone theme-tone-emerald" : "bg-muted"}`}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-outline">
@@ -1897,7 +1897,7 @@ function TodaySummary({
           <span
             className={`grid size-12 place-items-center rounded-2xl ${
               positive
-                ? "bg-emerald-100 text-emerald-800"
+                ? "theme-tone theme-tone-emerald"
                 : "bg-white text-[#151515]"
             }`}
           >
@@ -2474,8 +2474,8 @@ function ReadinessPanel({
               <span
                 className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
                   ready
-                    ? "bg-emerald-100 text-emerald-900"
-                    : "bg-amber-100 text-amber-900"
+                    ? "theme-tone theme-tone-emerald"
+                    : "theme-tone theme-tone-amber"
                 }`}
               >
                 {ready ? "Y" : "!"}
@@ -2621,7 +2621,7 @@ function AssignmentsPanel({
             />
           </div>
         ) : (
-          <p className="mt-4 text-sm text-amber-900">
+          <p className="mt-4 text-sm theme-tone-text">
             {tText("No tenant, department, or employee policy currently resolves for this employee.")}</p>
         )}
         <Link
@@ -2644,7 +2644,7 @@ function AssignmentsPanel({
               />
             ))
           ) : (
-            <p className="text-sm text-amber-900">
+            <p className="text-sm theme-tone-text">
               {tText("No Leave policy balance is assigned to this employee.")}</p>
           )}
         </div>
@@ -2784,10 +2784,10 @@ function AccountPanel({
         <h2 className="text-lg font-bold">{tText("Employee access")}</h2>
         {employee.user ? (
           <div className="mt-4 grid gap-4">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm font-bold text-emerald-900">
+            <div className="rounded-xl theme-tone theme-tone-emerald border p-4">
+              <p className="text-sm font-bold">
                 {tText("Employee self-service active")}</p>
-              <p className="mt-1 text-xs leading-5 text-emerald-900">
+              <p className="mt-1 text-xs leading-5">
                 {tText("The Employee role was assigned automatically when this login was created.")}</p>
             </div>
             {elevatedRoles.length > 0 && (
@@ -2808,9 +2808,9 @@ function AccountPanel({
             )}
           </div>
         ) : (
-          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-            <p className="text-sm font-bold text-amber-900">{tText("Not activated")}</p>
-            <p className="mt-1 text-xs leading-5 text-amber-900">
+          <div className="mt-4 rounded-xl theme-tone theme-tone-amber border p-4">
+            <p className="text-sm font-bold">{tText("Not activated")}</p>
+            <p className="mt-1 text-xs leading-5">
               {tText("Create the employee login here. The Employee role is assigned automatically; no separate role setup is required.")}</p>
           </div>
         )}
@@ -2875,7 +2875,7 @@ function CreateEmployeeAccountDialog({
     >
       {credentials ? (
         <div className="grid gap-4">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
+          <div className="rounded-xl theme-tone theme-tone-emerald border p-5 text-sm leading-6">
             {tText("Login created successfully. Give these temporary credentials to the employee.")}</div>
           <Field label={tText("Login email")}>
             <input className={inputClass} readOnly value={credentials.email} />
@@ -2914,7 +2914,7 @@ function CreateEmployeeAccountDialog({
             <span className="mt-1 block text-xs leading-5 text-outline">
               {tText("Attendance, leave, notifications, and the employee&apos;s own profile only. Additional HR access can be granted later.")}</span>
           </div>
-          <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+          <p className="rounded-lg theme-tone theme-tone-amber p-3 text-xs leading-5">
             {tText("The temporary password is the employee name plus the first six phone digits. It is shown after account creation.")}</p>
           <DialogActions
             busy={saving}
@@ -3113,7 +3113,7 @@ function HistoryPanel({ employeeId }: { employeeId: string }) {
                       {tText(historyCategoryLabel(entry.category))}
                     </span>
                     {entry.impersonated && (
-                      <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase text-amber-900">
+                      <span className="rounded-full theme-tone theme-tone-amber px-2 py-1 text-[10px] font-bold uppercase">
                         {tText("Impersonated")}</span>
                     )}
                   </div>
@@ -3536,7 +3536,7 @@ function EmployeeDocumentsPanel({ employeeId }: { employeeId: string }) {
                 {canManage && (
                   <button
                     aria-label={`Delete ${document.title}`}
-                    className="grid size-10 place-items-center rounded-lg border border-red-300 text-error"
+                    className="grid size-10 place-items-center rounded-lg border border-destructive text-destructive"
                     onClick={() => remove(document)}
                     type="button"
                   >
@@ -3914,7 +3914,7 @@ function IdentityRow({
     <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 p-3">
       <span className="text-sm text-zinc-500">{label}</span>
       <span
-        className={`inline-flex items-center gap-1 text-sm font-bold ${positive ? "text-emerald-900" : "text-amber-900"}`}
+        className={`inline-flex items-center gap-1 text-sm font-bold theme-tone-text`}
       >
         {positive && <ShieldCheck className="size-4" />} {value}
       </span>

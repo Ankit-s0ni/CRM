@@ -367,7 +367,7 @@ export function OfficesView({
         </Panel>
       )}
       {!embedded && (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-400 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border theme-tone theme-tone-amber px-5 py-4 text-sm theme-tone-text theme-tone-amber">
           <p>
             <strong>{tText("Important:")}</strong>{" "}
             {tText(
@@ -865,7 +865,7 @@ export function PoliciesView() {
                 <div className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                   <ShieldCheck />
                 </div>
-                <span className="rounded-full bg-emerald-300/35 px-3 py-1 text-xs font-semibold text-emerald-900">
+                <span className="rounded-full theme-tone theme-tone-emerald px-3 py-1 text-xs font-semibold theme-tone-text theme-tone-emerald">
                   {policyCoverage(policy.assignments, employees)} {tText("employees")}
                 </span>
               </div>
@@ -1341,11 +1341,11 @@ export function PoliciesView() {
                 .
               </p>
             </div>
-            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-900">
+            <div className="rounded-xl border theme-tone theme-tone-amber p-4">
+              <p className="text-xs font-bold uppercase tracking-wide theme-tone-text theme-tone-amber">
                 {tText("Dependencies to verify")}
               </p>
-              <ul className="mt-2 space-y-1 text-sm leading-6 text-amber-900">
+              <ul className="mt-2 space-y-1 text-sm leading-6 theme-tone-text theme-tone-amber">
                 {ruleForm.locationMode === "OFFICE_GEOFENCE" && (
                   <li>{tText("- Every affected employee needs an assigned office.")}</li>
                 )}
@@ -1472,7 +1472,7 @@ export function ShiftsView() {
                   <Clock3 />
                 </div>
                 {shift.isOvernight && (
-                  <span className="rounded-full bg-amber-200 px-3 py-1 text-xs font-semibold text-amber-900">
+                  <span className="rounded-full theme-tone theme-tone-amber px-3 py-1 text-xs font-semibold theme-tone-text theme-tone-amber">
                     {tText("Overnight")}
                   </span>
                 )}
@@ -1702,7 +1702,7 @@ export function RostersView() {
                       {roster ? (
                         <button
                           title={tText("Remove roster")}
-                          className="rounded-lg bg-[#f3efe6] px-2 py-1 text-center text-xs font-semibold text-[#151515]"
+                          className="rounded-lg bg-muted px-2 py-1 text-center text-xs font-semibold text-[#151515]"
                           onClick={() => removeRoster(roster)}
                         >
                           <span className="block">{roster.shift.name}</span>
@@ -1710,7 +1710,7 @@ export function RostersView() {
                         </button>
                       ) : (
                         <button
-                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${weeklyOff ? "bg-slate-50" : "bg-emerald-50/50"}`}
+                          className={`flex h-full w-full items-center justify-center rounded-lg px-1 text-center hover:bg-zinc-100/50 ${weeklyOff ? "bg-slate-50" : "theme-tone theme-tone-emerald/50"}`}
                           onClick={() => {
                             setBulkForm({
                               employeeIds: [employee.id],
@@ -1725,11 +1725,11 @@ export function RostersView() {
                           {weeklyOff ? (
                             <span className="text-xs font-semibold text-slate-500">{tText("Weekly off")}</span>
                           ) : (
-                            <span className="text-xs font-semibold text-emerald-700">
+                            <span className="text-xs font-semibold theme-tone-text theme-tone-emerald">
                               <span className="block">
                                 {inheritedShift?.name ?? inheritedHours ?? tText("Working day")}
                               </span>
-                              <span className="block text-[10px] font-medium text-emerald-500">
+                              <span className="block text-[10px] font-medium theme-tone-text theme-tone-emerald">
                                 {tText("Inherited")}
                               </span>
                             </span>
@@ -1805,7 +1805,7 @@ export function RostersView() {
                 </label>
               ))}
             </fieldset>
-            {bulkResult && <div className="rounded-lg bg-emerald-100 p-3 text-sm text-emerald-900">{bulkResult}</div>}
+            {bulkResult && <div className="rounded-lg theme-tone theme-tone-emerald p-3 text-sm theme-tone-text theme-tone-emerald">{bulkResult}</div>}
             <PrimaryButton disabled={!bulkForm.shiftId || !bulkForm.employeeIds.length} onClick={bulkAssign}>
               {tText("Apply shift")}
             </PrimaryButton>
@@ -1994,18 +1994,18 @@ export function HolidaysView() {
     >
       {error && <ErrorState message={error} />}
       {syncMessage && (
-        <div className="mb-5 rounded-xl border border-[#beb8ad] bg-[#f3efe6] p-4 text-sm font-medium text-[#151515]">
+        <div className="mb-5 rounded-xl border border-border bg-muted p-4 text-sm font-medium text-[#151515]">
           {syncMessage}
         </div>
       )}
       {missingRegionOffices.length > 0 && syncing && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-[#beb8ad] bg-[#f3efe6] p-4 text-sm text-[#151515]">
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-muted p-4 text-sm text-[#151515]">
           <RefreshCw className="size-5 shrink-0 animate-spin" />
           {tText("Detecting each office country from its saved location and importing public holidays…")}
         </div>
       )}
       {missingRegionOffices.length > 0 && !syncing && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border theme-tone theme-tone-amber p-4 text-sm theme-tone-text theme-tone-amber">
           <Globe2 className="size-5 shrink-0" />
           <p>
             {tText("We could not detect the country from the saved location for")}{" "}
@@ -2013,7 +2013,7 @@ export function HolidaysView() {
             {tText(". Check that each office pin is in the correct place, then retry.")}
           </p>
           <Link
-            className="ml-auto font-semibold text-amber-950 underline underline-offset-4"
+            className="ml-auto font-semibold theme-tone-text theme-tone-amber underline underline-offset-4"
             href="/app/attendance/offices"
           >
             {tText("Check office pins")}
@@ -2029,7 +2029,7 @@ export function HolidaysView() {
               <div className="flex items-center justify-between gap-4">
                 <button
                   aria-label={tText("Previous month")}
-                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:-translate-x-0.5 hover:border-[#beb8ad] hover:text-[#151515]"
+                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:-translate-x-0.5 hover:border-border hover:text-[#151515]"
                   onClick={() =>
                     setVisibleMonth(
                       new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() - 1, 1)),
@@ -2052,7 +2052,7 @@ export function HolidaysView() {
                 </div>
                 <button
                   aria-label={tText("Next month")}
-                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:translate-x-0.5 hover:border-[#beb8ad] hover:text-[#151515]"
+                  className="grid size-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:translate-x-0.5 hover:border-border hover:text-[#151515]"
                   onClick={() =>
                     setVisibleMonth(
                       new Date(Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() + 1, 1)),
@@ -2067,11 +2067,11 @@ export function HolidaysView() {
                 <span className="rounded-full bg-[#ede7dc] px-3 py-1 text-xs font-semibold text-[#151515]">
                   {importedThisMonth} {tText("public")}
                 </span>
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                <span className="rounded-full theme-tone theme-tone-amber px-3 py-1 text-xs font-semibold theme-tone-text theme-tone-amber">
                   {manuallyAddedThisMonth} {tText("HR added")}
                 </span>
                 <button
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-[#beb8ad] hover:text-[#151515]"
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-border hover:text-[#151515]"
                   onClick={() =>
                     setVisibleMonth(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)))
                   }
@@ -2101,7 +2101,7 @@ export function HolidaysView() {
                           !inMonth
                             ? "border-transparent bg-zinc-50/50 text-zinc-400"
                             : holidays.length
-                              ? "border-[#beb8ad] bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-[0_8px_24px_-18px_rgba(37,99,235,0.8)] ring-1 ring-[#beb8ad]"
+                              ? "border-border bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-[0_8px_24px_-18px_rgba(37,99,235,0.8)] ring-1 ring-[#beb8ad]"
                               : isWeekend
                                 ? "border-zinc-200 bg-zinc-50/70"
                                 : "border-surface-variant bg-white hover:border-zinc-300 hover:shadow-sm"
@@ -2127,7 +2127,7 @@ export function HolidaysView() {
                             className={`mt-2 block w-full rounded-lg px-2 py-1.5 text-left text-[11px] font-bold leading-4 transition hover:-translate-y-0.5 ${
                               holiday.source === "PUBLIC_DATA"
                                 ? "bg-[#151515] text-white shadow-sm"
-                                : "bg-amber-100 text-amber-950 ring-1 ring-amber-200"
+                                : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber ring-1 ring-amber-200"
                             }`}
                             onClick={() => showHoliday(holiday)}
                             title={`${holiday.holidayName} · ${holiday.office?.officeName ?? "All offices"}`}
@@ -2169,7 +2169,7 @@ export function HolidaysView() {
           <Panel className="h-fit overflow-hidden border-zinc-200 p-0 shadow-sm xl:sticky xl:top-6">
             <div className="bg-zinc-950 px-5 py-5 text-white">
               <div className="flex items-center gap-2">
-                <CalendarDays className="size-5 text-cyan-300" />
+                <CalendarDays className="size-5 theme-tone-text theme-tone-teal" />
                 <h2 className="font-semibold">{tText("Upcoming holidays")}</h2>
               </div>
               <p className="mt-1 text-xs text-zinc-400">{tText("Select a holiday to open its month and details.")}</p>
@@ -2178,7 +2178,7 @@ export function HolidaysView() {
               {upcoming.map((holiday) => (
                 <button
                   key={holiday.id}
-                  className="group flex items-center gap-3 rounded-xl border border-transparent bg-zinc-50 p-3 text-left transition hover:border-[#beb8ad] hover:bg-[#f3efe6]"
+                  className="group flex items-center gap-3 rounded-xl border border-transparent bg-zinc-50 p-3 text-left transition hover:border-border hover:bg-muted"
                   onClick={() => showHoliday(holiday)}
                   type="button"
                 >
@@ -2197,7 +2197,7 @@ export function HolidaysView() {
                     </span>
                     <span
                       className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        holiday.source === "PUBLIC_DATA" ? "bg-[#ede7dc] text-[#151515]" : "bg-amber-100 text-amber-800"
+                        holiday.source === "PUBLIC_DATA" ? "bg-[#ede7dc] text-[#151515]" : "theme-tone theme-tone-amber theme-tone-text theme-tone-amber"
                       }`}
                     >
                       {holiday.source === "PUBLIC_DATA" ? tText("Public holiday") : tText("HR added")}
@@ -2584,7 +2584,7 @@ function OfficeLocationPicker({
               className="absolute z-[1000] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-outline-variant bg-white p-1.5 shadow-xl"
             >
               {suggestionError && (
-                <div className="rounded-lg bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+                <div className="rounded-lg theme-tone theme-tone-red px-3 py-2.5 text-sm font-medium">
                   {suggestionError}
                 </div>
               )}
@@ -2599,7 +2599,7 @@ function OfficeLocationPicker({
                     role="option"
                     aria-selected={activeSuggestion === index}
                     className={`block w-full rounded-lg px-3 py-2.5 text-left transition-colors ${
-                      activeSuggestion === index ? "bg-[#f3efe6]" : "hover:bg-stone-50"
+                      activeSuggestion === index ? "bg-muted" : "hover:bg-stone-50"
                     }`}
                     onMouseDown={(event) => event.preventDefault()}
                     onMouseEnter={() => setActiveSuggestion(index)}
@@ -2629,7 +2629,7 @@ function OfficeLocationPicker({
         onMapClick={(nextCoordinate) => void selectCoordinate(nextCoordinate)}
       />
       {!coordinate && (
-        <p className="text-xs font-semibold text-amber-700">{tText("No office location selected yet.")}</p>
+        <p className="text-xs font-semibold theme-tone-text">{tText("No office location selected yet.")}</p>
       )}
     </div>
   );
@@ -2813,7 +2813,7 @@ function PolicyToggle({
   return (
     <label
       className={`flex min-h-28 cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-        checked ? "border-[#151515] bg-[#f3efe6]" : "border-surface-variant bg-white hover:bg-zinc-50"
+        checked ? "border-[#151515] bg-muted" : "border-surface-variant bg-white hover:bg-zinc-50"
       }`}
     >
       <input
@@ -2956,7 +2956,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 function Tag({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-zinc-50 px-3 py-1 text-on-surface-variant">
-      <Check className="mr-1 inline size-3 text-emerald-800" />
+      <Check className="mr-1 inline size-3 theme-tone-text" />
       {children}
     </span>
   );

@@ -124,7 +124,7 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Route; label: strin
 }
 
 function TimelineRow({ icon: Icon, label, time: value, tone }: { icon: typeof Route; label: string; time: string; tone?: "amber" }) {
-  return <div className="flex items-center gap-3 rounded-xl p-3 hover:bg-zinc-50"><span className={`grid size-9 place-items-center rounded-full ${tone === "amber" ? "bg-amber-100 text-amber-700" : "bg-zinc-50 text-[#151515]"}`}><Icon className="size-4" /></span><div className="min-w-0 flex-1 text-sm font-medium">{label}</div><span className="text-xs text-outline">{value}</span></div>;
+  return <div className="flex items-center gap-3 rounded-xl p-3 hover:bg-zinc-50"><span className={`grid size-9 place-items-center rounded-full ${tone === "amber" ? "theme-tone-icon theme-tone-amber" : "bg-zinc-50 text-[#151515]"}`}><Icon className="size-4" /></span><div className="min-w-0 flex-1 text-sm font-medium">{label}</div><span className="text-xs text-outline">{value}</span></div>;
 }
 
 function time(value: string) {

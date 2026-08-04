@@ -242,7 +242,7 @@ export function AttendanceCapabilitiesView() {
                 </div>
               )}
               {saved && (
-                <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                <p className="mt-4 flex items-center gap-2 text-sm font-semibold theme-tone-text theme-tone-emerald">
                   <CheckCircle2 className="size-4" />
                   {tText("Runtime configuration updated.")}</p>
               )}
@@ -312,7 +312,7 @@ function StatusCard({
             <FeatureInfo className="min-h-9 min-w-9" helpKey={helpKey} />
           )}
           <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "bg-emerald-100 text-emerald-900" : "bg-zinc-100 text-on-surface-variant"}`}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "status-badge status-enabled" : "bg-zinc-100 text-on-surface-variant"}`}
           >
             {enabled ? tText("Enabled") : tText("Off")}
           </span>
