@@ -50,7 +50,7 @@ export function Hero() {
             <div className="product-heading">
               <div>
                 <small>MONDAY, 02 AUGUST</small>
-                <strong>Good morning, Maya.</strong>
+                <strong>Good morning, Mariya.</strong>
               </div>
               <span className="product-avatar">MP</span>
             </div>
