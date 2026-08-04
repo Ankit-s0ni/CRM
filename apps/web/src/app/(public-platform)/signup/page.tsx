@@ -5,7 +5,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-surface text-zinc-900 md:flex">
       <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(79,62,219,0.2),_transparent_28%),linear-gradient(180deg,#353535_0%,#333333_100%)] px-[50px] pb-[36px] pt-[50px] md:flex md:w-[50.4%] md:flex-col md:justify-between">
         <div className="absolute right-[-96px] top-[-96px] h-72 w-72 rounded-full bg-zinc-400 opacity-20 blur-3xl" />
-        <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-emerald-400 opacity-[0.08] blur-3xl" />
+        <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-accent opacity-[0.08] blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-4">
           <div className="text-[28px] font-bold tracking-tight text-white">DeltCRM</div>
@@ -45,9 +45,9 @@ export default function SignupPage() {
               },
             ].map((benefit) => (
               <li key={benefit.title} className="flex items-start gap-4">
-                <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-300">
+                <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/30">
                   <span
-                    className="material-symbols-outlined text-[18px] text-emerald-900"
+                    className="material-symbols-outlined text-[18px] text-foreground"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     check

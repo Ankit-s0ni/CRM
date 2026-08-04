@@ -236,6 +236,98 @@ export class PrivateObjectStorageService {
     };
   }
 
+  async putPayrollPayslip(
+    tenantId: string,
+    employeeId: string,
+    payslipId: string,
+    body: Buffer,
+  ) {
+    const objectKey = `private/${tenantId}/payroll-payslips/${employeeId}/${payslipId}.pdf`;
+    if (process.env.NODE_ENV === 'test') {
+      this.testObjects.set(objectKey, body);
+      return objectKey;
+    }
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: objectKey,
+        ContentType: 'application/pdf',
+        Body: body,
+        Metadata: {
+          tenantId,
+          ownerId: employeeId,
+          purpose: 'payroll-payslips',
+        },
+      }),
+    );
+    return objectKey;
+  }
+
+  async signedPayrollPayslipDownload(
+    tenantId: string,
+    employeeId: string,
+    objectKey: string,
+  ) {
+    this.assertPrefix(tenantId, 'payroll-payslips', employeeId, objectKey);
+    await this.assertExists(objectKey, tenantId);
+    if (process.env.NODE_ENV === 'test') {
+      return { url: `memory://${objectKey}`, expiresIn: 300 };
+    }
+    return {
+      url: await getSignedUrl(
+        this.client,
+        new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+        { expiresIn: 300 },
+      ),
+      expiresIn: 300,
+    };
+  }
+
+  async putPayrollExport(
+    tenantId: string,
+    payrollRunId: string,
+    outputId: string,
+    extension: string,
+    contentType: string,
+    body: Buffer,
+  ) {
+    const objectKey = `private/${tenantId}/payroll-exports/${payrollRunId}/${outputId}.${extension}`;
+    if (process.env.NODE_ENV === 'test') {
+      this.testObjects.set(objectKey, body);
+      return objectKey;
+    }
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: objectKey,
+        ContentType: contentType,
+        Body: body,
+        Metadata: { tenantId, payrollRunId, purpose: 'payroll-exports' },
+      }),
+    );
+    return objectKey;
+  }
+
+  async signedPayrollExportDownload(
+    tenantId: string,
+    payrollRunId: string,
+    objectKey: string,
+  ) {
+    this.assertPrefix(tenantId, 'payroll-exports', payrollRunId, objectKey);
+    await this.assertExists(objectKey, tenantId);
+    if (process.env.NODE_ENV === 'test') {
+      return { url: `memory://${objectKey}`, expiresIn: 900 };
+    }
+    return {
+      url: await getSignedUrl(
+        this.client,
+        new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+        { expiresIn: 900 },
+      ),
+      expiresIn: 900,
+    };
+  }
+
   async putInvoice(tenantId: string, invoiceId: string, body: Buffer) {
     const objectKey = `private/${tenantId}/invoices/${invoiceId}/invoice.pdf`;
     if (process.env.NODE_ENV === 'test') {

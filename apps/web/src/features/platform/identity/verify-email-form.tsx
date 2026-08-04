@@ -143,8 +143,8 @@ export function VerifyEmailForm() {
 
         <div className="mb-6 flex justify-center">
           <div className="relative flex h-24 w-24 items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-primary/10" />
-            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-primary">mail</span>
+            <div className="absolute inset-0 rounded-full bg-muted" />
+            <span className="material-symbols-outlined relative z-10 text-[48px] font-light text-[#151515]">mail</span>
           </div>
         </div>
 
@@ -161,7 +161,7 @@ export function VerifyEmailForm() {
         ) : null}
 
         {message ? (
-          <div className="mb-5 rounded-[12px] border border-emerald-800/15 bg-emerald-300/20 px-4 py-3 text-left text-sm text-emerald-900">
+          <div className="mb-5 rounded-[12px] border border-accent/15 bg-accent/20 px-4 py-3 text-left text-sm text-foreground">
             {message}
           </div>
         ) : null}
@@ -190,7 +190,7 @@ export function VerifyEmailForm() {
                   const target = document.getElementById("verification-code");
                   target?.focus();
                 }}
-                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-zinc-300 bg-surface text-[20px] font-bold text-zinc-900 transition-all duration-200 hover:border-primary focus:border-primary"
+                className="flex h-14 w-12 items-center justify-center rounded-[12px] border-2 border-zinc-300 bg-surface text-[20px] font-bold text-zinc-900 transition-all duration-200 hover:border-[#151515] focus:border-[#151515]"
               >
                 {digit.trim() || ""}
               </button>
@@ -200,7 +200,7 @@ export function VerifyEmailForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-6 text-[14px] font-medium leading-5 text-white shadow-sm transition-all hover:bg-zinc-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#151515] px-6 text-[14px] font-medium leading-5 text-white shadow-sm transition-all hover:bg-zinc-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               <>
@@ -223,7 +223,7 @@ export function VerifyEmailForm() {
               type="button"
               onClick={handleResend}
               disabled={resending || secondsLeft > 0}
-              className="font-semibold text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+              className="font-semibold text-[#151515] hover:underline disabled:opacity-50 disabled:no-underline"
             >
               {resending
                 ? "Resending..."
@@ -235,7 +235,7 @@ export function VerifyEmailForm() {
 
           <div className="pt-1">
             <Link
-              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-on-surface-variant transition-colors hover:text-primary"
+              className="inline-flex items-center justify-center gap-1 text-[14px] font-medium leading-5 text-on-surface-variant transition-colors hover:text-[#151515]"
               href="/signup"
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>

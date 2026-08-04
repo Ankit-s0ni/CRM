@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/mobile-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login an employee and automatically resolve their workspace */
+        post: operations["AuthController_mobileLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/refresh": {
         parameters: {
             query?: never;
@@ -83,6 +100,23 @@ export interface paths {
         put?: never;
         /** Revoke the current refresh token */
         post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change the authenticated user password */
+        post: operations["AuthController_changePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -363,6 +397,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspace/modules/{key}/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get entitlement, dependencies, and setup health for one module */
+        get: operations["WorkspaceController_getModuleHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspace/settings/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permission-filtered workspace setup readiness */
+        get: operations["WorkspaceController_getSettingsHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspace/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get safe server integration configuration diagnostics */
+        get: operations["WorkspaceController_getIntegrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/departments": {
         parameters: {
             query?: never;
@@ -513,8 +598,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get an employee employment-event timeline */
+        /** Get the paginated audit and employment history for an employee */
         get: operations["EmployeesController_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{id}/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a role-scoped employee workspace summary */
+        get: operations["EmployeesController_workspace"];
         put?: never;
         post?: never;
         delete?: never;
@@ -539,6 +641,40 @@ export interface paths {
         head?: never;
         /** Update an employee and their relationships */
         patch: operations["EmployeesController_updateEmployee"];
+        trace?: never;
+    };
+    "/employees/{id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create the employee login and return a temporary password */
+        post: operations["EmployeesController_createEmployeeAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update an employee work assignments */
+        patch: operations["EmployeesController_updateAssignments"];
         trace?: never;
     };
     "/employees/{id}/terminate": {
@@ -569,6 +705,23 @@ export interface paths {
         put?: never;
         /** Reactivate a terminated employee under quota */
         post: operations["EmployeesController_reactivateEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employee-imports/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the supported employee CSV schema and template */
+        get: operations["EmployeeImportsController_schema"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -656,6 +809,75 @@ export interface paths {
         /** Idempotently retry failed valid rows */
         post: operations["EmployeeImportsController_retry"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List safe employee document metadata */
+        get: operations["EmployeeDocumentsController_list"];
+        put?: never;
+        /** Register uploaded employee document metadata */
+        post: operations["EmployeeDocumentsController_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a private employee document upload URL */
+        post: operations["EmployeeDocumentsController_presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/{documentId}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a short-lived private document URL */
+        get: operations["EmployeeDocumentsController_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/employees/{employeeId}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Permanently delete an employee document */
+        delete: operations["EmployeeDocumentsController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1230,6 +1452,23 @@ export interface paths {
         patch: operations["PlatformModulesController_update"];
         trace?: never;
     };
+    "/platform/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List customer-facing products, add-ons, and capabilities */
+        get: operations["PlatformCatalogController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/tenants/{tenantId}/modules": {
         parameters: {
             query?: never;
@@ -1241,6 +1480,40 @@ export interface paths {
         get: operations["PlatformTenantModulesController_list"];
         /** Atomically replace active tenant modules */
         put: operations["PlatformTenantModulesController_replace"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/entitlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get plan, overrides, and effective tenant entitlements */
+        get: operations["PlatformTenantEntitlementsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/entitlements/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace audited tenant capability overrides */
+        put: operations["PlatformTenantEntitlementsController_replace"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1435,256 +1708,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/offices": {
+    "/platform/plans": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List tenant office locations and assignment counts */
-        get: operations["AttendanceConfigController_listOffices"];
+        /** List plans and module bundles */
+        get: operations["PlatformBillingController_plans"];
         put?: never;
-        /** Create an office and circular geofence */
-        post: operations["AttendanceConfigController_createOffice"];
+        /** Create a subscription plan with fresh MFA */
+        post: operations["PlatformBillingController_createPlan"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/offices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an office with employees and holidays */
-        get: operations["AttendanceConfigController_getOffice"];
-        put?: never;
-        post?: never;
-        /** Delete an unused office */
-        delete: operations["AttendanceConfigController_removeOffice"];
-        options?: never;
-        head?: never;
-        /** Update office geofence and network constraints */
-        patch: operations["AttendanceConfigController_updateOffice"];
-        trace?: never;
-    };
-    "/offices/{id}/employees": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List employees assigned to an office */
-        get: operations["AttendanceConfigController_officeEmployees"];
-        /** Atomically replace office employee assignments */
-        put: operations["AttendanceConfigController_replaceOfficeEmployees"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List attendance policies and assignments */
-        get: operations["AttendanceConfigController_listPolicies"];
-        put?: never;
-        /** Create an attendance policy */
-        post: operations["AttendanceConfigController_createPolicy"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Resolve employee policy by employee, department, then tenant default */
-        get: operations["AttendanceConfigController_resolvePolicy"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/resolve/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve policies for up to 500 employees without N+1 queries */
-        post: operations["AttendanceConfigController_resolvePolicies"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance-policies/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an attendance policy and assignments */
-        get: operations["AttendanceConfigController_getPolicy"];
-        put?: never;
-        post?: never;
-        /** Delete an unassigned attendance policy */
-        delete: operations["AttendanceConfigController_removePolicy"];
-        options?: never;
-        head?: never;
-        /** Update prospective attendance policy rules */
-        patch: operations["AttendanceConfigController_updatePolicy"];
-        trace?: never;
-    };
-    "/attendance-policies/{id}/assignments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Atomically replace policy scope assignments */
-        put: operations["AttendanceConfigController_replacePolicyAssignments"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List tenant shifts */
-        get: operations["AttendanceConfigController_listShifts"];
-        put?: never;
-        /** Create a day or overnight shift */
-        post: operations["AttendanceConfigController_createShift"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Resolve employee shift for a date */
-        get: operations["AttendanceConfigController_resolveShift"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/resolve/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve shifts for up to 500 employees without N+1 queries */
-        post: operations["AttendanceConfigController_resolveShifts"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/shifts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a shift */
-        get: operations["AttendanceConfigController_getShift"];
-        put?: never;
-        post?: never;
-        /** Delete an unused shift */
-        delete: operations["AttendanceConfigController_removeShift"];
-        options?: never;
-        head?: never;
-        /** Update shift times and overnight derivation */
-        patch: operations["AttendanceConfigController_updateShift"];
-        trace?: never;
-    };
-    "/rosters": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List dated roster assignments */
-        get: operations["AttendanceConfigController_listRosters"];
-        put?: never;
-        /** Create an idempotent dated roster assignment */
-        post: operations["AttendanceConfigController_createRoster"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Bulk assign a shift with row-level conflicts */
-        post: operations["AttendanceConfigController_bulkRosters"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/{id}": {
+    "/platform/plans/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1694,32 +1736,271 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a roster assignment */
-        delete: operations["AttendanceConfigController_removeRoster"];
+        delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update plan pricing, limits, and module bundle */
+        patch: operations["PlatformBillingController_updatePlan"];
         trace?: never;
     };
-    "/holidays": {
+    "/platform/plans/{id}/impact": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List tenant-wide and office holidays */
-        get: operations["AttendanceConfigController_listHolidays"];
+        get?: never;
         put?: never;
-        /** Create a tenant-wide or office holiday */
-        post: operations["AttendanceConfigController_createHoliday"];
+        /** Preview tenants and features affected by a plan edit */
+        post: operations["PlatformBillingController_planImpact"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/holidays/{id}": {
+    "/platform/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search invoices across tenants */
+        get: operations["PlatformBillingController_invoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get invoice, tax snapshot and payment attempts */
+        get: operations["PlatformBillingController_invoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/payment-transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search provider payment attempts */
+        get: operations["PlatformBillingController_transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dunning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List subscriptions in dunning */
+        get: operations["PlatformBillingController_dunning"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dunning/{subscriptionId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry payment with permission and fresh MFA */
+        post: operations["PlatformBillingController_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/dashboard/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authoritative revenue and billing KPIs */
+        get: operations["PlatformBillingController_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/health/payment-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get provider latency and webhook health */
+        get: operations["PlatformBillingController_providerHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get tenant legal and tax billing profile */
+        get: operations["BillingController_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update tenant legal and tax billing profile */
+        patch: operations["BillingController_updateProfile"];
+        trace?: never;
+    };
+    "/billing/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current subscription, bundle and seat usage */
+        get: operations["BillingController_subscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/subscription/change-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview or confirm a validated plan change */
+        post: operations["BillingController_changePlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant GST invoices */
+        get: operations["BillingController_invoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get immutable invoice and payment evidence */
+        get: operations["BillingController_invoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/invoices/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a short-lived private invoice download */
+        get: operations["BillingController_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/payment-methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List masked tokenized payment methods */
+        get: operations["BillingController_paymentMethods"];
+        put?: never;
+        /** Attach a provider-tokenized payment method */
+        post: operations["BillingController_addPaymentMethod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/payment-methods/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1729,15 +2010,14 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a holiday */
-        delete: operations["AttendanceConfigController_removeHoliday"];
+        /** Revoke a tokenized payment method */
+        delete: operations["BillingController_deletePaymentMethod"];
         options?: never;
         head?: never;
-        /** Update holiday name, date, or scope */
-        patch: operations["AttendanceConfigController_updateHoliday"];
+        patch?: never;
         trace?: never;
     };
-    "/rosters/imports/presign": {
+    "/billing/webhooks/{provider}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1746,57 +2026,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a private roster CSV upload URL */
-        post: operations["RosterImportsController_presign"];
+        /** Consume an authenticated payment provider event */
+        post: operations["BillingWebhookController_handle"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/rosters/imports": {
+    "/audit-logs": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Register and queue an idempotent roster import */
-        post: operations["RosterImportsController_register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rosters/imports/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get roster import summary and safe row errors */
-        get: operations["RosterImportsController_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/attendance/dashboard": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the shared Business Admin and HR Admin live board */
-        get: operations["AttendanceDashboardController_get"];
+        /** Search the current tenant audit history */
+        get: operations["TenantAuditController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2010,6 +2256,427 @@ export interface paths {
         head?: never;
         /** Update an unlocked attendance exception */
         patch: operations["AttendanceQueryController_updateException"];
+        trace?: never;
+    };
+    "/offices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant office locations and assignment counts */
+        get: operations["AttendanceConfigController_listOffices"];
+        put?: never;
+        /** Create an office and circular geofence */
+        post: operations["AttendanceConfigController_createOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/offices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an office with employees and holidays */
+        get: operations["AttendanceConfigController_getOffice"];
+        put?: never;
+        post?: never;
+        /** Delete an unused office */
+        delete: operations["AttendanceConfigController_removeOffice"];
+        options?: never;
+        head?: never;
+        /** Update office geofence and network constraints */
+        patch: operations["AttendanceConfigController_updateOffice"];
+        trace?: never;
+    };
+    "/offices/{id}/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List employees assigned to an office */
+        get: operations["AttendanceConfigController_officeEmployees"];
+        /** Atomically replace office employee assignments */
+        put: operations["AttendanceConfigController_replaceOfficeEmployees"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List attendance policies and assignments */
+        get: operations["AttendanceConfigController_listPolicies"];
+        put?: never;
+        /** Create an attendance policy */
+        post: operations["AttendanceConfigController_createPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve employee policy by employee, department, then tenant default */
+        get: operations["AttendanceConfigController_resolvePolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/resolve/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve policies for up to 500 employees without N+1 queries */
+        post: operations["AttendanceConfigController_resolvePolicies"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an attendance policy and assignments */
+        get: operations["AttendanceConfigController_getPolicy"];
+        put?: never;
+        post?: never;
+        /** Delete a policy and clear assignments */
+        delete: operations["AttendanceConfigController_removePolicy"];
+        options?: never;
+        head?: never;
+        /** Update prospective attendance policy rules */
+        patch: operations["AttendanceConfigController_updatePolicy"];
+        trace?: never;
+    };
+    "/attendance-policies/{id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Atomically replace policy scope assignments */
+        put: operations["AttendanceConfigController_replacePolicyAssignments"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-policies/employees/{employeeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or clear one employee-specific attendance policy override */
+        put: operations["AttendanceConfigController_assignEmployeePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant shifts */
+        get: operations["AttendanceConfigController_listShifts"];
+        put?: never;
+        /** Create a day or overnight shift */
+        post: operations["AttendanceConfigController_createShift"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve employee shift for a date */
+        get: operations["AttendanceConfigController_resolveShift"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/resolve/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve shifts for up to 500 employees without N+1 queries */
+        post: operations["AttendanceConfigController_resolveShifts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shifts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a shift */
+        get: operations["AttendanceConfigController_getShift"];
+        put?: never;
+        post?: never;
+        /** Delete an unused shift */
+        delete: operations["AttendanceConfigController_removeShift"];
+        options?: never;
+        head?: never;
+        /** Update shift times and overnight derivation */
+        patch: operations["AttendanceConfigController_updateShift"];
+        trace?: never;
+    };
+    "/rosters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List dated roster assignments */
+        get: operations["AttendanceConfigController_listRosters"];
+        put?: never;
+        /** Create an idempotent dated roster assignment */
+        post: operations["AttendanceConfigController_createRoster"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk assign a shift with row-level conflicts */
+        post: operations["AttendanceConfigController_bulkRosters"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a roster assignment */
+        delete: operations["AttendanceConfigController_removeRoster"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tenant-wide and office holidays */
+        get: operations["AttendanceConfigController_listHolidays"];
+        put?: never;
+        /** Create a tenant-wide or office holiday */
+        post: operations["AttendanceConfigController_createHoliday"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import public holidays for configured office regions */
+        post: operations["AttendanceConfigController_syncPublicHolidays"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holidays/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a holiday */
+        delete: operations["AttendanceConfigController_removeHoliday"];
+        options?: never;
+        head?: never;
+        /** Update holiday name, date, or scope */
+        patch: operations["AttendanceConfigController_updateHoliday"];
+        trace?: never;
+    };
+    "/rosters/imports/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a private roster CSV upload URL */
+        post: operations["RosterImportsController_presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register and queue an idempotent roster import */
+        post: operations["RosterImportsController_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rosters/imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get roster import summary and safe row errors */
+        get: operations["RosterImportsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the shared Business Admin and HR Admin live board */
+        get: operations["AttendanceDashboardController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/hr-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get permission-filtered, employee-scoped HR action counts */
+        get: operations["HrDashboardController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/devices/register": {
@@ -2544,6 +3211,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/regularizations/employees/{employeeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a correction request for an employee */
+        post: operations["RegularizationController_createForEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/regularizations/attachments/presign": {
         parameters: {
             query?: never;
@@ -2869,6 +3553,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leave-balances/{id}/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust an employee leave balance with an audit entry */
+        post: operations["LeaveController_adjustBalance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leave-requests": {
         parameters: {
             query?: never;
@@ -2955,128 +3656,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/billing/profile": {
+    "/payroll/settings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get tenant legal and tax billing profile */
-        get: operations["BillingController_profile"];
+        /** Get payroll settings for the workspace */
+        get: operations["PayrollFoundationController_getSettings"];
+        put?: never;
+        /** Create payroll settings */
+        post: operations["PayrollFoundationController_createSettings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update payroll settings with optimistic versioning */
+        patch: operations["PayrollFoundationController_updateSettings"];
+        trace?: never;
+    };
+    "/payroll/pay-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_listPayGroups"];
+        put?: never;
+        post: operations["PayrollFoundationController_createPayGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/pay-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getPayGroup"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update tenant legal and tax billing profile */
-        patch: operations["BillingController_updateProfile"];
+        patch: operations["PayrollFoundationController_updatePayGroup"];
         trace?: never;
     };
-    "/billing/subscription": {
+    "/payroll/pay-groups/{id}/employees": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get current subscription, bundle and seat usage */
-        get: operations["BillingController_subscription"];
+        get: operations["PayrollFoundationController_listPayGroupEmployees"];
         put?: never;
-        post?: never;
+        post: operations["PayrollFoundationController_assignEmployee"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/billing/subscription/change-plan": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Preview or confirm a validated plan change */
-        post: operations["BillingController_changePlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/invoices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List tenant GST invoices */
-        get: operations["BillingController_invoices"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/invoices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get immutable invoice and payment evidence */
-        get: operations["BillingController_invoice"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/invoices/{id}/download": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Create a short-lived private invoice download */
-        get: operations["BillingController_download"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/payment-methods": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List masked tokenized payment methods */
-        get: operations["BillingController_paymentMethods"];
-        put?: never;
-        /** Attach a provider-tokenized payment method */
-        post: operations["BillingController_addPaymentMethod"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/billing/payment-methods/{id}": {
+    "/payroll/pay-groups/{id}/employees/{employeeId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3086,14 +3733,61 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Revoke a tokenized payment method */
-        delete: operations["BillingController_deletePaymentMethod"];
+        delete: operations["PayrollFoundationController_removeEmployee"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/billing/webhooks/{provider}": {
+    "/payroll/components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_listComponents"];
+        put?: never;
+        post: operations["PayrollFoundationController_createComponent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/components/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getComponent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/components/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getComponentHistory"];
+        put?: never;
+        post: operations["PayrollFoundationController_createComponentVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/components/{id}/versions/{versionId}/activate": {
         parameters: {
             query?: never;
             header?: never;
@@ -3102,33 +3796,158 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Consume an authenticated payment provider event */
-        post: operations["BillingWebhookController_handle"];
+        post: operations["PayrollFoundationController_activateComponentVersion"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/platform/plans": {
+    "/payroll/salary-structures": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List plans and module bundles */
-        get: operations["PlatformBillingController_plans"];
+        get: operations["PayrollFoundationController_listStructures"];
         put?: never;
-        /** Create a subscription plan with fresh MFA */
-        post: operations["PlatformBillingController_createPlan"];
+        post: operations["PayrollFoundationController_createStructure"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/platform/plans/{id}": {
+    "/payroll/salary-structures/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getStructure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/salary-structures/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getStructureHistory"];
+        put?: never;
+        post: operations["PayrollFoundationController_createStructureVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/salary-structures/{id}/versions/{versionId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollFoundationController_activateStructureVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/salary-structures/versions/{versionId}/components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollFoundationController_addStructureComponent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/salary-structures/versions/{versionId}/components/{componentVersionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["PayrollFoundationController_removeStructureComponent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getProfile"];
+        put?: never;
+        post: operations["PayrollFoundationController_createProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollFoundationController_updateProfile"];
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/compensation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getCompensation"];
+        put?: never;
+        post: operations["PayrollFoundationController_createCompensation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/compensation/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollFoundationController_getCompensationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/compensation/{compensationId}/end": {
         parameters: {
             query?: never;
             header?: never;
@@ -3141,19 +3960,17 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update plan pricing, limits, and module bundle */
-        patch: operations["PlatformBillingController_updatePlan"];
+        patch: operations["PayrollFoundationController_endCompensation"];
         trace?: never;
     };
-    "/platform/invoices": {
+    "/payroll/policy-matrix/effective": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Search invoices across tenants */
-        get: operations["PlatformBillingController_invoices"];
+        get: operations["PayrollFoundationController_getEffectivePolicy"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3162,58 +3979,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/platform/invoices/{id}": {
+    "/payroll/calendars": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get invoice, tax snapshot and payment attempts */
-        get: operations["PlatformBillingController_invoice"];
+        get: operations["PayrollAdministrationController_listCalendars"];
         put?: never;
-        post?: never;
+        post: operations["PayrollAdministrationController_createCalendar"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/platform/payment-transactions": {
+    "/payroll/calendars/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Search provider payment attempts */
-        get: operations["PlatformBillingController_transactions"];
+        get: operations["PayrollAdministrationController_getCalendar"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["PayrollAdministrationController_updateCalendar"];
         trace?: never;
     };
-    "/platform/dunning": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List subscriptions in dunning */
-        get: operations["PlatformBillingController_dunning"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/dunning/{subscriptionId}/retry": {
+    "/payroll/calendars/{id}/versions": {
         parameters: {
             query?: never;
             header?: never;
@@ -3222,23 +4020,278 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retry payment with permission and fresh MFA */
-        post: operations["PlatformBillingController_retry"];
+        post: operations["PayrollAdministrationController_createCalendarVersion"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/platform/dashboard/billing": {
+    "/payroll/calendars/{id}/activate": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get authoritative revenue and billing KPIs */
-        get: operations["PlatformBillingController_dashboard"];
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_activateCalendar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/calendars/{id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_deactivateCalendar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollAdministrationController_listPolicies"];
+        put?: never;
+        post: operations["PayrollAdministrationController_createPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollAdministrationController_updatePolicy"];
+        trace?: never;
+    };
+    "/payroll/policies/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_createPolicyVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/policies/{id}/versions/{versionId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_activatePolicyVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/payment-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollAdministrationController_listPaymentDetails"];
+        put?: never;
+        post: operations["PayrollAdministrationController_upsertPaymentDetail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/payment-details/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollAdministrationController_setPaymentDetailStatus"];
+        trace?: never;
+    };
+    "/payroll/employees/{employeeId}/statutory-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollAdministrationController_listStatutoryDetails"];
+        put?: never;
+        post: operations["PayrollAdministrationController_upsertStatutoryDetail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/statutory-details/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollAdministrationController_setStatutoryDetailStatus"];
+        trace?: never;
+    };
+    "/payroll/approval-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollAdministrationController_listApprovalPolicies"];
+        put?: never;
+        post: operations["PayrollAdministrationController_createApprovalPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/approval-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollAdministrationController_updateApprovalPolicy"];
+        trace?: never;
+    };
+    "/payroll/approval-policies/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_createApprovalPolicyVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/approval-policies/{id}/versions/{versionId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PayrollAdministrationController_activateApprovalPolicyVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/accounting-mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollAdministrationController_listAccountingMappings"];
+        put?: never;
+        post: operations["PayrollAdministrationController_createAccountingMapping"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/accounting-mappings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollAdministrationController_updateAccountingMapping"];
+        trace?: never;
+    };
+    "/payroll/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List payroll audit history for this workspace */
+        get: operations["PayrollAdministrationController_auditHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3247,21 +4300,438 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/platform/health/payment-providers": {
+    "/payroll/runs": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get provider latency and webhook health */
-        get: operations["PlatformBillingController_providerHealth"];
+        get: operations["PayrollRunPreparationController_list"];
+        put?: never;
+        /** Create a Payroll input-preparation run */
+        post: operations["PayrollRunPreparationController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollRunPreparationController_get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/attendance-snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import locked attendance snapshot rows */
+        post: operations["PayrollRunPreparationController_importAttendanceSnapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a recurring, one-time, joiner, or leaver input */
+        post: operations["PayrollRunPreparationController_addInput"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/input-imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Parse and validate a Payroll input CSV preview */
+        post: operations["PayrollRunPreparationController_previewInputCsv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/input-imports/{importId}/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Commit a previously validated Payroll input CSV */
+        post: operations["PayrollRunPreparationController_commitInputImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate run readiness and mark INPUTS_READY if clean */
+        post: operations["PayrollRunPreparationController_validate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollRunPreparationController_readiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/validation-issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollRunPreparationController_validationIssues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/validation-issues/{issueId}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PayrollRunPreparationController_acknowledgeIssue"];
+        trace?: never;
+    };
+    "/payroll/runs/{id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate payroll run results */
+        post: operations["PayrollProcessingController_calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/payslips/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published payslips for the current employee */
+        get: operations["PayrollProcessingController_listMyPayslips"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/payslips/me/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Create a signed download URL for my published payslip */
+        get: operations["PayrollProcessingController_downloadMyPayslip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark calculated payroll run as reviewed */
+        post: operations["PayrollProcessingController_review"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve a reviewed payroll run */
+        post: operations["PayrollProcessingController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finalize an approved payroll run */
+        post: operations["PayrollProcessingController_finalize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/results/{id}/override": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Override a calculated employee result before approval */
+        patch: operations["PayrollProcessingController_overrideResult"];
+        trace?: never;
+    };
+    "/payroll/runs/{id}/outputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate payslip, register, bank, or accounting outputs */
+        post: operations["PayrollProcessingController_generateOutput"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish generated payslips */
+        post: operations["PayrollProcessingController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record payroll payment status */
+        post: operations["PayrollProcessingController_markPaid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_listPayslips"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/runs/{id}/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_listJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/payslips/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_downloadPayslip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/outputs/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollProcessingController_downloadOutput"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/country-rule-packs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayrollCountryRulePackController_list"];
+        put?: never;
+        /** Create a tenant country rule pack shell */
+        post: operations["PayrollCountryRulePackController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payroll/country-rule-packs/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Activate, disable, or draft a country rule pack */
+        patch: operations["PayrollCountryRulePackController_updateStatus"];
         trace?: never;
     };
 }
@@ -3279,6 +4749,10 @@ export interface components {
             refreshToken: string;
             /** Format: uuid */
             deviceUuid?: string;
+        };
+        ChangePasswordDto: {
+            currentPassword: string;
+            newPassword: string;
         };
         UpdateTenantSettingsDto: {
             /** @example Asia/Kolkata */
@@ -3346,13 +4820,20 @@ export interface components {
             employeeCode: string;
             /** @example Aarav Sharma */
             fullName: string;
+            /** @example aarav.sharma@acme.com */
+            email: string;
             /** @example +919876543210 */
-            phone?: string;
+            phone: string;
             /**
              * @example OFFICE
              * @enum {string}
              */
             workType: "OFFICE" | "FIELD" | "HYBRID";
+            /**
+             * Format: date
+             * @example 1994-03-18
+             */
+            dateOfBirth: string;
             /**
              * Format: date
              * @example 2026-07-16
@@ -3365,15 +4846,26 @@ export interface components {
             /** Format: uuid */
             managerId?: Record<string, never> | null;
         };
+        CreateEmployeeAccountDto: {
+            /** @example aarav.sharma@acme.com */
+            email: string;
+        };
         UpdateEmployeeDto: {
             /** @example EMP-0001 */
             employeeCode?: string;
             /** @example Aarav Sharma */
             fullName?: string;
+            /** @example aarav.sharma@acme.com */
+            email?: string;
             /** @example +919876543210 */
             phone?: Record<string, never> | null;
             /** @enum {string} */
             workType?: "OFFICE" | "FIELD" | "HYBRID";
+            /**
+             * Format: date
+             * @example 1994-03-18
+             */
+            dateOfBirth?: Record<string, never> | null;
             /**
              * Format: date
              * @example 2026-07-16
@@ -3390,6 +4882,12 @@ export interface components {
              * @example 2026-07-16
              */
             effectiveDate?: string;
+        };
+        UpdateEmployeeAssignmentsDto: {
+            /** Format: uuid */
+            primaryOfficeId?: Record<string, never> | null;
+            /** Format: uuid */
+            defaultShiftId?: Record<string, never> | null;
         };
         TerminateEmployeeDto: {
             /**
@@ -3425,6 +4923,8 @@ export interface components {
             /** @example tenant-id/employee-imports/file.csv */
             objectKey: string;
         };
+        PresignEmployeeDocumentDto: Record<string, never>;
+        RegisterEmployeeDocumentDto: Record<string, never>;
         CreateRoleDto: {
             /** @example Attendance Supervisor */
             name: string;
@@ -3462,6 +4962,11 @@ export interface components {
             /** @example hr.admin@example.com */
             email: string;
             roleIds: string[];
+            /**
+             * Format: uuid
+             * @description Employee to link atomically when the invited user accepts the invitation
+             */
+            employeeId?: string;
         };
         ResendInvitationDto: {
             /** @example hr.admin@example.com */
@@ -3505,6 +5010,10 @@ export interface components {
             timezone: string;
             /** @example 150 */
             seatCount: number;
+            /** @description Pre-set admin password. When provided the user account is created immediately. */
+            adminPassword?: string;
+            /** @description Employee count band (e.g. "1-10", "11-50") */
+            employeeCount?: string;
         };
         UpdatePlatformTenantDto: {
             companyName?: string;
@@ -3557,6 +5066,11 @@ export interface components {
             availability?: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
             dependencyKeys?: string[];
             conflictKeys?: string[];
+            /** @enum {string} */
+            kind?: "PRODUCT" | "ADD_ON";
+            parentModuleId?: string;
+            catalogOrder?: number;
+            customerVisible?: boolean;
         };
         UpdatePlatformModuleDto: {
             name?: string;
@@ -3566,6 +5080,11 @@ export interface components {
             availability?: "AVAILABLE" | "COMING_SOON" | "DEPRECATED";
             dependencyKeys?: string[];
             conflictKeys?: string[];
+            /** @enum {string} */
+            kind?: "PRODUCT" | "ADD_ON";
+            parentModuleId?: string;
+            catalogOrder?: number;
+            customerVisible?: boolean;
         };
         ReplaceTenantModulesDto: {
             /**
@@ -3575,6 +5094,7 @@ export interface components {
              */
             moduleKeys: string[];
         };
+        ReplaceTenantCapabilityOverridesDto: Record<string, never>;
         CreateImpersonationDto: {
             /** Format: uuid */
             targetUserId: string;
@@ -3589,6 +5109,34 @@ export interface components {
         SystemAlertDecisionDto: {
             note: string;
         };
+        CreatePlatformPlanDto: Record<string, never>;
+        UpdatePlatformPlanDto: Record<string, never>;
+        DunningRetryDto: Record<string, never>;
+        UpdateBillingProfileDto: {
+            legalName: string;
+            billingEmail: string;
+            gstin?: string;
+            pan?: string;
+            /** @enum {string} */
+            currency: "INR" | "AED" | "OMR" | "QAR" | "SAR" | "USD";
+        };
+        ChangePlanDto: {
+            /** @default false */
+            confirm: Record<string, never>;
+        };
+        AddPaymentMethodDto: {
+            /** @description Token/reference returned by the provider SDK */
+            providerMethodRef: string;
+        };
+        WebPunchDto: {
+            /**
+             * Format: uuid
+             * @description Client-generated idempotency key for safe retries
+             */
+            requestId?: string;
+        };
+        CreateAttendanceExceptionDto: Record<string, never>;
+        UpdateAttendanceExceptionDto: Record<string, never>;
         CreateOfficeDto: Record<string, never>;
         UpdateOfficeDto: Record<string, never>;
         AssignOfficeEmployeesDto: Record<string, never>;
@@ -3610,10 +5158,18 @@ export interface components {
             selfieMode?: "DISABLED" | "REQUIRED";
         };
         ReplacePolicyAssignmentsDto: Record<string, never>;
+        AssignEmployeePolicyDto: {
+            /**
+             * Format: uuid
+             * @description Direct policy override. Use null to inherit department or tenant policy.
+             */
+            policyId: Record<string, never> | null;
+        };
         CreateShiftDto: Record<string, never>;
         UpdateShiftDto: Record<string, never>;
         CreateRosterDto: Record<string, never>;
         BulkRosterDto: Record<string, never>;
+        SyncPublicHolidaysDto: Record<string, never>;
         CreateHolidayDto: Record<string, never>;
         UpdateHolidayDto: Record<string, never>;
         RosterImportPresignDto: {
@@ -3623,18 +5179,11 @@ export interface components {
             contentType: string;
         };
         CreateRosterImportDto: Record<string, never>;
-        WebPunchDto: {
-            /**
-             * Format: uuid
-             * @description Client-generated idempotency key for safe retries
-             */
-            requestId?: string;
-        };
-        CreateAttendanceExceptionDto: Record<string, never>;
-        UpdateAttendanceExceptionDto: Record<string, never>;
         RegisterDeviceDto: {
             /** Format: uuid */
             deviceUuid: string;
+            /** Format: uuid */
+            previousDeviceUuid?: string;
             /** @enum {string} */
             platform: "IOS" | "ANDROID";
             deviceModel?: string;
@@ -3796,27 +5345,705 @@ export interface components {
         ReopenPayrollLockDto: Record<string, never>;
         CreateLeavePolicyDto: Record<string, never>;
         UpdateLeavePolicyDto: Record<string, never>;
+        AdjustLeaveBalanceDto: Record<string, never>;
         CreateLeaveRequestDto: Record<string, never>;
         LeaveDecisionDto: Record<string, never>;
-        UpdateBillingProfileDto: {
-            legalName: string;
-            billingEmail: string;
-            gstin?: string;
-            pan?: string;
+        PayrollSettingsResponseDataDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 1 */
+            version: number;
+            /** @example OM */
+            countryCode: string;
+            /** @example OMR */
+            defaultCurrency: string;
+            /** @example MONTHLY */
+            payFrequency: string;
+            /** @example CALENDAR_DAYS */
+            workingDayBasis: string;
+        };
+        PayrollSettingsResponseDto: {
+            data: components["schemas"]["PayrollSettingsResponseDataDto"];
+        };
+        PayrollPeriodRuleDto: {
+            /**
+             * @example day-of-month
+             * @enum {string}
+             */
+            type: "calendar-month" | "month-start" | "month-end" | "fixed-day" | "day-of-month";
+            /** @example 26 */
+            day?: number;
+            /** @example -1 */
+            offsetMonth?: number;
+        };
+        PayrollPayoutDateRuleDto: {
+            /**
+             * @example offset-after-period-end
+             * @enum {string}
+             */
+            type: "fixed-day" | "offset-after-period-end" | "configured-day-after-close";
+            /** @example 3 */
+            days?: number;
+            /** @example 28 */
+            day?: number;
+        };
+        PayrollPolicyConfigDto: {
+            /**
+             * @example proration-v1
+             * @enum {string}
+             */
+            schemaVersion?: "proration-v1" | "working-day-v1" | "rounding-v1" | "overtime-v1" | "loss-of-pay-v1" | "joiner-v1" | "leaver-v1" | "approval-workflow-v1" | "payment-configuration-v1" | "accounting-configuration-v1";
+            /**
+             * @example working-days
+             * @enum {string}
+             */
+            method?: "organization" | "organization-days" | "pay-group" | "calendar-days" | "working-days" | "fixed-days" | "nearest" | "up" | "down" | "ignore" | "pay" | "deduct" | "include" | "exclude" | "prorate";
+            /**
+             * @example nearest
+             * @enum {string}
+             */
+            mode?: "nearest" | "up" | "down";
             /** @enum {string} */
-            currency: "INR" | "AED" | "OMR" | "QAR" | "SAR" | "USD";
+            basis?: "CALENDAR_DAYS" | "WORKING_DAYS" | "FIXED_DAYS";
+            /** @example 30 */
+            fixedDays?: number;
+            /** @example 100 */
+            precisionBasisPoints?: number;
         };
-        ChangePlanDto: {
-            /** @default false */
-            confirm: Record<string, never>;
+        RoundingRuleDto: {
+            /**
+             * @example rounding-v1
+             * @enum {string}
+             */
+            schemaVersion?: "rounding-v1";
+            /**
+             * @example nearest
+             * @enum {string}
+             */
+            mode?: "nearest" | "up" | "down";
+            /**
+             * @example nearest
+             * @enum {string}
+             */
+            method?: "nearest" | "up" | "down";
         };
-        AddPaymentMethodDto: {
-            /** @description Token/reference returned by the provider SDK */
-            providerMethodRef: string;
+        CreatePayrollSettingsDto: {
+            /** @example OM */
+            countryCode: string;
+            /** @example OMR */
+            defaultCurrency: string;
+            /** @example en-OM */
+            locale: string;
+            /** @example Asia/Muscat */
+            timezone: string;
+            /** @enum {string} */
+            payFrequency: "WEEKLY" | "BIWEEKLY" | "SEMIMONTHLY" | "MONTHLY";
+            defaultPayPeriodRule: components["schemas"]["PayrollPeriodRuleDto"];
+            defaultPayoutDateRule: components["schemas"]["PayrollPayoutDateRuleDto"];
+            /** @enum {string} */
+            workingDayBasis: "CALENDAR_DAYS" | "WORKING_DAYS" | "FIXED_DAYS";
+            defaultProrationPolicy: components["schemas"]["PayrollPolicyConfigDto"];
+            defaultRoundingPolicy: components["schemas"]["RoundingRuleDto"];
+            /** @enum {string} */
+            moduleStatus?: "DRAFT" | "ACTIVE" | "SUSPENDED";
+            /**
+             * Format: date
+             * @example 2026-01-01
+             */
+            effectiveFrom: string;
+            /**
+             * Format: date
+             * @example 2026-12-31
+             */
+            effectiveTo?: string;
         };
-        CreatePlatformPlanDto: Record<string, never>;
-        UpdatePlatformPlanDto: Record<string, never>;
-        DunningRetryDto: Record<string, never>;
+        PayrollIdVersionResponseDataDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 1 */
+            version: number;
+        };
+        PayrollVersionedCommandResponseDto: {
+            data: components["schemas"]["PayrollIdVersionResponseDataDto"];
+        };
+        UpdatePayrollSettingsDto: {
+            /** @example OM */
+            countryCode?: string;
+            /** @example OMR */
+            defaultCurrency?: string;
+            /** @example en-OM */
+            locale?: string;
+            /** @example Asia/Muscat */
+            timezone?: string;
+            /** @enum {string} */
+            payFrequency?: "WEEKLY" | "BIWEEKLY" | "SEMIMONTHLY" | "MONTHLY";
+            defaultPayPeriodRule?: components["schemas"]["PayrollPeriodRuleDto"];
+            defaultPayoutDateRule?: components["schemas"]["PayrollPayoutDateRuleDto"];
+            /** @enum {string} */
+            workingDayBasis?: "CALENDAR_DAYS" | "WORKING_DAYS" | "FIXED_DAYS";
+            defaultProrationPolicy?: components["schemas"]["PayrollPolicyConfigDto"];
+            defaultRoundingPolicy?: components["schemas"]["RoundingRuleDto"];
+            /** @enum {string} */
+            moduleStatus?: "DRAFT" | "ACTIVE" | "SUSPENDED";
+            /**
+             * Format: date
+             * @example 2026-01-01
+             */
+            effectiveFrom?: string;
+            /**
+             * Format: date
+             * @example 2026-12-31
+             */
+            effectiveTo?: string;
+            /** @example 1 */
+            version: number;
+        };
+        PayrollListResponseDto: {
+            data: Record<string, never>[];
+        };
+        CreatePayGroupDto: {
+            /** Format: uuid */
+            calendarId?: string;
+            /** @example Monthly Oman */
+            name: string;
+            /** @example MONTHLY_OM */
+            code: string;
+            description?: string;
+            /** @example OMR */
+            currency: string;
+            /** @example OM */
+            countryCode: string;
+            prorationPolicyOverride?: components["schemas"]["PayrollPolicyConfigDto"];
+            roundingPolicyOverride?: components["schemas"]["RoundingRuleDto"];
+            /** Format: uuid */
+            overtimePolicyId?: string;
+            /** Format: uuid */
+            lossOfPayPolicyId?: string;
+            /** Format: uuid */
+            approvalPolicyId?: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        UpdatePayGroupDto: {
+            /** Format: uuid */
+            calendarId?: string;
+            /** @example Monthly Oman */
+            name?: string;
+            /** @example MONTHLY_OM */
+            code?: string;
+            description?: string;
+            /** @example OMR */
+            currency?: string;
+            /** @example OM */
+            countryCode?: string;
+            prorationPolicyOverride?: components["schemas"]["PayrollPolicyConfigDto"];
+            roundingPolicyOverride?: components["schemas"]["RoundingRuleDto"];
+            /** Format: uuid */
+            overtimePolicyId?: string;
+            /** Format: uuid */
+            lossOfPayPolicyId?: string;
+            /** Format: uuid */
+            approvalPolicyId?: string;
+            /** Format: date */
+            effectiveFrom?: string;
+            /** Format: date */
+            effectiveTo?: string;
+            /** @example 1 */
+            version: number;
+        };
+        AssignEmployeeToPayGroupDto: {
+            /** Format: uuid */
+            employeeId: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        PayrollStatusResponseDataDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example ACTIVE */
+            status: string;
+        };
+        PayrollStatusCommandResponseDto: {
+            data: components["schemas"]["PayrollStatusResponseDataDto"];
+        };
+        CreatePayComponentDto: {
+            /** @example BASIC */
+            code: string;
+            /** @example Basic salary */
+            name: string;
+            description?: string;
+            /** @enum {string} */
+            type: "EARNING" | "DEDUCTION" | "EMPLOYER_CONTRIBUTION" | "REIMBURSEMENT" | "INFORMATIONAL";
+        };
+        PayrollIdResponseDataDto: {
+            /** Format: uuid */
+            id: string;
+        };
+        PayrollCommandResponseDto: {
+            data: components["schemas"]["PayrollIdResponseDataDto"];
+        };
+        PayComponentConfigDto: {
+            /**
+             * @example component-v1
+             * @enum {string}
+             */
+            schemaVersion?: "component-v1";
+            /**
+             * @example basic
+             * @enum {string}
+             */
+            amountType?: "basic" | "gross" | "ctc";
+            /** @example BASIC */
+            formulaReference?: string;
+        };
+        CreatePayComponentVersionDto: {
+            /** @enum {string} */
+            valueMode: "FIXED" | "FORMULA_REFERENCE";
+            taxable: boolean;
+            statutory: boolean;
+            recurring: boolean;
+            /** @example 100 */
+            calculationOrder: number;
+            /** @example EMPLOYEE_CURRENCY */
+            currencyBehavior: string;
+            roundingBehavior: components["schemas"]["RoundingRuleDto"];
+            config: components["schemas"]["PayComponentConfigDto"];
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        CreateSalaryStructureDto: {
+            /** Format: uuid */
+            payGroupId?: string;
+            /** @example OM_MONTHLY */
+            code: string;
+            /** @example Oman monthly salary */
+            name: string;
+            description?: string;
+            /** @example OMR */
+            currency: string;
+        };
+        CreateSalaryStructureVersionDto: {
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        AddSalaryStructureComponentDto: {
+            /** Format: uuid */
+            payComponentVersionId: string;
+            /**
+             * @description Integer minor units as a string
+             * @example 1234567
+             */
+            fixedAmountMinor?: string;
+            percentageBasisPoints?: number;
+            formulaReference?: string;
+            /** @example 100 */
+            calculationOrder: number;
+            required: boolean;
+        };
+        CreateEmployeePayrollProfileDto: {
+            /** Format: uuid */
+            payGroupId?: string;
+            /** @enum {string} */
+            payrollStatus?: "ACTIVE" | "ON_HOLD" | "STOPPED";
+            /** @example OM */
+            payrollCountry: string;
+            /** @enum {string} */
+            paymentMethod?: "BANK_TRANSFER" | "CASH" | "CHEQUE" | "WALLET";
+            salaryHold?: boolean;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+            metadata?: Record<string, never>;
+        };
+        UpdateEmployeePayrollProfileDto: {
+            /** Format: uuid */
+            payGroupId?: string;
+            /** @enum {string} */
+            payrollStatus?: "ACTIVE" | "ON_HOLD" | "STOPPED";
+            /** @example OM */
+            payrollCountry?: string;
+            /** @enum {string} */
+            paymentMethod?: "BANK_TRANSFER" | "CASH" | "CHEQUE" | "WALLET";
+            salaryHold?: boolean;
+            /** Format: date */
+            effectiveFrom?: string;
+            /** Format: date */
+            effectiveTo?: string;
+            metadata?: Record<string, never>;
+            /** @example 1 */
+            version: number;
+        };
+        CreateEmployeeCompensationVersionDto: {
+            /** Format: uuid */
+            salaryStructureVersionId: string;
+            /** @example 1234567 */
+            baseAmountMinor: string;
+            /** @example OMR */
+            currency: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+            reason: string;
+        };
+        EndEmployeeCompensationVersionDto: {
+            /** Format: date */
+            effectiveTo: string;
+            reason: string;
+        };
+        CreatePayrollCalendarDto: {
+            /** @example MONTHLY_26_25 */
+            code: string;
+            /** @example Monthly 26 to 25 */
+            name: string;
+            /** @enum {string} */
+            frequency: "WEEKLY" | "BIWEEKLY" | "SEMIMONTHLY" | "MONTHLY";
+            periodStartRule: components["schemas"]["PayrollPeriodRuleDto"];
+            periodEndRule: components["schemas"]["PayrollPeriodRuleDto"];
+            payoutDateRule: components["schemas"]["PayrollPayoutDateRuleDto"];
+            /** @example Asia/Muscat */
+            timezone: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        UpdatePayrollCalendarDto: {
+            /** @example MONTHLY_26_25 */
+            code?: string;
+            /** @example Monthly 26 to 25 */
+            name?: string;
+            /** @enum {string} */
+            frequency?: "WEEKLY" | "BIWEEKLY" | "SEMIMONTHLY" | "MONTHLY";
+            periodStartRule?: components["schemas"]["PayrollPeriodRuleDto"];
+            periodEndRule?: components["schemas"]["PayrollPeriodRuleDto"];
+            payoutDateRule?: components["schemas"]["PayrollPayoutDateRuleDto"];
+            /** @example Asia/Muscat */
+            timezone?: string;
+            /** Format: date */
+            effectiveFrom?: string;
+            /** Format: date */
+            effectiveTo?: string;
+            /** @example 1 */
+            version: number;
+        };
+        CreatePayrollCalendarVersionDto: {
+            /** @example Monthly 26 to 25 */
+            name: string;
+            /** @enum {string} */
+            frequency: "WEEKLY" | "BIWEEKLY" | "SEMIMONTHLY" | "MONTHLY";
+            periodStartRule: components["schemas"]["PayrollPeriodRuleDto"];
+            periodEndRule: components["schemas"]["PayrollPeriodRuleDto"];
+            payoutDateRule: components["schemas"]["PayrollPayoutDateRuleDto"];
+            /** @example Asia/Muscat */
+            timezone: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        CreatePayrollPolicyDto: {
+            /** @example PRORATION_DEFAULT */
+            code: string;
+            /** @example Default proration */
+            name: string;
+            /** @enum {string} */
+            category: "PRORATION" | "WORKING_DAY_BASIS" | "ROUNDING" | "OVERTIME_TREATMENT" | "LOSS_OF_PAY_TREATMENT" | "JOINER_TREATMENT" | "LEAVER_TREATMENT" | "APPROVAL_WORKFLOW" | "PAYMENT_CONFIGURATION" | "ACCOUNTING_CONFIGURATION";
+        };
+        UpdatePayrollPolicyDto: {
+            /** @example PRORATION_DEFAULT */
+            code?: string;
+            /** @example Default proration */
+            name?: string;
+            /** @enum {string} */
+            category?: "PRORATION" | "WORKING_DAY_BASIS" | "ROUNDING" | "OVERTIME_TREATMENT" | "LOSS_OF_PAY_TREATMENT" | "JOINER_TREATMENT" | "LEAVER_TREATMENT" | "APPROVAL_WORKFLOW" | "PAYMENT_CONFIGURATION" | "ACCOUNTING_CONFIGURATION";
+            /** @example 1 */
+            version: number;
+        };
+        CreatePayrollPolicyVersionDto: {
+            /** @enum {string} */
+            sourceLevel?: "COUNTRY_DEFAULT" | "ORGANIZATION" | "PAY_GROUP" | "SALARY_STRUCTURE" | "EMPLOYEE";
+            /** Format: uuid */
+            sourceEntityId?: string;
+            supportsOverrides?: boolean;
+            config: components["schemas"]["PayrollPolicyConfigDto"];
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        UpsertEmployeePaymentDetailDto: {
+            /** @enum {string} */
+            paymentMethod: "BANK_TRANSFER" | "CASH" | "CHEQUE" | "WALLET";
+            /** @example Bank Muscat */
+            bankName?: string;
+            /** @example Payroll User */
+            accountHolderName?: string;
+            accountNumber?: string;
+            iban?: string;
+            routingNumber?: string;
+            swiftBic?: string;
+        };
+        PayrollMaskedPaymentDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 1 */
+            version: number;
+            /** @example BANK_TRANSFER */
+            paymentMethod: string;
+            /** @example Bank Muscat */
+            bankName?: Record<string, never> | null;
+            /** @example ****8877 */
+            accountNumberMasked?: Record<string, never> | null;
+            /** @example ****3333 */
+            ibanMasked?: Record<string, never> | null;
+            /** @example ACTIVE */
+            status: string;
+        };
+        PayrollMaskedPaymentDetailResponseDto: {
+            data: components["schemas"]["PayrollMaskedPaymentDetailDto"];
+        };
+        UpdateProtectedDetailStatusDto: {
+            /** @enum {string} */
+            status: "ACTIVE" | "REPLACED" | "REVOKED";
+        };
+        MetadataDto: {
+            /** @example tax-office */
+            issuingAuthority?: string;
+            /** @example true */
+            verified?: boolean;
+        };
+        UpsertEmployeeStatutoryDetailDto: {
+            /** @example OM */
+            countryCode: string;
+            /** @example NATIONAL_ID */
+            identifierType: string;
+            identifier: string;
+            metadata?: components["schemas"]["MetadataDto"];
+        };
+        PayrollMaskedStatutoryDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 1 */
+            version: number;
+            /** @example OM */
+            countryCode: string;
+            /** @example NATIONAL_ID */
+            identifierType: string;
+            /** @example ****6789 */
+            identifierMasked?: Record<string, never> | null;
+            /** @example ACTIVE */
+            status: string;
+        };
+        PayrollMaskedStatutoryDetailResponseDto: {
+            data: components["schemas"]["PayrollMaskedStatutoryDetailDto"];
+        };
+        CreatePayrollApprovalPolicyDto: {
+            /** @example Payroll approval */
+            name: string;
+        };
+        UpdatePayrollApprovalPolicyDto: {
+            /** @example Payroll approval */
+            name?: string;
+            /** @example 1 */
+            version: number;
+        };
+        CreatePayrollApprovalPolicyVersionDto: {
+            fourEyesEnabled: boolean;
+            makerCanApprove: boolean;
+            requiredLevels: number;
+            /**
+             * @example [
+             *       "payroll.runs.approve"
+             *     ]
+             */
+            allowedPermissions: string[];
+            /**
+             * @example [
+             *       "FINANCE_ADMIN"
+             *     ]
+             */
+            allowedRoleKeys: string[];
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        CostCenterRuleDto: {
+            /**
+             * @example department
+             * @enum {string}
+             */
+            mode: "department" | "office" | "fixed";
+            /** @example FINANCE */
+            value?: string;
+        };
+        CreatePayrollAccountingMappingDto: {
+            /** Format: uuid */
+            payComponentId: string;
+            /** @example 6000 */
+            debitAccountCode: string;
+            /** @example 2100 */
+            creditAccountCode: string;
+            costCenterRule: components["schemas"]["CostCenterRuleDto"];
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+        };
+        UpdatePayrollAccountingMappingDto: {
+            /** Format: uuid */
+            payComponentId?: string;
+            /** @example 6000 */
+            debitAccountCode?: string;
+            /** @example 2100 */
+            creditAccountCode?: string;
+            costCenterRule?: components["schemas"]["CostCenterRuleDto"];
+            /** Format: date */
+            effectiveFrom?: string;
+            /** Format: date */
+            effectiveTo?: string;
+            /** @example 1 */
+            version: number;
+            /** @enum {string} */
+            status?: "DRAFT" | "ACTIVE" | "INACTIVE" | "ARCHIVED";
+        };
+        PayrollAuditEntryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example payroll.calendar.created */
+            action: string;
+            /** @example PayrollCalendar */
+            entityType: string;
+            /** Format: uuid */
+            entityId?: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PayrollAuditMetaDto: {
+            /** @example 1 */
+            page: number;
+            /** @example 25 */
+            limit: number;
+            /** @example 100 */
+            total: number;
+        };
+        PayrollAuditResponseDto: {
+            data: components["schemas"]["PayrollAuditEntryDto"][];
+            meta: components["schemas"]["PayrollAuditMetaDto"];
+        };
+        PayrollRunListResponseDto: {
+            data: Record<string, never>[];
+        };
+        CreatePayrollRunDto: {
+            /** Format: uuid */
+            payGroupId: string;
+            /** @example 2026-07 */
+            periodKey: string;
+            /** Format: date */
+            periodStart: string;
+            /** Format: date */
+            periodEnd: string;
+            idempotencyKey?: string;
+        };
+        PayrollRunResponseDto: {
+            data: Record<string, never>;
+        };
+        PayrollAttendanceSnapshotRowDto: {
+            /** Format: uuid */
+            employeeId: string;
+            payableDays: number;
+            lossOfPayDays?: number;
+            overtimeMinutes?: number;
+            snapshot?: Record<string, never>;
+        };
+        ImportPayrollAttendanceSnapshotDto: {
+            /** @example attendance-lock:2026-07 */
+            source: string;
+            /** @example sha256:abcdef */
+            checksum: string;
+            /** @example attendance-lock-v1 */
+            sourceVersion: string;
+            rows: components["schemas"]["PayrollAttendanceSnapshotRowDto"][];
+        };
+        CreatePayrollRunInputDto: {
+            /** Format: uuid */
+            employeeId?: string;
+            /** @enum {string} */
+            kind: "RECURRING" | "ONE_TIME" | "JOINER" | "LEAVER";
+            /** @example BONUS */
+            code: string;
+            /** @example 125000 */
+            amountMinor?: string;
+            /** @example OMR */
+            currency?: string;
+            payload?: Record<string, never>;
+            idempotencyKey?: string;
+        };
+        PreviewPayrollInputCsvDto: {
+            /** @example payroll-inputs-2026-07.csv */
+            fileName: string;
+            /** @description CSV with headers: employeeId,kind,code,amountMinor,currency,reason */
+            csvText: string;
+        };
+        AcknowledgePayrollValidationIssueDto: {
+            note?: string;
+        };
+        PayrollProcessingResponseDto: {
+            data: Record<string, never>;
+        };
+        PayrollActionReasonDto: {
+            reason: string;
+        };
+        PayrollOverrideResultDto: {
+            reason: string;
+            /** @example 1234567 */
+            netPayMinor: string;
+        };
+        GeneratePayrollOutputDto: {
+            /** @enum {string} */
+            kind: "PAYSLIP" | "PAYROLL_REGISTER" | "BANK_EXPORT" | "ACCOUNTING_EXPORT";
+            /** @example standard-json-v1 */
+            adapterKey: string;
+        };
+        MarkPayrollPaidDto: {
+            /**
+             * @example PAID
+             * @enum {string}
+             */
+            status: "PENDING" | "PROCESSING" | "PAID" | "FAILED";
+            reference?: string;
+        };
+        PayrollCountryRulePackListResponseDto: {
+            data: Record<string, never>[];
+        };
+        CreatePayrollCountryRulePackDto: {
+            /** @example OM */
+            countryCode: string;
+            /** @example 2026.1 */
+            version: string;
+            /** Format: date */
+            effectiveFrom: string;
+            /** Format: date */
+            effectiveTo?: string;
+            metadata?: Record<string, never>;
+        };
+        PayrollCountryRulePackResponseDto: {
+            data: Record<string, never>;
+        };
+        UpdatePayrollCountryRulePackStatusDto: {
+            /** @enum {string} */
+            status: "DRAFT" | "ACTIVE" | "DISABLED";
+        };
     };
     responses: never;
     parameters: never;
@@ -3894,6 +6121,28 @@ export interface operations {
             };
         };
     };
+    AuthController_mobileLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginDto"];
+            };
+        };
+        responses: {
+            /** @description Successful employee login */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AuthController_refresh: {
         parameters: {
             query?: never;
@@ -3927,6 +6176,27 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RefreshTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
             };
         };
         responses: {
@@ -4305,6 +6575,59 @@ export interface operations {
             };
         };
     };
+    WorkspaceController_getModuleHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_getSettingsHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WorkspaceController_getIntegrations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     OrganizationController_listDepartments: {
         parameters: {
             query?: {
@@ -4591,6 +6914,7 @@ export interface operations {
                 departmentId?: string;
                 designationId?: string;
                 managerId?: string;
+                quickFilter?: "JOINING_SOON" | "MISSING_MANAGER";
                 page?: number;
                 limit?: number;
                 sort?: "name_asc" | "name_desc" | "code_asc" | "code_desc" | "joined_asc" | "joined_desc";
@@ -4700,6 +7024,25 @@ export interface operations {
             };
         };
     };
+    EmployeesController_workspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EmployeesController_getEmployee: {
         parameters: {
             query?: never;
@@ -4731,6 +7074,52 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateEmployeeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeesController_createEmployeeAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeeAccountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeesController_updateAssignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEmployeeAssignmentsDto"];
             };
         };
         responses: {
@@ -4781,6 +7170,23 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeImportsController_schema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4900,6 +7306,111 @@ export interface operations {
         requestBody?: never;
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterEmployeeDocumentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_presign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignEmployeeDocumentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmployeeDocumentsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5770,6 +8281,23 @@ export interface operations {
             };
         };
     };
+    PlatformCatalogController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PlatformTenantModulesController_list: {
         parameters: {
             query?: never;
@@ -5801,6 +8329,48 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReplaceTenantModulesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformTenantEntitlementsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformTenantEntitlementsController_replace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceTenantCapabilityOverridesDto"];
             };
         };
         responses: {
@@ -6035,6 +8605,751 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_plans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_updatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_planImpact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_invoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_invoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_transactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_dunning: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DunningRetryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformBillingController_providerHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBillingProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_changePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_invoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_invoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_paymentMethods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_addPaymentMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddPaymentMethodDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingController_deletePaymentMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BillingWebhookController_handle: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-razorpay-signature": string;
+                "stripe-signature": string;
+                "x-razorpay-event-id": string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TenantAuditController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_checkin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_breakStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_breakEnd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebPunchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_today: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_history: {
+        parameters: {
+            query?: {
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRuntimeController_day: {
+        parameters: {
+            query?: {
+                date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_register: {
+        parameters: {
+            query?: {
+                /** @description Return only records with late minutes greater than zero */
+                lateOnly?: boolean;
+                /** @description Return checked-in records that do not have a checkout */
+                missingCheckout?: boolean;
+                page?: components["schemas"]["Object"];
+                limit?: components["schemas"]["Object"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_employeeMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_day: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_listExceptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_createException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAttendanceExceptionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_getException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_removeException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceQueryController_updateException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAttendanceExceptionDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -6348,6 +9663,29 @@ export interface operations {
             };
         };
     };
+    AttendanceConfigController_assignEmployeePolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignEmployeePolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AttendanceConfigController_listShifts: {
         parameters: {
             query?: never;
@@ -6604,6 +9942,27 @@ export interface operations {
             };
         };
     };
+    AttendanceConfigController_syncPublicHolidays: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPublicHolidaysDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AttendanceConfigController_removeHoliday: {
         parameters: {
             query?: never;
@@ -6712,6 +10071,7 @@ export interface operations {
             query?: {
                 date?: string;
                 departmentId?: string;
+                officeId?: string;
                 status?: ("CLOCKED_IN" | "LATE" | "ABSENT" | "ON_FIELD" | "ON_BREAK" | "NOT_YET_IN" | "OFF")[];
                 search?: string;
                 limit?: number;
@@ -6731,91 +10091,7 @@ export interface operations {
             };
         };
     };
-    AttendanceRuntimeController_checkin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_checkout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_breakStart: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_breakEnd: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebPunchDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_today: {
+    HrDashboardController_summary: {
         parameters: {
             query?: never;
             header?: never;
@@ -6823,201 +10099,6 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_history: {
-        parameters: {
-            query?: {
-                month?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceRuntimeController_day: {
-        parameters: {
-            query?: {
-                date?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_register: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                limit?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_employeeMonth: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                employeeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_day: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                employeeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_listExceptions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_createException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateAttendanceExceptionDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_getException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_removeException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AttendanceQueryController_updateException: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAttendanceExceptionDto"];
-            };
-        };
         responses: {
             200: {
                 headers: {
@@ -7769,6 +10850,29 @@ export interface operations {
             };
         };
     };
+    RegularizationController_createForEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRegularizationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     RegularizationController_presign: {
         parameters: {
             query?: never;
@@ -8194,6 +11298,29 @@ export interface operations {
             };
         };
     };
+    LeaveController_adjustBalance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustLeaveBalanceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LeaveController_requests: {
         parameters: {
             query?: never;
@@ -8320,7 +11447,7 @@ export interface operations {
             };
         };
     };
-    BillingController_profile: {
+    PayrollFoundationController_getSettings: {
         parameters: {
             query?: never;
             header?: never;
@@ -8333,11 +11460,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollSettingsResponseDto"];
+                };
             };
         };
     };
-    BillingController_updateProfile: {
+    PayrollFoundationController_createSettings: {
         parameters: {
             query?: never;
             header?: never;
@@ -8346,45 +11475,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateBillingProfileDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_subscription: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_changePlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChangePlanDto"];
+                "application/json": components["schemas"]["CreatePayrollSettingsDto"];
             };
         };
         responses: {
@@ -8392,83 +11483,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-        };
-    };
-    BillingController_invoices: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
                 };
-                content?: never;
             };
         };
     };
-    BillingController_invoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_download: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_paymentMethods: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BillingController_addPaymentMethod: {
+    PayrollFoundationController_updateSettings: {
         parameters: {
             query?: never;
             header?: never;
@@ -8477,7 +11498,49 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddPaymentMethodDto"];
+                "application/json": components["schemas"]["UpdatePayrollSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_listPayGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createPayGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayGroupDto"];
             };
         };
         responses: {
@@ -8485,11 +11548,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
             };
         };
     };
-    BillingController_deletePaymentMethod: {
+    PayrollFoundationController_getPayGroup: {
         parameters: {
             query?: never;
             header?: never;
@@ -8504,28 +11569,24 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
             };
         };
     };
-    BillingWebhookController_handle: {
+    PayrollFoundationController_updatePayGroup: {
         parameters: {
             query?: never;
-            header: {
-                "x-razorpay-signature": string;
-                "stripe-signature": string;
-                "x-razorpay-event-id": string;
-            };
+            header?: never;
             path: {
-                provider: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": {
-                    [key: string]: unknown;
-                };
+                "application/json": components["schemas"]["UpdatePayGroupDto"];
             };
         };
         responses: {
@@ -8533,15 +11594,19 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
             };
         };
     };
-    PlatformBillingController_plans: {
+    PayrollFoundationController_listPayGroupEmployees: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8550,20 +11615,24 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
             };
         };
     };
-    PlatformBillingController_createPlan: {
+    PayrollFoundationController_assignEmployee: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePlatformPlanDto"];
+                "application/json": components["schemas"]["AssignEmployeeToPayGroupDto"];
             };
         };
         responses: {
@@ -8571,115 +11640,63 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
             };
         };
     };
-    PlatformBillingController_updatePlan: {
+    PayrollFoundationController_removeEmployee: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 id: string;
+                employeeId: string;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_listComponents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createComponent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdatePlatformPlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_invoices: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_invoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_transactions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_dunning: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    PlatformBillingController_retry: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                subscriptionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DunningRetryDto"];
+                "application/json": components["schemas"]["CreatePayComponentDto"];
             };
         };
         responses: {
@@ -8687,11 +11704,102 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
             };
         };
     };
-    PlatformBillingController_dashboard: {
+    PayrollFoundationController_getComponent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getComponentHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createComponentVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayComponentVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_activateComponentVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_listStructures: {
         parameters: {
             query?: never;
             header?: never;
@@ -8704,11 +11812,360 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
             };
         };
     };
-    PlatformBillingController_providerHealth: {
+    PayrollFoundationController_createStructure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSalaryStructureDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getStructure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getStructureHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createStructureVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSalaryStructureVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_activateStructureVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_addStructureComponent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddSalaryStructureComponentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_removeStructureComponent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                versionId: string;
+                componentVersionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeePayrollProfileDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEmployeePayrollProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getCompensation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_createCompensation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeeCompensationVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getCompensationHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_endCompensation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+                compensationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndEmployeeCompensationVersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollFoundationController_getEffectivePolicy: {
+        parameters: {
+            query: {
+                employeeId: string;
+                payGroupId?: string;
+                policyType: string;
+                effectiveDate: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listCalendars: {
         parameters: {
             query?: never;
             header?: never;
@@ -8721,7 +12178,1240 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollCalendarDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_getCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_updateCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePayrollCalendarDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createCalendarVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollCalendarVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_activateCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_deactivateCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listPolicies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollPolicyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_updatePolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePayrollPolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createPolicyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollPolicyVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_activatePolicyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listPaymentDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_upsertPaymentDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertEmployeePaymentDetailDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollMaskedPaymentDetailResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_setPaymentDetailStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProtectedDetailStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollMaskedPaymentDetailResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listStatutoryDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_upsertStatutoryDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertEmployeeStatutoryDetailDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollMaskedStatutoryDetailResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_setStatutoryDetailStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProtectedDetailStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollMaskedStatutoryDetailResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listApprovalPolicies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createApprovalPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollApprovalPolicyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_updateApprovalPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePayrollApprovalPolicyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createApprovalPolicyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollApprovalPolicyVersionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_activateApprovalPolicyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollStatusCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_listAccountingMappings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_createAccountingMapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollAccountingMappingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_updateAccountingMapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePayrollAccountingMappingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollVersionedCommandResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollAdministrationController_auditHistory: {
+        parameters: {
+            query?: {
+                action?: string;
+                entityType?: string;
+                entityId?: string;
+                from?: string;
+                to?: string;
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollAuditResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollRunDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_importAttendanceSnapshot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportPayrollAttendanceSnapshotDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_addInput: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollRunInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_previewInputCsv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewPayrollInputCsvDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_commitInputImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_validate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_readiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_validationIssues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollRunPreparationController_acknowledgeIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                issueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgePayrollValidationIssueDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRunResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_calculate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_listMyPayslips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_downloadMyPayslip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_review: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollActionReasonDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollActionReasonDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_finalize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollActionReasonDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_overrideResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollOverrideResultDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_generateOutput: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GeneratePayrollOutputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_markPaid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkPayrollPaidDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_listPayslips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_listJobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_downloadPayslip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollProcessingController_downloadOutput: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollProcessingResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollCountryRulePackController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCountryRulePackListResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollCountryRulePackController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayrollCountryRulePackDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCountryRulePackResponseDto"];
+                };
+            };
+        };
+    };
+    PayrollCountryRulePackController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePayrollCountryRulePackStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollCountryRulePackResponseDto"];
+                };
             };
         };
     };

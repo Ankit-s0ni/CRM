@@ -170,7 +170,7 @@ export function PlatformLocalizationRegistry() {
     <div className="mx-auto w-full max-w-[1500px] p-5 lg:p-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-600">
+          <p className="text-xs font-bold uppercase tracking-[.2em] theme-tone-text">
             Product language operations
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Languages</h1>
@@ -191,7 +191,7 @@ export function PlatformLocalizationRegistry() {
       </header>
 
       {error && (
-        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mt-5 rounded-xl border theme-tone theme-tone-red border p-4 text-sm">
           {error}
         </div>
       )}
@@ -280,8 +280,8 @@ export function PlatformLocalizationRegistry() {
                       className={cn(
                         "h-full rounded-full",
                         pack.coverage === 100
-                          ? "bg-emerald-500"
-                          : "bg-amber-500",
+                          ? "bg-accent"
+                          : "bg-accent",
                       )}
                       style={{ width: `${pack.coverage}%` }}
                     />
@@ -353,14 +353,14 @@ export function PlatformLocalizationRegistry() {
               ))}
             </div>
           ) : (
-            <div className="my-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="my-2 rounded-xl border theme-tone theme-tone-emerald border p-4">
               <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 size-5 text-emerald-700" />
+                <ShieldCheck className="mt-0.5 size-5 theme-tone-text" />
                 <div>
-                  <p className="text-sm font-semibold text-emerald-900">
+                  <p className="text-sm font-semibold text-foreground">
                     Registry complete
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-emerald-800">
+                  <p className="mt-1 text-xs leading-5 theme-tone-text">
                     All currently supported languages are already configured.
                     New locales require a supported locale definition before
                     they can be added here.
@@ -412,9 +412,9 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
     <span
       className={cn(
         "w-fit rounded-full px-2.5 py-1 text-[10px] font-bold",
-        status === "PUBLISHED" && "bg-emerald-100 text-emerald-700",
-        status === "REVIEW" && "bg-blue-100 text-blue-700",
-        status === "DRAFT" && "bg-amber-100 text-amber-800",
+        status === "PUBLISHED" && "theme-tone theme-tone-emerald",
+        status === "REVIEW" && "bg-[#ede7dc] text-[#151515]",
+        status === "DRAFT" && "theme-tone theme-tone-amber",
         status === "ARCHIVED" && "bg-zinc-100 text-zinc-600",
       )}
     >

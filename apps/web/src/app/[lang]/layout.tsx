@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import "../globals.css";
 
 import {
@@ -54,6 +55,15 @@ export default async function LocalizedRootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <Script id="tenant-theme-bootstrap" strategy="beforeInteractive">
+          {`
+              try {
+                var theme = localStorage.getItem('deltcrm-ui-theme');
+                if (theme === 'current' || theme === 'default') return;
+                document.documentElement.setAttribute('data-theme', 'monochrome');
+              } catch (e) {}
+            `}
+        </Script>
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>

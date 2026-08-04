@@ -3,7 +3,6 @@
 import {
   CalendarDays,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
   Clock3,
   Download,
@@ -21,9 +20,18 @@ import { RouteFeatureInfo } from "@/features/platform/help/feature-info";
 import {
   EmptyState,
   ErrorState,
+  FilterField,
   LoadingState,
   Panel,
+  PaginationBar,
+  TableShell,
+  Toolbar,
   inputClass,
+  tableCellClass,
+  tableClass,
+  tableHeadCellClass,
+  tableHeadClass,
+  tableRowClass,
 } from "@/shared/components/page-primitives";
 import {
   formatClock,
@@ -159,7 +167,7 @@ export function AttendanceRegisterView() {
     <div className="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
             {tText("Attendance operations")}</p>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -190,26 +198,23 @@ export function AttendanceRegisterView() {
               (summary?.statuses.PRESENT_OPEN ?? 0),
           )}
           icon={CheckCircle2}
-          tone="text-emerald-800 bg-emerald-100"
+          tone="theme-tone-icon theme-tone-emerald"
         />
         <Metric
           label={tText("Late minutes")}
           value={formatMinutes(summary?.totals.lateMinutes ?? 0)}
           icon={Clock3}
-          tone="text-amber-800 bg-amber-200"
+          tone="theme-tone-icon theme-tone-amber"
         />
         <Metric
           label={tText("Overtime")}
           value={formatMinutes(summary?.totals.overtimeMinutes ?? 0)}
           icon={ShieldAlert}
-          tone="text-sky-700 bg-sky-200"
+          tone="theme-tone-icon theme-tone-teal"
         />
       </section>
-      <Panel className="mb-5 p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="relative min-w-56 flex-1">
-            <span className="mb-1 block text-xs font-semibold">
-              {tText("Search employee")}</span>
+      <Toolbar className="mb-5 items-end">
+          <FilterField className="relative min-w-56 flex-1" label={tText("Search employee")}>
             <Search className="absolute bottom-3 left-3 size-4 text-outline" />
             <input
               className={`${inputClass} pl-9`}
@@ -219,7 +224,7 @@ export function AttendanceRegisterView() {
                 updateFilters({ search: event.target.value }, "replace")
               }
             />
-          </label>
+          </FilterField>
           <DateField
             label={tText("From")}
             value={filters.startDate}
@@ -230,8 +235,7 @@ export function AttendanceRegisterView() {
             value={filters.endDate}
             onChange={(endDate) => updateFilters({ endDate })}
           />
-          <label className="min-w-44">
-            <span className="mb-1 block text-xs font-semibold">{tText("Status")}</span>
+          <FilterField className="min-w-44" label={tText("Status")}>
             <select
               className={inputClass}
               value={
@@ -259,12 +263,11 @@ export function AttendanceRegisterView() {
               <option value="attention:missing-checkout">
                 {tText("Missing checkout")}</option>
             </select>
-          </label>
-          <span className="grid size-11 place-items-center rounded-xl bg-zinc-50 text-primary">
+          </FilterField>
+          <span className="grid size-11 place-items-center rounded-lg bg-muted text-[#151515]">
             <Filter className="size-4" />
           </span>
-        </div>
-      </Panel>
+      </Toolbar>
       {error && (
         <div className="mb-4">
           <ErrorState message={error} />
@@ -286,29 +289,26 @@ export function AttendanceRegisterView() {
         </Panel>
       )}
       {result && result.pagination.pages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-on-surface-variant">
-          <span>
-            {tText("Showing page")}{result.pagination.page} {tText("of")}{result.pagination.pages} ·{" "}
-            {result.pagination.total} {tText("records")}</span>
-          <div className="flex gap-2">
-            <button
-              aria-label={tText("Previous page")}
-              disabled={page <= 1}
-              onClick={() => navigateRegister(filters, page - 1)}
-              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              aria-label={tText("Next page")}
-              disabled={page >= result.pagination.pages}
-              onClick={() => navigateRegister(filters, page + 1)}
-              className="grid size-9 place-items-center rounded-lg border border-zinc-300 bg-white disabled:opacity-40"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
-        </div>
+        <PaginationBar
+          canNext={page < result.pagination.pages}
+          canPrevious={page > 1}
+          label={
+            <>
+              {tText("Showing page")} {result.pagination.page} {tText("of")}{" "}
+              {result.pagination.pages} - {result.pagination.total}{" "}
+              {tText("records")}
+            </>
+          }
+          nextLabel={tText("Next")}
+          onNext={() => navigateRegister(filters, page + 1)}
+          onPrevious={() => navigateRegister(filters, page - 1)}
+          pageLabel={
+            <>
+              {tText("Page")} {result.pagination.page}
+            </>
+          }
+          previousLabel={tText("Previous")}
+        />
       )}
     </div>
   );
@@ -323,10 +323,10 @@ function RegisterTable({
 }) {
   const { tText } = useTenantLocalization();
   return (
-    <Panel className="overflow-x-auto">
-      <table className="w-full min-w-[1120px] border-collapse text-left">
-        <thead>
-          <tr className="border-b border-surface-variant bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-outline">
+    <TableShell>
+      <table className={tableClass} style={{ minWidth: "1120px" }}>
+        <thead className={tableHeadClass}>
+          <tr>
             <Th>{tText("Employee")}</Th>
             <Th>{tText("Date")}</Th>
             <Th>{tText("Status")}</Th>
@@ -344,11 +344,11 @@ function RegisterTable({
             return (
               <tr
                 key={row.id}
-                className="border-b border-outline-variant transition last:border-0 hover:bg-zinc-50"
+                className={tableRowClass}
               >
                 <Td>
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-zinc-100 to-emerald-100 text-xs font-bold text-primary">
+                    <div className="grid size-10 place-items-center rounded-lg bg-muted text-xs font-bold text-[#151515]">
                       {initials(row.employee.fullName)}
                     </div>
                     <div>
@@ -385,7 +385,7 @@ function RegisterTable({
                   <span className="text-sm">
                     {row.shift?.name ?? tText("Default")}
                   </span>
-                  <span className="block text-[10px] text-outline">
+                    <span className="block text-[10px] text-muted-foreground">
                     {row.employee.office?.officeName ?? tText("No office")}
                   </span>
                 </Td>
@@ -399,15 +399,15 @@ function RegisterTable({
                   <strong className="text-sm">
                     {formatMinutes(row.workMinutes)}
                   </strong>
-                  <span className="block text-[10px] text-outline">
+                  <span className="block text-[10px] text-muted-foreground">
                     {tText("Break")}{formatMinutes(row.breakMinutes)}
                   </span>
                 </Td>
                 <Td>
-                  <span className="text-xs text-amber-800">
+                  <span className="text-xs theme-tone-text theme-tone-amber">
                     L {formatMinutes(row.lateMinutes)}
                   </span>
-                  <span className="ml-2 text-xs text-sky-700">
+                  <span className="ml-2 text-xs theme-tone-text theme-tone-teal">
                     OT {formatMinutes(row.overtimeMinutes)}
                   </span>
                 </Td>
@@ -419,9 +419,9 @@ function RegisterTable({
                     {row.evidence.verification.failed > 0 ? (
                       <ShieldAlert className="size-4 text-error" />
                     ) : (
-                      <CheckCircle2 className="size-4 text-emerald-800" />
+                      <CheckCircle2 className="size-4 theme-tone-text theme-tone-emerald" />
                     )}
-                    <span className="text-[10px] text-outline">
+                    <span className="text-[10px] text-muted-foreground">
                       {row.evidence.sources.join(", ") || tText("Calculated")}
                     </span>
                   </div>
@@ -429,7 +429,7 @@ function RegisterTable({
                 <Td>
                   <Link
                     href={`/app/attendance/register/${row.employee.id}?date=${row.attendanceDate}&returnTo=${encodeURIComponent(returnTo)}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#151515]"
                   >
                     {tText("View")}<ChevronRight className="size-3" />
                   </Link>
@@ -439,7 +439,7 @@ function RegisterTable({
           })}
         </tbody>
       </table>
-    </Panel>
+    </TableShell>
   );
 }
 
@@ -491,7 +491,7 @@ function Metric({
   label,
   value,
   icon: Icon,
-  tone = "text-primary bg-zinc-50",
+  tone = "text-[#151515] bg-zinc-50",
 }: {
   label: string;
   value: string;
@@ -520,22 +520,21 @@ function DateField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label>
-      <span className="mb-1 block text-xs font-semibold">{label}</span>
+    <FilterField label={label}>
       <input
         type="date"
         className={inputClass}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
-    </label>
+    </FilterField>
   );
 }
 function Th({ children }: { children?: React.ReactNode }) {
-  return <th className="px-4 py-3">{children}</th>;
+  return <th className={tableHeadCellClass}>{children}</th>;
 }
 function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-4 py-4">{children}</td>;
+  return <td className={tableCellClass}>{children}</td>;
 }
 function initials(value: string) {
   return value

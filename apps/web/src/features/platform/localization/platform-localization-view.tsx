@@ -422,7 +422,7 @@ export function PlatformLocalizationEditor({
             <ArrowLeft className="size-4" />
           </Link>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-600">
+            <p className="text-xs font-bold uppercase tracking-[.2em] theme-tone-text">
               Translation editor
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-3">
@@ -463,12 +463,12 @@ export function PlatformLocalizationEditor({
       </div>
 
       {error && (
-        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mb-5 rounded-xl border theme-tone theme-tone-red border p-4 text-sm">
           {error}
         </div>
       )}
       {notice && (
-        <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <div className="mb-5 rounded-xl border theme-tone theme-tone-emerald border p-4 text-sm">
           {notice}
         </div>
       )}
@@ -497,7 +497,7 @@ export function PlatformLocalizationEditor({
             </div>
           </div>
           {!!importReport.errors.length && (
-            <div className="mt-4 max-h-40 overflow-auto rounded-xl bg-red-50 p-4 text-xs text-red-700">
+            <div className="mt-4 max-h-40 overflow-auto rounded-xl theme-tone theme-tone-red border p-4 text-xs">
               {importReport.errors.map((item) => (
                 <div key={`${item.row}:${item.key}`}>
                   Row {item.row} · {item.key}: {item.error}
@@ -819,7 +819,7 @@ export function PlatformLocalizationEditor({
               )}
               {canPublish && detail?.status === "REVIEW" && (
                 <Button
-                  className="w-full bg-emerald-400 text-zinc-950"
+                  className="w-full bg-accent text-zinc-950"
                   disabled={
                     busy || (selectedLocale === "ar" && detail.coverage < 100)
                   }
@@ -829,7 +829,7 @@ export function PlatformLocalizationEditor({
                 </Button>
               )}
               {detail?.status === "PUBLISHED" && (
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs text-emerald-200">
+                <div className="flex items-center gap-2 rounded-xl border bg-accent/10 border-accent/40 p-3 text-xs text-foreground">
                   <Check className="size-4" /> Current published release
                 </div>
               )}
@@ -861,7 +861,7 @@ export function PlatformLocalizationEditor({
             </div>
             <div className="bg-zinc-50 p-4">
               <div className="rounded-xl border border-zinc-200 bg-white p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                <p className="text-[10px] font-bold uppercase tracking-wider theme-tone-text">
                   {resolvedMessage(
                     detail,
                     baseArabic,
@@ -940,9 +940,9 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
     <span
       className={cn(
         "rounded-full px-2 py-1 text-[10px] font-bold",
-        status === "PUBLISHED" && "bg-emerald-100 text-emerald-700",
-        status === "REVIEW" && "bg-blue-100 text-blue-700",
-        status === "DRAFT" && "bg-amber-100 text-amber-800",
+        status === "PUBLISHED" && "theme-tone theme-tone-emerald",
+        status === "REVIEW" && "bg-[#ede7dc] text-[#151515]",
+        status === "DRAFT" && "theme-tone theme-tone-amber",
         status === "ARCHIVED" && "bg-zinc-100 text-zinc-600",
       )}
     >
@@ -967,12 +967,12 @@ function MessageCell({
       className={cn(
         "rounded-xl border p-3",
         missing
-          ? "border-dashed border-amber-300 bg-amber-50"
+          ? "border-dashed theme-tone theme-tone-amber border"
           : "border-zinc-200 bg-zinc-50",
       )}
     >
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-outline">
-        {missing && <CircleAlert className="size-3 text-amber-700" />}
+        {missing && <CircleAlert className="size-3 theme-tone-text" />}
         {label}
       </div>
       <p className="mt-2 text-sm" dir={direction}>

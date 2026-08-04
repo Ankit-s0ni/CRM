@@ -152,12 +152,19 @@ export function LoginForm() {
       if (workspace) {
         document.cookie = `deltcrm-workspace=${workspace}; Path=/; Max-Age=31536000; SameSite=Lax`;
       }
-      const defaultLanguage = isAppLanguage(user.defaultLanguage)
-        ? user.defaultLanguage
+      const rawDefaultLanguage =
+        (user as Record<string, unknown>).defaultLanguage ??
+        user.localization?.defaultLanguage;
+      const defaultLanguage = isAppLanguage(rawDefaultLanguage as string)
+        ? (rawDefaultLanguage as "en" | "ar")
         : "en";
-      const enabledLanguages = Array.isArray(user.enabledLanguages)
-        ? user.enabledLanguages.filter(isAppLanguage)
+      const rawEnabledLanguages =
+        (user as Record<string, unknown>).enabledLanguages ??
+        user.localization?.enabledLanguages;
+      const enabledLanguages = Array.isArray(rawEnabledLanguages)
+        ? rawEnabledLanguages.filter(isAppLanguage)
         : [defaultLanguage];
+      document.cookie = `deltcrm-language=${defaultLanguage}; Path=/; Max-Age=31536000; SameSite=Lax`;
       const savedLanguage = document.cookie
         .split("; ")
         .find((item) => item.startsWith("deltcrm-language="))
@@ -168,6 +175,7 @@ export function LoginForm() {
           savedLanguage,
           defaultLanguage,
           enabledLanguages,
+          onboardingCompletedAt: (user as Record<string, unknown>).onboardingCompletedAt as string | undefined,
         }),
       );
     } catch (error: unknown) {
@@ -194,31 +202,29 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full glass-card border border-outline-variant/30 rounded-xl p-8 flex flex-col gap-6">
-      {/* Error State Variant */}
+    <div className="flex w-full flex-col gap-6 rounded-lg border border-border bg-white p-6 shadow-sm sm:p-8">
       {error && (
-        <div className="flex items-center gap-4 p-4 bg-error-container text-on-error-container rounded-lg border border-error/20 animate-in fade-in slide-in-from-top-1 duration-300" id="error-banner">
+        <div className="flex items-center gap-3 rounded-lg border theme-tone theme-tone-red border p-4 text-sm" id="error-banner" role="alert">
           <span className="material-symbols-outlined text-error">report</span>
-          <span className="font-label-md text-label-md ml-2">{error}</span>
+          <span className="font-medium">{error}</span>
         </div>
       )}
 
       <form className="space-y-6" onSubmit={handleLogin}>
-        {/* Email Field */}
         <div className="space-y-2">
-          <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor="email">Email Address</label>
+          <label className="block text-sm font-semibold text-foreground" htmlFor="email">Email Address</label>
           {workspace ? (
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
+            <p className="text-sm text-muted-foreground">
               Workspace: <span className="font-medium text-on-surface">{workspace}.{APP_DOMAIN}</span>
             </p>
           ) : (
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
+            <p className="text-sm text-muted-foreground">
               Start from your workspace invite, verification page, or company subdomain before signing in.
             </p>
           )}
           <div className="relative">
-            <input 
-              className="w-full h-12 px-4 pt-1 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none font-body-md text-body-md text-on-surface"
+            <input
+              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 text-sm text-foreground outline-none transition focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20" autoComplete="email" aria-describedby={error ? "error-banner" : undefined}
               id="email" 
               name="email" 
               placeholder="e.g. sarah.j@acme.com" 
@@ -230,12 +236,11 @@ export function LoginForm() {
           </div>
         </div>
 
-        {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor="password">Password</label>
+            <label className="block text-sm font-semibold text-foreground" htmlFor="password">Password</label>
             <Link
-              className="font-label-sm text-label-sm text-primary hover:underline transition-all"
+              className="text-sm font-semibold text-[#151515] transition hover:underline"
               href={forgotPasswordHref}
             >
               Forgot password?
@@ -243,18 +248,18 @@ export function LoginForm() {
           </div>
           <div className="relative">
             <input 
-              className="w-full h-12 px-4 pr-12 pt-1 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none font-body-md text-body-md text-on-surface"
-              id="password" 
-              name="password" 
-              placeholder="••••••••" 
-              required 
+              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 pr-12 text-sm text-foreground outline-none transition focus:border-[#151515] focus:ring-2 focus:ring-[#151515]/20" autoComplete="current-password" aria-describedby={error ? "error-banner" : undefined}
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError(""); }}
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-on-surface-variant transition-colors hover:text-primary"
+              className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-e-lg text-muted-foreground transition-colors hover:text-[#151515] focus:outline-none focus:ring-2 focus:ring-[#151515]/20"
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
               onClick={() => setShowPassword((visible) => !visible)}
@@ -266,19 +271,17 @@ export function LoginForm() {
           </div>
         </div>
 
-        {/* Remember Me & Actions */}
         <div className="flex items-center">
           <label className="flex items-center gap-4 cursor-pointer group">
             <div className="relative flex items-center">
-              <input className="peer h-5 w-5 border-outline-variant rounded bg-surface-container-lowest text-primary focus:ring-primary transition-all cursor-pointer" type="checkbox"/>
+              <input className="peer h-5 w-5 cursor-pointer rounded border-border bg-background text-[#151515] transition focus:ring-[#151515]" type="checkbox"/>
             </div>
-            <span className="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember this device</span>
+            <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">Remember this device</span>
           </label>
         </div>
 
-        {/* Sign In Button */}
         <button 
-          className="w-full h-12 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#151515] text-sm font-semibold text-on-primary shadow-sm shadow-[#151515]/20 transition hover:bg-[#2a2927] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
           id="signin-btn" 
           type="submit"
           disabled={loading}
@@ -297,11 +300,10 @@ export function LoginForm() {
         </button>
       </form>
 
-      {/* Workspace Switcher */}
-      <div className="pt-6 border-t border-outline-variant/30 text-center mt-2">
-        <p className="font-body-sm text-body-sm text-on-surface-variant">
+      <div className="mt-2 border-t border-border pt-6 text-center">
+        <p className="text-sm text-muted-foreground">
           Not your workspace? 
-          <Link className="text-primary font-label-md hover:underline ml-1" href="/signup">
+          <Link className="ml-1 font-semibold text-[#151515] hover:underline" href="/signup">
             Switch company
           </Link>
         </p>

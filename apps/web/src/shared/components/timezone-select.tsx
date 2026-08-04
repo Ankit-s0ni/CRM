@@ -70,7 +70,7 @@ export function TimezoneSelect({
         </select>
         {showDetect ? (
           <button
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 text-xs font-semibold text-primary hover:bg-zinc-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground hover:bg-muted"
             onClick={useDeviceTimezone}
             type="button"
           >

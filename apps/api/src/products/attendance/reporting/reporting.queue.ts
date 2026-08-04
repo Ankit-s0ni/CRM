@@ -42,9 +42,8 @@ export class ReportingQueue implements OnModuleInit, OnModuleDestroy {
   }
 
   private inlineMode() {
-    return (
-      process.env.REPORT_QUEUE_MODE === 'inline' ||
-      process.env.NODE_ENV === 'test'
-    );
+    if (process.env.REPORT_QUEUE_MODE === 'worker') return false;
+    if (process.env.REPORT_QUEUE_MODE === 'inline') return true;
+    return process.env.NODE_ENV !== 'production';
   }
 }

@@ -34,14 +34,14 @@ export default async function WorkspaceUnavailablePage({
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-surface px-6 py-6">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-emerald-300/10 blur-[150px]" />
+        <div className="absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-muted blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-accent/10 blur-[150px]" />
       </div>
 
       <main className="relative z-10 flex w-full max-w-[600px] flex-col items-center text-center">
         <div className="mb-12">
           <div className="flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-[32px] text-primary">
+            <span className="material-symbols-outlined text-[32px] text-[#151515]">
               hub
             </span>
             <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-zinc-900">
@@ -79,7 +79,7 @@ export default async function WorkspaceUnavailablePage({
             </div>
 
             <div className="absolute bottom-16 right-8 flex rotate-[12deg] items-center gap-1 rounded-[8px] border border-zinc-300/20 bg-white/80 px-2 py-2 shadow-sm backdrop-blur">
-              <span className="material-symbols-outlined text-[18px] text-primary">
+              <span className="material-symbols-outlined text-[18px] text-[#151515]">
                 credit_card_off
               </span>
               <span className="text-[12px] font-semibold leading-4 text-on-surface-variant">
@@ -100,14 +100,14 @@ export default async function WorkspaceUnavailablePage({
 
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
           <Link
-            className="group relative flex items-center gap-2 rounded-[12px] bg-primary px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary-container active:scale-95"
+            className="group relative flex items-center gap-2 rounded-[12px] bg-[#151515] px-8 py-4 text-[14px] font-medium leading-5 text-white shadow-md shadow-[#151515]/20 transition-all duration-300 hover:bg-[#2a2927] active:scale-95"
             href={`mailto:support@${APP_DOMAIN}`}
           >
             <span className="material-symbols-outlined">support_agent</span>
             Contact support
           </Link>
           <Link
-            className="rounded-[12px] border-2 border-primary/20 bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-primary transition-all duration-300 hover:bg-primary/5 active:scale-95"
+            className="rounded-[12px] border-2 border-[#beb8ad] bg-transparent px-8 py-4 text-[14px] font-medium leading-5 text-[#151515] transition-all duration-300 hover:bg-muted active:scale-95"
             href="/"
           >
             Go to main site

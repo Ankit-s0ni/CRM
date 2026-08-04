@@ -149,7 +149,7 @@ export function ModuleManagement() {
   return (
     <div className="mx-auto max-w-[1500px] p-5 lg:p-8">
       <header className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#151515]">
           Commercial catalog
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">
@@ -162,7 +162,7 @@ export function ModuleManagement() {
       </header>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mb-4 rounded-xl border theme-tone theme-tone-red p-4 text-sm theme-tone-text theme-tone-red">
           {error}
         </div>
       )}
@@ -246,7 +246,7 @@ export function ModuleManagement() {
                     >
                       {item.name}
                       {item.kind === "ADD_ON" && (
-                        <span className="mt-1 block text-[9px] text-primary">
+                        <span className="mt-1 block text-[9px] text-[#151515]">
                           Attendance add-on
                         </span>
                       )}
@@ -263,7 +263,7 @@ export function ModuleManagement() {
                     }}
                   >
                     <div className="flex items-center gap-3 p-4">
-                      <div className="grid size-9 place-items-center rounded-lg bg-surface-variant text-xs font-bold text-primary">
+                      <div className="grid size-9 place-items-center rounded-lg bg-surface-variant text-xs font-bold text-[#151515]">
                         {tenant.companyName.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
@@ -290,7 +290,7 @@ export function ModuleManagement() {
                             aria-checked={active}
                             aria-label={`${active ? "Disable" : "Enable"} ${item.name} for ${tenant.companyName}`}
                             className={`relative h-6 w-11 rounded-full transition ${
-                              active ? "bg-green-600" : "bg-zinc-200"
+                              active ? "theme-tone theme-tone-emerald" : "bg-zinc-200"
                             } disabled:opacity-55`}
                             disabled={disabled}
                             onClick={() => void toggle(tenant.id, item)}
@@ -360,17 +360,17 @@ function ProductButton({
   return (
     <button
       className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left ${
-        selected ? "border-primary bg-zinc-50" : "border-surface-variant"
+        selected ? "border-[#151515] bg-zinc-50" : "border-surface-variant"
       }`}
       onClick={() => onSelect(product.key)}
       type="button"
     >
-      <span className="grid size-10 place-items-center rounded-lg bg-green-100 text-green-700">
+      <span className="grid size-10 place-items-center rounded-lg theme-tone-icon theme-tone-emerald">
         <Icon className="size-5" />
       </span>
       <span>
         <span className="block text-sm font-semibold">{product.name}</span>
-        <span className="text-[10px] uppercase text-green-700">
+        <span className="text-[10px] uppercase theme-tone-text theme-tone-emerald">
           Available product
         </span>
       </span>
@@ -385,13 +385,13 @@ function ProductDetail({ product }: { product: PlatformModule }) {
     <section className="rounded-2xl border border-outline-variant bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#151515]">
             Available product
           </p>
           <h2 className="mt-1 text-xl font-bold">{product.name}</h2>
           <p className="mt-2 text-sm text-on-surface-variant">{product.description}</p>
         </div>
-        <div className="rounded-xl bg-zinc-50 px-4 py-2 text-xs font-semibold text-primary">
+        <div className="rounded-xl bg-zinc-50 px-4 py-2 text-xs font-semibold text-[#151515]">
           {capabilities.length} plan features
         </div>
       </div>
@@ -403,7 +403,7 @@ function ProductDetail({ product }: { product: PlatformModule }) {
             key={capability.id}
           >
             <div className="flex items-start gap-2">
-              <span className="mt-0.5 grid size-5 place-items-center rounded-full bg-green-100 text-[10px] font-bold text-green-700">
+              <span className="mt-0.5 grid size-5 place-items-center rounded-full theme-tone-icon theme-tone-emerald text-[10px] font-bold">
                 ✓
               </span>
               <div>
@@ -424,12 +424,12 @@ function ProductDetail({ product }: { product: PlatformModule }) {
 
       {(product.addOns?.length ?? 0) > 0 && (
         <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">
+          <div className="text-xs font-bold uppercase tracking-wide text-[#151515]">
             Optional add-on
           </div>
           {product.addOns?.map((addOn) => (
             <div className="mt-2 flex items-center gap-3" key={addOn.id}>
-              <MapPin className="size-5 text-primary" />
+              <MapPin className="size-5 text-[#151515]" />
               <div>
                 <div className="text-sm font-semibold">{addOn.name}</div>
                 <div className="text-xs text-outline">

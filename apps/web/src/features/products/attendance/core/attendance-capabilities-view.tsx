@@ -124,7 +124,7 @@ export function AttendanceCapabilitiesView() {
       description={tText("Control the tenant-wide capability boundary. Policy assignments decide the exact behavior for each employee.")}
       action={
         <Button
-          className="h-11 bg-primary px-5 text-white hover:bg-primary/90"
+          className="h-11 bg-[#151515] px-5 text-white hover:bg-[#2a2927]"
           disabled={
             !canManage || saving || !capabilities?.fieldTrackingEntitled
           }
@@ -180,7 +180,7 @@ export function AttendanceCapabilitiesView() {
           <div className="grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
             <Panel className="p-7">
               <div className="flex items-start gap-4">
-                <span className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-primary">
+                <span className="grid size-11 place-items-center rounded-xl bg-zinc-100 text-[#151515]">
                   <Radar className="size-5" />
                 </span>
                 <div>
@@ -242,7 +242,7 @@ export function AttendanceCapabilitiesView() {
                 </div>
               )}
               {saved && (
-                <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                <p className="mt-4 flex items-center gap-2 text-sm font-semibold theme-tone-text theme-tone-emerald">
                   <CheckCircle2 className="size-4" />
                   {tText("Runtime configuration updated.")}</p>
               )}
@@ -304,7 +304,7 @@ function StatusCard({
   return (
     <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-zinc-50 text-primary">
+        <span className="grid size-10 place-items-center rounded-lg bg-zinc-50 text-[#151515]">
           <Icon className="size-5" />
         </span>
         <div className="flex items-center gap-1">
@@ -312,7 +312,7 @@ function StatusCard({
             <FeatureInfo className="min-h-9 min-w-9" helpKey={helpKey} />
           )}
           <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "bg-emerald-100 text-emerald-900" : "bg-zinc-100 text-on-surface-variant"}`}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${enabled ? "status-badge status-enabled" : "bg-zinc-100 text-on-surface-variant"}`}
           >
             {enabled ? tText("Enabled") : tText("Off")}
           </span>

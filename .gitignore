@@ -5,6 +5,9 @@ dist/
 build/
 .next/
 .next-build/
+apps/web/.next-build/
+.next-dev/
+apps/web/.next-dev/
 coverage/
 *.log
 *.tsbuildinfo

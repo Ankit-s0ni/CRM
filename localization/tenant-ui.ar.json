@@ -79,6 +79,18 @@
       "value": "حالة الحساب"
     },
     {
+      "key": "tenant.ui.accounting.2c1de79f",
+      "value": "محاسبة"
+    },
+    {
+      "key": "tenant.ui.accounting.mapping.fcfb4eaa",
+      "value": "رسم الخرائط المحاسبية"
+    },
+    {
+      "key": "tenant.ui.accounting.mappings.98160b15",
+      "value": "التعيينات المحاسبية"
+    },
+    {
       "key": "tenant.ui.accuracy.12a3a4f4",
       "value": "الدقة"
     },
@@ -91,8 +103,36 @@
       "value": "الإجراء"
     },
     {
+      "key": "tenant.ui.actions.c3cd636a",
+      "value": "الإجراءات"
+    },
+    {
+      "key": "tenant.ui.activate.92ef0832",
+      "value": "فعل"
+    },
+    {
+      "key": "tenant.ui.activate.latest.11c6b97e",
+      "value": "تفعيل الأحدث"
+    },
+    {
+      "key": "tenant.ui.activate.this.calendar.version.1a8dab95",
+      "value": "هل تريد تنشيط إصدار التقويم هذا؟"
+    },
+    {
+      "key": "tenant.ui.activate.this.component.version.7eda92ba",
+      "value": "هل تريد تنشيط إصدار المكون هذا؟"
+    },
+    {
+      "key": "tenant.ui.activate.this.salary.structure.version.e00b5038",
+      "value": "تفعيل هذا الإصدار هيكل الرواتب؟"
+    },
+    {
       "key": "tenant.ui.active.a733b809",
       "value": "النشاط"
+    },
+    {
+      "key": "tenant.ui.active.calendar.120a80aa",
+      "value": "التقويم النشط"
     },
     {
       "key": "tenant.ui.active.payroll.locks.18d17d3a",
@@ -101,6 +141,10 @@
     {
       "key": "tenant.ui.activity.type.c6609225",
       "value": "نوع النشاط"
+    },
+    {
+      "key": "tenant.ui.actual.published.catalog.f8a91d8f",
+      "value": "الكتالوج المنشور الفعلي"
     },
     {
       "key": "tenant.ui.add.61cc55aa",
@@ -133,6 +177,10 @@
     {
       "key": "tenant.ui.add.child.department.935582fe",
       "value": "إدارة الطفل"
+    },
+    {
+      "key": "tenant.ui.add.component.8ea9062f",
+      "value": "إضافة مكون"
     },
     {
       "key": "tenant.ui.add.document.3ead4932",
@@ -181,6 +229,10 @@
     {
       "key": "tenant.ui.add.policy.775623db",
       "value": "إضافة سياسة"
+    },
+    {
+      "key": "tenant.ui.add.sample.input.4236d79f",
+      "value": "إضافة عينة المدخلات"
     },
     {
       "key": "tenant.ui.add.the.approved.business.reason.284bfd86",
@@ -299,12 +351,20 @@
       "value": "التحول في التطبيق"
     },
     {
+      "key": "tenant.ui.approval.policy.eca5c95e",
+      "value": "سياسة الموافقة"
+    },
+    {
       "key": "tenant.ui.approval.queue.6e958104",
       "value": "الموافقة"
     },
     {
       "key": "tenant.ui.approval.reason.f7d46d8e",
       "value": "سبب الموافقة"
+    },
+    {
+      "key": "tenant.ui.approvals.deb9d03c",
+      "value": "الموافقات"
     },
     {
       "key": "tenant.ui.approve.7b2c7f14",
@@ -329,6 +389,10 @@
     {
       "key": "tenant.ui.approved.41b81eb8",
       "value": "موافق عليه"
+    },
+    {
+      "key": "tenant.ui.approved.label.6fe355a0",
+      "value": "التسمية المعتمدة"
     },
     {
       "key": "tenant.ui.approved.leave.and.balances.flow.into.period.evidence.a93ef3ea",
@@ -527,6 +591,10 @@
       "value": "تعليق مراجعة الحسابات"
     },
     {
+      "key": "tenant.ui.audit.fa1703dd",
+      "value": "مراجعة"
+    },
+    {
       "key": "tenant.ui.audit.history.5714d2e0",
       "value": "تاريخ مراجعة الحسابات"
     },
@@ -559,8 +627,16 @@
       "value": "العودة إلى الطريق"
     },
     {
+      "key": "tenant.ui.backend.resolved.policy.source.and.override.evidence.1fb20435",
+      "value": "مصدر السياسة الذي تم حله في الخلفية وأدلة التجاوز."
+    },
+    {
       "key": "tenant.ui.balances.are.created.when.an.active.policy.and.bcea19bb",
       "value": "تُنشأ الأرصدة عند وجود سياسة نشطة وموظف."
+    },
+    {
+      "key": "tenant.ui.basic.salary.d41f27a0",
+      "value": "الراتب الأساسي"
     },
     {
       "key": "tenant.ui.billing.abaec452",
@@ -623,12 +699,28 @@
       "value": "ويمكن أن يستعرض رجال الأعمال الاشتراك مع مالك شركة دلت. وسيستمر مستعملو الموارد البشرية في رؤية القدرات المتاحة بالفعل لأماكن العمل."
     },
     {
+      "key": "tenant.ui.calculate.8e5903a8",
+      "value": "احسب"
+    },
+    {
+      "key": "tenant.ui.calculate.employee.payroll.results.review.variances.approve.or.f69eec67",
+      "value": "قم بحساب نتائج كشوف مرتبات الموظفين، ومراجعة الفروق، والموافقة على عمليات التشغيل أو إنهائها، وتتبع مهام المعالجة."
+    },
+    {
       "key": "tenant.ui.calculated.757d8665",
       "value": "محسوب"
     },
     {
       "key": "tenant.ui.calculated.without.punch.evidence.d0a1b1b1",
       "value": "محسوبة بدون دليل."
+    },
+    {
+      "key": "tenant.ui.calculation.completed.fad12d8f",
+      "value": "اكتمل الحساب."
+    },
+    {
+      "key": "tenant.ui.calendars.94445018",
+      "value": "التقاويم"
     },
     {
       "key": "tenant.ui.cancel.77dfd213",
@@ -665,6 +757,10 @@
     {
       "key": "tenant.ui.changes.are.audited.and.cannot.alter.payroll.locked.b763aded",
       "value": "وتخضع التغييرات للمراجعة ولا يمكن أن تغير فترات الحضور غير المسدَّدة كشوف المرتبات."
+    },
+    {
+      "key": "tenant.ui.charcoal.c81e2a08",
+      "value": "فحمي"
     },
     {
       "key": "tenant.ui.check.deployment.managed.services.used.by.this.workspace.ab4040bc",
@@ -779,8 +875,16 @@
       "value": "المدونة التي تصدر"
     },
     {
+      "key": "tenant.ui.collect.and.validate.immutable.payroll.inputs.before.calculation.b2db8414",
+      "value": "جمع والتحقق من صحة مدخلات الرواتب غير القابلة للتغيير قبل الحساب."
+    },
+    {
       "key": "tenant.ui.column.65ba00e9",
       "value": "العمود"
+    },
+    {
+      "key": "tenant.ui.commit.csv.217ed9f9",
+      "value": "ارتكاب CSV"
     },
     {
       "key": "tenant.ui.company.foundation.803bc8a5",
@@ -819,8 +923,20 @@
       "value": "قارن أدلة الحضور الثابتة بالتصحيح المطلوب."
     },
     {
+      "key": "tenant.ui.compensation.2eff6099",
+      "value": "تعويض"
+    },
+    {
+      "key": "tenant.ui.compensation.revision.10e05e04",
+      "value": "مراجعة التعويضات"
+    },
+    {
       "key": "tenant.ui.complete.1f5a1abf",
       "value": "مكتمل"
+    },
+    {
+      "key": "tenant.ui.complete.phase.1.payroll.setup.without.payroll.runs.bc2d97ff",
+      "value": "أكمل إعداد كشوف المرتبات للمرحلة الأولى بدون تشغيل كشوف المرتبات أو الحسابات أو كشوف المرتبات أو دفاتر اليومية أو المدفوعات."
     },
     {
       "key": "tenant.ui.complete.previous.step.40073a99",
@@ -851,6 +967,14 @@
       "value": "التقارير المنجزة"
     },
     {
+      "key": "tenant.ui.component.metadata.and.version.fe4d2806",
+      "value": "بيانات تعريف المكون والإصدار"
+    },
+    {
+      "key": "tenant.ui.components.9289473e",
+      "value": "عناصر"
+    },
+    {
       "key": "tenant.ui.configuration.health.26f3ce6d",
       "value": "صحة التجمع"
     },
@@ -873,6 +997,10 @@
     {
       "key": "tenant.ui.configure.location.selfie.face.and.registered.device.requirements.18030831",
       "value": "مواقع الثقة، الأنانية، الوجه، والمتطلبات المسجلة."
+    },
+    {
+      "key": "tenant.ui.configure.settings.calendars.pay.groups.policies.components.salary.0d52df04",
+      "value": "قم بتكوين الإعدادات والتقويمات ومجموعات الدفع والسياسات والمكونات وهياكل الرواتب وملفات تعريف كشوف مرتبات الموظفين والتفاصيل المحمية والموافقات والتعيينات المحاسبية وأدلة التدقيق."
     },
     {
       "key": "tenant.ui.configure.the.office.location.59520d10",
@@ -939,6 +1067,10 @@
       "value": "الإعدادات الأساسية المسجلة بواسطة واجهات برمجة تطبيقات الإعداد الحالية."
     },
     {
+      "key": "tenant.ui.corporate.navy.fe8ddd23",
+      "value": "البحرية للشركات"
+    },
+    {
       "key": "tenant.ui.correct.attendance.20d5664b",
       "value": "الحضور الصحيح"
     },
@@ -971,6 +1103,10 @@
       "value": "المدونة القطرية"
     },
     {
+      "key": "tenant.ui.country.currency.frequency.payout.and.rounding.defaults.01454e2a",
+      "value": "البلد والعملة والتكرار والدفعات والتقريب الافتراضية."
+    },
+    {
       "key": "tenant.ui.create.a.policy.and.assign.one.tenant.default.a3fa22ef",
       "value": "أنشئ سياسة وعيّن سياسة افتراضية للمستأجر قبل بدء الحضور."
     },
@@ -983,6 +1119,10 @@
       "value": "أنشئ وردية وسياسة وتعيينًا افتراضيًا للسياسة."
     },
     {
+      "key": "tenant.ui.create.accounting.mapping.570520f9",
+      "value": "إنشاء الخرائط المحاسبية"
+    },
+    {
       "key": "tenant.ui.create.and.configure.4ac96574",
       "value": "إنشاء وتهيئة"
     },
@@ -991,12 +1131,28 @@
       "value": "إنشاء ودعوة موظفين من دليل الموظفين. ويُعهد تلقائياً بدور موظفيهم في الخدمة الذاتية."
     },
     {
+      "key": "tenant.ui.create.approval.policy.3e3c43b7",
+      "value": "إنشاء سياسة الموافقة"
+    },
+    {
       "key": "tenant.ui.create.at.least.one.department.and.designation.before.7eb4d824",
       "value": "أنشئ قسماً ومسمى وظيفياً واحداً على الأقل قبل المتابعة."
     },
     {
       "key": "tenant.ui.create.attendance.policy.6f724a40",
       "value": "وضع سياسة الحضور"
+    },
+    {
+      "key": "tenant.ui.create.calendar.13bd2b68",
+      "value": "إنشاء التقويم"
+    },
+    {
+      "key": "tenant.ui.create.compensation.revision.c9832cd8",
+      "value": "إنشاء مراجعة التعويض"
+    },
+    {
+      "key": "tenant.ui.create.component.2c9fdc00",
+      "value": "إنشاء مكون"
     },
     {
       "key": "tenant.ui.create.custom.role.843a4b62",
@@ -1009,6 +1165,10 @@
     {
       "key": "tenant.ui.create.departments.and.reusable.designations.35c09a6e",
       "value": "إنشاء إدارات وتعيينات قابلة لإعادة استخدامها."
+    },
+    {
+      "key": "tenant.ui.create.draft.08d405d0",
+      "value": "إنشاء مسودة"
     },
     {
       "key": "tenant.ui.create.employee.b9cd1505",
@@ -1039,6 +1199,14 @@
       "value": "قطع الأشجار"
     },
     {
+      "key": "tenant.ui.create.monthly.payroll.runs.import.locked.attendance.snapshots.eaf632eb",
+      "value": "قم بإنشاء عمليات كشوف المرتبات الشهرية، واستيراد لقطات الحضور المقفلة، وإضافة مدخلات الراتب، ومعاينة عمليات استيراد ملف CSV، والتحقق من الاستعداد قبل الحساب."
+    },
+    {
+      "key": "tenant.ui.create.pay.group.7bb366b6",
+      "value": "إنشاء مجموعة الدفع"
+    },
+    {
       "key": "tenant.ui.create.policy.780584fb",
       "value": "وضع السياسات"
     },
@@ -1051,12 +1219,24 @@
       "value": "إجراء تحولات قابلة لإعادة الاستخدام وتعيين مواعيد للقائمة الخاصة بالموظفين."
     },
     {
+      "key": "tenant.ui.create.run.9b7a502b",
+      "value": "إنشاء تشغيل"
+    },
+    {
+      "key": "tenant.ui.create.structure.4ebc4c60",
+      "value": "إنشاء هيكل"
+    },
+    {
       "key": "tenant.ui.create.the.employee.login.here.the.employee.role.ab7285eb",
       "value": "اصنع سجل الموظفين هنا ويُسند دور الموظفين تلقائيا؛ ولا يلزم إنشاء دور مستقل."
     },
     {
       "key": "tenant.ui.create.the.first.policy.before.employees.submit.leave.495c147d",
       "value": "أنشئ السياسة الأولى قبل أن يقدم الموظفون طلبات الإجازة."
+    },
+    {
+      "key": "tenant.ui.create.version.0e2698b4",
+      "value": "إنشاء نسخة"
     },
     {
       "key": "tenant.ui.create.your.first.department.to.start.organizing.employees.67eb9ae4",
@@ -1071,8 +1251,24 @@
       "value": "جارٍ الإنشاء..."
     },
     {
+      "key": "tenant.ui.crimson.red.7e61f901",
+      "value": "قرمزي أحمر"
+    },
+    {
       "key": "tenant.ui.critical.open.alerts.ea799cb6",
       "value": "إنذارات مفتوحة خطيرة"
+    },
+    {
+      "key": "tenant.ui.csv.import.committed.8de0bd78",
+      "value": "تم الالتزام باستيراد ملف CSV."
+    },
+    {
+      "key": "tenant.ui.csv.inputs.131d3f57",
+      "value": "مدخلات CSV"
+    },
+    {
+      "key": "tenant.ui.csv.text.5fa38a72",
+      "value": "نص CSV"
     },
     {
       "key": "tenant.ui.csv.utf.8.up.to.5.mb.the.7030479c",
@@ -1085,6 +1281,10 @@
     {
       "key": "tenant.ui.current.schedule.7fb378fb",
       "value": "الجدول الزمني الحالي"
+    },
+    {
+      "key": "tenant.ui.current.session.9c391ae7",
+      "value": "الجلسة الحالية:"
     },
     {
       "key": "tenant.ui.currently.effective.5fbda60b",
@@ -1135,6 +1335,14 @@
       "value": "أيام"
     },
     {
+      "key": "tenant.ui.deactivate.d65ded94",
+      "value": "إلغاء التنشيط"
+    },
+    {
+      "key": "tenant.ui.deactivate.this.calendar.146ddda5",
+      "value": "هل تريد إلغاء تنشيط هذا التقويم؟"
+    },
+    {
       "key": "tenant.ui.decision.7f59a1f1",
       "value": "مقرر"
     },
@@ -1149,6 +1357,10 @@
     {
       "key": "tenant.ui.default.808d7dca",
       "value": "افتراضي"
+    },
+    {
+      "key": "tenant.ui.default.proration.476cd71e",
+      "value": "التقسيم الافتراضي"
     },
     {
       "key": "tenant.ui.default.shift.08cd81e7",
@@ -1307,6 +1519,10 @@
       "value": "الأجهزة"
     },
     {
+      "key": "tenant.ui.disabled.by.platform.37c85fe2",
+      "value": "تم التعطيل بواسطة النظام الأساسي"
+    },
+    {
       "key": "tenant.ui.disabled.f4f4473d",
       "value": "المعوقين"
     },
@@ -1349,6 +1565,10 @@
     {
       "key": "tenant.ui.each.metric.opens.the.register.with.the.matching.a38105fa",
       "value": "كل متر يفتح السجل بموعد المطابقة والمرشح."
+    },
+    {
+      "key": "tenant.ui.earnings.deductions.benefits.and.employer.contribution.components.7ddf385b",
+      "value": "الأرباح والخصومات والمزايا ومكونات مساهمة صاحب العمل."
     },
     {
       "key": "tenant.ui.edit.5301648d",
@@ -1407,6 +1627,10 @@
       "value": "سياسة الحضور الفعالة"
     },
     {
+      "key": "tenant.ui.effective.compensation.revisions.using.minor.unit.storage.c1f44385",
+      "value": "مراجعات التعويض الفعالة باستخدام وحدة تخزين صغيرة."
+    },
+    {
       "key": "tenant.ui.effective.date.153c9b21",
       "value": "تاريخ بدء النفاذ"
     },
@@ -1419,6 +1643,10 @@
       "value": "عناوين IP أو نطاقات CIDR الصادرة"
     },
     {
+      "key": "tenant.ui.electric.blue.e18c5aaa",
+      "value": "الأزرق الكهربائي"
+    },
+    {
       "key": "tenant.ui.elevated.roles.1520c568",
       "value": "زيادة الأدوار"
     },
@@ -1429,6 +1657,10 @@
     {
       "key": "tenant.ui.email.verified.82f47c3d",
       "value": "تم التحقق من البريد الإلكتروني"
+    },
+    {
+      "key": "tenant.ui.emerald.green.3f07f1d8",
+      "value": "أخضر زمردي"
     },
     {
       "key": "tenant.ui.employee.079711ea",
@@ -1473,6 +1705,10 @@
     {
       "key": "tenant.ui.employee.code.full.name.work.email.phone.date.5dd37eaa",
       "value": "رمز الموظفين، الاسم الكامل، البريد الإلكتروني للعمل، الهاتف، تاريخ الميلاد والإدارة مطلوب."
+    },
+    {
+      "key": "tenant.ui.employee.cohorts.linked.to.calendars.and.policy.overrides.e7db03b9",
+      "value": "مجموعات الموظفين المرتبطة بالتقويمات وتجاوزات السياسة."
     },
     {
       "key": "tenant.ui.employee.company.com.653ac97a",
@@ -1527,6 +1763,10 @@
       "value": "تاريخ الموظفين"
     },
     {
+      "key": "tenant.ui.employee.id.23bd7dfc",
+      "value": "معرف الموظف"
+    },
+    {
       "key": "tenant.ui.employee.import.a76c5005",
       "value": "استيراد الموظفين"
     },
@@ -1535,12 +1775,24 @@
       "value": "سجل الموظفين المنشأ"
     },
     {
+      "key": "tenant.ui.employee.payroll.enrollment.and.pay.group.assignment.7b3abcd2",
+      "value": "تسجيل كشوف مرتبات الموظفين وتعيين مجموعة الدفع."
+    },
+    {
+      "key": "tenant.ui.employee.payroll.profile.e381f02c",
+      "value": "ملف تعريف رواتب الموظفين"
+    },
+    {
       "key": "tenant.ui.employee.policy.impact.ea6d3211",
       "value": "أثر سياسات الموظفين"
     },
     {
       "key": "tenant.ui.employee.profile.feb6a122",
       "value": "بيان الموظفين"
+    },
+    {
+      "key": "tenant.ui.employee.required.c33478a8",
+      "value": "مطلوب موظف"
     },
     {
       "key": "tenant.ui.employee.rows.2d0a739d",
@@ -1643,6 +1895,10 @@
       "value": "التتبع الميداني للنظام العالمي لتحديد المواقع"
     },
     {
+      "key": "tenant.ui.enabled.by.platform.5030bb54",
+      "value": "تم تمكينه بواسطة النظام الأساسي"
+    },
+    {
       "key": "tenant.ui.enabled.df174a3f",
       "value": "مفعّل"
     },
@@ -1659,8 +1915,20 @@
       "value": "العمالة النهائية"
     },
     {
+      "key": "tenant.ui.end.this.compensation.version.today.88a06f1a",
+      "value": "إنهاء هذا الإصدار التعويض اليوم؟"
+    },
+    {
+      "key": "tenant.ui.end.today.72108475",
+      "value": "تنتهي اليوم"
+    },
+    {
       "key": "tenant.ui.ends.91856dcb",
       "value": "النهاية"
+    },
+    {
+      "key": "tenant.ui.english.interface.23e5d254",
+      "value": "واجهة باللغة الإنجليزية"
     },
     {
       "key": "tenant.ui.enrolled.41d2bfcb",
@@ -1681,6 +1949,10 @@
     {
       "key": "tenant.ui.enter.a.valid.employee.email.address.e2db370f",
       "value": "أدخل عنوان بريد إلكتروني صالح للموظفين."
+    },
+    {
+      "key": "tenant.ui.enter.an.employee.and.policy.filter.to.resolve.5f9cb5b3",
+      "value": "أدخل عامل تصفية الموظف والسياسة لحل دليل مصدر السياسة."
     },
     {
       "key": "tenant.ui.enter.the.correct.check.in.and.checkout.saving.5d31e630",
@@ -1759,6 +2031,10 @@
       "value": "الصادرات"
     },
     {
+      "key": "tenant.ui.exports.0e165379",
+      "value": "صادرات"
+    },
+    {
       "key": "tenant.ui.face.profile.c7e4fc55",
       "value": "موجز الوجه"
     },
@@ -1835,6 +2111,10 @@
       "value": "حالة الموظفين المصورين"
     },
     {
+      "key": "tenant.ui.finalize.45cba2dc",
+      "value": "وضع اللمسات الأخيرة"
+    },
+    {
       "key": "tenant.ui.finish.setup.c516d2df",
       "value": "إكمال الإعداد"
     },
@@ -1845,6 +2125,14 @@
     {
       "key": "tenant.ui.for.oman.the.d7dd6c53",
       "value": "لعمان"
+    },
+    {
+      "key": "tenant.ui.foundation.fdde6afa",
+      "value": "مؤسسة"
+    },
+    {
+      "key": "tenant.ui.four.eyes.maker.and.approval.level.configuration.a397dace",
+      "value": "تكوين ذو أربع عيون وصانع ومستوى الموافقة."
     },
     {
       "key": "tenant.ui.friday.d166e844",
@@ -1889,6 +2177,14 @@
     {
       "key": "tenant.ui.generate.payroll.evidence.review.completed.exports.and.close.c88d1293",
       "value": "توفير الأدلة على كشوف المرتبات، واستعراض الصادرات المنجزة، وإغلاق فترات الحضور النهائية."
+    },
+    {
+      "key": "tenant.ui.generate.payroll.registers.payroll.reports.bank.export.payloads.168bf4c1",
+      "value": "إنشاء سجلات كشوف المرتبات، وتقارير كشوف المرتبات، وحمولات التصدير المصرفية، وحمولات التصدير المحاسبية، وملفات التصدير القابلة للتنزيل."
+    },
+    {
+      "key": "tenant.ui.generate.payslip.outputs.publish.employee.payslips.and.use.b9b8557d",
+      "value": "قم بإنشاء مخرجات كشوف الرواتب، ونشر كشوف رواتب الموظفين، واستخدم التنزيلات الموقعة الخاصة للملفات الحساسة."
     },
     {
       "key": "tenant.ui.generate.report.4d8abbdc",
@@ -1987,6 +2283,10 @@
       "value": "العطلات"
     },
     {
+      "key": "tenant.ui.home.70f8bb9a",
+      "value": "بيت"
+    },
+    {
       "key": "tenant.ui.hours.9e25a34e",
       "value": "الساعات"
     },
@@ -2053,6 +2353,10 @@
     {
       "key": "tenant.ui.import.history.could.not.be.loaded.9ed9483b",
       "value": "ولا يمكن تحميل تاريخ الاستيراد."
+    },
+    {
+      "key": "tenant.ui.import.one.row.snapshot.5af338ac",
+      "value": "استيراد لقطة من صف واحد"
     },
     {
       "key": "tenant.ui.important.18dd7e89",
@@ -2135,6 +2439,10 @@
       "value": "تم اكتشاف رمز الدولة ISO من موقع المكتب."
     },
     {
+      "key": "tenant.ui.issues.30ce4cb2",
+      "value": "مشاكل"
+    },
+    {
       "key": "tenant.ui.job.status.8be5e565",
       "value": "حالة المهمة"
     },
@@ -2145,6 +2453,10 @@
     {
       "key": "tenant.ui.joined.43a1c626",
       "value": "انضم"
+    },
+    {
+      "key": "tenant.ui.language.89b86ab0",
+      "value": "لغة"
     },
     {
       "key": "tenant.ui.last.seen.56462f81",
@@ -2189,10 +2501,6 @@
     {
       "key": "tenant.ui.late.ot.fc85ef21",
       "value": "متأخر/متأخر"
-    },
-    {
-      "key": "tenant.ui.latitude.ced3905e",
-      "value": "خط العرض"
     },
     {
       "key": "tenant.ui.leave.7e3520a9",
@@ -2247,6 +2555,10 @@
       "value": "عيشي الآن"
     },
     {
+      "key": "tenant.ui.live.preview.131a90af",
+      "value": "معاينة حية"
+    },
+    {
       "key": "tenant.ui.live.stale.and.offline.field.employees.with.privacy.a0e3e662",
       "value": "على الهواء مباشرةً، وعلى المحك، وعلى الموظفين الميدانيين غير المباشرين الذين لديهم دليل على المكان الآمن للخصوصية."
     },
@@ -2295,6 +2607,10 @@
       "value": "إغلاق شهر كامل ضد تصديره أو إعادة فتحه لسبب مراجعة الحسابات."
     },
     {
+      "key": "tenant.ui.lock.a.completed.payroll.month.against.its.export.008b8ca4",
+      "value": "قفل شهر الرواتب المكتمل مقابل تصديره أو إعادة فتحه لاحقًا لسبب مدقق."
+    },
+    {
       "key": "tenant.ui.lock.a.finalized.month.against.a.completed.payroll.0fbd0844",
       "value": "قفل شهر في صيغته النهائية على تصدير كشوف المرتبات المكتملة، مع فتح مسار جديد غير قابل للتداول."
     },
@@ -2325,10 +2641,6 @@
     {
       "key": "tenant.ui.logo.uploaded.1a3b73c7",
       "value": "تم تحميلها"
-    },
-    {
-      "key": "tenant.ui.longitude.6f9f011c",
-      "value": "الطول"
     },
     {
       "key": "tenant.ui.make.a.manual.correction.only.when.hr.needs.7ef28be7",
@@ -2399,8 +2711,20 @@
       "value": "الحضور اليدوي"
     },
     {
+      "key": "tenant.ui.mark.paid.938e0aaa",
+      "value": "مارك دفع"
+    },
+    {
       "key": "tenant.ui.mark.present.correct.d435e488",
       "value": "تسجيل حاضر / تصحيح"
+    },
+    {
+      "key": "tenant.ui.masked.bank.iban.and.routing.details.367d6a76",
+      "value": "البنك المقنع ورقم IBAN وتفاصيل التوجيه."
+    },
+    {
+      "key": "tenant.ui.masked.country.scoped.statutory.identifiers.8b4b4b58",
+      "value": "المعرّفات القانونية المقنّعة على مستوى البلد."
     },
     {
       "key": "tenant.ui.master.attendance.security.policies.d866fc14",
@@ -2459,8 +2783,16 @@
       "value": "الاثنين"
     },
     {
+      "key": "tenant.ui.monochrome.1dda992b",
+      "value": "أحادي اللون"
+    },
+    {
       "key": "tenant.ui.month.end.readiness.8f393a8b",
       "value": "الاستعداد في نهاية الشهر"
+    },
+    {
+      "key": "tenant.ui.monthly.26.to.25.1f96aa15",
+      "value": "الشهري من 26 إلى 25"
     },
     {
       "key": "tenant.ui.monthly.attendance.calendar.e8d2154b",
@@ -2473,6 +2805,10 @@
     {
       "key": "tenant.ui.monthly.calendar.and.evidence.timeline.50675840",
       "value": "التقويم الشهري والخط الزمني للأدلة"
+    },
+    {
+      "key": "tenant.ui.monthly.oman.fd72bae4",
+      "value": "عمان الشهرية"
     },
     {
       "key": "tenant.ui.more.e7c95b4c",
@@ -2517,6 +2853,10 @@
     {
       "key": "tenant.ui.needs.attention.a126722e",
       "value": "الحاجة إلى الاهتمام"
+    },
+    {
+      "key": "tenant.ui.needs.workspace.enablement.193c6be3",
+      "value": "يحتاج إلى تمكين مساحة العمل"
     },
     {
       "key": "tenant.ui.never.85777c03",
@@ -2565,6 +2905,10 @@
     {
       "key": "tenant.ui.no.816c52fd",
       "value": "لا"
+    },
+    {
+      "key": "tenant.ui.no.action.f34ac77f",
+      "value": "لا يوجد إجراء"
     },
     {
       "key": "tenant.ui.no.attendance.records.0541165f",
@@ -2671,6 +3015,10 @@
       "value": "لا نشاط مطابق"
     },
     {
+      "key": "tenant.ui.no.matrix.result.8dd2c510",
+      "value": "لا توجد نتيجة مصفوفة"
+    },
+    {
       "key": "tenant.ui.no.modules.are.enabled.review.the.subscription.with.8fbbe09e",
       "value": "لا توجد وحدات مُتاحة. Review the involvement with the Business Admin or DeltCRM support."
     },
@@ -2685,6 +3033,10 @@
     {
       "key": "tenant.ui.no.offices.yet.f6a2a9d9",
       "value": "لا توجد مكاتب حتى الآن"
+    },
+    {
+      "key": "tenant.ui.no.payroll.records.yet.7df20ffd",
+      "value": "لا توجد سجلات الرواتب حتى الآن"
     },
     {
       "key": "tenant.ui.no.phone.4808dd2c",
@@ -2709,6 +3061,10 @@
     {
       "key": "tenant.ui.no.records.match.this.date.range.and.filter.9581512f",
       "value": "لا توجد سجلات تطابق نطاق التاريخ ومجموعة عوامل التصفية هذه."
+    },
+    {
+      "key": "tenant.ui.no.records.were.returned.for.this.payroll.foundation.408ccd32",
+      "value": "لم يتم إرجاع أية سجلات لهذا القسم الأساسي لكشوف المرتبات."
     },
     {
       "key": "tenant.ui.no.registered.device.df96af08",
@@ -2737,6 +3093,10 @@
     {
       "key": "tenant.ui.no.tenant.department.or.employee.policy.currently.resolves.5c8ed4fe",
       "value": "ولا توجد حالياً سياسة للمستأجرين أو الإدارة أو الموظفين تحدد هذه السياسة."
+    },
+    {
+      "key": "tenant.ui.no.tenant.terminology.overrides.have.been.created.7529c3f9",
+      "value": "لم يتم إنشاء أي تجاوزات لمصطلحات المستأجر."
     },
     {
       "key": "tenant.ui.no.timeline.annotations.bdc5e051",
@@ -2907,6 +3267,10 @@
       "value": "وزارة العمل في عمان"
     },
     {
+      "key": "tenant.ui.oman.monthly.salary.ab6a5423",
+      "value": "عمان الراتب الشهري"
+    },
+    {
       "key": "tenant.ui.on.duty.9f720b0f",
       "value": "في الخدمة"
     },
@@ -2921,6 +3285,10 @@
     {
       "key": "tenant.ui.one.tab.per.working.day.8e40cfe0",
       "value": "علامة تبويب لكل يوم عمل"
+    },
+    {
+      "key": "tenant.ui.only.approved.labels.can.be.changed.published.wording.f1d48a52",
+      "value": "يمكن تغيير التسميات المعتمدة فقط. يتم إصدار الصياغة المنشورة وتدقيقها."
     },
     {
       "key": "tenant.ui.only.the.signed.in.employee.s.own.information.74852cf4",
@@ -3019,8 +3387,24 @@
       "value": "أخرى"
     },
     {
+      "key": "tenant.ui.output.generated.a8cf0003",
+      "value": "تم إنشاء الإخراج."
+    },
+    {
+      "key": "tenant.ui.output.kind.7d2651fe",
+      "value": "نوع الإخراج"
+    },
+    {
+      "key": "tenant.ui.outputs.and.payment.6eda3957",
+      "value": "المخرجات والدفع"
+    },
+    {
       "key": "tenant.ui.overnight.d3959b02",
       "value": "بين عشية وضحاها"
+    },
+    {
+      "key": "tenant.ui.override.draft.created.submit.it.for.review.before.07a1832d",
+      "value": "تم إنشاء تجاوز المسودة. تقديمه للمراجعة قبل النشر."
     },
     {
       "key": "tenant.ui.overrides.91d064fd",
@@ -3051,8 +3435,40 @@
       "value": "قسم الوالدين"
     },
     {
+      "key": "tenant.ui.paste.an.employee.uuid.e102decc",
+      "value": "الصق UUID الخاص بالموظف"
+    },
+    {
+      "key": "tenant.ui.pay.component.to.debit.credit.mapping.configuration.167f9bba",
+      "value": "مكون الدفع لتكوين تعيين الخصم/الائتمان."
+    },
+    {
+      "key": "tenant.ui.pay.group.ec5692bf",
+      "value": "مجموعة الدفع"
+    },
+    {
+      "key": "tenant.ui.pay.groups.b0650661",
+      "value": "دفع المجموعات"
+    },
+    {
+      "key": "tenant.ui.payment.details.df6a1eb9",
+      "value": "تفاصيل الدفع"
+    },
+    {
+      "key": "tenant.ui.payment.marked.paid.a1e7558a",
+      "value": "تم وضع علامة على الدفع بأنه مدفوع."
+    },
+    {
+      "key": "tenant.ui.payroll.approval.6ad9593b",
+      "value": "الموافقة على الرواتب"
+    },
+    {
       "key": "tenant.ui.payroll.attendance.43e4ca90",
       "value": "حضور مسير الرواتب"
+    },
+    {
+      "key": "tenant.ui.payroll.calendar.f2e9e72c",
+      "value": "تقويم الرواتب"
     },
     {
       "key": "tenant.ui.payroll.close.2e77bf16",
@@ -3071,12 +3487,40 @@
       "value": "صادرات كشوف المرتبات"
     },
     {
+      "key": "tenant.ui.payroll.foundation.37dd816c",
+      "value": "مؤسسة الرواتب"
+    },
+    {
       "key": "tenant.ui.payroll.lock.data.could.not.be.loaded.d2dd60bb",
       "value": "لا يمكن تحميل بيانات قفل كشوف المرتبات."
     },
     {
+      "key": "tenant.ui.payroll.processing.b9a72ca1",
+      "value": "معالجة الرواتب"
+    },
+    {
+      "key": "tenant.ui.payroll.run.preparation.92541275",
+      "value": "إعداد تشغيل كشوف المرتبات"
+    },
+    {
+      "key": "tenant.ui.payroll.screens.are.available.in.the.frontend.but.6812cd49",
+      "value": "تتوفر شاشات كشوف المرتبات في الواجهة الأمامية، ولكن مساحة العمل هذه لم تجتاز فحص سلامة وحدة PAYROLL. قم بتمكين وحدة مساحة العمل وتحديث الجلسة قبل تشغيل كشوف المرتبات."
+    },
+    {
       "key": "tenant.ui.payroll.settings.87613242",
       "value": "تحديد كشوف المرتبات"
+    },
+    {
+      "key": "tenant.ui.payroll.workspace.107eef08",
+      "value": "مساحة عمل الرواتب"
+    },
+    {
+      "key": "tenant.ui.payslips.80aa96da",
+      "value": "كشوف المرتبات"
+    },
+    {
+      "key": "tenant.ui.payslips.published.5c812480",
+      "value": "تم نشر كشوف المرتبات."
     },
     {
       "key": "tenant.ui.pending.96f608c1",
@@ -3139,6 +3583,10 @@
       "value": "التخطيط لأسبوع العمل، والتخصيص بالجملة للنوبات، والجدول الزمني المصادق عليه لمركبات الكربون الكلورية فلورية."
     },
     {
+      "key": "tenant.ui.platform.policy.does.not.currently.allow.tenant.specific.6cbe5c76",
+      "value": "لا تسمح سياسة النظام الأساسي حاليًا بتغيير المصطلحات الخاصة بالمستأجر."
+    },
+    {
       "key": "tenant.ui.playback.position.61d5ff75",
       "value": "موقع \"بلايباك\""
     },
@@ -3183,8 +3631,24 @@
       "value": "السياسة العامة"
     },
     {
+      "key": "tenant.ui.policy.id.52dc261d",
+      "value": "معرف السياسة"
+    },
+    {
+      "key": "tenant.ui.policy.matrix.f3a97887",
+      "value": "مصفوفة السياسة"
+    },
+    {
+      "key": "tenant.ui.policy.metadata.and.typed.version.8156e01e",
+      "value": "بيانات تعريف السياسة والإصدار المكتوب"
+    },
+    {
       "key": "tenant.ui.policy.name.101bf6ea",
       "value": "اسم السياسات"
+    },
+    {
+      "key": "tenant.ui.prepare.selected.run.a5b5e773",
+      "value": "إعداد التشغيل المحدد"
     },
     {
       "key": "tenant.ui.prepare.your.file.d981b2d1",
@@ -3193,6 +3657,14 @@
     {
       "key": "tenant.ui.present.4e9f7a31",
       "value": "حاضر"
+    },
+    {
+      "key": "tenant.ui.preview.csv.721d08ae",
+      "value": "معاينة ملف CSV"
+    },
+    {
+      "key": "tenant.ui.preview.fa743593",
+      "value": "· المعاينة:"
     },
     {
       "key": "tenant.ui.previous.50f94286",
@@ -3227,12 +3699,40 @@
       "value": "يُسمح فقط بالملفات الخاصة المسبوقة بمعرف المستأجر."
     },
     {
+      "key": "tenant.ui.process.12f4c13a",
+      "value": "عملية"
+    },
+    {
+      "key": "tenant.ui.processing.e63451d3",
+      "value": "يعالج"
+    },
+    {
       "key": "tenant.ui.profile.ff4fc027",
       "value": "الملف الشخصي"
     },
     {
+      "key": "tenant.ui.proration.rounding.working.day.and.reference.policies.9d484d52",
+      "value": "سياسات التناسب والتقريب ويوم العمل والمرجع."
+    },
+    {
       "key": "tenant.ui.protected.capabilities.included.5ce3c128",
       "value": "القدرات المحمية"
+    },
+    {
+      "key": "tenant.ui.protected.detail.setup.is.hidden.because.this.user.84a20d1f",
+      "value": "يتم إخفاء إعداد التفاصيل المحمية لأن هذا المستخدم يفتقر إلى إذن البيانات المحمية المخصص."
+    },
+    {
+      "key": "tenant.ui.protected.details.b543a21e",
+      "value": "التفاصيل المحمية"
+    },
+    {
+      "key": "tenant.ui.protected.payment.details.e26498b9",
+      "value": "تفاصيل الدفع المحمية"
+    },
+    {
+      "key": "tenant.ui.protected.statutory.details.79625a88",
+      "value": "التفاصيل القانونية المحمية"
     },
     {
       "key": "tenant.ui.public.61c9b2b1",
@@ -3253,6 +3753,10 @@
     {
       "key": "tenant.ui.public.holidays.follow.each.office.region.hr.can.6157f24e",
       "value": "وتلي العطلات العامة كل منطقة مكتبية. ويمكن للموارد البشرية أن تضيف أو تلغي التواريخ الخاصة بالمستأجرين والمكاتب."
+    },
+    {
+      "key": "tenant.ui.publish.56564005",
+      "value": "نشر"
     },
     {
       "key": "tenant.ui.publish.holiday.4d4eb2e0",
@@ -3295,12 +3799,20 @@
       "value": "ويتم التحقق من إعادة النشاط وفقا للحصص ويعيد هذا الموظف إلى القوة العاملة النشطة وحسابات المقاعد المشاركة. استعراض المهام بعد الإنجاز."
     },
     {
+      "key": "tenant.ui.read.only.601dcc1c",
+      "value": "اقرأ فقط"
+    },
+    {
+      "key": "tenant.ui.readiness.6dc1222c",
+      "value": "استعداد"
+    },
+    {
       "key": "tenant.ui.readiness.and.dependencies.d8cab331",
       "value": "التأهب والمعالين"
     },
     {
       "key": "tenant.ui.ready.20c7c552",
-      "value": "جاهز"
+      "value": "مستعد"
     },
     {
       "key": "tenant.ui.ready.to.scale.with.you.673c194b",
@@ -3391,12 +3903,24 @@
       "value": "يستعاض عن عبارة:"
     },
     {
+      "key": "tenant.ui.replace.protected.payment.details.stored.plaintext.will.not.fcf6b064",
+      "value": "هل تريد استبدال تفاصيل الدفع المحمية؟ لن يتم عرض النص العادي المخزن بعد الإرسال."
+    },
+    {
+      "key": "tenant.ui.replace.protected.statutory.detail.stored.plaintext.will.not.eddfdab4",
+      "value": "هل تريد استبدال التفاصيل القانونية المحمية؟ لن يتم عرض النص العادي المخزن بعد الإرسال."
+    },
+    {
       "key": "tenant.ui.replaced.05033aaa",
       "value": "يستعاض عنه"
     },
     {
       "key": "tenant.ui.replacement.device.c8958a72",
       "value": "جهاز استبدال"
+    },
+    {
+      "key": "tenant.ui.replacement.wording.aae46859",
+      "value": "صيغة الاستبدال"
     },
     {
       "key": "tenant.ui.report.jobs.could.not.be.loaded.cb888ac8",
@@ -3491,6 +4015,10 @@
       "value": "نشاط استعراضي، جهاز الإخطار الخاص بك، والاشتراك في مجال العمل التجاري."
     },
     {
+      "key": "tenant.ui.review.attendance.and.leave.dependencies.that.affect.payroll.a71d09b3",
+      "value": "قم بمراجعة تبعيات الحضور والإجازات التي تؤثر على جاهزية كشوف المرتبات، وإعداد التقارير عن الأدلة، وإغلاق نهاية الشهر."
+    },
+    {
       "key": "tenant.ui.review.attendance.policies.f09b2b11",
       "value": "استعراض سياسات الحضور"
     },
@@ -3513,6 +4041,10 @@
     {
       "key": "tenant.ui.review.daily.evidence.hours.exceptions.and.payroll.locks.573d6477",
       "value": "راجع الأدلة اليومية والساعات والاستثناءات وعمليات إغلاق مسير الرواتب."
+    },
+    {
+      "key": "tenant.ui.review.e29a79fe",
+      "value": "مراجعة"
     },
     {
       "key": "tenant.ui.review.entitlement.and.apply.for.leave.094db062",
@@ -3565,6 +4097,18 @@
     {
       "key": "tenant.ui.review.verification.evidence.alert.rules.and.unresolved.security.a08cca3f",
       "value": "راجع أدلة التحقق وقواعد التنبيه وأحداث الأمان غير المحلولة."
+    },
+    {
+      "key": "tenant.ui.revoke.0be72075",
+      "value": "إبطال"
+    },
+    {
+      "key": "tenant.ui.revoke.this.protected.payment.detail.e905e7ba",
+      "value": "هل تريد إلغاء تفاصيل الدفع المحمية هذه؟"
+    },
+    {
+      "key": "tenant.ui.revoke.this.protected.statutory.detail.f9e04efc",
+      "value": "هل تريد إلغاء هذه التفاصيل القانونية المحمية؟"
     },
     {
       "key": "tenant.ui.role.access.saved.9e50b70a",
@@ -3639,8 +4183,32 @@
       "value": "القواعد للتحقق"
     },
     {
+      "key": "tenant.ui.run.approved.b3f26b37",
+      "value": "تمت الموافقة على التشغيل."
+    },
+    {
+      "key": "tenant.ui.run.finalized.d5e94ad0",
+      "value": "تم الانتهاء من التشغيل."
+    },
+    {
+      "key": "tenant.ui.run.id.79adb123",
+      "value": "تشغيل معرف"
+    },
+    {
+      "key": "tenant.ui.run.preparation.8961f15f",
+      "value": "تشغيل التحضير"
+    },
+    {
+      "key": "tenant.ui.run.reviewed.a455c8b1",
+      "value": "تشغيل تمت مراجعته."
+    },
+    {
       "key": "tenant.ui.running.73989d9c",
       "value": "قيد التنفيذ"
+    },
+    {
+      "key": "tenant.ui.runs.fcde5c32",
+      "value": "أشواط"
     },
     {
       "key": "tenant.ui.runtime.configuration.updated.7f80d0e8",
@@ -3649,6 +4217,22 @@
     {
       "key": "tenant.ui.s.face.profile.8e1f9849",
       "value": "صورة الوجه؟?"
+    },
+    {
+      "key": "tenant.ui.safe.payroll.foundation.audit.history.9e9ac191",
+      "value": "تاريخ التدقيق الأساسي لكشوف المرتبات."
+    },
+    {
+      "key": "tenant.ui.salary.structure.4649e7e6",
+      "value": "هيكل الراتب"
+    },
+    {
+      "key": "tenant.ui.salary.structure.and.components.ed0551f9",
+      "value": "هيكل الرواتب ومكوناتها"
+    },
+    {
+      "key": "tenant.ui.salary.structures.353c6322",
+      "value": "هياكل الرواتب"
     },
     {
       "key": "tenant.ui.satellite.d1ffec93",
@@ -3703,6 +4287,14 @@
       "value": "سياسة الإنقاذ"
     },
     {
+      "key": "tenant.ui.save.protected.payment.details.d795d4a8",
+      "value": "حفظ تفاصيل الدفع المحمية"
+    },
+    {
+      "key": "tenant.ui.save.protected.statutory.detail.c889ebe6",
+      "value": "حفظ التفاصيل القانونية المحمية"
+    },
+    {
       "key": "tenant.ui.save.role.access.81930b5d",
       "value": "توفير إمكانية الحصول على الخدمات"
     },
@@ -3713,6 +4305,10 @@
     {
       "key": "tenant.ui.save.shift.b2f96afd",
       "value": "نوبة إنقاذ"
+    },
+    {
+      "key": "tenant.ui.saved.9d4af690",
+      "value": "أنقذ."
     },
     {
       "key": "tenant.ui.saving.56a2285c",
@@ -3799,6 +4395,10 @@
       "value": "انظر حالة القوة العاملة اليوم، طوابير عاجلة، إعداد الصحة، والاستعداد في نهاية الشهر في مكان واحد."
     },
     {
+      "key": "tenant.ui.select.85982229",
+      "value": "يختار"
+    },
+    {
       "key": "tenant.ui.select.a.holiday.to.open.its.month.and.707d4452",
       "value": "اختيار عطلة لفتح شهرها وتفاصيلها."
     },
@@ -3809,6 +4409,10 @@
     {
       "key": "tenant.ui.select.a.recorded.day.to.inspect.its.evidence.1f281d0b",
       "value": "اختيار يوم مسجل لتفتيش أدلته."
+    },
+    {
+      "key": "tenant.ui.select.an.employee.before.loading.employee.specific.payroll.4b5486e5",
+      "value": "حدد الموظف قبل تحميل بيانات الرواتب الخاصة بالموظف."
     },
     {
       "key": "tenant.ui.select.department.a8e8d328",
@@ -3905,6 +4509,14 @@
     {
       "key": "tenant.ui.setup.health.8b5389d7",
       "value": "إقامة الصحة"
+    },
+    {
+      "key": "tenant.ui.setup.progress.and.incomplete.foundation.steps.5c5a632a",
+      "value": "تقدم الإعداد وخطوات الأساس غير مكتملة."
+    },
+    {
+      "key": "tenant.ui.setup.sequence.f6910828",
+      "value": "تسلسل الإعداد"
     },
     {
       "key": "tenant.ui.setup.wizard.2d4c9fdb",
@@ -4015,6 +4627,10 @@
       "value": "الحالة"
     },
     {
+      "key": "tenant.ui.statutory.details.f4786a93",
+      "value": "التفاصيل القانونية"
+    },
+    {
       "key": "tenant.ui.stops.0e648419",
       "value": "توقف"
     },
@@ -4023,8 +4639,16 @@
       "value": "تخزين ملفات الموظفين الخاصين وإصدار وصلات تحميل قصيرة العمر. وتسجل عمليات التحميل والحذف في تاريخ مراجعة الحسابات."
     },
     {
+      "key": "tenant.ui.structures.c64b6d8a",
+      "value": "الهياكل"
+    },
+    {
       "key": "tenant.ui.submit.field.gps.f3617301",
       "value": "إرسال موقع العمل الميداني"
+    },
+    {
+      "key": "tenant.ui.submit.for.review.f7710dc5",
+      "value": "إرسال للمراجعة"
     },
     {
       "key": "tenant.ui.submit.request.8a9051c6",
@@ -4091,6 +4715,10 @@
       "value": "العجز المستأجر"
     },
     {
+      "key": "tenant.ui.tenant.terminology.overrides.63e65b43",
+      "value": "تتجاوز مصطلحات المستأجر"
+    },
+    {
       "key": "tenant.ui.tenant.timezone.e59a166c",
       "value": "المنطقة الزمنية للمستأجر"
     },
@@ -4137,6 +4765,10 @@
     {
       "key": "tenant.ui.the.temporary.password.is.the.employee.name.plus.6b591f38",
       "value": "كلمة السر المؤقتة هي اسم الموظف بالإضافة إلى رقم الهاتف الستة الأول ويظهر بعد إنشاء الحسابات."
+    },
+    {
+      "key": "tenant.ui.theme.a797e309",
+      "value": "سمة"
     },
     {
       "key": "tenant.ui.there.are.no.correction.requests.in.this.state.bd3d1f6f",
@@ -4351,6 +4983,10 @@
       "value": "السياسة الموروثة"
     },
     {
+      "key": "tenant.ui.use.the.audit.table.pagination.from.the.api.a8a2ff42",
+      "value": "استخدم ترقيم الصفحات في جدول التدقيق من استجابة واجهة برمجة التطبيقات (API). تتوفر عوامل تصفية النطاق الزمني والإجراء ونوع الكيان ومعرف الكيان على نقطة النهاية الخلفية ويمكن إلحاقها باستعلام المسار."
+    },
+    {
       "key": "tenant.ui.use.the.employee.apos.s.department.policy.then.0eff6061",
       "value": "استخدم سياسة قسم الموظف، ثم السياسة الافتراضية للمستأجر."
     },
@@ -4367,6 +5003,10 @@
       "value": "ولا يمكن تحميل المستخدمين والأدوار."
     },
     {
+      "key": "tenant.ui.validate.readiness.1f3ce95c",
+      "value": "التحقق من الاستعداد"
+    },
+    {
       "key": "tenant.ui.verification.behavior.727893aa",
       "value": "سلوك التحقق"
     },
@@ -4377,6 +5017,18 @@
     {
       "key": "tenant.ui.version.00cf6270",
       "value": "نسخة"
+    },
+    {
+      "key": "tenant.ui.versioned.compensation.structures.and.component.configuration.6f37a713",
+      "value": "هياكل التعويض ذات الإصدارات وتكوين المكونات."
+    },
+    {
+      "key": "tenant.ui.versioned.period.and.payout.date.rules.7b67759a",
+      "value": "قواعد الفترة وتاريخ الدفع."
+    },
+    {
+      "key": "tenant.ui.vibrant.teal.92a39f1d",
+      "value": "تركوازي زاهٍ"
     },
     {
       "key": "tenant.ui.view.69bd4ef9",
@@ -4437,6 +5089,10 @@
     {
       "key": "tenant.ui.where.supported.or.the.keyless.e2ecdbe3",
       "value": "حيثما يكون مدعوماً، أو لا مفتاح له"
+    },
+    {
+      "key": "tenant.ui.why.is.this.wording.needed.acac6034",
+      "value": "لماذا هذه الصياغة مطلوبة؟"
     },
     {
       "key": "tenant.ui.work.00040bab",
@@ -4543,6 +5199,10 @@
       "value": "ليس لديكِ إذن لتنظري إلى حالة تسجيل المقاييس الحيوية."
     },
     {
+      "key": "tenant.ui.your.account.does.not.have.payroll.foundation.permissions.b6c2ec7e",
+      "value": "لا يحتوي حسابك على أذونات أساسية لكشوف المرتبات."
+    },
+    {
       "key": "tenant.ui.your.current.workspace.permissions.do.not.allow.this.62e80c52",
       "value": "صلاحيات مساحة العمل الحالية لا تسمح بالوصول إلى قسم الحضور هذا."
     },
@@ -4569,6 +5229,10 @@
     {
       "key": "tenant.ui.your.role.does.not.include.od.wfh.or.267d3969",
       "value": "دورك لا يتضمن مراجعة العمل الخارجي أو العمل من المنزل أو تصحيحات الحضور."
+    },
+    {
+      "key": "tenant.ui.your.role.has.payroll.permissions.but.payroll.is.e8be0716",
+      "value": "يتمتع دورك بأذونات كشوف المرتبات، ولكن لم يتم تمكين كشوف المرتبات لمساحة العمل هذه بعد. قم بتمكين وحدة PAYROLL من وحدات مستأجر النظام الأساسي قبل استخدام شاشات كشوف المرتبات."
     }
   ]
 }

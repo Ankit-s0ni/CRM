@@ -179,7 +179,7 @@ export function AttendanceDetailView({
           </Link>
         )}
         <div className="min-w-56 flex-1">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-primary-container">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#2a2927]">
             {embedded ? tText("Employee attendance") : tText("Attendance detail")}
           </p>
           <div className="mt-1 flex items-center gap-2">
@@ -267,19 +267,19 @@ export function AttendanceDetailView({
 function Summary({ data }: { data: MonthResponse["data"]["summary"] }) {
   const { tText } = useTenantLocalization();
   const values = [
-    { label: tText("Present"), value: data.present, color: "text-emerald-800" },
+    { label: tText("Present"), value: data.present, color: "theme-tone-text" },
     { label: tText("Absent"), value: data.absent, color: "text-error" },
-    { label: tText("Half days"), value: data.halfDays, color: "text-amber-800" },
-    { label: tText("Late days"), value: data.lateDays, color: "text-amber-800" },
+    { label: tText("Half days"), value: data.halfDays, color: "theme-tone-text" },
+    { label: tText("Late days"), value: data.lateDays, color: "theme-tone-text" },
     {
       label: tText("Worked"),
       value: formatMinutes(data.workMinutes),
-      color: "text-primary",
+      color: "text-[#151515]",
     },
     {
       label: tText("Overtime"),
       value: formatMinutes(data.overtimeMinutes),
-      color: "text-sky-700",
+      color: "theme-tone-text",
     },
   ];
   return (
@@ -333,7 +333,7 @@ function MonthCalendar({
   return (
     <Panel className="overflow-hidden p-4 lg:p-6">
       <div className="mb-4 flex items-center gap-2">
-        <CalendarDays className="size-5 text-primary" />
+        <CalendarDays className="size-5 text-[#151515]" />
         <div>
           <h2 className="font-semibold">{tText("Monthly calendar")}</h2>
           <p className="text-xs text-outline">
@@ -372,7 +372,7 @@ function MonthCalendar({
                   tone &&
                   "border-current/10 bg-[color:var(--calendar-bg)] text-[color:var(--calendar-fg)]",
                 selectedDate === date &&
-                  "border-primary ring-2 ring-primary/15",
+                  "border-[#151515] ring-2 ring-[#151515]/15",
               )}
               style={
                 day && tone
@@ -503,7 +503,7 @@ function DayEvidence({
           <h3 className="font-semibold">{tText("Evidence timeline")}</h3>
           {onCorrect && !data.isLocked && (
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-container"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#151515] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#2a2927]"
               onClick={onCorrect}
             >
               <PencilLine className="size-4" />
@@ -766,7 +766,7 @@ function Timeline({
             "grid size-8 place-items-center rounded-full",
             event.timeSuspect
               ? "bg-error-container text-error"
-              : "bg-zinc-50 text-primary",
+              : "bg-zinc-50 text-[#151515]",
           )}
         >
           <Icon className="size-4" />

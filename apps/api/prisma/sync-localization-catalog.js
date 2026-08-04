@@ -9,6 +9,7 @@ const connectionString =
   'postgresql://app_admin:admin_password@localhost:5433/hrms_dev?schema=public';
 const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+const TX_TIMEOUT = 120000;
 const root = resolve(__dirname, '../../..');
 
 async function main() {
@@ -94,7 +95,7 @@ async function main() {
       translatedCount += 1;
     }
 
-  });
+  }, { timeout: TX_TIMEOUT });
 
   console.log(
     `Registered ${source.entries.length} English keys and ${translatedCount} Arabic draft translations.`,

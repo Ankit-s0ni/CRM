@@ -354,7 +354,7 @@ export function DeterministicFieldMap({
             <span className={cn(
               "grid size-9 place-items-center rounded-full border-4 border-white text-white shadow-lg transition",
               markerTone(marker.tone),
-              active && "scale-125 ring-4 ring-primary/20",
+              active && "scale-125 ring-4 ring-[#151515]/20",
             )}>
               <MapPin className="size-4" />
             </span>
@@ -449,11 +449,11 @@ function project(point: MapCoordinate, bounds: ReturnType<typeof mapBounds>) {
 }
 
 function markerTone(tone: MapMarker["tone"]) {
-  if (tone === "live") return "bg-emerald-700";
-  if (tone === "stale" || tone === "gap") return "bg-amber-600";
+  if (tone === "live") return "theme-tone theme-tone-emerald";
+  if (tone === "stale" || tone === "gap") return "theme-tone theme-tone-amber";
   if (tone === "offline") return "bg-outline";
-  if (tone === "stop") return "bg-cyan-700";
-  if (tone === "punch") return "bg-rose-700";
-  if (tone === "alert") return "bg-red-600";
-  return "bg-primary";
+  if (tone === "stop") return "theme-tone theme-tone-teal";
+  if (tone === "punch") return "theme-tone theme-tone-rose";
+  if (tone === "alert") return "theme-tone theme-tone-red";
+  return "bg-[#151515]";
 }
