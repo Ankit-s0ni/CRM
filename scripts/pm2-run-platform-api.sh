@@ -9,7 +9,5 @@ if [[ -s "${HOME}/.nvm/nvm.sh" ]]; then
   source "${HOME}/.nvm/nvm.sh"
 fi
 
-cd "${ROOT_DIR}/apps/api"
-
 export PLATFORM_API_PORT="${PLATFORM_API_PORT:-4011}"
-exec pnpm start:platform:prod
+exec node "${ROOT_DIR}/apps/api/dist/src/platform-main.js"
