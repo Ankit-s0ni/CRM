@@ -6,8 +6,8 @@ export type PlatformUser = {
 };
 
 export type PlatformSessionResponse = {
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   user: PlatformUser;
   session: { id: string; mfaVerifiedAt: string };
 };

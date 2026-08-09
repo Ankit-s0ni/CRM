@@ -272,7 +272,7 @@ function onboardingStepSettings(settings: Settings, nextStep: number) {
 export function OnboardingWizard() {
   const { tText } = useTenantLocalization();
   const router = useRouter();
-  const { accessToken, hasHydrated, user, setUser } = useAuthStore();
+  const { hasSession, hasHydrated, user, setUser } = useAuthStore();
   const [step, setStep] = useState(1);
   const [settings, setSettings] = useState(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -291,8 +291,8 @@ export function OnboardingWizard() {
   });
 
   useEffect(() => {
-    if (hasHydrated && !accessToken) router.replace("/login");
-    if (!accessToken) return;
+    if (hasHydrated && !hasSession) router.replace("/login");
+    if (!hasSession) return;
     Promise.all([apiClient.get("/onboarding/status"), apiClient.get("/tenant-settings"), apiClient.get("/roles")])
       .then(([status, current, roleResult]) => {
         const onboardingStatus = status.data.data as OnboardingStatus;
@@ -307,7 +307,7 @@ export function OnboardingWizard() {
       })
       .catch(() => setError(tText("We couldn't load your setup progress.")))
       .finally(() => setLoading(false));
-  }, [accessToken, hasHydrated, router]);
+  }, [hasHydrated, hasSession, router]);
 
   async function continueSetup() {
     setSaving(true);

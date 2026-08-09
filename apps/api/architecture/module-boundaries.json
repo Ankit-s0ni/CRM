@@ -2,13 +2,14 @@
   "schemaVersion": 1,
   "products": [
     {
-      "name": "attendance",
+      "name": "hrms",
       "kind": "product",
-      "owner": "attendance-team",
-      "compositionRoot": "src/products/attendance/attendance-product.module.ts",
-      "publicEntry": "src/products/attendance/public.ts",
-      "readme": "src/products/attendance/README.md",
+      "owner": "hrms-team",
+      "compositionRoot": "src/products/hrms/hrms-product.module.ts",
+      "publicEntry": "src/products/hrms/public.ts",
+      "readme": "src/products/hrms/README.md",
       "physicalRoots": [
+        { "id": "hrms", "path": "src/products/hrms" },
         { "id": "attendance", "path": "src/products/attendance/core" },
         {
           "id": "attendance-config",
@@ -43,7 +44,8 @@
         {
           "id": "security-alerts",
           "path": "src/products/attendance/security-alerts"
-        }
+        },
+        { "id": "payroll", "path": "src/products/payroll" }
       ]
     },
     {
@@ -136,11 +138,13 @@
     "notifications": "src/platform/notifications/public.ts",
     "workspace": "src/platform/workspace/public.ts",
     "platform": "src/platform/control-plane/public.ts",
-    "attendance": "src/products/attendance/public.ts"
+    "attendance": "src/products/attendance/public.ts",
+    "payroll": "src/products/payroll/public.ts",
+    "hrms": "src/products/hrms/public.ts"
   },
   "foundationModules": ["tenancy", "audit"],
   "legacyAllowedDependencies": {
-    "access": ["identity"],
+    "access": ["identity", "notifications"],
     "attendance": ["identity"],
     "attendance-config": ["identity", "organization", "workspace"],
     "attendance-dashboard": ["identity", "organization"],
@@ -161,14 +165,16 @@
       "organization",
       "runtime-config"
     ],
+    "hrms": ["identity"],
     "identity": ["notifications", "workspace"],
     "leave": ["attendance", "identity"],
     "notifications": [],
     "organization": ["billing", "identity"],
+    "payroll": ["identity"],
     "payroll-lock": ["identity"],
     "platform": ["billing", "biometrics"],
     "regularization": ["attendance", "identity", "organization"],
-    "reporting": ["identity"],
+    "reporting": ["attendance", "identity"],
     "runtime-config": ["identity", "workspace"],
     "security-alerts": ["biometrics", "identity"],
     "tenant-audit": ["identity"],
@@ -176,7 +182,15 @@
     "workspace-settings": []
   },
   "legacyDomainFrameworkFiles": [
-    "src/platform/billing/domain/billing-money.ts"
+    "src/platform/billing/domain/billing-money.ts",
+    "src/platform/organization/domain/employee.repository.interface.ts",
+    "src/products/attendance/configuration/holidays/domain/holiday.repository.interface.ts",
+    "src/products/attendance/configuration/offices/domain/office.repository.interface.ts",
+    "src/products/attendance/configuration/policies/domain/policy.repository.interface.ts",
+    "src/products/attendance/configuration/rosters/domain/roster.repository.interface.ts",
+    "src/products/attendance/configuration/shifts/domain/shift.repository.interface.ts",
+    "src/products/payroll/domain/value-objects/effective-date-range.ts",
+    "src/products/payroll/domain/value-objects/money-value.ts"
   ],
   "legacyInternalImportPaths": [
     "src/platform/billing/application/dunning.service.ts::../../control-plane/tenants/platform-tenants.service",

@@ -1,0 +1,6 @@
+* @deltcrm/platform-team @deltcrm/security-team
+/src/hrms.ts @deltcrm/hrms-team
+/manifests/hrms.v1.json @deltcrm/hrms-team @deltcrm/platform-team
+/identity/ @deltcrm/identity-team @deltcrm/security-team
+/entitlements/ @deltcrm/platform-team @deltcrm/billing-team
+/events/ @deltcrm/platform-team @deltcrm/security-team

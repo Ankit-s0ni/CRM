@@ -69,7 +69,7 @@ function sidebarPreferenceServerSnapshot() {
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, accessToken, clearAuth, hasHydrated, setUser } = useAuthStore();
+  const { user, hasSession, clearAuth, hasHydrated, setUser } = useAuthStore();
   const {
     t,
     tText,
@@ -110,17 +110,17 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    if (!hasHydrated || accessToken) return;
+    if (!hasHydrated || hasSession) return;
     const query = searchParams.toString();
     const tenantPath = localizedTenantPath(
       `${pathname}${query ? `?${query}` : ""}`,
       locale,
     );
     window.location.replace(`/login?next=${encodeURIComponent(tenantPath)}`);
-  }, [accessToken, hasHydrated, locale, pathname, searchParams]);
+  }, [hasHydrated, hasSession, locale, pathname, searchParams]);
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!hasSession) return;
     apiClient
       .get<{ modules: Array<{ key: string }> }>("/workspace/modules")
       .then(({ data }) =>
@@ -133,11 +133,11 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           );
       })
       .finally(() => setModulesLoaded(true));
-  }, [accessToken]);
+  }, [hasSession]);
 
   useEffect(() => {
     if (
-      !accessToken ||
+      !hasSession ||
       !enabledModuleKeys.has("ATTENDANCE") ||
       !isAttendanceWorkspacePath(pathname)
     ) {
@@ -161,10 +161,10 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [accessToken, enabledModuleKeys, pathname]);
+  }, [enabledModuleKeys, hasSession, pathname]);
 
   useEffect(() => {
-    if (!accessToken || !userId) return;
+    if (!hasSession || !userId) return;
     apiClient
       .get<{
         user: {
@@ -196,11 +196,11 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           localization: data.localization,
         });
       })
-      .catch(() => undefined);
-  }, [accessToken, setUser, userId]);
+      .catch(() => clearAuth());
+  }, [clearAuth, hasSession, setUser, userId]);
 
   if (pathname === "/app/onboarding") return <>{children}</>;
-  if (!hasHydrated || !accessToken || !user)
+  if (!hasHydrated || !hasSession || !user)
     return <div className="min-h-screen bg-surface" />;
 
   const permissions = new Set(user.permissions ?? []);

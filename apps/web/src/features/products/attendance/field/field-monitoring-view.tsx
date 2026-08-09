@@ -43,7 +43,7 @@ export function FieldMonitoringView() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const accessToken = useAuthStore(({ accessToken }) => accessToken);
+  const hasSession = useAuthStore(({ hasSession }) => hasSession);
   const tenantId = useAuthStore(({ user }) => user?.tenantId);
   const [employees, setEmployees] = useState<FieldEmployee[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
@@ -91,9 +91,9 @@ export function FieldMonitoringView() {
   }, []);
 
   useEffect(() => {
-    if (!accessToken || !tenantId) return;
+    if (!hasSession || !tenantId) return;
     const controller = new AbortController();
-    void consumeFieldStream({ accessToken, tenantId, signal: controller.signal }, (event) => {
+    void consumeFieldStream({ tenantId, signal: controller.signal }, (event) => {
       setEmployees((current) => current.map((employee) =>
         employee.id === event.employeeId
           ? { ...employee, presence: "LIVE", location: { ...employee.location, ...event } as FieldEmployee["location"] }
@@ -101,7 +101,7 @@ export function FieldMonitoringView() {
       ));
     });
     return () => controller.abort();
-  }, [accessToken, tenantId]);
+  }, [hasSession, tenantId]);
 
   const filtered = employees.filter((employee) => filter === "ALL" || employee.presence === filter);
   const selected = employees.find(({ id }) => id === selectedId);
@@ -222,13 +222,18 @@ function relativeTime(value: string) {
 }
 
 async function consumeFieldStream(
-  context: { accessToken: string; tenantId: string; signal: AbortSignal },
+  context: { tenantId: string; signal: AbortSignal },
   onLocation: (event: NonNullable<FieldEmployee["location"]> & { employeeId: string }) => void,
 ) {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
   try {
     const response = await fetch(`${baseUrl}/field/stream`, {
-      headers: { Authorization: `Bearer ${context.accessToken}`, "x-tenant-id": context.tenantId, Accept: "text/event-stream" },
+      credentials: "include",
+      headers: {
+        "x-auth-client": "web",
+        "x-tenant-id": context.tenantId,
+        Accept: "text/event-stream",
+      },
       signal: context.signal,
     });
     if (!response.ok || !response.body) return;

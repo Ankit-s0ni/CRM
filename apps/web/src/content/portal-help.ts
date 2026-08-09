@@ -1,4 +1,5 @@
 import type { AttendanceHelpEntry } from "./attendance-help";
+import { toLegacyHrmsPath } from "@/lib/hrms-route-contract";
 
 export type PortalHelpEntry = Omit<AttendanceHelpEntry, "key"> & {
   key: string;
@@ -246,8 +247,10 @@ const entries: Array<{
 ];
 
 export function portalHelpEntryForPath(pathname: string) {
+  const legacyPath = toLegacyHrmsPath(pathname);
   return (
-    entries.find(({ match }) => match(pathname))?.entry ?? entries.at(-1)!.entry
+    entries.find(({ match }) => match(legacyPath))?.entry ??
+    entries.at(-1)!.entry
   );
 }
 

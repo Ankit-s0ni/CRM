@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ModuleAvailability, Prisma } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import type { ProductLifecycleEvent } from '@deltcrm/product-contracts';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
@@ -22,6 +24,7 @@ import {
   CatalogSelectionError,
   resolveCatalogSelection,
 } from '../catalog-policy';
+import { resolveHrmsLifecycleTransition } from '../../product-integration/product-lifecycle';
 
 type RequestMetadata = {
   ipAddress?: string;
@@ -454,6 +457,10 @@ export class PlatformModulesService {
         include: { module: true },
       });
       const effectiveKeys = active.map(({ module }) => module.key).sort();
+      const lifecycleEventType = resolveHrmsLifecycleTransition(
+        oldKeys,
+        effectiveKeys,
+      );
       await this.systemAudit(
         tx,
         actor,
@@ -480,7 +487,29 @@ export class PlatformModulesService {
         eventKey: 'tenant.modules.replaced',
         payload: { tenantId, moduleKeys: effectiveKeys },
       });
-      await bumpRuntimeConfigVersion(tx, tenantId);
+      const entitlementVersion = await bumpRuntimeConfigVersion(tx, tenantId);
+      if (lifecycleEventType) {
+        const event: ProductLifecycleEvent = {
+          eventId: randomUUID(),
+          eventType: lifecycleEventType,
+          occurredAt: now.toISOString(),
+          producer: 'PLATFORM',
+          tenantId,
+          actorId: actor.platformUserId,
+          correlationId: metadata.requestId ?? randomUUID(),
+          schemaVersion: 1,
+          payload: {
+            productKey: 'HRMS',
+            entitlementVersion,
+            requestedBy: actor.platformUserId,
+          },
+        };
+        await this.outbox.append(tx, {
+          tenantId,
+          eventKey: event.eventType,
+          payload: this.json(event)!,
+        });
+      }
       return this.tenantModulesInTransaction(tx, tenantId);
     });
   }

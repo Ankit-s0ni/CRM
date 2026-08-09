@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { AuthenticatedPlatformUser } from './platform-auth.types';
+import type { Request } from 'express';
+import { accessTokenFromRequest } from '../../../shared/http/auth-cookies';
 
 type PlatformJwtPayload = {
   sub: string;
@@ -19,7 +21,10 @@ export class PlatformJwtStrategy extends PassportStrategy(
 ) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (request: Request) => accessTokenFromRequest(request, 'platform'),
+      ]),
       ignoreExpiration: false,
       secretOrKey:
         process.env.PLATFORM_JWT_SECRET ?? 'dev-platform-secret-change-me',

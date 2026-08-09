@@ -1,0 +1,27 @@
+name: Product contracts
+
+on:
+  pull_request:
+    paths:
+      - "packages/product-contracts/**"
+      - ".github/workflows/product-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/product-contracts/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @deltcrm/product-contracts typecheck
+      - run: pnpm --filter @deltcrm/product-contracts test
+      - run: pnpm --filter @deltcrm/product-contracts compatibility:check
+      - run: pnpm --filter @deltcrm/product-contracts pack:check

@@ -238,15 +238,11 @@ export function ModulesHub() {
                   <WalletCards className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-lg font-bold">Payroll</h2>
+                  <h2 className="text-lg font-bold">{tText("Payroll")}</h2>
                   <p className="mt-2 text-sm leading-6 theme-tone-text">
-                    Your role has payroll permissions, but Payroll is not
-                    enabled for this workspace yet. Enable the PAYROLL module
-                    from platform tenant modules before using payroll screens.
-                  </p>
+                    {tText("Your role has payroll permissions, but Payroll is not enabled for this workspace yet. Enable the PAYROLL module from platform tenant modules before using payroll screens.")}</p>
                   <span className="mt-4 inline-flex rounded-full bg-card px-3 py-1 text-xs font-bold theme-tone-text">
-                    Needs workspace enablement
-                  </span>
+                    {tText("Needs workspace enablement")}</span>
                 </div>
               </div>
             </Panel>
@@ -796,10 +792,7 @@ export function PayrollModuleHub() {
             <ModuleReadiness health={health} />
           ) : (
             <Panel className="border theme-tone theme-tone-amber p-5 text-sm leading-6 theme-tone-text">
-              Payroll screens are available in the frontend, but this workspace
-              has not passed the PAYROLL module health check. Enable the
-              workspace module and refresh the session before running payroll.
-            </Panel>
+              {tText("Payroll screens are available in the frontend, but this workspace has not passed the PAYROLL module health check. Enable the workspace module and refresh the session before running payroll.")}</Panel>
           )}
           <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
             <Panel className="overflow-hidden">

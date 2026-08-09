@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -16,7 +17,7 @@ import {
   ApiResponse,
   ApiBody,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { VerificationTokensService } from './verification-tokens.service';
 import { JwtTenantGuard } from './jwt-tenant.guard';
@@ -31,6 +32,13 @@ import {
   SignupDto,
   VerifyTokenDto,
 } from './dto/auth.dto';
+import {
+  clearBrowserSessionCookies,
+  isWebAuthRequest,
+  refreshTokenFromRequest,
+  setBrowserSessionCookies,
+  withoutSessionTokens,
+} from '../../shared/http/auth-cookies';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -70,14 +78,19 @@ export class AuthController {
   @ApiOperation({ summary: 'Login to the application' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Successful login' })
-  async login(@Body() body: LoginDto, @Req() req: Request) {
-    return this.authService.login(
+  async login(
+    @Body() body: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const session = await this.authService.login(
       body.email,
       body.password,
       req.ip,
       req.headers['user-agent'],
       body.deviceUuid,
     );
+    return this.toClientSession(req, response, session);
   }
 
   @Post('mobile-login')
@@ -106,13 +119,23 @@ export class AuthController {
       properties: { refreshToken: { type: 'string' } },
     },
   })
-  async refresh(@Body() body: RefreshTokenDto, @Req() req: Request) {
-    return this.authService.refresh(
-      body.refreshToken,
+  async refresh(
+    @Body() body: RefreshTokenDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken =
+      body.refreshToken ?? refreshTokenFromRequest(req, 'tenant');
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token required');
+    }
+    const session = await this.authService.refresh(
+      refreshToken,
       req.ip,
       req.headers['user-agent'],
       body.deviceUuid,
     );
+    return this.toClientSession(req, response, session);
   }
 
   @Post('logout')
@@ -123,8 +146,17 @@ export class AuthController {
   async logout(
     @Body() body: RefreshTokenDto,
     @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.logout(user.userId, body.refreshToken);
+    const refreshToken =
+      body.refreshToken ?? refreshTokenFromRequest(request, 'tenant');
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token required');
+    }
+    const result = await this.authService.logout(user.userId, refreshToken);
+    clearBrowserSessionCookies(response, 'tenant');
+    return result;
   }
 
   @Post('change-password')
@@ -208,5 +240,13 @@ export class AuthController {
     }
 
     return this.authService.resendEmailVerification(body.email, tenantId);
+  }
+
+  private toClientSession<
+    T extends { accessToken: string; refreshToken: string },
+  >(request: Request, response: Response, session: T) {
+    if (!isWebAuthRequest(request)) return session;
+    setBrowserSessionCookies(response, session, 'tenant');
+    return withoutSessionTokens(session);
   }
 }

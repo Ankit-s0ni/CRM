@@ -54,10 +54,11 @@ export class LoginDto {
 }
 
 export class RefreshTokenDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   @MinLength(16)
-  refreshToken!: string;
+  refreshToken?: string;
 
   @ApiPropertyOptional({ format: 'uuid' })
   @IsOptional()

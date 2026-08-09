@@ -1,0 +1,140 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DeltCRM Product Integration API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "platformSession": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "productServiceKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Product-Service-Key"
+      },
+      "productIdentity": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Product-Key"
+      }
+    }
+  },
+  "paths": {
+    "/product-integration/token": {
+      "post": {
+        "operationId": "issueProductToken",
+        "security": [{ "platformSession": [] }],
+        "responses": {
+          "200": { "description": "Audience-specific product token" }
+        }
+      }
+    },
+    "/product-integration/entitlements": {
+      "get": {
+        "operationId": "getEffectiveEntitlements",
+        "security": [{ "platformSession": [] }],
+        "responses": {
+          "200": { "description": "Effective tenant product entitlements" }
+        }
+      }
+    },
+    "/product-integration/navigation": {
+      "get": {
+        "operationId": "getEntitledNavigation",
+        "security": [{ "platformSession": [] }],
+        "responses": {
+          "200": { "description": "Entitled shell navigation" }
+        }
+      }
+    },
+    "/internal/v1/products/{productKey}/manifest": {
+      "get": {
+        "operationId": "getProductManifest",
+        "security": [{ "productServiceKey": [], "productIdentity": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productKey",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Registered product manifest" }
+        }
+      }
+    },
+    "/internal/v1/tenants/{tenantId}/entitlements": {
+      "get": {
+        "operationId": "getTenantEntitlements",
+        "security": [{ "productServiceKey": [], "productIdentity": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Effective tenant entitlements" }
+        }
+      }
+    },
+    "/internal/v1/tenants/{tenantId}/users/{userId}/identity-status": {
+      "get": {
+        "operationId": "getProductIdentityStatus",
+        "security": [{ "productServiceKey": [], "productIdentity": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "query",
+            "name": "membershipId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Current tenant, user and membership lifecycle status" }
+        }
+      }
+    },
+    "/internal/v1/tenants/{tenantId}/products/{productKey}/status": {
+      "get": {
+        "operationId": "getProductProvisioningStatus",
+        "security": [{ "productServiceKey": [], "productIdentity": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "productKey",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Observable product provisioning status" }
+        }
+      }
+    }
+  }
+}

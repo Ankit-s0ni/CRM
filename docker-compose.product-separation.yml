@@ -1,0 +1,74 @@
+name: deltcrm-product-separation
+
+services:
+  gateway:
+    image: nginx:1.28-alpine
+    ports:
+      - "4080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      HRMS_UPSTREAM_PORT: "${HRMS_UPSTREAM_PORT:-4015}"
+      NGINX_ENVSUBST_FILTER: "^HRMS_UPSTREAM_PORT$"
+    volumes:
+      - ./infra/local-product-separation/gateway.conf:/etc/nginx/templates/default.conf.template:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/gateway-health >/dev/null"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  platform-db:
+    image: postgres:16-alpine
+    ports:
+      - "5441:5432"
+    environment:
+      POSTGRES_DB: platform_local
+      POSTGRES_USER: platform_owner
+      POSTGRES_PASSWORD: local_platform_owner_only
+    volumes:
+      - platform_separation_data:/var/lib/postgresql/data
+      - ./infra/local-product-separation/platform-init.sql:/docker-entrypoint-initdb.d/01-platform.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform_owner -d platform_local"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  hrms-db:
+    image: postgres:16-alpine
+    ports:
+      - "5442:5432"
+    environment:
+      POSTGRES_DB: hrms_local
+      POSTGRES_USER: hrms_owner
+      POSTGRES_PASSWORD: local_hrms_owner_only
+    volumes:
+      - hrms_separation_data:/var/lib/postgresql/data
+      - ./infra/local-product-separation/hrms-init.sql:/docker-entrypoint-initdb.d/01-hrms.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms_owner -d hrms_local"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  boundary-verifier:
+    image: postgres:16-alpine
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      hrms-db:
+        condition: service_healthy
+    environment:
+      PLATFORM_OWNER_PASSWORD: local_platform_owner_only
+      PLATFORM_RUNTIME_PASSWORD: local_platform_runtime_only
+      HRMS_OWNER_PASSWORD: local_hrms_owner_only
+      HRMS_RUNTIME_PASSWORD: local_hrms_runtime_only
+    volumes:
+      - ./infra/local-product-separation/verify-boundaries.sh:/verify-boundaries.sh:ro
+    entrypoint: ["/bin/sh", "/verify-boundaries.sh"]
+    restart: "no"
+
+volumes:
+  platform_separation_data:
+  hrms_separation_data:

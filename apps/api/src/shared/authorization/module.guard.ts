@@ -39,11 +39,18 @@ export class ModuleGuard implements CanActivate {
         select: { id: true },
       }),
     );
-    if (!assignment)
+    if (!assignment) {
+      if (moduleKey === 'PAYROLL') {
+        throw new ForbiddenException({
+          code: 'PRODUCT_CAPABILITY_NOT_ENTITLED',
+          message: 'HRMS Payroll is not enabled for this workspace',
+        });
+      }
       throw new ForbiddenException({
         code: 'MODULE_ACCESS_DENIED',
         message: `${moduleKey} is not active for this workspace`,
       });
+    }
     return true;
   }
 }

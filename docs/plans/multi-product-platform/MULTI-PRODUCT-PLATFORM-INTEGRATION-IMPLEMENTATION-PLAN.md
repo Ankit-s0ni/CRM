@@ -2,9 +2,9 @@
 
 ## 1. Purpose
 
-**Status:** Proposed  
-**Primary owners:** Platform, HRMS, POS and Mail teams  
-**Architecture:** Separate full-stack product repositories connected through one DeltCRM platform  
+**Status:** Proposed
+**Primary owners:** Platform, HRMS, POS and Mail teams
+**Architecture:** Separate full-stack product repositories connected through one DeltCRM platform
 **Customer outcome:** A tenant receives one subdomain, one login, one navigation system and one billing relationship while independently deployed HRMS, POS and Mail products appear as one application.
 
 DeltCRM will operate as a multi-product SaaS platform. The Platform is the control plane; HRMS, POS and Mail are independently owned product services. Separate repositories must not create separate customer experiences or allow products to share databases and internal code.
@@ -21,16 +21,16 @@ DeltCRM will operate as a multi-product SaaS platform. The Platform is the contr
 
 ## 3. Repository Ownership
 
-| Repository | Owning team | Responsibilities |
-|---|---|---|
-| `deltcrm-platform` | Platform | Tenant lifecycle, identity, SSO, RBAC, subscriptions, entitlements, product registry, navigation, localization, audit and gateway integration |
-| `deltcrm-hrms` | HRMS | Employees, organization, attendance, leave, payroll, HRMS frontend and employee mobile application |
-| `deltcrm-pos` | POS | Catalog, inventory, locations, registers, sales, payments and POS frontend |
-| `deltcrm-mail` | Mail | Mailboxes, messages, templates, campaigns and Mail frontend |
-| `deltcrm-contracts` | Platform with product reviewers | OpenAPI definitions, event schemas, shared identifiers and generated clients |
-| `deltcrm-design-system` | UI/platform | Application shell, components, typography, tokens, icons, responsive behavior and accessibility |
-| `deltcrm-infrastructure` | Platform/DevOps | Gateway, DNS, TLS, service deployment, observability, secrets, backups and environment templates |
-| `deltcrm-landing` | Marketing/web | Public marketing website and product pages |
+| Repository                 | Owning team                     | Responsibilities                                                                                                                              |
+| -------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deltcrm-platform`       | Platform                        | Tenant lifecycle, identity, SSO, RBAC, subscriptions, entitlements, product registry, navigation, localization, audit and gateway integration |
+| `deltcrm-hrms`           | HRMS                            | Employees, organization, attendance, leave, payroll, HRMS frontend and employee mobile application                                            |
+| `deltcrm-pos`            | POS                             | Catalog, inventory, locations, registers, sales, payments and POS frontend                                                                    |
+| `deltcrm-mail`           | Mail                            | Mailboxes, messages, templates, campaigns and Mail frontend                                                                                   |
+| `deltcrm-contracts`      | Platform with product reviewers | OpenAPI definitions, event schemas, shared identifiers and generated clients                                                                  |
+| `deltcrm-design-system`  | UI/platform                     | Application shell, components, typography, tokens, icons, responsive behavior and accessibility                                               |
+| `deltcrm-infrastructure` | Platform/DevOps                 | Gateway, DNS, TLS, service deployment, observability, secrets, backups and environment templates                                              |
+| `deltcrm-landing`        | Marketing/web                   | Public marketing website and product pages                                                                                                    |
 
 The existing CRM repository should not be split by copying files without ownership analysis. The extraction sequence in Section 13 preserves behavior and data while establishing these boundaries.
 
@@ -274,12 +274,12 @@ When HR creates an employee:
 
 ## 10. Data Ownership
 
-| Owner | Authoritative data |
-|---|---|
+| Owner    | Authoritative data                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------- |
 | Platform | Tenants, identities, global access, subscriptions, entitlements, localization and product registry |
-| HRMS | Employees, organization, attendance, leave and payroll |
-| POS | Catalog, inventory, registers, sales and payments |
-| Mail | Mailboxes, messages, templates and campaigns |
+| HRMS     | Employees, organization, attendance, leave and payroll                                             |
+| POS      | Catalog, inventory, registers, sales and payments                                                  |
+| Mail     | Mailboxes, messages, templates and campaigns                                                       |
 
 Each product owns its database or isolated PostgreSQL schema, migration history, backups and restore tests. Products may keep event-fed read projections of another service's data, but they must not directly read or write another product's tables.
 
@@ -309,6 +309,23 @@ Every product must provide:
 Local development should provide one composition environment that starts the gateway, Platform and selected products while allowing each repository to run independently.
 
 ## 13. Delivery Phases
+
+### Current verified position (2026-08-09)
+
+- Platform/HRMS ownership fixtures run against separate local PostgreSQL
+  databases and reject cross-database credentials.
+- Platform auth, RS256 signing/JWKS, HRMS token issuance, entitlements,
+  navigation contracts and independent API composition roots are implemented.
+- Focused contract and composition verification passes with 8 suites and 63
+  tests; API architecture, API typecheck, API build and web typecheck pass.
+- The extracted HRMS runtime compiles independently. Final local HTTP acceptance
+  requires starting it with its S3/MinIO environment and running
+  `pnpm separation:http:test`.
+- Gateway/browser SSO, staging migration/reconciliation, independent rollback,
+  production cutover and the observation period are not complete. Therefore the
+  compatibility HRMS code must not yet be removed from the original CRM.
+- No production database migration, seed, reset, deletion or cutover was
+  performed as part of this verification.
 
 ### Phase 1: Contracts and ownership
 

@@ -41,4 +41,39 @@ describe('EmployeeQuotaService', () => {
       },
     });
   });
+
+  it('takes a tenant transaction lock before reading quota capacity', async () => {
+    const operations: string[] = [];
+    const periodStart = new Date('2026-07-01T00:00:00.000Z');
+    const periodEnd = new Date('2026-07-31T00:00:00.000Z');
+    const transaction = {
+      $executeRaw: jest.fn().mockImplementation(() => {
+        operations.push('lock');
+        return Promise.resolve(1);
+      }),
+      tenantSubscription: {
+        findFirst: jest.fn().mockImplementation(() => {
+          operations.push('subscription');
+          return Promise.resolve({
+            id: 'subscription-id',
+            currentPeriodStart: periodStart,
+            currentPeriodEnd: periodEnd,
+            plan: { maxEmployees: 1 },
+          });
+        }),
+      },
+      employee: {
+        count: jest.fn().mockImplementation(() => {
+          operations.push('count');
+          return Promise.resolve(0);
+        }),
+      },
+    } as unknown as PrismaTransaction;
+    const service = new EmployeeQuotaService({} as OutboxService);
+
+    await expect(
+      service.lockAndAssertCapacity(transaction, 'tenant-id'),
+    ).resolves.toMatchObject({ used: 0, limit: 1 });
+    expect(operations).toEqual(['lock', 'subscription', 'count']);
+  });
 });

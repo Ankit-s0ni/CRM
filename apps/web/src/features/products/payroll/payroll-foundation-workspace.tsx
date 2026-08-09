@@ -36,6 +36,7 @@ import {
   PrimaryButton,
   inputClass,
 } from "@/shared/components/page-primitives";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 type PayrollTabKey =
   | "overview"
@@ -94,135 +95,135 @@ type AddedPayLine = {
 export const payrollFoundationTabs: PayrollTab[] = [
   {
     key: "overview",
-    label: "Overview",
+    label: tenantMessage("Overview"),
     endpoint: "",
     permission: "payroll.settings.read",
     icon: WalletCards,
-    description: "See what is ready and what still needs setup.",
+    description: tenantMessage("See what is ready and what still needs setup."),
   },
   {
     key: "settings",
-    label: "Company settings",
+    label: tenantMessage("Company settings"),
     endpoint: "/payroll/settings",
     permission: "payroll.settings.read",
     managePermission: "payroll.settings.manage",
     icon: Settings2,
-    description: "Country, currency, pay cycle, payday, and rounding.",
+    description: tenantMessage("Country, currency, pay cycle, payday, and rounding."),
   },
   {
     key: "calendars",
-    label: "Pay calendar",
+    label: tenantMessage("Pay calendar"),
     endpoint: "/payroll/calendars",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: CalendarDays,
-    description: "Salary periods and payment dates.",
+    description: tenantMessage("Salary periods and payment dates."),
   },
   {
     key: "pay-groups",
-    label: "Pay groups",
+    label: tenantMessage("Pay groups"),
     endpoint: "/payroll/pay-groups",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: Layers3,
-    description: "Groups of employees paid in the same way.",
+    description: tenantMessage("Groups of employees paid in the same way."),
   },
   {
     key: "matrix",
-    label: "Rule source",
+    label: tenantMessage("Rule source"),
     endpoint: "",
     permission: "payroll.policies.read",
     icon: GitBranch,
-    description: "See which payroll rule is used for an employee.",
+    description: tenantMessage("See which payroll rule is used for an employee."),
   },
   {
     key: "policies",
-    label: "Salary rules",
+    label: tenantMessage("Salary rules"),
     endpoint: "/payroll/policies",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: ScrollText,
-    description: "Rules for working days, rounding, and partial salary.",
+    description: tenantMessage("Rules for working days, rounding, and partial salary."),
   },
   {
     key: "components",
-    label: "Pay items",
+    label: tenantMessage("Pay items"),
     endpoint: "/payroll/components",
     permission: "payroll.components.read",
     managePermission: "payroll.components.manage",
     icon: Coins,
-    description: "Basic salary, allowance, deduction, and contribution.",
+    description: tenantMessage("Basic salary, allowance, deduction, and contribution."),
   },
   {
     key: "structures",
-    label: "Salary templates",
+    label: tenantMessage("Salary templates"),
     endpoint: "/payroll/salary-structures",
     permission: "payroll.structures.read",
     managePermission: "payroll.structures.manage",
     icon: Banknote,
-    description: "Reusable salary templates made from pay items.",
+    description: tenantMessage("Reusable salary templates made from pay items."),
   },
   {
     key: "employee-profile",
-    label: "Employee payroll fields",
+    label: tenantMessage("Employee payroll fields"),
     endpoint: "",
     permission: "payroll.compensation.read",
     managePermission: "payroll.compensation.manage",
     icon: UserRound,
-    description: "Employee fields needed before salary can run.",
+    description: tenantMessage("Employee fields needed before salary can run."),
   },
   {
     key: "compensation",
-    label: "Salary changes",
+    label: tenantMessage("Salary changes"),
     endpoint: "",
     permission: "payroll.compensation.read",
     managePermission: "payroll.compensation.manage",
     icon: Banknote,
-    description: "Employee salary revisions and effective dates.",
+    description: tenantMessage("Employee salary revisions and effective dates."),
   },
   {
     key: "payment-details",
-    label: "Bank details",
+    label: tenantMessage("Bank details"),
     endpoint: "",
     permission: "payroll.protected-data.read",
     managePermission: "payroll.protected-data.manage",
     icon: LockKeyhole,
-    description: "Employee bank details used for salary payment.",
+    description: tenantMessage("Employee bank details used for salary payment."),
   },
   {
     key: "statutory-details",
-    label: "Government IDs",
+    label: tenantMessage("Government IDs"),
     endpoint: "",
     permission: "payroll.protected-data.read",
     managePermission: "payroll.protected-data.manage",
     icon: ShieldCheck,
-    description: "Employee IDs required for local rules and records.",
+    description: tenantMessage("Employee IDs required for local rules and records."),
   },
   {
     key: "approval-policies",
-    label: "Approval flow",
+    label: tenantMessage("Approval flow"),
     endpoint: "/payroll/approval-policies",
     permission: "payroll.policies.read",
     managePermission: "payroll.policies.manage",
     icon: BadgeCheck,
-    description: "Who must check and approve payroll.",
+    description: tenantMessage("Who must check and approve payroll."),
   },
   {
     key: "accounting",
-    label: "Accounting links",
+    label: tenantMessage("Accounting links"),
     endpoint: "/payroll/accounting-mappings",
     permission: "payroll.accounting.read",
     managePermission: "payroll.accounting.manage",
     icon: FileClock,
-    description: "Connect pay items to debit and credit account codes.",
+    description: tenantMessage("Connect pay items to debit and credit account codes."),
   },
   {
     key: "audit",
-    label: "Setup history",
+    label: tenantMessage("Setup history"),
     endpoint: "/payroll/audit?limit=25",
     permission: "payroll.audit.read",
     icon: History,
-    description: "Changes made to payroll setup.",
+    description: tenantMessage("Changes made to payroll setup."),
   },
 ];
 
@@ -784,7 +785,7 @@ function CalendarForm({ onSaved }: { onSaved: () => void }) {
   const { tText } = useTenantLocalization();
   const [form, setForm] = useState<FormState>({
     code: "MONTHLY_26_25",
-    name: "Monthly 26 to 25",
+    name: tText("Monthly 26 to 25"),
     frequency: "MONTHLY",
     timezone: "Asia/Muscat",
     effectiveFrom: today,
@@ -827,7 +828,7 @@ function PayGroupForm({ onSaved }: { onSaved: () => void }) {
   })).filter((option) => option.value);
   const [form, setForm] = useState<FormState>({
     code: "MONTHLY_OM",
-    name: "Monthly Oman",
+    name: tText("Monthly Oman"),
     currency: "OMR",
     countryCode: "OM",
     effectiveFrom: today,
@@ -908,7 +909,7 @@ function PolicyForm({ onSaved }: { onSaved: () => void }) {
   const policies = usePayrollResource("/payroll/policies");
   const [form, setForm] = useState<FormState>({
     code: "PRORATION-DEFAULT",
-    name: "Default proration",
+    name: tText("Default proration"),
     category: "PRORATION",
     method: "calendar-days",
     schemaVersion: "proration-v1",
@@ -1155,7 +1156,7 @@ function ComponentForm({ onSaved }: { onSaved: () => void }) {
   const components = usePayrollResource("/payroll/components");
   const [form, setForm] = useState<FormState>({
     code: "BASIC",
-    name: "Basic salary",
+    name: tText("Basic salary"),
     type: "EARNING",
     componentId: "",
     valueMode: "FIXED",
@@ -1314,7 +1315,7 @@ function StructureForm({ onSaved }: { onSaved: () => void }) {
   const [mode, setMode] = useState<"choose" | "create" | "edit">("choose");
   const [form, setForm] = useState<FormState>({
     code: "OM_MONTHLY",
-    name: "Oman monthly salary",
+    name: tText("Oman monthly salary"),
     currency: "OMR",
     structureId: "",
     versionId: "",
@@ -2078,7 +2079,7 @@ function ApprovalPolicyForm({ data, onSaved }: { data: unknown; onSaved: () => v
       <FormPanel
         action={tText("Create approval policy")}
         onSubmit={() =>
-          save("post", "/payroll/approval-policies", { name: "Payroll approval" }, onSaved)
+          save("post", "/payroll/approval-policies", { name: tText("Payroll approval") }, onSaved)
         }
         title={tText("Approval policy")}
       >
@@ -3153,7 +3154,7 @@ function PayLineChecklist({
                           formulaReference: event.target.value,
                         })
                       }
-                      placeholder="baseAmountMinor * 10 / 100"
+                      placeholder={tText("baseAmountMinor * 10 / 100")}
                       value={rule.formulaReference}
                     />
                   </Field>

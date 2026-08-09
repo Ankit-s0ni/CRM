@@ -12,6 +12,12 @@ import {
   WalletCards,
 } from "lucide-react";
 import { attendanceWorkspaceAccessPermissions } from "@/lib/attendance-navigation";
+import {
+  HRMS_ATTENDANCE_ROOT,
+  HRMS_PAYROLL_ROOT,
+  HRMS_ROOT,
+  toCanonicalHrmsPath,
+} from "@/lib/hrms-route-contract";
 
 export type TenantNavItem = {
   label: string;
@@ -47,7 +53,7 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
   {
     label: "Attendance",
     localizationKey: "tenant.navigation.attendance",
-    href: "/app/modules/attendance",
+    href: HRMS_ATTENDANCE_ROOT,
     icon: ClipboardCheck,
     moduleKey: "ATTENDANCE",
     anyPermissions: [...attendanceWorkspaceAccessPermissions],
@@ -55,7 +61,7 @@ export const tenantPrimaryNavigation: TenantNavItem[] = [
   {
     label: "Payroll",
     localizationKey: "tenant.navigation.payroll",
-    href: "/app/modules/payroll",
+    href: HRMS_PAYROLL_ROOT,
     icon: WalletCards,
     moduleKey: "PAYROLL",
     anyPermissions: [
@@ -256,41 +262,44 @@ export function canViewTenantNavItem(
 export function tenantNavigationContext(
   pathname: string,
 ): TenantNavigationContext | null {
+  const canonicalPath = toCanonicalHrmsPath(pathname);
   if (
-    pathname.startsWith("/app/employees") ||
-    pathname.startsWith("/app/imports/employees") ||
-    pathname.startsWith("/app/organization")
+    canonicalPath.startsWith("/app/employees") ||
+    canonicalPath.startsWith("/app/imports/employees") ||
+    canonicalPath.startsWith("/app/organization")
   )
     return "employees";
-  if (pathname.startsWith("/app/reports")) return "reports";
+  if (canonicalPath.startsWith("/app/reports")) return "reports";
   if (
-    pathname.startsWith("/app/modules") ||
-    pathname.startsWith("/app/attendance") ||
-    pathname.startsWith("/app/leave")
+    canonicalPath.startsWith("/app/modules") ||
+    canonicalPath.startsWith("/app/hrms") ||
+    canonicalPath.startsWith("/app/attendance") ||
+    canonicalPath.startsWith("/app/leave")
   )
     return "modules";
   if (
-    pathname.startsWith("/app/settings") ||
-    pathname.startsWith("/app/access")
+    canonicalPath.startsWith("/app/settings") ||
+    canonicalPath.startsWith("/app/access")
   )
     return "settings";
   return null;
 }
 
 export function tenantTopLevelActive(pathname: string, href: string) {
-  if (href === "/app") return pathname === href;
-  const context = tenantNavigationContext(pathname);
-  if (href === "/app/employees") return context === "employees";
-  if (href === "/app/modules/attendance")
+  const canonicalPath = toCanonicalHrmsPath(pathname);
+  const canonicalHref = toCanonicalHrmsPath(href);
+  if (canonicalHref === "/app") return canonicalPath === canonicalHref;
+  const context = tenantNavigationContext(canonicalPath);
+  if (canonicalHref === "/app/employees") return context === "employees";
+  if (canonicalHref === HRMS_ATTENDANCE_ROOT)
     return (
-      pathname.startsWith("/app/modules/attendance") ||
-      pathname.startsWith("/app/attendance") ||
-      pathname.startsWith("/app/leave")
+      canonicalPath.startsWith(HRMS_ATTENDANCE_ROOT) ||
+      canonicalPath.startsWith(`${HRMS_ROOT}/leave`)
     );
-  if (href === "/app/modules/payroll")
-    return pathname.startsWith("/app/modules/payroll");
-  if (href === "/app/reports") return context === "reports";
-  if (href === "/app/settings") return context === "settings";
+  if (canonicalHref === HRMS_PAYROLL_ROOT)
+    return canonicalPath.startsWith(HRMS_PAYROLL_ROOT);
+  if (canonicalHref === "/app/reports") return context === "reports";
+  if (canonicalHref === "/app/settings") return context === "settings";
   return false;
 }
 

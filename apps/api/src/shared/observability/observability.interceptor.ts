@@ -24,6 +24,7 @@ export class ObservabilityInterceptor implements NestInterceptor {
       method: string;
       path: string;
       route?: { path?: unknown };
+      headers: Record<string, string | string[] | undefined>;
     };
     const startedAt = performance.now();
     let failed = false;
@@ -39,8 +40,16 @@ export class ObservabilityInterceptor implements NestInterceptor {
               : safeRequest.path,
           'http.response.status_code': failed ? 500 : response.statusCode,
           'http.server.duration_ms': Math.round(performance.now() - startedAt),
+          'deltcrm.request_id': firstHeader(
+            safeRequest.headers['x-request-id'],
+          ),
+          'trace.id': firstHeader(safeRequest.headers['x-trace-id']),
         });
       }),
     );
   }
+}
+
+function firstHeader(value: string | string[] | undefined) {
+  return (Array.isArray(value) ? value[0] : value) ?? 'unknown';
 }

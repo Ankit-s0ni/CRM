@@ -6,13 +6,15 @@ import {
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { payrollSectionForPath } from "@/lib/payroll-navigation";
+import { HRMS_PAYROLL_ROOT } from "@/lib/hrms-route-contract";
 import { useTenantLocalization } from "@/lib/tenant-localization";
+import { tenantMessage } from "@/i18n/tenant-message";
 
 const payrollNavItems = [
   {
     section: "foundation" as const,
-    label: "Payroll organization setup",
-    href: "/app/modules/payroll",
+    label: tenantMessage("Payroll organization setup"),
+    href: HRMS_PAYROLL_ROOT,
     icon: WalletCards,
   },
 ];

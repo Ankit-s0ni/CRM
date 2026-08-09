@@ -27,6 +27,14 @@ const productionEnvironment = {
   MAIL_FROM_ADDRESS: 'no-reply@example.com',
   MAIL_FROM_NAME: 'DeltCRM',
   PUBLIC_BASE_DOMAIN: 'example.com',
+  AUTH_CSRF_COOKIE_DOMAIN: '.example.com',
+  PRODUCT_TOKEN_ISSUER: 'https://auth.example.com',
+  PRODUCT_TOKEN_KEY_ID: 'platform-product-token-v1',
+  PRODUCT_TOKEN_PRIVATE_KEY: 'test-private-key-material',
+  PRODUCT_TOKEN_PUBLIC_KEY: 'test-public-key-material',
+  PRODUCT_SERVICE_CREDENTIALS_JSON: JSON.stringify({
+    HRMS: ['hrms-service-credential-with-32-characters'],
+  }),
   SMTP_HOST: 'mail.example.com',
   SMTP_PORT: '587',
   SMTP_USERNAME: 'no-reply@example.com',
@@ -56,6 +64,47 @@ describe('production runtime configuration', () => {
     ).toThrow(
       'S3_ENDPOINT must be an HTTPS URL; S3_PRIVATE_BUCKET must be configured; S3_SECRET_KEY must be a non-placeholder secret',
     );
+  });
+
+  it('requires the browser CSRF cookie to span the configured tenant domain', () => {
+    expect(() =>
+      validateProductionRuntimeConfiguration({
+        ...productionEnvironment,
+        AUTH_CSRF_COOKIE_DOMAIN: '',
+      }),
+    ).toThrow(
+      'AUTH_CSRF_COOKIE_DOMAIN must match PUBLIC_BASE_DOMAIN with a leading dot',
+    );
+
+    expect(() =>
+      validateProductionRuntimeConfiguration({
+        ...productionEnvironment,
+        AUTH_CSRF_COOKIE_DOMAIN: '.untrusted.example',
+      }),
+    ).toThrow(
+      'AUTH_CSRF_COOKIE_DOMAIN must match PUBLIC_BASE_DOMAIN with a leading dot',
+    );
+  });
+
+  it('requires persistent product trust configuration in production', () => {
+    expect(() =>
+      validateProductionRuntimeConfiguration({
+        ...productionEnvironment,
+        PRODUCT_TOKEN_PRIVATE_KEY: 'replace-with-pkcs8-private-key',
+        PRODUCT_SERVICE_CREDENTIALS_JSON: JSON.stringify({
+          HRMS: ['short-key'],
+        }),
+      }),
+    ).toThrow(
+      'PRODUCT_TOKEN_PRIVATE_KEY must be a non-placeholder secret; PRODUCT_SERVICE_CREDENTIALS_JSON must contain non-placeholder HRMS keys of at least 32 characters',
+    );
+
+    expect(() =>
+      validateProductionRuntimeConfiguration({
+        ...productionEnvironment,
+        PRODUCT_SERVICE_CREDENTIALS_JSON: '{not-json',
+      }),
+    ).toThrow('PRODUCT_SERVICE_CREDENTIALS_JSON must be valid JSON');
   });
 
   it('requires a real integrity gateway before attestation enforcement is enabled', () => {
@@ -172,6 +221,8 @@ describe('production runtime configuration', () => {
     delete environment.RAZORPAY_API_KEY;
     delete environment.RAZORPAY_WEBHOOK_SECRET;
 
-    expect(() => validateProductionRuntimeConfiguration(environment)).not.toThrow();
+    expect(() =>
+      validateProductionRuntimeConfiguration(environment),
+    ).not.toThrow();
   });
 });

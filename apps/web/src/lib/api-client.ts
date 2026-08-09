@@ -6,24 +6,27 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 // Public identity requests must never inherit a previously signed-in tenant.
 export const publicApiClient = axios.create({
   baseURL: apiBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'x-auth-client': 'web',
   },
 });
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'x-auth-client': 'web',
   },
 });
 
+let refreshRequest: Promise<void> | null = null;
+
 apiClient.interceptors.request.use(
   (config) => {
-    const { accessToken, user, pendingAuth } = useAuthStore.getState();
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
+    const { user, pendingAuth } = useAuthStore.getState();
     if (user?.tenantId) {
       config.headers['x-tenant-id'] = user.tenantId;
     } else if (pendingAuth.tenantId) {
@@ -44,6 +47,10 @@ apiClient.interceptors.request.use(
         : undefined) ??
       'en';
     config.headers['Accept-Language'] = locale;
+    if (isUnsafeMethod(config.method)) {
+      const csrfToken = readCookie('deltcrm_csrf');
+      if (csrfToken) config.headers['x-csrf-token'] = csrfToken;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -57,9 +64,10 @@ apiClient.interceptors.response.use(
     // If it's a 401 Unauthorized, try to refresh the token
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const { refreshToken, clearAuth, setAuth, user, pendingAuth } = useAuthStore.getState();
+      const { hasSession, clearAuth, setAuth, user, pendingAuth } =
+        useAuthStore.getState();
       
-      if (!refreshToken) {
+      if (!hasSession || !user) {
         clearAuth();
         const params = new URLSearchParams();
         if (pendingAuth.tenantId) params.set('tenantId', pendingAuth.tenantId);
@@ -70,26 +78,14 @@ apiClient.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post(
-          `${apiClient.defaults.baseURL}/auth/refresh`,
-          { refreshToken },
-          {
-            headers: {
-              ...(user?.tenantId ? { 'x-tenant-id': user.tenantId } : {}),
-              ...(user?.workspace ? { 'x-workspace-subdomain': user.workspace } : {}),
-            },
-          },
-        );
-        
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
-        
-        // Ensure user is not null before updating state. If user is null but we had a refresh token, 
-        // the state is corrupted. Just log out.
-        if (!user) throw new Error('User context missing');
-        
-        setAuth(user, newAccessToken, newRefreshToken);
-        
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        if (!refreshRequest) {
+          refreshRequest = refreshBrowserSession(user).finally(() => {
+            refreshRequest = null;
+          });
+        }
+        await refreshRequest;
+        setAuth(useAuthStore.getState().user ?? user);
+
         if (user.tenantId) {
           originalRequest.headers['x-tenant-id'] = user.tenantId;
         }
@@ -112,3 +108,33 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+async function refreshBrowserSession(user: NonNullable<ReturnType<typeof useAuthStore.getState>['user']>) {
+  const csrfToken = readCookie('deltcrm_csrf');
+  const response = await axios.post(
+    `${apiBaseUrl}/auth/refresh`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        'x-auth-client': 'web',
+        'x-tenant-id': user.tenantId,
+        'x-workspace-subdomain': user.workspace,
+        ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+      },
+    },
+  );
+  if (response.data?.user) useAuthStore.getState().setAuth(response.data.user);
+}
+
+function isUnsafeMethod(method?: string): boolean {
+  return !['get', 'head', 'options'].includes((method ?? 'get').toLowerCase());
+}
+
+function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const entry = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`));
+  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : null;
+}

@@ -1,4 +1,8 @@
 import type { AttendanceHelpKey } from "@/content/attendance-help";
+import {
+  HRMS_ATTENDANCE_ROOT,
+  toCanonicalHrmsPath,
+} from "@/lib/hrms-route-contract";
 
 export type AttendanceCapabilities = {
   attendanceEntitled: boolean;
@@ -56,21 +60,21 @@ export const attendanceWorkspaceItems: readonly (AttendanceRouteItem & {
   {
     section: "overview",
     label: "Overview",
-    href: "/app/modules/attendance",
+    href: HRMS_ATTENDANCE_ROOT,
     helpKey: "overview",
     permissions: attendanceWorkspaceAccessPermissions,
   },
   {
     section: "today",
     label: "Today",
-    href: "/app/attendance/register",
+    href: `${HRMS_ATTENDANCE_ROOT}/register`,
     helpKey: "register",
     permissions: ["attendance.records.read"],
   },
   {
     section: "requests",
     label: "Leave",
-    href: "/app/attendance/requests",
+    href: `${HRMS_ATTENDANCE_ROOT}/requests`,
     helpKey: "requests",
     permissions: [
       "attendance.exceptions.read",
@@ -81,7 +85,7 @@ export const attendanceWorkspaceItems: readonly (AttendanceRouteItem & {
   {
     section: "field",
     label: "Field",
-    href: "/app/attendance/field",
+    href: `${HRMS_ATTENDANCE_ROOT}/field`,
     helpKey: "field",
     permissions: [
       "attendance.field.live.read",
@@ -92,7 +96,7 @@ export const attendanceWorkspaceItems: readonly (AttendanceRouteItem & {
   {
     section: "reports",
     label: "Reports",
-    href: "/app/attendance/reports",
+    href: `${HRMS_ATTENDANCE_ROOT}/reports`,
     helpKey: "reports",
     permissions: [
       "attendance.reports.read",
@@ -103,7 +107,7 @@ export const attendanceWorkspaceItems: readonly (AttendanceRouteItem & {
   {
     section: "setup",
     label: "Setup",
-    href: "/app/attendance/setup",
+    href: `${HRMS_ATTENDANCE_ROOT}/setup`,
     helpKey: "setup",
     permissions: [
       "attendance.config.read",
@@ -132,19 +136,19 @@ export const attendanceSectionTabs: Readonly<
   requests: [
     {
       label: "Leave",
-      href: "/app/attendance/leave/requests",
+      href: `${HRMS_ATTENDANCE_ROOT}/leave/requests`,
       helpKey: "requests",
       permissions: ["leave.self", "leave.approve", "leave.manage"],
     },
     {
       label: "OD & WFH",
-      href: "/app/attendance/exceptions",
+      href: `${HRMS_ATTENDANCE_ROOT}/exceptions`,
       helpKey: "exceptions",
       permissions: ["attendance.exceptions.read"],
     },
     {
       label: "Corrections",
-      href: "/app/attendance/regularizations",
+      href: `${HRMS_ATTENDANCE_ROOT}/regularizations`,
       helpKey: "regularizations",
       permissions: [
         "attendance.regularizations.manage",
@@ -155,13 +159,13 @@ export const attendanceSectionTabs: Readonly<
   reports: [
     {
       label: "Reports center",
-      href: "/app/attendance/reports",
+      href: `${HRMS_ATTENDANCE_ROOT}/reports`,
       helpKey: "reports",
       permissions: ["attendance.reports.read", "attendance.reports.generate"],
     },
     {
       label: "Payroll close",
-      href: "/app/attendance/payroll",
+      href: `${HRMS_ATTENDANCE_ROOT}/payroll`,
       helpKey: "payroll-close",
       permissions: ["attendance.payroll-lock.manage"],
     },
@@ -169,7 +173,7 @@ export const attendanceSectionTabs: Readonly<
   setup: [
     {
       label: "Setup home",
-      href: "/app/attendance/setup",
+      href: `${HRMS_ATTENDANCE_ROOT}/setup`,
       helpKey: "setup",
       permissions: attendanceWorkspaceItems.find(
         ({ section }) => section === "setup",
@@ -177,13 +181,13 @@ export const attendanceSectionTabs: Readonly<
     },
     {
       label: "Rules",
-      href: "/app/attendance/policies",
+      href: `${HRMS_ATTENDANCE_ROOT}/policies`,
       helpKey: "policies",
       permissions: ["attendance.policies.read", "attendance.policies.manage"],
     },
     {
       label: "Schedule",
-      href: "/app/attendance/shifts",
+      href: `${HRMS_ATTENDANCE_ROOT}/shifts`,
       helpKey: "shifts",
       permissions: [
         "attendance.shifts.read",
@@ -194,7 +198,7 @@ export const attendanceSectionTabs: Readonly<
     },
     {
       label: "Workplaces",
-      href: "/app/attendance/offices",
+      href: `${HRMS_ATTENDANCE_ROOT}/offices`,
       helpKey: "offices",
       permissions: [
         "attendance.offices.read",
@@ -205,7 +209,7 @@ export const attendanceSectionTabs: Readonly<
     },
     {
       label: "Trust",
-      href: "/app/attendance/devices",
+      href: `${HRMS_ATTENDANCE_ROOT}/devices`,
       helpKey: "devices",
       permissions: [
         "attendance.devices.read",
@@ -216,7 +220,7 @@ export const attendanceSectionTabs: Readonly<
     },
     {
       label: "Leave",
-      href: "/app/attendance/setup/leave",
+      href: `${HRMS_ATTENDANCE_ROOT}/setup/leave`,
       helpKey: "setup",
       permissions: ["leave.manage"],
     },
@@ -228,13 +232,13 @@ export const attendanceSetupFeatureTabs: readonly (readonly AttendanceRouteItem[
     [
       {
         label: "Shifts",
-        href: "/app/attendance/shifts",
+        href: `${HRMS_ATTENDANCE_ROOT}/shifts`,
         helpKey: "shifts",
         permissions: ["attendance.shifts.read", "attendance.shifts.manage"],
       },
       {
         label: "Rosters",
-        href: "/app/attendance/rosters",
+        href: `${HRMS_ATTENDANCE_ROOT}/rosters`,
         helpKey: "rosters",
         permissions: ["attendance.rosters.read", "attendance.rosters.manage"],
       },
@@ -242,13 +246,13 @@ export const attendanceSetupFeatureTabs: readonly (readonly AttendanceRouteItem[
     [
       {
         label: "Offices",
-        href: "/app/attendance/offices",
+        href: `${HRMS_ATTENDANCE_ROOT}/offices`,
         helpKey: "offices",
         permissions: ["attendance.offices.read", "attendance.offices.manage"],
       },
       {
         label: "Holidays",
-        href: "/app/attendance/holidays",
+        href: `${HRMS_ATTENDANCE_ROOT}/holidays`,
         helpKey: "holidays",
         permissions: ["attendance.holidays.read", "attendance.holidays.manage"],
       },
@@ -256,13 +260,13 @@ export const attendanceSetupFeatureTabs: readonly (readonly AttendanceRouteItem[
     [
       {
         label: "Devices",
-        href: "/app/attendance/devices",
+        href: `${HRMS_ATTENDANCE_ROOT}/devices`,
         helpKey: "devices",
         permissions: ["attendance.devices.read", "attendance.devices.manage"],
       },
       {
         label: "Security feed",
-        href: "/app/attendance/security",
+        href: `${HRMS_ATTENDANCE_ROOT}/security`,
         helpKey: "security-feed",
         permissions: [
           "attendance.security-alerts.read",
@@ -273,24 +277,24 @@ export const attendanceSetupFeatureTabs: readonly (readonly AttendanceRouteItem[
   ] as const;
 
 const setupPaths = [
-  "/app/attendance/setup",
+  `${HRMS_ATTENDANCE_ROOT}/setup`,
   "/app/settings/attendance",
-  "/app/modules/attendance/capabilities",
-  "/app/attendance/policies",
-  "/app/attendance/shifts",
-  "/app/attendance/rosters",
-  "/app/attendance/offices",
-  "/app/attendance/holidays",
-  "/app/attendance/devices",
-  "/app/attendance/security",
+  `${HRMS_ATTENDANCE_ROOT}/capabilities`,
+  `${HRMS_ATTENDANCE_ROOT}/policies`,
+  `${HRMS_ATTENDANCE_ROOT}/shifts`,
+  `${HRMS_ATTENDANCE_ROOT}/rosters`,
+  `${HRMS_ATTENDANCE_ROOT}/offices`,
+  `${HRMS_ATTENDANCE_ROOT}/holidays`,
+  `${HRMS_ATTENDANCE_ROOT}/devices`,
+  `${HRMS_ATTENDANCE_ROOT}/security`,
 ];
 
 export function isAttendanceWorkspacePath(pathname: string) {
+  const path = toCanonicalHrmsPath(pathname);
   return (
-    pathname === "/app/modules/attendance" ||
-    pathname.startsWith("/app/modules/attendance/") ||
-    pathname.startsWith("/app/attendance/") ||
-    pathname === "/app/settings/attendance"
+    path === HRMS_ATTENDANCE_ROOT ||
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/`) ||
+    path === "/app/settings/attendance"
   );
 }
 
@@ -298,27 +302,28 @@ export function attendanceSectionForPath(
   pathname: string,
 ): AttendanceSection | null {
   if (!isAttendanceWorkspacePath(pathname)) return null;
+  const path = toCanonicalHrmsPath(pathname);
   if (
     setupPaths.some(
-      (path) => pathname === path || pathname.startsWith(`${path}/`),
+      (setupPath) => path === setupPath || path.startsWith(`${setupPath}/`),
     )
   ) {
     return "setup";
   }
-  if (pathname === "/app/modules/attendance") return "overview";
-  if (pathname.startsWith("/app/attendance/register")) return "today";
+  if (path === HRMS_ATTENDANCE_ROOT) return "overview";
+  if (path.startsWith(`${HRMS_ATTENDANCE_ROOT}/register`)) return "today";
   if (
-    pathname.startsWith("/app/attendance/leave") ||
-    pathname.startsWith("/app/attendance/requests") ||
-    pathname.startsWith("/app/attendance/exceptions") ||
-    pathname.startsWith("/app/attendance/regularizations")
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/leave`) ||
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/requests`) ||
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/exceptions`) ||
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/regularizations`)
   ) {
     return "requests";
   }
-  if (pathname.startsWith("/app/attendance/field")) return "field";
+  if (path.startsWith(`${HRMS_ATTENDANCE_ROOT}/field`)) return "field";
   if (
-    pathname.startsWith("/app/attendance/reports") ||
-    pathname.startsWith("/app/attendance/payroll")
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/reports`) ||
+    path.startsWith(`${HRMS_ATTENDANCE_ROOT}/payroll`)
   ) {
     return "reports";
   }
@@ -326,36 +331,37 @@ export function attendanceSectionForPath(
 }
 
 export function attendanceHelpKeyForPath(pathname: string): AttendanceHelpKey {
-  if (pathname.startsWith("/app/attendance/leave")) return "requests";
-  if (/^\/app\/attendance\/register\/[^/]+/.test(pathname))
+  const path = toCanonicalHrmsPath(pathname);
+  if (path.startsWith(`${HRMS_ATTENDANCE_ROOT}/leave`)) return "requests";
+  if (/^\/app\/hrms\/attendance\/register\/[^/]+/.test(path))
     return "register-detail";
-  if (/^\/app\/attendance\/regularizations\/[^/]+/.test(pathname)) {
+  if (/^\/app\/hrms\/attendance\/regularizations\/[^/]+/.test(path)) {
     return "regularization-detail";
   }
-  if (/^\/app\/attendance\/field\/[^/]+\/route/.test(pathname)) {
+  if (/^\/app\/hrms\/attendance\/field\/[^/]+\/route/.test(path)) {
     return "field-route";
   }
   const exact: Record<string, AttendanceHelpKey> = {
-    "/app/modules/attendance": "overview",
-    "/app/attendance/register": "register",
-    "/app/attendance/requests": "requests",
-    "/app/attendance/exceptions": "exceptions",
-    "/app/attendance/regularizations": "regularizations",
-    "/app/attendance/field": "field",
-    "/app/attendance/reports": "reports",
-    "/app/attendance/payroll": "payroll-close",
-    "/app/attendance/setup": "setup",
+    [HRMS_ATTENDANCE_ROOT]: "overview",
+    [`${HRMS_ATTENDANCE_ROOT}/register`]: "register",
+    [`${HRMS_ATTENDANCE_ROOT}/requests`]: "requests",
+    [`${HRMS_ATTENDANCE_ROOT}/exceptions`]: "exceptions",
+    [`${HRMS_ATTENDANCE_ROOT}/regularizations`]: "regularizations",
+    [`${HRMS_ATTENDANCE_ROOT}/field`]: "field",
+    [`${HRMS_ATTENDANCE_ROOT}/reports`]: "reports",
+    [`${HRMS_ATTENDANCE_ROOT}/payroll`]: "payroll-close",
+    [`${HRMS_ATTENDANCE_ROOT}/setup`]: "setup",
     "/app/settings/attendance": "attendance-defaults",
-    "/app/modules/attendance/capabilities": "app-behavior",
-    "/app/attendance/policies": "policies",
-    "/app/attendance/shifts": "shifts",
-    "/app/attendance/rosters": "rosters",
-    "/app/attendance/offices": "offices",
-    "/app/attendance/holidays": "holidays",
-    "/app/attendance/devices": "devices",
-    "/app/attendance/security": "security-feed",
+    [`${HRMS_ATTENDANCE_ROOT}/capabilities`]: "app-behavior",
+    [`${HRMS_ATTENDANCE_ROOT}/policies`]: "policies",
+    [`${HRMS_ATTENDANCE_ROOT}/shifts`]: "shifts",
+    [`${HRMS_ATTENDANCE_ROOT}/rosters`]: "rosters",
+    [`${HRMS_ATTENDANCE_ROOT}/offices`]: "offices",
+    [`${HRMS_ATTENDANCE_ROOT}/holidays`]: "holidays",
+    [`${HRMS_ATTENDANCE_ROOT}/devices`]: "devices",
+    [`${HRMS_ATTENDANCE_ROOT}/security`]: "security-feed",
   };
-  return exact[pathname] ?? "overview";
+  return exact[path] ?? "overview";
 }
 
 export function canUseAttendanceRoute(
@@ -389,17 +395,18 @@ export function attendanceRouteAccessForPath(
   pathname: string,
 ): AttendanceRouteItem | null {
   if (!isAttendanceWorkspacePath(pathname)) return null;
+  const path = toCanonicalHrmsPath(pathname);
 
   const feature = attendanceSetupFeatureTabs
     .flat()
     .find(
-      ({ href }) => pathname === href || pathname.startsWith(`${href}/`),
+      ({ href }) => path === href || path.startsWith(`${href}/`),
     );
   if (feature) return feature;
 
   for (const section of ["requests", "reports"] as const) {
     const tab = attendanceSectionTabs[section]?.find(
-      ({ href }) => pathname === href || pathname.startsWith(`${href}/`),
+      ({ href }) => path === href || path.startsWith(`${href}/`),
     );
     if (tab) return tab;
   }
@@ -411,61 +418,67 @@ export function attendanceRouteAccessForPath(
 }
 
 export function attendanceTabActive(pathname: string, href: string) {
-  if (href === "/app/attendance/setup") return pathname === href;
-  if (href === "/app/attendance/shifts") {
+  const path = toCanonicalHrmsPath(pathname);
+  const canonicalHref = toCanonicalHrmsPath(href);
+  if (canonicalHref === `${HRMS_ATTENDANCE_ROOT}/setup`) {
+    return path === canonicalHref;
+  }
+  if (canonicalHref === `${HRMS_ATTENDANCE_ROOT}/shifts`) {
     return (
-      pathname.startsWith("/app/attendance/shifts") ||
-      pathname.startsWith("/app/attendance/rosters")
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/shifts`) ||
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/rosters`)
     );
   }
-  if (href === "/app/attendance/offices") {
+  if (canonicalHref === `${HRMS_ATTENDANCE_ROOT}/offices`) {
     return (
-      pathname.startsWith("/app/attendance/offices") ||
-      pathname.startsWith("/app/attendance/holidays")
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/offices`) ||
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/holidays`)
     );
   }
-  if (href === "/app/attendance/devices") {
+  if (canonicalHref === `${HRMS_ATTENDANCE_ROOT}/devices`) {
     return (
-      pathname.startsWith("/app/attendance/devices") ||
-      pathname.startsWith("/app/attendance/security")
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/devices`) ||
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/security`)
     );
   }
-  if (href === "/app/settings/attendance") {
+  if (canonicalHref === "/app/settings/attendance") {
     return (
-      pathname === href ||
-      pathname.startsWith("/app/modules/attendance/capabilities") ||
-      pathname.startsWith("/app/attendance/policies")
+      path === canonicalHref ||
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/capabilities`) ||
+      path.startsWith(`${HRMS_ATTENDANCE_ROOT}/policies`)
     );
   }
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return path === canonicalHref || path.startsWith(`${canonicalHref}/`);
 }
 
 export function attendanceSetupTabsForPath(pathname: string) {
+  const path = toCanonicalHrmsPath(pathname);
   return (
     attendanceSetupFeatureTabs.find((tabs) =>
       tabs.some(
-        ({ href }) => pathname === href || pathname.startsWith(`${href}/`),
+        ({ href }) => path === href || path.startsWith(`${href}/`),
       ),
     ) ?? []
   );
 }
 
 export function attendanceBreadcrumbs(pathname: string) {
+  const path = toCanonicalHrmsPath(pathname);
   const section = attendanceSectionForPath(pathname);
   if (!section) return [];
   const workspace = attendanceWorkspaceItems.find(
     (item) => item.section === section,
   );
-  const crumbs = [{ label: "Attendance", href: "/app/modules/attendance" }];
+  const crumbs = [{ label: "Attendance", href: HRMS_ATTENDANCE_ROOT }];
   if (section !== "overview" && workspace) {
     crumbs.push({ label: workspace.label, href: workspace.href });
   }
-  if (/^\/app\/attendance\/register\/[^/]+/.test(pathname)) {
-    crumbs.push({ label: "Employee day", href: pathname });
-  } else if (/^\/app\/attendance\/regularizations\/[^/]+/.test(pathname)) {
-    crumbs.push({ label: "Correction decision", href: pathname });
-  } else if (/^\/app\/attendance\/field\/[^/]+\/route/.test(pathname)) {
-    crumbs.push({ label: "Route history", href: pathname });
+  if (/^\/app\/hrms\/attendance\/register\/[^/]+/.test(path)) {
+    crumbs.push({ label: "Employee day", href: path });
+  } else if (/^\/app\/hrms\/attendance\/regularizations\/[^/]+/.test(path)) {
+    crumbs.push({ label: "Correction decision", href: path });
+  } else if (/^\/app\/hrms\/attendance\/field\/[^/]+\/route/.test(path)) {
+    crumbs.push({ label: "Route history", href: path });
   }
   return crumbs;
 }

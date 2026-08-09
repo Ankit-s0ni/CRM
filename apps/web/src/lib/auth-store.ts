@@ -30,11 +30,10 @@ interface PendingAuthContext {
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
+  hasSession: boolean;
   pendingAuth: PendingAuthContext;
   hasHydrated: boolean;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User) => void;
   setUser: (user: User) => void;
   setPendingAuth: (context: Partial<PendingAuthContext>) => void;
   clearPendingAuth: () => void;
@@ -46,19 +45,17 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      hasSession: false,
       pendingAuth: {
         tenantId: null,
         workspace: null,
         email: null,
       },
       hasHydrated: false,
-      setAuth: (user, accessToken, refreshToken) =>
+      setAuth: (user) =>
         set({
           user,
-          accessToken,
-          refreshToken,
+          hasSession: true,
           pendingAuth: {
             tenantId: user.tenantId,
             workspace: user.workspace,
@@ -84,15 +81,31 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () =>
         set((state) => ({
           user: null,
-          accessToken: null,
-          refreshToken: null,
+          hasSession: false,
           pendingAuth: state.pendingAuth,
         })),
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: 'auth-storage',
-      partialize: ({ user, accessToken, refreshToken, pendingAuth }) => ({ user, accessToken, refreshToken, pendingAuth }),
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<AuthState>;
+        return {
+          user: state.user ?? null,
+          hasSession: Boolean(state.user),
+          pendingAuth: state.pendingAuth ?? {
+            tenantId: null,
+            workspace: null,
+            email: null,
+          },
+        };
+      },
+      partialize: ({ user, hasSession, pendingAuth }) => ({
+        user,
+        hasSession,
+        pendingAuth,
+      }),
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     }
   )

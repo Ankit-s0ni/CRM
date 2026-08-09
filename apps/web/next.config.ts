@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { hrmsRouteRewrites } from "./src/lib/hrms-route-contract";
 
 const nextIntlRequestConfig = "./src/i18n/request.ts";
 const appDir = path.dirname(fileURLToPath(import.meta.url));
@@ -14,6 +15,11 @@ const nextConfig: NextConfig = {
     resolveAlias: {
       "next-intl/config": nextIntlRequestConfig,
     },
+  },
+  async rewrites() {
+    return {
+      afterFiles: hrmsRouteRewrites(),
+    };
   },
   webpack(config, context) {
     config.resolve ??= {};

@@ -19,6 +19,8 @@ describe('ObservabilityInterceptor', () => {
     expect(attributes['http.request.method']).toBe('POST');
     expect(attributes['http.route']).toBe('/billing/subscription');
     expect(attributes['http.response.status_code']).toBe(201);
+    expect(attributes['deltcrm.request_id']).toBe('request-1');
+    expect(attributes['trace.id']).toBe('0123456789abcdef0123456789abcdef');
     expect(typeof attributes['http.server.duration_ms']).toBe('number');
     expect(JSON.stringify(record.mock.calls)).not.toContain('secret');
   });
@@ -43,6 +45,10 @@ function context(statusCode: number) {
         method: 'POST',
         path: '/billing/subscription',
         route: { path: '/billing/subscription' },
+        headers: {
+          'x-request-id': 'request-1',
+          'x-trace-id': '0123456789abcdef0123456789abcdef',
+        },
         body: { password: 'secret' },
       }),
       getResponse: () => ({ statusCode }),

@@ -142,4 +142,47 @@ describe('OutboxRelayService', () => {
     if (previous === undefined) delete process.env.OUTBOX_MAX_ATTEMPTS;
     else process.env.OUTBOX_MAX_ATTEMPTS = previous;
   });
+
+  it('publishes an unpublished database event after a fresh relay starts', async () => {
+    const persistedEvent = { ...event, tenantId: null };
+    const add = jest
+      .fn<Promise<unknown>, [string, unknown, unknown]>()
+      .mockResolvedValue({ id: event.id });
+    const updateMany: jest.MockedFunction<UpdateEvents> = jest
+      .fn<Promise<{ count: number }>, [unknown]>()
+      .mockResolvedValue({ count: 1 });
+    const queryRaw = jest
+      .fn<Promise<(typeof persistedEvent)[]>, []>()
+      .mockResolvedValue([persistedEvent]);
+    type RestartTransaction = {
+      $queryRaw: () => Promise<(typeof persistedEvent)[]>;
+      outboxEvent: { updateMany: UpdateEvents };
+    };
+    const prisma = {
+      forAdmin: jest.fn(
+        (callback: (tx: RestartTransaction) => Promise<unknown>) =>
+          callback({
+            $queryRaw: queryRaw,
+            outboxEvent: { updateMany },
+          }),
+      ),
+    } as unknown as PrismaService;
+    const freshRelay = new OutboxRelayService(prisma);
+    (freshRelay as unknown as RelayInternals).queue = { add };
+
+    await freshRelay.drain();
+
+    expect(queryRaw).toHaveBeenCalledTimes(1);
+    expect(add).toHaveBeenCalledWith(
+      persistedEvent.eventKey,
+      expect.objectContaining({ eventId: persistedEvent.id }),
+      expect.objectContaining({ jobId: persistedEvent.id }),
+    );
+    const update = updateMany.mock.calls[0]?.[0] as {
+      where: { id: string };
+      data: { publishedAt: Date };
+    };
+    expect(update.where.id).toBe(persistedEvent.id);
+    expect(update.data.publishedAt).toBeInstanceOf(Date);
+  });
 });

@@ -105,24 +105,24 @@ function employeeStatusTone(status: string) {
 function payrollStatus(profile?: EmployeePayrollProfile | null) {
   if (!profile) {
     return {
-      label: "Missing setup",
+      label: tenantMessage("Missing setup"),
       tone: "danger" as const,
     };
   }
   if (!profile.payGroupId) {
     return {
-      label: "Missing pay group",
+      label: tenantMessage("Missing pay group"),
       tone: "warning" as const,
     };
   }
   if (profile.salaryHold) {
     return {
-      label: "On hold",
+      label: tenantMessage("On hold"),
       tone: "warning" as const,
     };
   }
   return {
-    label: "Ready",
+    label: tenantMessage("Ready"),
     tone: "success" as const,
   };
 }

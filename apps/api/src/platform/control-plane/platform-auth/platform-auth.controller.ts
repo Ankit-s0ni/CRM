@@ -6,6 +6,8 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -15,7 +17,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUser } from '../../../shared/http/current-user.decorator';
 import {
   PlatformLoginDto,
@@ -25,6 +27,13 @@ import {
 import { PlatformAuthService } from './platform-auth.service';
 import type { AuthenticatedPlatformUser } from './platform-auth.types';
 import { PlatformJwtGuard } from './platform-jwt.guard';
+import {
+  clearBrowserSessionCookies,
+  isWebAuthRequest,
+  refreshTokenFromRequest,
+  setBrowserSessionCookies,
+  withoutSessionTokens,
+} from '../../../shared/http/auth-cookies';
 
 @ApiTags('Platform Authentication')
 @Controller('platform/auth')
@@ -45,26 +54,53 @@ export class PlatformAuthController {
       },
     },
   })
-  login(@Body() body: PlatformLoginDto, @Req() request: Request) {
-    return this.auth.login(body.email, body.password, this.metadata(request));
+  async login(
+    @Body() body: PlatformLoginDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.auth.login(
+      body.email,
+      body.password,
+      this.metadata(request),
+    );
+    return this.toClientSession(request, response, result);
   }
 
   @Post('mfa/verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Complete platform login using a TOTP code' })
-  verifyMfa(@Body() body: VerifyPlatformMfaDto, @Req() request: Request) {
-    return this.auth.verifyMfa(
+  async verifyMfa(
+    @Body() body: VerifyPlatformMfaDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const session = await this.auth.verifyMfa(
       body.challengeToken,
       body.code,
       this.metadata(request),
     );
+    return this.toClientSession(request, response, session);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotate a platform refresh token' })
-  refresh(@Body() body: PlatformRefreshDto, @Req() request: Request) {
-    return this.auth.refresh(body.refreshToken, this.metadata(request));
+  async refresh(
+    @Body() body: PlatformRefreshDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken =
+      body.refreshToken ?? refreshTokenFromRequest(request, 'platform');
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token required');
+    }
+    const session = await this.auth.refresh(
+      refreshToken,
+      this.metadata(request),
+    );
+    return this.toClientSession(request, response, session);
   }
 
   @Post('logout')
@@ -76,11 +112,14 @@ export class PlatformAuthController {
   })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Revoke the current platform session' })
-  logout(
+  async logout(
     @CurrentUser() user: AuthenticatedPlatformUser,
     @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ) {
-    return this.auth.logout(user, this.metadata(request));
+    const result = await this.auth.logout(user, this.metadata(request));
+    clearBrowserSessionCookies(response, 'platform');
+    return result;
   }
 
   @Get('me')
@@ -99,5 +138,33 @@ export class PlatformAuthController {
       userAgent: request.get('user-agent'),
       requestId: String(request.headers['x-request-id'] ?? ''),
     };
+  }
+
+  private toClientSession<T>(
+    request: Request,
+    response: Response,
+    result: T,
+  ):
+    | T
+    | Omit<
+        T & { accessToken: string; refreshToken: string },
+        'accessToken' | 'refreshToken'
+      > {
+    if (
+      !isWebAuthRequest(request) ||
+      !result ||
+      typeof result !== 'object' ||
+      !('accessToken' in result) ||
+      !('refreshToken' in result)
+    ) {
+      return result;
+    }
+
+    const session = result as T & {
+      accessToken: string;
+      refreshToken: string;
+    };
+    setBrowserSessionCookies(response, session, 'platform');
+    return withoutSessionTokens(session);
   }
 }

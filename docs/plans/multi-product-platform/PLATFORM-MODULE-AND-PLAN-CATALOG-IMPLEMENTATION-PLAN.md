@@ -1,8 +1,10 @@
 # Platform Product Catalog and Plan Entitlements Implementation Plan
 
+> **Architecture notice (superseded boundary):** This document records the earlier Attendance-first catalog model and must not be used as the product-boundary source for the multi-product extraction. The canonical decision is now defined in `MULTI-PRODUCT-PLATFORM-INTEGRATION-IMPLEMENTATION-PLAN.md`: HRMS is the product, while Employees, Organization, Attendance, Leave and Payroll are HRMS modules/capabilities. Payroll is implemented and may be separately entitled within HRMS; it is not a top-level platform product or `COMING_SOON` item. This catalog plan requires a dedicated revision before its remaining unchecked work is implemented.
+
 ## 1. Purpose
 
-**Status:** In progress  
+**Status:** Requires revision against the canonical HRMS product boundary
 **Delivery slot:** Sprint 8 remediation work package 8.1R  
 **Primary users:** DeltCRM Super Admin, tenant Business Admin, tenant HR  
 **Depends on:** Existing module registry, subscriptions, runtime configuration, tenant Attendance policies, audit/outbox infrastructure  

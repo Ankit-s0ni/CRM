@@ -7,6 +7,10 @@ import {
   tenantPrimaryNavigation,
   tenantTopLevelActive,
 } from "../src/lib/tenant-navigation";
+import {
+  HRMS_ATTENDANCE_ROOT,
+  HRMS_PAYROLL_ROOT,
+} from "../src/lib/hrms-route-contract";
 
 const adminPermissions = new Set([
   "workspace.modules.read",
@@ -38,7 +42,9 @@ test("promotes enabled product modules into primary navigation", () => {
   expect(tenantNavigationContext("/app/employees/employee-1")).toBe(
     "employees",
   );
-  expect(tenantNavigationContext("/app/attendance/register")).toBe("modules");
+  expect(tenantNavigationContext(`${HRMS_ATTENDANCE_ROOT}/register`)).toBe(
+    "modules",
+  );
   expect(tenantNavigationContext("/app/reports/attendance")).toBe("reports");
   expect(tenantNavigationContext("/app/settings/access")).toBe("settings");
   expect(tenantTopLevelActive("/app/reports/attendance", "/app/reports")).toBe(
@@ -46,12 +52,12 @@ test("promotes enabled product modules into primary navigation", () => {
   );
   expect(
     tenantTopLevelActive(
-      "/app/attendance/register",
-      "/app/modules/attendance",
+      `${HRMS_ATTENDANCE_ROOT}/register`,
+      HRMS_ATTENDANCE_ROOT,
     ),
   ).toBe(true);
   expect(
-    tenantTopLevelActive("/app/modules/payroll", "/app/modules/payroll"),
+    tenantTopLevelActive(HRMS_PAYROLL_ROOT, HRMS_PAYROLL_ROOT),
   ).toBe(true);
 });
 
@@ -77,10 +83,10 @@ test("keeps settings contextual navigation separate from product modules", () =>
 
 test("shows each primary module only when its entitlement is enabled", () => {
   const attendanceItem = tenantPrimaryNavigation.find(
-    ({ href }) => href === "/app/modules/attendance",
+    ({ href }) => href === HRMS_ATTENDANCE_ROOT,
   )!;
   const payrollItem = tenantPrimaryNavigation.find(
-    ({ href }) => href === "/app/modules/payroll",
+    ({ href }) => href === HRMS_PAYROLL_ROOT,
   )!;
 
   expect(
@@ -104,20 +110,20 @@ test("shows each primary module only when its entitlement is enabled", () => {
 test("keeps module routes independently highlighted", () => {
   expect(
     tenantTopLevelActive(
-      "/app/modules/attendance",
-      "/app/modules/attendance",
+      HRMS_ATTENDANCE_ROOT,
+      HRMS_ATTENDANCE_ROOT,
     ),
   ).toBe(true);
   expect(
     tenantTopLevelActive(
-      "/app/modules/attendance",
-      "/app/modules/payroll",
+      HRMS_ATTENDANCE_ROOT,
+      HRMS_PAYROLL_ROOT,
     ),
   ).toBe(false);
   expect(
     tenantTopLevelActive(
-      "/app/attendance/leave",
-      "/app/modules/attendance",
+      `${HRMS_ATTENDANCE_ROOT}/leave`,
+      HRMS_ATTENDANCE_ROOT,
     ),
   ).toBe(true);
 });
@@ -131,7 +137,7 @@ test("connects every major portal area to plain-language contextual help", () =>
     "/app/employees/import",
     "/app/modules",
     "/app/modules/leave",
-    "/app/modules/payroll",
+    HRMS_PAYROLL_ROOT,
     "/app/reports",
     "/app/reports/payroll",
     "/app/settings",

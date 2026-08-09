@@ -2,6 +2,8 @@ const PLACEHOLDER_VALUES = new Set([
   'replace-with-secret-manager-value',
   'replace-with-a-long-random-access-secret',
   'replace-with-a-long-random-refresh-secret',
+  'replace-with-pkcs8-private-key',
+  'replace-with-spki-public-key',
   'minioadmin',
   'replace-me',
 ]);
@@ -28,6 +30,12 @@ export function validateProductionRuntimeConfiguration(
   requireValue(errors, environment, 'MAIL_FROM_ADDRESS');
   requireValue(errors, environment, 'MAIL_FROM_NAME');
   requireValue(errors, environment, 'PUBLIC_BASE_DOMAIN');
+  requireCsrfCookieDomain(errors, environment);
+  requireHttpsUrl(errors, environment, 'PRODUCT_TOKEN_ISSUER');
+  requireValue(errors, environment, 'PRODUCT_TOKEN_KEY_ID');
+  requireSecret(errors, environment, 'PRODUCT_TOKEN_PRIVATE_KEY');
+  requireSecret(errors, environment, 'PRODUCT_TOKEN_PUBLIC_KEY');
+  requireProductServiceCredentials(errors, environment);
   if (environment.MAIL_PROVIDER === 'smtp') {
     requireValue(errors, environment, 'SMTP_HOST');
     requirePort(errors, environment, 'SMTP_PORT');
@@ -168,5 +176,50 @@ function requirePort(
   const port = Number(environment[name]);
   if (!Number.isInteger(port) || port < 1 || port > 65_535) {
     errors.push(`${name} must be a valid TCP port`);
+  }
+}
+
+function requireCsrfCookieDomain(
+  errors: string[],
+  environment: RuntimeEnvironment,
+) {
+  const baseDomain = environment.PUBLIC_BASE_DOMAIN?.trim().replace(/^\./, '');
+  const cookieDomain = environment.AUTH_CSRF_COOKIE_DOMAIN?.trim();
+  if (!baseDomain || cookieDomain !== `.${baseDomain}`) {
+    errors.push(
+      'AUTH_CSRF_COOKIE_DOMAIN must match PUBLIC_BASE_DOMAIN with a leading dot',
+    );
+  }
+}
+
+function requireProductServiceCredentials(
+  errors: string[],
+  environment: RuntimeEnvironment,
+) {
+  const configured = environment.PRODUCT_SERVICE_CREDENTIALS_JSON?.trim();
+  if (!configured) {
+    errors.push('PRODUCT_SERVICE_CREDENTIALS_JSON must be configured');
+    return;
+  }
+
+  try {
+    const credentials = JSON.parse(configured) as Record<string, unknown>;
+    const hrmsKeys = credentials.HRMS;
+    if (
+      !Array.isArray(hrmsKeys) ||
+      hrmsKeys.length === 0 ||
+      hrmsKeys.some(
+        (key) =>
+          typeof key !== 'string' ||
+          key.trim().length < 32 ||
+          PLACEHOLDER_VALUES.has(key.trim().toLowerCase()),
+      )
+    ) {
+      errors.push(
+        'PRODUCT_SERVICE_CREDENTIALS_JSON must contain non-placeholder HRMS keys of at least 32 characters',
+      );
+    }
+  } catch {
+    errors.push('PRODUCT_SERVICE_CREDENTIALS_JSON must be valid JSON');
   }
 }

@@ -166,7 +166,7 @@ if (commonFiles.length > 0) {
   );
 }
 
-const importPattern = /from\s+['\"]([^'\"]+)['\"]/g;
+const importPattern = /from\s+['"]([^'"]+)['"]/g;
 const moduleFiles = [
   ...listTypeScriptFiles(resolve(sourceRoot, 'platform')),
   ...listTypeScriptFiles(resolve(sourceRoot, 'products')),
@@ -289,7 +289,7 @@ if (process.argv.includes('--self-test')) {
   const assertions = [
     {
       passes: !isDependencyAllowed('pos', 'attendance'),
-      message: 'POS must not import Attendance internals',
+      message: 'POS must not import HRMS internals',
     },
     {
       passes: isDependencyAllowed('attendance-sync', 'attendance'),
@@ -297,10 +297,8 @@ if (process.argv.includes('--self-test')) {
         'the documented legacy baseline remains readable during migration',
     },
     {
-      passes: compositionRoots.has(
-        'src/products/attendance/attendance-product.module.ts',
-      ),
-      message: 'Attendance composition root must be registered',
+      passes: compositionRoots.has('src/products/hrms/hrms-product.module.ts'),
+      message: 'HRMS composition root must be registered',
     },
   ];
   const failedAssertions = assertions.filter((assertion) => !assertion.passes);
@@ -333,10 +331,14 @@ for (const capability of legacyAttendanceImports) {
     failures.push(`AppModule bypasses Attendance product: ${capability}`);
   }
 }
-if (!appModule.includes('./products/attendance/public')) {
-  failures.push(
-    'AppModule must import Attendance through attendance/public.ts.',
-  );
+if (!appModule.includes('./products/hrms/public')) {
+  failures.push('AppModule must import HRMS through hrms/public.ts.');
+}
+if (
+  appModule.includes('./products/attendance/public') ||
+  appModule.includes('./products/payroll/public')
+) {
+  failures.push('AppModule must not bypass the HRMS composition root.');
 }
 
 if (failures.length > 0) {

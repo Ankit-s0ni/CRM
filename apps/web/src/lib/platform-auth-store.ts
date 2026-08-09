@@ -4,8 +4,7 @@ import type { PlatformSessionResponse, PlatformUser } from "./platform-types";
 
 type PlatformAuthState = {
   user: PlatformUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
+  hasSession: boolean;
   impersonation: null | { sessionId: string; accessToken: string; expiresAt: string; targetEmail: string; workspaceName: string };
   hasHydrated: boolean;
   setSession: (session: PlatformSessionResponse) => void;
@@ -19,24 +18,32 @@ export const usePlatformAuthStore = create<PlatformAuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      hasSession: false,
       impersonation: null,
       hasHydrated: false,
       setSession: (session) =>
         set({
           user: session.user,
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
+          hasSession: true,
         }),
-      clearSession: () => set({ user: null, accessToken: null, refreshToken: null, impersonation: null }),
+      clearSession: () =>
+        set({ user: null, hasSession: false, impersonation: null }),
       setImpersonation: (impersonation) => set({ impersonation }),
       clearImpersonation: () => set({ impersonation: null }),
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: "deltcrm-platform-auth",
-      partialize: ({ user, accessToken, refreshToken, impersonation }) => ({ user, accessToken, refreshToken, impersonation }),
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<PlatformAuthState>;
+        return {
+          user: state.user ?? null,
+          hasSession: Boolean(state.user),
+          impersonation: null,
+        };
+      },
+      partialize: ({ user, hasSession }) => ({ user, hasSession }),
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     },
   ),

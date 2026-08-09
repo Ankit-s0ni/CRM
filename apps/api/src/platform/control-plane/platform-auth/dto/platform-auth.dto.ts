@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, Length, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Length,
+  MinLength,
+} from 'class-validator';
 
 export class PlatformLoginDto {
   @ApiProperty({ example: 'owner@deltcrm.com' })
@@ -25,8 +31,9 @@ export class VerifyPlatformMfaDto {
 }
 
 export class PlatformRefreshDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   @MinLength(32)
-  refreshToken!: string;
+  refreshToken?: string;
 }

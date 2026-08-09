@@ -451,7 +451,7 @@ function CreateRunForm({
                   ?.status === 409
               ) {
                 setError(
-                  "A run already exists for this pay group and period. Select it from the Runs table on the right instead.",
+                  tText("A run already exists for this pay group and period. Select it from the Runs table on the right instead."),
                 );
               } else {
                 setError(msg);

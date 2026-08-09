@@ -31,6 +31,7 @@ export class ImpersonationJwtStrategy extends PassportStrategy(
       audience: 'deltcrm-tenant-api',
     });
   }
+
   validate(payload: Payload): AuthenticatedUser & {
     impersonationTokenJti: string;
     platformSessionId: string;

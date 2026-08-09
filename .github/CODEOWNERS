@@ -1,0 +1,15 @@
+# Platform-owned control plane and shared integration contracts
+/apps/api/src/platform/ @deltcrm/platform-team
+/packages/product-contracts/ @deltcrm/platform-team @deltcrm/security-team
+/apps/web/src/features/platform/ @deltcrm/platform-team
+
+# HRMS product composition and business data plane
+/apps/api/src/products/attendance/ @deltcrm/hrms-team
+/apps/api/src/products/payroll/ @deltcrm/hrms-team
+/apps/api/src/products/hrms/ @deltcrm/hrms-team @deltcrm/platform-team
+/apps/web/src/features/attendance/ @deltcrm/hrms-team
+/apps/web/src/features/payroll/ @deltcrm/hrms-team
+
+# Production schema changes require both data owners and release review.
+/apps/api/prisma/schema.prisma @deltcrm/platform-team @deltcrm/hrms-team @deltcrm/security-team
+/apps/api/prisma/migrations/ @deltcrm/platform-team @deltcrm/hrms-team @deltcrm/security-team

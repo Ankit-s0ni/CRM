@@ -47,12 +47,29 @@ const navigation = [
 export function PlatformShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, accessToken, clearSession, impersonation, clearImpersonation, hasHydrated } = usePlatformAuthStore();
+  const {
+    user,
+    hasSession,
+    clearSession,
+    setSession,
+    impersonation,
+    clearImpersonation,
+    hasHydrated,
+  } = usePlatformAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (hasHydrated && !accessToken) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`);
-  }, [accessToken, hasHydrated, pathname, router]);
+    if (hasHydrated && !hasSession)
+      router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`);
+  }, [hasHydrated, hasSession, pathname, router]);
+
+  useEffect(() => {
+    if (!hasHydrated || !hasSession) return;
+    platformApiClient
+      .get("/platform/auth/me")
+      .then(({ data }) => setSession(data))
+      .catch(() => clearSession());
+  }, [clearSession, hasHydrated, hasSession, setSession]);
 
   async function logout() {
     try {
@@ -69,7 +86,8 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
     finally { clearImpersonation(); }
   }
 
-  if (!hasHydrated || !accessToken) return <div className="min-h-screen bg-surface" />;
+  if (!hasHydrated || !hasSession || !user)
+    return <div className="min-h-screen bg-surface" />;
 
   return (
     <div className="min-h-screen bg-surface text-on-surface">

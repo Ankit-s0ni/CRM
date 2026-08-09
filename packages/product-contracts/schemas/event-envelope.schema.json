@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.blufield.cloud/v1/event-envelope.schema.json",
+  "title": "ProductEventEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "occurredAt", "producer", "tenantId", "correlationId", "schemaVersion", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "type": "string", "pattern": "\\.v[0-9]+$" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "producer": { "enum": ["PLATFORM", "HRMS", "MAIL", "POS"] },
+    "tenantId": { "type": "string", "format": "uuid" },
+    "actorId": { "type": "string", "format": "uuid" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "payload": { "type": "object" }
+  }
+}

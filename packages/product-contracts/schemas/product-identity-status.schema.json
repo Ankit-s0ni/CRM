@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.blufield.cloud/product-identity-status.v1.schema.json",
+  "title": "Product identity status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tenantId",
+    "userId",
+    "membershipId",
+    "tenantStatus",
+    "userStatus",
+    "membershipStatus",
+    "effectiveAt"
+  ],
+  "properties": {
+    "tenantId": { "type": "string", "format": "uuid" },
+    "userId": { "type": "string", "format": "uuid" },
+    "membershipId": { "type": "string", "format": "uuid" },
+    "tenantStatus": {
+      "type": "string",
+      "enum": ["ACTIVE", "SUSPENDED", "UNAVAILABLE"]
+    },
+    "userStatus": {
+      "type": "string",
+      "enum": ["ACTIVE", "SUSPENDED", "UNAVAILABLE"]
+    },
+    "membershipStatus": {
+      "type": "string",
+      "enum": ["ACTIVE", "SUSPENDED", "UNAVAILABLE"]
+    },
+    "effectiveAt": { "type": "string", "format": "date-time" }
+  }
+}

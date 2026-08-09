@@ -139,15 +139,17 @@ export function LoginForm() {
         `${baseURL}/auth/login`,
         { email, password },
         {
+          withCredentials: true,
           headers: {
+            "x-auth-client": "web",
             "x-tenant-id": loginTenantId,
             ...(workspace ? { "x-workspace-subdomain": workspace } : {}),
           },
         },
       );
-      const { accessToken, refreshToken, user } = response.data;
+      const { user } = response.data;
       
-      setAuth(user, accessToken, refreshToken);
+      setAuth(user);
       clearPendingAuth();
       if (workspace) {
         document.cookie = `deltcrm-workspace=${workspace}; Path=/; Max-Age=31536000; SameSite=Lax`;
