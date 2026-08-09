@@ -24,15 +24,17 @@ export class TenantLocalizationPolicyRepository {
     });
     if (existing) return existing;
 
-    const office = await tx.officeLocation.findFirst({
-      where: { tenantId, countryCode: { not: null } },
-      select: { countryCode: true },
+    const billingProfile = await tx.tenantBillingProfile.findUnique({
+      where: { tenantId },
+      select: { address: true },
     });
     return tx.tenantLocalePolicy.create({
       data: {
         tenantId,
         defaultLocale: 'en',
-        regionalLocale: regionalLocaleForCountry(office?.countryCode),
+        regionalLocale: regionalLocaleForCountry(
+          countryCodeFromAddress(billingProfile?.address),
+        ),
         enabledLocales: ['en', 'ar'],
       },
     });
@@ -63,4 +65,14 @@ export class TenantLocalizationPolicyRepository {
       updatedAt: policy.updatedAt,
     };
   }
+}
+
+function countryCodeFromAddress(address: unknown) {
+  if (!address || Array.isArray(address) || typeof address !== 'object') {
+    return undefined;
+  }
+  const countryCode = (address as Record<string, unknown>).countryCode;
+  return typeof countryCode === 'string'
+    ? countryCode.toUpperCase()
+    : undefined;
 }

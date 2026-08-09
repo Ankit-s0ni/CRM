@@ -61,7 +61,7 @@ export type TenantListItem = {
   subdomain: string;
   status: "TRIAL" | "ACTIVE" | "SUSPENDED" | "CHURNED";
   createdAt: string;
-  employees: number;
+  provisionedSeats: number;
   subscription: null | {
     status: "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
     seatCount: number;
@@ -81,7 +81,7 @@ export type TenantDetail = {
     | (TenantListItem["subscription"] extends infer S
         ? Exclude<S, null> & { currentPeriodEnd: string }
         : never);
-  usage: { employees: number; seats: number; percentage: number };
+  usage: { provisionedSeats: number; seats: number; percentage: number };
   modules: {
     key: string;
     name: string;
@@ -138,7 +138,7 @@ export type PlatformDashboardData = {
     tenants: number;
     activeTenants: number;
     suspendedTenants: number;
-    employees: number;
+    provisionedSeats: number;
     projectedMrr: number;
     currency: string;
     failedPayments: number;

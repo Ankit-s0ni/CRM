@@ -35,7 +35,6 @@ import {
   normalizeWorkspaceInput,
   tenantLifecycleTarget,
 } from '../platform-policy';
-import { provisionTenantAttendanceDefaults } from '../../tenancy/public';
 
 type RequestMetadata = {
   ipAddress?: string;
@@ -87,11 +86,6 @@ export class PlatformTenantsService {
         include: { plan: true },
         orderBy: { updatedAt: 'desc' },
       });
-      const employeeCounts = await tx.employee.groupBy({
-        by: ['tenantId'],
-        where: { tenantId: { in: ids } },
-        _count: { _all: true },
-      });
       const modules = await tx.tenantModule.findMany({
         where: { tenantId: { in: ids }, isActive: true },
         include: { module: true },
@@ -102,10 +96,6 @@ export class PlatformTenantsService {
           subscription,
         ]),
       );
-      const countByTenant = new Map(
-        employeeCounts.map((entry) => [entry.tenantId, entry._count._all]),
-      );
-
       return {
         data: tenants.map((tenant) => {
           const subscription = subscriptionByTenant.get(tenant.id);
@@ -115,7 +105,7 @@ export class PlatformTenantsService {
             subdomain: tenant.subdomain,
             status: tenant.status,
             createdAt: tenant.createdAt,
-            employees: countByTenant.get(tenant.id) ?? 0,
+            provisionedSeats: subscription?.seatCount ?? 0,
             subscription: subscription
               ? {
                   status: subscription.status,
@@ -256,7 +246,6 @@ export class PlatformTenantsService {
             enabledLocales: ['en', 'ar'],
           },
         });
-        await provisionTenantAttendanceDefaults(tx, tenant.id);
         const periodStart = new Date();
         const periodEnd = new Date(periodStart);
         if (plan.billingPeriod === BillingPeriod.YEARLY) {
@@ -602,7 +591,6 @@ export class PlatformTenantsService {
       include: { plan: true },
       orderBy: { updatedAt: 'desc' },
     });
-    const employees = await tx.employee.count({ where: { tenantId: id } });
     const modules = await tx.tenantModule.findMany({
       where: { tenantId: id },
       include: { module: true },
@@ -630,11 +618,9 @@ export class PlatformTenantsService {
       tenant,
       subscription,
       usage: {
-        employees,
+        provisionedSeats: subscription?.seatCount ?? 0,
         seats: subscription?.seatCount ?? 0,
-        percentage: subscription?.seatCount
-          ? Math.round((employees / subscription.seatCount) * 100)
-          : 0,
+        percentage: subscription?.seatCount ? 100 : 0,
       },
       modules: modules.map((assignment) => ({
         key: assignment.module.key,

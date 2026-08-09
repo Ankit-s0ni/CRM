@@ -7,7 +7,7 @@ import { performance } from 'node:perf_hooks';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 
 const BUDGET_MS = 2500;
@@ -26,7 +26,7 @@ describe('Platform query performance budgets (e2e)', () => {
 
   beforeAll(async () => {
     app = (
-      await Test.createTestingModule({ imports: [AppModule] }).compile()
+      await Test.createTestingModule({ imports: [PlatformApiModule] }).compile()
     ).createNestApplication<INestApplication<App>>();
     await app.init();
     pool = new Pool({

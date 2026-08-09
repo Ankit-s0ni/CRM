@@ -126,7 +126,8 @@ export interface ProductProvisioningStatus {
 
 export type ProductLifecycleEventType =
   | 'platform.product.activation-requested.v1'
-  | 'platform.product.suspension-requested.v1';
+  | 'platform.product.suspension-requested.v1'
+  | 'platform.product.deletion-requested.v1';
 
 export interface ProductLifecyclePayload {
   productKey: ProductKey;

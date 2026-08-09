@@ -58,14 +58,21 @@ export class CreatePlatformTenantDto {
   @Max(100000)
   seatCount!: number;
 
-  @ApiPropertyOptional({ description: 'Pre-set admin password. When provided the user account is created immediately.', minLength: 8, maxLength: 128 })
+  @ApiPropertyOptional({
+    description:
+      'Pre-set admin password. When provided the user account is created immediately.',
+    minLength: 8,
+    maxLength: 128,
+  })
   @IsOptional()
   @IsString()
   @MinLength(8)
   @MaxLength(128)
   adminPassword?: string;
 
-  @ApiPropertyOptional({ description: 'Employee count band (e.g. "1-10", "11-50")' })
+  @ApiPropertyOptional({
+    description: 'Employee count band (e.g. "1-10", "11-50")',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(20)

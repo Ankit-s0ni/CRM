@@ -288,17 +288,18 @@ for (const file of listTypeScriptFiles(resolve(sourceRoot, 'shared'))) {
 if (process.argv.includes('--self-test')) {
   const assertions = [
     {
-      passes: !isDependencyAllowed('pos', 'attendance'),
-      message: 'POS must not import HRMS internals',
+      passes: !existsSync(resolve(sourceRoot, 'products')),
+      message: 'Platform must not contain local product implementations',
     },
     {
-      passes: isDependencyAllowed('attendance-sync', 'attendance'),
-      message:
-        'the documented legacy baseline remains readable during migration',
+      passes: compositionRoots.has(
+        'src/platform/workspace/workspace-product.module.ts',
+      ),
+      message: 'Workspace composition root must be registered',
     },
     {
-      passes: compositionRoots.has('src/products/hrms/hrms-product.module.ts'),
-      message: 'HRMS composition root must be registered',
+      passes: publicEntries.has('product-integration'),
+      message: 'Product integration boundary must be registered',
     },
   ];
   const failedAssertions = assertions.filter((assertion) => !assertion.passes);
@@ -310,35 +311,21 @@ if (process.argv.includes('--self-test')) {
   }
 }
 
-const appModule = readFileSync(resolve(sourceRoot, 'app.module.ts'), 'utf8');
-const legacyAttendanceImports = [
-  'attendance-config',
-  'attendance-dashboard',
-  'attendance-sync',
-  'attendance-verification',
-  'biometrics',
-  'device-trust',
-  'field-tracking',
-  'leave',
-  'payroll-lock',
-  'regularization',
-  'reporting',
-  'runtime-config',
-  'security-alerts',
-];
-for (const capability of legacyAttendanceImports) {
-  if (appModule.includes(`./products/attendance/${capability}/`)) {
-    failures.push(`AppModule bypasses Attendance product: ${capability}`);
+const platformComposition = readFileSync(
+  resolve(sourceRoot, 'composition/platform-api.module.ts'),
+  'utf8',
+);
+for (const forbiddenImport of [
+  '/products/',
+  '/organization/',
+  '/attendance/',
+  '/payroll/',
+]) {
+  if (platformComposition.includes(forbiddenImport)) {
+    failures.push(
+      `PlatformApiModule contains a product-owned import: ${forbiddenImport}`,
+    );
   }
-}
-if (!appModule.includes('./products/hrms/public')) {
-  failures.push('AppModule must import HRMS through hrms/public.ts.');
-}
-if (
-  appModule.includes('./products/attendance/public') ||
-  appModule.includes('./products/payroll/public')
-) {
-  failures.push('AppModule must not bypass the HRMS composition root.');
 }
 
 if (failures.length > 0) {

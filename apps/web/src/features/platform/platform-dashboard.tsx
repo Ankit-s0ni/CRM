@@ -42,7 +42,7 @@ export function PlatformDashboard() {
   const cards = [
     { label: "Monthly recurring revenue", value: billing?.revenueByCurrency.map(({ currency, mrr }) => formatMoney(mrr, currency)).join(" + ") || "No revenue", detail: "Authoritative active per-seat subscriptions", icon: IndianRupee, tone: "text-foreground bg-muted" },
     { label: "Active tenants", value: data.metrics.activeTenants.toLocaleString(), detail: `${data.metrics.suspendedTenants} suspended`, icon: Building2, tone: "theme-tone-icon theme-tone-emerald" },
-    { label: "Total employees", value: data.metrics.employees.toLocaleString(), detail: `Across ${data.metrics.tenants} workspaces`, icon: Users, tone: "text-foreground bg-muted" },
+    { label: "Provisioned seats", value: data.metrics.provisionedSeats.toLocaleString(), detail: `Across ${data.metrics.tenants} workspaces`, icon: Users, tone: "text-foreground bg-muted" },
     { label: "Failed payments", value: String(billing?.failedPaymentsThisMonth ?? 0), detail: `${formatMoney(billing?.outstanding ?? "0", billing?.revenueByCurrency[0]?.currency ?? "OMR")} outstanding`, icon: CreditCard, tone: "theme-tone-icon theme-tone-red" },
   ];
 

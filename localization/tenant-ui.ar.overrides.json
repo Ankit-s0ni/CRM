@@ -1,5 +1,9 @@
 {
   "translations": {
+    "Company": "الشركة",
+    "Logo upload failed. Use PNG, JPEG or WebP up to 2 MB.": "فشل رفع الشعار. استخدم ملف PNG أو JPEG أو WebP بحجم يصل إلى 2 ميجابايت.",
+    "PNG, JPEG or WebP up to 2 MB.": "ملف PNG أو JPEG أو WebP بحجم يصل إلى 2 ميجابايت.",
+    "Review attributed workspace and access changes.": "راجع تغييرات مساحة العمل وصلاحيات الوصول المنسوبة إلى أصحابها.",
     "A chronological audit trail of changes related to this employee.": "سجل تدقيق زمني للتغييرات المتعلقة بهذا الموظف.",
     "Accuracy": "الدقة",
     "Add approved period": "إضافة فترة معتمدة",

@@ -16,14 +16,12 @@ import { createHmac } from 'node:crypto';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { BillingService } from '../src/platform/billing/application/billing.service';
 import { DunningService } from '../src/platform/billing/application/dunning.service';
-import { synchronizeSubscriptionSeats } from '../src/platform/billing/application/seat-sync';
 import { PlanChangeTiming } from '../src/platform/billing/presentation/billing.dto';
 import { AuthService } from '../src/platform/identity/auth.service';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
-import { PrismaService } from '../src/shared/database/prisma.service';
 import { TenantContextService } from '../src/platform/tenancy/public';
 
 describe('Sprint 8 billing GA acceptance (e2e)', () => {
@@ -34,7 +32,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
   let billing: BillingService;
   let dunning: DunningService;
   let auth: AuthService;
-  let tenantPrisma: PrismaService;
 
   const stamp = Date.now();
   const webhookSecret = `sprint8-webhook-${stamp}`;
@@ -62,7 +59,7 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
     process.env.NODE_ENV = 'test';
     process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;
     moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [PlatformApiModule],
     }).compile();
     app = moduleFixture.createNestApplication<INestApplication<App>>();
     await app.init();
@@ -75,7 +72,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
     billing = moduleFixture.get(BillingService);
     dunning = moduleFixture.get(DunningService);
     auth = moduleFixture.get(AuthService);
-    tenantPrisma = moduleFixture.get(PrismaService);
 
     platformUserId = (
       await prisma.platformUser.create({
@@ -228,22 +224,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
       });
       await prisma.user.deleteMany({ where: { tenantId: journeyTenantId } });
       await prisma.role.deleteMany({ where: { tenantId: journeyTenantId } });
-      await prisma.policyAssignment.deleteMany({
-        where: { tenantId: journeyTenantId },
-      });
-      await prisma.attendancePolicy.deleteMany({
-        where: { tenantId: journeyTenantId },
-      });
-      await prisma.shift.deleteMany({ where: { tenantId: journeyTenantId } });
-      await prisma.officeLocation.deleteMany({
-        where: { tenantId: journeyTenantId },
-      });
-      await prisma.designation.deleteMany({
-        where: { tenantId: journeyTenantId },
-      });
-      await prisma.department.deleteMany({
-        where: { tenantId: journeyTenantId },
-      });
       await prisma.tenantSettings.deleteMany({
         where: { tenantId: journeyTenantId },
       });
@@ -278,30 +258,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
     });
     journeyTenantId = signup.tenantId;
 
-    await prisma.department.create({
-      data: {
-        tenantId: journeyTenantId,
-        name: `Operations ${stamp}`,
-      },
-    });
-    await prisma.designation.create({
-      data: {
-        tenantId: journeyTenantId,
-        name: `Team Member ${stamp}`,
-      },
-    });
-    await prisma.officeLocation.create({
-      data: {
-        tenantId: journeyTenantId,
-        officeName: `Release Office ${stamp}`,
-        latitude: 19.076,
-        longitude: 72.8777,
-        radiusMeters: 150,
-        timezone: 'Asia/Kolkata',
-        countryCode: 'IN',
-      },
-    });
-
     const login = await request(app.getHttpServer())
       .post('/auth/login')
       .set('x-workspace-subdomain', subdomain)
@@ -312,23 +268,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
       Authorization: `Bearer ${accessToken}`,
       'x-tenant-id': journeyTenantId,
     };
-
-    await request(app.getHttpServer())
-      .post('/onboarding/complete')
-      .set(tenantHeaders)
-      .send({ progress: { source: 'sprint8-ga-acceptance', step: 6 } })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).toMatchObject({ data: { completed: true } });
-      });
-    await request(app.getHttpServer())
-      .post('/onboarding/complete')
-      .set(tenantHeaders)
-      .send({ progress: { source: 'idempotency-replay' } })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).toMatchObject({ data: { completed: true } });
-      });
 
     await request(app.getHttpServer())
       .patch('/billing/profile')
@@ -590,61 +529,6 @@ describe('Sprint 8 billing GA acceptance (e2e)', () => {
       .get('/platform/health/payment-providers')
       .set(auth)
       .expect(200);
-  });
-
-  it('synchronizes employee seats exactly once for an idempotency event', async () => {
-    const tenant = await prisma.tenant.findUniqueOrThrow({
-      where: { subdomain: 'acme' },
-    });
-    const subscription = await prisma.tenantSubscription.findFirstOrThrow({
-      where: {
-        tenantId: tenant.id,
-        status: { in: ['TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED'] },
-      },
-    });
-    const sourceEventId = `sprint8-seat-sync-${stamp}`;
-    const activeEmployees = await prisma.employee.count({
-      where: { tenantId: tenant.id, status: 'ACTIVE' },
-    });
-
-    try {
-      const first = await TenantContextService.run(
-        { tenantId: tenant.id },
-        () =>
-          tenantPrisma.forTenant((tx) =>
-            synchronizeSubscriptionSeats(tx, tenant.id, sourceEventId),
-          ),
-      );
-      const replay = await TenantContextService.run(
-        { tenantId: tenant.id },
-        () =>
-          tenantPrisma.forTenant((tx) =>
-            synchronizeSubscriptionSeats(tx, tenant.id, sourceEventId),
-          ),
-      );
-      expect(first).toEqual({ seatCount: activeEmployees, replayed: false });
-      expect(replay).toEqual({ seatCount: activeEmployees, replayed: true });
-      expect(
-        await prisma.tenantSubscriptionHistory.count({
-          where: { tenantId: tenant.id, sourceEventId },
-        }),
-      ).toBe(1);
-    } finally {
-      await prisma.tenantSubscriptionHistory.deleteMany({
-        where: { tenantId: tenant.id, sourceEventId },
-      });
-      await prisma.outboxEvent.deleteMany({
-        where: {
-          tenantId: tenant.id,
-          eventKey: 'billing.subscription.seats_synchronized',
-          payload: { path: ['sourceEventId'], equals: sourceEventId },
-        },
-      });
-      await prisma.tenantSubscription.update({
-        where: { id: subscription.id },
-        data: { seatCount: subscription.seatCount },
-      });
-    }
   });
 
   it('verifies signed webhook replay/conflict and recovers a billing-suspended tenant', async () => {

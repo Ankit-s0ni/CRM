@@ -24,7 +24,7 @@ import {
   CatalogSelectionError,
   resolveCatalogSelection,
 } from '../catalog-policy';
-import { resolveHrmsLifecycleTransition } from '../../product-integration/product-lifecycle';
+import { resolveHrmsLifecycleTransition } from '../../product-integration/public';
 
 type RequestMetadata = {
   ipAddress?: string;

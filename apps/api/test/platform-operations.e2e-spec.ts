@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 import { HealthService } from '../src/shared/health/health.service';
 
@@ -24,11 +24,11 @@ describe('Platform dashboard, audit, alerts and health (e2e)', () => {
 
   beforeAll(async () => {
     app = (
-      await Test.createTestingModule({ imports: [AppModule] }).compile()
+      await Test.createTestingModule({ imports: [PlatformApiModule] }).compile()
     ).createNestApplication<INestApplication<App>>();
     await app.init();
     degradedApp = (
-      await Test.createTestingModule({ imports: [AppModule] })
+      await Test.createTestingModule({ imports: [PlatformApiModule] })
         .overrideProvider(HealthService)
         .useValue({
           liveness: () => ({ status: 'ok' }),

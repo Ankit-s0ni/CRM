@@ -13,7 +13,6 @@ import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { TenantContextService } from '../tenancy/public';
 import { AuditService } from '../audit/public';
-import { bumpRuntimeConfigVersion } from '../../shared/runtime-config/runtime-config-version';
 import {
   AcceptInvitationDto,
   CreateInvitationDto,
@@ -64,9 +63,6 @@ export class InvitationsService {
           message:
             'Role management permission is required to invite an administrator',
         });
-      }
-      if (dto.employeeId) {
-        await this.assertEmployeeAvailable(tx, dto.employeeId);
       }
       const pending = await tx.verificationToken.findFirst({
         where: {
@@ -232,29 +228,17 @@ export class InvitationsService {
         include: { roles: { include: { role: true } } },
       });
       if (payload.employeeId) {
-        const linked = await tx.employee.updateMany({
-          where: {
-            id: payload.employeeId,
+        await tx.outboxEvent.create({
+          data: {
             tenantId: payload.tenantId,
-            userId: null,
+            eventKey: 'platform.identity.user.provisioned.v1',
+            payload: {
+              tenantId: payload.tenantId,
+              userId: user.id,
+              email: user.email,
+              externalSubjectId: payload.employeeId,
+            },
           },
-          data: { userId: user.id },
-        });
-        if (linked.count !== 1) {
-          throw new ConflictException({
-            code: 'INVITATION_EMPLOYEE_UNAVAILABLE',
-            message: 'The employee is missing or already has a login account',
-          });
-        }
-        await bumpRuntimeConfigVersion(tx, payload.tenantId);
-        await this.auditService.append(tx, {
-          tenantId: payload.tenantId,
-          actorUserId: user.id,
-          action: 'identity.employee-account.linked',
-          module: 'identity',
-          entityType: 'Employee',
-          entityId: payload.employeeId,
-          newValue: { userId: user.id, email: user.email },
         });
       }
       await tx.verificationToken.updateMany({
@@ -325,26 +309,6 @@ export class InvitationsService {
       });
     }
     return roles;
-  }
-
-  private async assertEmployeeAvailable(
-    tx: PrismaTransaction,
-    employeeId: string,
-  ) {
-    const employee = await tx.employee.findFirst({
-      where: {
-        id: employeeId,
-        tenantId: this.requireTenantId(),
-        userId: null,
-      },
-      select: { id: true },
-    });
-    if (!employee) {
-      throw new ConflictException({
-        code: 'EMPLOYEE_ACCOUNT_EXISTS',
-        message: 'The employee is missing or already has a login account',
-      });
-    }
   }
 
   private readPayload(payload: Prisma.JsonValue): InvitationPayload {

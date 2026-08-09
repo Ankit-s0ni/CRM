@@ -15,14 +15,7 @@ import { TenantAuthenticationModule } from './tenant-authentication.module';
     TenantAuthenticationModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    VerificationTokensService,
-  ],
-  exports: [
-    AuthService,
-    TenantAuthenticationModule,
-    VerificationTokensService,
-  ],
+  providers: [AuthService, VerificationTokensService],
+  exports: [AuthService, TenantAuthenticationModule, VerificationTokensService],
 })
 export class IdentityModule {}

@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsInt,
-  IsObject,
   IsOptional,
   IsString,
   Max,
@@ -99,11 +98,4 @@ export class LogoPresignDto {
   @Min(1)
   @Max(2_000_000)
   fileSize!: number;
-}
-
-export class CompleteOnboardingDto {
-  @ApiPropertyOptional({ description: 'Final client-side progress snapshot' })
-  @IsOptional()
-  @IsObject()
-  progress?: Record<string, unknown>;
 }

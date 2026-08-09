@@ -35,7 +35,7 @@ export class UsersService {
     return this.prisma.forTenant(async (tx) => {
       const data = await tx.user.findMany({
         where,
-        include: { roles: { include: { role: true } }, employee: true },
+        include: { roles: { include: { role: true } } },
         orderBy: { email: 'asc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -77,7 +77,7 @@ export class UsersService {
 
       const updated = await tx.user.findUniqueOrThrow({
         where: { id },
-        include: { roles: { include: { role: true } }, employee: true },
+        include: { roles: { include: { role: true } } },
       });
       await this.auditService.append(tx, {
         tenantId: updated.tenantId,
@@ -109,7 +109,7 @@ export class UsersService {
           failedLoginCount: dto.status === UserStatus.ACTIVE ? 0 : undefined,
           lockedUntil: dto.status === UserStatus.ACTIVE ? null : undefined,
         },
-        include: { roles: { include: { role: true } }, employee: true },
+        include: { roles: { include: { role: true } } },
       });
 
       if (dto.status !== UserStatus.ACTIVE) {
@@ -191,7 +191,6 @@ export class UsersService {
     lastLoginAt: Date | null;
     createdAt: Date;
     roles: Array<{ role: { id: string; name: string; isSystem: boolean } }>;
-    employee: { id: string; employeeCode: string; fullName: string } | null;
   }) {
     return {
       id: user.id,
@@ -202,13 +201,6 @@ export class UsersService {
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       roles: user.roles.map(({ role }) => role),
-      employee: user.employee
-        ? {
-            id: user.employee.id,
-            employeeCode: user.employee.employeeCode,
-            fullName: user.employee.fullName,
-          }
-        : null,
     };
   }
 }

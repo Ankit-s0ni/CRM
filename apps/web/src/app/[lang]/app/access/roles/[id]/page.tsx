@@ -1,2 +1,2 @@
-import { RoleEditorView } from "@/features/platform/organization/organization-access-views";
+import { RoleEditorView } from "@/features/platform/identity/access-management-view";
 export default async function RolePage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; return <RoleEditorView roleId={id} />; }

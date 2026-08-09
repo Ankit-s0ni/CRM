@@ -61,9 +61,9 @@ export async function bootstrapHttpApi(
 
   configureOpenApi(app);
   await app.listen(options.port);
-  app.get(Logger).log(
-    `${options.serviceName} listening on port ${String(options.port)}`,
-  );
+  app
+    .get(Logger)
+    .log(`${options.serviceName} listening on port ${String(options.port)}`);
 
   let stopping = false;
   const shutdown = async () => {

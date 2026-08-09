@@ -2,48 +2,33 @@
 
 import {
   Bell,
+  Boxes,
   Building2,
   ChevronDown,
+  LayoutDashboard,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings2,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  Link,
-  usePathname,
-  useRouter,
-} from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import {
-  type AttendanceCapabilities,
-  canAccessAttendanceWorkspace,
-  isAttendanceWorkspacePath,
-} from "@/lib/attendance-navigation";
-import { cn } from "@/lib/utils";
-import { HeaderContextHelp } from "@/features/platform/help/feature-info";
-import {
-  canViewTenantNavItem,
-  tenantContextLinkActive,
-  tenantContextNavigation,
-  tenantNavigationContext,
-  tenantPrimaryNavigation,
-  tenantTopLevelActive,
-} from "@/lib/tenant-navigation";
-import {
-  AttendanceRouteGate,
-  AttendanceWorkspaceChrome,
-} from "@/features/products/attendance/core/attendance-workspace-nav";
-import { PortalSearch } from "@/shared/components/portal-search";
-import { LanguageToggle } from "@/shared/components/language-toggle";
-import { ThemeSwitcher } from "@/shared/components/theme-switcher";
+  resolvePlatformNavigationHref,
+  usePlatformProductNavigation,
+} from "@/lib/platform-product-navigation";
 import { useTenantLocalization } from "@/lib/tenant-localization";
 import { localizedTenantPath } from "@/lib/tenant-routes";
+import { cn } from "@/lib/utils";
+import { LanguageToggle } from "@/shared/components/language-toggle";
+import { PortalSearch } from "@/shared/components/portal-search";
+import { ThemeSwitcher } from "@/shared/components/theme-switcher";
 import { focusRingClass } from "@/shared/components/page-primitives";
 
 const SIDEBAR_STORAGE_KEY = "deltcrm-sidebar-collapsed";
@@ -68,30 +53,17 @@ function sidebarPreferenceServerSnapshot() {
 
 export function TenantShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, hasSession, clearAuth, hasHydrated, setUser } = useAuthStore();
-  const {
-    t,
-    tText,
-    direction,
-    locale,
-  } = useTenantLocalization();
   const searchParams = useSearchParams();
-  const userId = user?.id;
+  const { user, hasSession, clearAuth, hasHydrated, setUser } = useAuthStore();
+  const { t, tText, direction, locale } = useTenantLocalization();
   const [mobileOpen, setMobileOpen] = useState(false);
   const desktopCollapsed = useSyncExternalStore(
     subscribeToSidebarPreference,
     sidebarPreferenceSnapshot,
     sidebarPreferenceServerSnapshot,
   );
-  const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<string>>(
-    new Set(),
-  );
-  const [modulesLoaded, setModulesLoaded] = useState(false);
-  const [attendanceCapabilityState, setAttendanceCapabilityState] = useState<{
-    pathname: string;
-    value: AttendanceCapabilities | null;
-  } | null>(null);
+  const { items: contractNavigation } = usePlatformProductNavigation(hasSession);
+  const userId = user?.id;
 
   useEffect(() => {
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
@@ -100,14 +72,6 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
     document.body.style.removeProperty("overflow");
     document.body.style.removeProperty("overflow-y");
   }, [pathname]);
-
-  function toggleDesktopSidebar() {
-    window.localStorage.setItem(
-      SIDEBAR_STORAGE_KEY,
-      String(!desktopCollapsed),
-    );
-    window.dispatchEvent(new Event(SIDEBAR_CHANGE_EVENT));
-  }
 
   useEffect(() => {
     if (!hasHydrated || hasSession) return;
@@ -120,59 +84,10 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
   }, [hasHydrated, hasSession, locale, pathname, searchParams]);
 
   useEffect(() => {
-    if (!hasSession) return;
-    apiClient
-      .get<{ modules: Array<{ key: string }> }>("/workspace/modules")
-      .then(({ data }) =>
-        setEnabledModuleKeys(new Set(data.modules.map(({ key }) => key))),
-      )
-      .catch((error) => {
-        if (error.response?.data?.code === "TENANT_SUSPENDED")
-          window.location.replace(
-            "/workspace-unavailable?code=TENANT_SUSPENDED",
-          );
-      })
-      .finally(() => setModulesLoaded(true));
-  }, [hasSession]);
-
-  useEffect(() => {
-    if (
-      !hasSession ||
-      !enabledModuleKeys.has("ATTENDANCE") ||
-      !isAttendanceWorkspacePath(pathname)
-    ) {
-      return;
-    }
-    let active = true;
-    apiClient
-      .get<{ data: AttendanceCapabilities }>(
-        "/workspace/attendance-capabilities",
-      )
-      .then(({ data }) => {
-        if (active) {
-          setAttendanceCapabilityState({ pathname, value: data.data });
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setAttendanceCapabilityState({ pathname, value: null });
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [enabledModuleKeys, hasSession, pathname]);
-
-  useEffect(() => {
     if (!hasSession || !userId) return;
     apiClient
       .get<{
-        user: {
-          id: string;
-          email: string;
-          roles: string[];
-          permissions: string[];
-        };
+        user: { id: string; email: string; roles: string[]; permissions: string[] };
         workspace: {
           id: string;
           companyName: string;
@@ -199,31 +114,61 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       .catch(() => clearAuth());
   }, [clearAuth, hasSession, setUser, userId]);
 
-  if (pathname === "/app/onboarding") return <>{children}</>;
-  if (!hasHydrated || !hasSession || !user)
+  if (!hasHydrated || !hasSession || !user) {
     return <div className="min-h-screen bg-surface" />;
+  }
 
-  const permissions = new Set(user.permissions ?? []);
-  const navigation = tenantPrimaryNavigation.filter((item) =>
-    canViewTenantNavItem(item, permissions, enabledModuleKeys),
+  const canOpenSettings = (user.permissions ?? []).some((permission) =>
+    [
+      "workspace.settings.read",
+      "identity.roles.read",
+      "notifications.self",
+      "billing.subscription.read",
+      "workspace.audit.read",
+    ].includes(permission),
   );
-  const currentContext = tenantNavigationContext(pathname);
-  const contextItems = currentContext
-    ? tenantContextNavigation[currentContext].filter((item) => {
-        if (!canViewTenantNavItem(item, permissions, enabledModuleKeys))
-          return false;
-        if (item.href === "/app/modules/attendance")
-          return canAccessAttendanceWorkspace(permissions);
-        return true;
-      })
-    : [];
-  const attendanceWorkspace = isAttendanceWorkspacePath(pathname);
-  const attendanceCapabilities =
-    attendanceCapabilityState?.pathname === pathname
-      ? attendanceCapabilityState.value
-      : null;
-  const attendanceCapabilitiesLoaded =
-    attendanceCapabilityState?.pathname === pathname;
+  const productItems = contractNavigation.filter(
+    ({ key, requiredProduct }) => key !== "home" && requiredProduct,
+  );
+  const navigation = [
+    {
+      key: "home",
+      label: t("tenant.navigation.dashboard", "Dashboard"),
+      href: `/${locale}/app`,
+      icon: LayoutDashboard,
+      product: false,
+    },
+    ...productItems.map((item) => ({
+      key: item.key,
+      label:
+        item.requiredProduct === "HRMS"
+          ? t("tenant.navigation.hrms", "HRMS")
+          : item.requiredProduct ?? item.key,
+      href: resolvePlatformNavigationHref(item.hrefTemplate, locale),
+      icon: Boxes,
+      product: true,
+    })),
+    ...(canOpenSettings
+      ? [
+          {
+            key: "settings",
+            label: t("tenant.navigation.settings", "Settings"),
+            href: `/${locale}/app/settings`,
+            icon: Settings2,
+            product: false,
+          },
+        ]
+      : []),
+  ];
+
+  function toggleDesktopSidebar() {
+    window.localStorage.setItem(
+      SIDEBAR_STORAGE_KEY,
+      String(!desktopCollapsed),
+    );
+    window.dispatchEvent(new Event(SIDEBAR_CHANGE_EVENT));
+  }
+
   return (
     <div className="tenant-page min-h-screen text-foreground">
       <a
@@ -234,10 +179,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       </a>
       {mobileOpen && (
         <button
-          aria-label={t(
-            "tenant.shell.closeNavigation",
-            "Close navigation",
-          )}
+          aria-label={t("tenant.shell.closeNavigation", "Close navigation")}
           className="fixed inset-0 z-40 bg-foreground/35 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
@@ -265,11 +207,6 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             focusRingClass,
           )}
           onClick={toggleDesktopSidebar}
-          title={
-            desktopCollapsed
-              ? t("tenant.shell.expandNavigation", "Expand navigation")
-              : t("tenant.shell.collapseNavigation", "Collapse navigation")
-          }
           type="button"
         >
           {desktopCollapsed ? (
@@ -284,7 +221,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             desktopCollapsed && "lg:justify-center lg:px-3",
           )}
         >
-          <div className="grid size-11 place-items-center overflow-hidden rounded-[6px] border border-primary bg-background text-foreground app-sidebar-avatar">
+          <div className="app-sidebar-avatar grid size-11 place-items-center overflow-hidden rounded-md border border-primary bg-background text-foreground">
             {user.logoUrl ? (
               <Image
                 alt={`${user.companyName ?? "Workspace"} logo`}
@@ -299,18 +236,15 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
           <div className={cn(desktopCollapsed && "lg:hidden")}>
-            <div className="text-xl font-medium text-foreground app-sidebar-title">
+            <div className="app-sidebar-title text-xl font-medium text-foreground">
               {user.companyName || tText("DeltCRM")}
             </div>
-            <div className="max-w-40 truncate text-sm text-muted-foreground app-sidebar-subtitle">
-              {t("tenant.shell.workspace", "DeltCRM HRMS")}
+            <div className="app-sidebar-subtitle max-w-40 truncate text-sm text-muted-foreground">
+              {t("tenant.shell.workspace", "DeltCRM workspace")}
             </div>
           </div>
           <button
-            aria-label={t(
-              "tenant.shell.closeNavigation",
-              "Close navigation",
-            )}
+            aria-label={t("tenant.shell.closeNavigation", "Close navigation")}
             className={cn("ms-auto rounded-lg p-2 text-foreground lg:hidden", focusRingClass)}
             onClick={() => setMobileOpen(false)}
           >
@@ -320,38 +254,58 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           <div
             className={cn(
-              "px-4 pb-4 pt-8 text-xs font-medium uppercase tracking-wider text-muted-foreground app-sidebar-section-label",
+              "app-sidebar-section-label px-4 pb-4 pt-8 text-xs font-medium uppercase tracking-wider text-muted-foreground",
               desktopCollapsed && "lg:hidden",
             )}
           >
             {t("tenant.shell.mainNavigation", "Main navigation")}
           </div>
           {navigation.map((item) => {
-            const active = tenantTopLevelActive(pathname, item.href);
-            const Icon = item.icon!;
-            return (
-              <Link
-                aria-current={active ? "page" : undefined}
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "sidebar-nav-item flex min-h-14 items-center gap-4 rounded-md border px-4 py-2 text-base font-semibold transition",
-                  desktopCollapsed && "lg:justify-center lg:gap-0 lg:px-2",
-                  active
-                    ? "sidebar-nav-item-active border-border bg-card text-foreground shadow-sm"
-                    : "border-transparent text-foreground hover:border-outline hover:bg-card",
-                )}
-                title={
-                  desktopCollapsed
-                    ? t(item.localizationKey, item.label)
-                    : undefined
-                }
-              >
+            const active =
+              item.key === "home"
+                ? pathname === "/app"
+                : pathname === item.href.replace(`/${locale}`, "") ||
+                  pathname.startsWith(
+                    `${item.href.replace(`/${locale}`, "")}/`,
+                  );
+            const Icon = item.icon;
+            const content = (
+              <>
                 <Icon className="size-5 shrink-0 stroke-[1.7]" />
                 <span className={cn(desktopCollapsed && "lg:hidden")}>
-                  {t(item.localizationKey, item.label)}
+                  {item.label}
                 </span>
+              </>
+            );
+            const className = cn(
+              "sidebar-nav-item flex min-h-14 items-center gap-4 rounded-md border px-4 py-2 text-base font-semibold transition",
+              desktopCollapsed && "lg:justify-center lg:gap-0 lg:px-2",
+              active
+                ? "sidebar-nav-item-active border-border bg-card text-foreground shadow-sm"
+                : "border-transparent text-foreground hover:border-outline hover:bg-card",
+            );
+
+            return item.product ? (
+              <a
+                aria-current={active ? "page" : undefined}
+                className={className}
+                href={item.href}
+                key={item.key}
+                onClick={() => setMobileOpen(false)}
+                title={desktopCollapsed ? item.label : undefined}
+              >
+                {content}
+              </a>
+            ) : (
+              <Link
+                aria-current={active ? "page" : undefined}
+                className={className}
+                href={item.href.replace(`/${locale}`, "")}
+                key={item.key}
+                onClick={() => setMobileOpen(false)}
+                title={desktopCollapsed ? item.label : undefined}
+              >
+                {content}
               </Link>
             );
           })}
@@ -384,10 +338,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       >
         <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur lg:px-6 xl:px-8">
           <button
-            aria-label={t(
-              "tenant.shell.openNavigation",
-              "Open navigation",
-            )}
+            aria-label={t("tenant.shell.openNavigation", "Open navigation")}
             className={cn("me-3 rounded-lg p-2 text-foreground lg:hidden", focusRingClass)}
             onClick={() => setMobileOpen(true)}
           >
@@ -404,19 +355,15 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
               <ThemeSwitcher />
             </div>
             <Link
-              aria-label={t(
-                "tenant.shell.notifications",
-                "Notifications",
-              )}
-              href="/app/notifications"
+              aria-label={t("tenant.shell.notifications", "Notifications")}
               className={cn(
                 "grid size-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground",
                 focusRingClass,
               )}
+              href="/app/settings/notifications"
             >
               <Bell className="size-5" />
             </Link>
-            <HeaderContextHelp />
             <div className="mx-1 hidden h-8 w-px bg-border lg:block" />
             <div className="flex min-h-11 items-center gap-2 rounded-full py-1 ps-1 pe-2">
               <span className="grid size-9 place-items-center rounded-full border border-primary bg-background text-sm font-semibold text-foreground">
@@ -438,57 +385,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
         <div className="border-b border-border bg-background px-4 py-3 sm:hidden">
           <PortalSearch />
         </div>
-        {attendanceWorkspace ? (
-          <AttendanceWorkspaceChrome
-            capabilities={attendanceCapabilities}
-            permissions={user.permissions ?? []}
-          />
-        ) : (
-          contextItems.length > 0 && (
-            <nav
-              aria-label={t(
-                "tenant.shell.contextNavigation",
-                "{context} navigation",
-                { context: currentContext ?? "" },
-              )}
-              className="sticky top-16 z-20 flex min-h-12 items-center gap-1 overflow-x-auto border-b border-border bg-background px-4 lg:px-8"
-            >
-              {contextItems.map((item) => {
-                const active = tenantContextLinkActive(pathname, item.href);
-                return (
-                  <Link
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "whitespace-nowrap border-b-2 px-3 py-3 text-sm font-semibold transition",
-                      active
-                        ? "border-primary text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground",
-                    )}
-                    href={item.href}
-                    key={item.href}
-                  >
-                    {t(item.localizationKey, item.label)}
-                  </Link>
-                );
-              })}
-            </nav>
-          )
-        )}
-        <main id="tenant-main-content">
-          {attendanceWorkspace ? (
-            <AttendanceRouteGate
-              attendanceEnabled={enabledModuleKeys.has("ATTENDANCE")}
-              capabilities={attendanceCapabilities}
-              capabilitiesLoaded={attendanceCapabilitiesLoaded}
-              modulesLoaded={modulesLoaded}
-              permissions={user.permissions ?? []}
-            >
-              {children}
-            </AttendanceRouteGate>
-          ) : (
-            children
-          )}
-        </main>
+        <main id="tenant-main-content">{children}</main>
       </div>
     </div>
   );

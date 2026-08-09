@@ -5,7 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { AuthService } from '../src/platform/identity/auth.service';
 import { TenantContextService } from '../src/platform/tenancy/public';
 
@@ -27,7 +27,7 @@ describe('Auth flow integration', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [PlatformApiModule],
     }).compile();
 
     app = moduleFixture.createNestApplication<INestApplication<App>>();
@@ -78,9 +78,6 @@ describe('Auth flow integration', () => {
       await adminPrisma.role.deleteMany({
         where: { tenantId },
       });
-      await adminPrisma.policyAssignment.deleteMany({ where: { tenantId } });
-      await adminPrisma.attendancePolicy.deleteMany({ where: { tenantId } });
-      await adminPrisma.shift.deleteMany({ where: { tenantId } });
       await adminPrisma.tenantSettings.deleteMany({
         where: { tenantId },
       });
@@ -128,15 +125,6 @@ describe('Auth flow integration', () => {
     });
 
     expect(provisionedTenant?.settings).toBeTruthy();
-    expect(
-      await adminPrisma.policyAssignment.count({
-        where: { tenantId, scope: 'TENANT_DEFAULT' },
-      }),
-    ).toBe(1);
-    expect(
-      await adminPrisma.attendancePolicy.count({ where: { tenantId } }),
-    ).toBe(1);
-    expect(await adminPrisma.shift.count({ where: { tenantId } })).toBe(1);
     expect(provisionedSubscription).toMatchObject({
       seatCount: 100,
       plan: { name: 'Starter Trial' },
@@ -219,9 +207,9 @@ describe('Auth flow integration', () => {
       .set('Authorization', `Bearer ${loginResponse.accessToken}`)
       .set('x-tenant-id', tenantId)
       .expect(200);
-    expect((modulesResponse.body as { modules: unknown[] }).modules).toEqual([
-      expect.objectContaining({ key: 'ATTENDANCE', name: 'Attendance' }),
-    ]);
+    expect(
+      Array.isArray((modulesResponse.body as { modules: unknown[] }).modules),
+    ).toBe(true);
 
     const businessAdminRole = provisionedRoles.find(
       ({ name }) => name === 'BUSINESS_ADMIN',
@@ -335,12 +323,6 @@ describe('Auth flow integration', () => {
       .post('/auth/login')
       .set('x-tenant-id', tenantId)
       .send({ email, password: newPassword })
-      .expect(403);
-
-    await request(app.getHttpServer())
-      .get('/departments')
-      .set('Authorization', `Bearer ${reloginResponse.accessToken}`)
-      .set('x-tenant-id', tenantId)
       .expect(403);
 
     await expect(

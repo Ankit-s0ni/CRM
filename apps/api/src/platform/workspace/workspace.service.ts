@@ -1,12 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  DeviceStatus,
-  JobStatus,
-  ReportType,
-  TenantStatus,
-  TokenPurpose,
-  UserStatus,
-} from '@prisma/client';
+import { TenantStatus, TokenPurpose, UserStatus } from '@prisma/client';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
 
@@ -103,7 +96,6 @@ export class WorkspaceService {
       const missingDependencies = entitlement.module.dependencyKeys.filter(
         (dependency) => !enabledDependencyKeys.has(dependency),
       );
-      const health = await this.configurationHealth(tx, tenantId, key);
       const issues = [
         ...missingDependencies.map((dependency) => ({
           code: 'MISSING_MODULE_DEPENDENCY',
@@ -111,7 +103,6 @@ export class WorkspaceService {
           message: `${dependency} must be enabled before ${key} can operate.`,
           actionHref: '/app/settings/modules',
         })),
-        ...health.issues,
       ];
       return {
         data: {
@@ -134,7 +125,7 @@ export class WorkspaceService {
             required: entitlement.module.dependencyKeys,
             missing: missingDependencies,
           },
-          configuration: health.configuration,
+          configuration: {},
           issues,
         },
       };
@@ -191,77 +182,6 @@ export class WorkspaceService {
         );
       }
 
-      if (permissions.has(PERMISSIONS.DEPARTMENTS_READ)) {
-        const [departments, designations, missingManager] = await Promise.all([
-          tx.department.count({ where: { tenantId } }),
-          tx.designation.count({ where: { tenantId } }),
-          tx.employee.count({
-            where: {
-              tenantId,
-              status: { not: 'TERMINATED' },
-              managerId: null,
-            },
-          }),
-        ]);
-        categories.push(
-          healthCategory(
-            'ORGANIZATION',
-            { departments, designations, missingManager },
-            [
-              ...(departments
-                ? []
-                : [
-                    healthIssue(
-                      'NO_DEPARTMENTS',
-                      'Create the first department before adding employees.',
-                      '/app/settings/organization',
-                    ),
-                  ]),
-              ...(designations
-                ? []
-                : [
-                    healthIssue(
-                      'NO_DESIGNATIONS',
-                      'Create the first designation before adding employees.',
-                      '/app/settings/organization',
-                    ),
-                  ]),
-              ...(missingManager
-                ? [
-                    healthIssue(
-                      'EMPLOYEES_WITHOUT_MANAGER',
-                      `${missingManager} active employees do not have a manager.`,
-                      '/app/employees?quickFilter=MISSING_MANAGER',
-                      missingManager,
-                    ),
-                  ]
-                : []),
-            ],
-          ),
-        );
-      }
-
-      if (permissions.has(PERMISSIONS.EMPLOYEES_READ)) {
-        const employees = await tx.employee.count({
-          where: { tenantId, status: { not: 'TERMINATED' } },
-        });
-        categories.push(
-          healthCategory(
-            'PEOPLE',
-            { employees },
-            employees
-              ? []
-              : [
-                  healthIssue(
-                    'NO_EMPLOYEES',
-                    'Add or import the first employee after setup is ready.',
-                    '/app/employees/new',
-                  ),
-                ],
-          ),
-        );
-      }
-
       if (permissions.has(PERMISSIONS.ROLES_READ)) {
         const [activeUsers, roles, pendingInvitations] = await Promise.all([
           tx.user.count({ where: { tenantId, status: UserStatus.ACTIVE } }),
@@ -292,70 +212,6 @@ export class WorkspaceService {
                     'NO_ENABLED_MODULES',
                     'No business modules are enabled for this workspace.',
                     '/app/settings/modules',
-                  ),
-                ],
-          ),
-        );
-      }
-
-      if (
-        moduleKeys.has('ATTENDANCE') &&
-        hasAnyPermission(permissions, [
-          PERMISSIONS.ATTENDANCE_CONFIG_READ,
-          PERMISSIONS.ATTENDANCE_CONFIG_MANAGE,
-        ])
-      ) {
-        const health = await this.configurationHealth(
-          tx,
-          tenantId,
-          'ATTENDANCE',
-        );
-        categories.push(
-          healthCategory('ATTENDANCE', health.configuration, health.issues),
-        );
-      }
-
-      if (
-        moduleKeys.has('PAYROLL') &&
-        hasAnyPermission(permissions, [
-          PERMISSIONS.ATTENDANCE_REPORTS_READ,
-          PERMISSIONS.ATTENDANCE_PAYROLL_LOCK_MANAGE,
-        ])
-      ) {
-        const health = await this.configurationHealth(tx, tenantId, 'PAYROLL');
-        categories.push(
-          healthCategory('PAYROLL', health.configuration, health.issues),
-        );
-      }
-
-      if (
-        moduleKeys.has('ATTENDANCE') &&
-        hasAnyPermission(permissions, [
-          PERMISSIONS.ATTENDANCE_DEVICES_READ,
-          PERMISSIONS.ATTENDANCE_SECURITY_ALERTS_READ,
-          PERMISSIONS.ATTENDANCE_CONFIG_READ,
-        ])
-      ) {
-        const [pendingDevices, alertRules, openAlerts] = await Promise.all([
-          tx.registeredDevice.count({
-            where: { tenantId, status: DeviceStatus.PENDING_APPROVAL },
-          }),
-          tx.alertRule.count({ where: { tenantId, isActive: true } }),
-          tx.securityAlert.count({
-            where: { tenantId, status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
-          }),
-        ]);
-        categories.push(
-          healthCategory(
-            'SECURITY',
-            { pendingDevices, alertRules, openAlerts },
-            alertRules
-              ? []
-              : [
-                  healthIssue(
-                    'NO_ALERT_RULES',
-                    'Review and enable the required security alert rules.',
-                    '/app/attendance/security',
                   ),
                 ],
           ),
@@ -422,133 +278,6 @@ export class WorkspaceService {
     };
   }
 
-  private async configurationHealth(
-    tx: Parameters<Parameters<PrismaService['forTenant']>[0]>[0],
-    tenantId: string,
-    key: string,
-  ): Promise<{
-    configuration: Record<string, number>;
-    issues: SettingsHealthIssue[];
-  }> {
-    if (key === 'ATTENDANCE') {
-      const [
-        offices,
-        policies,
-        shifts,
-        assignments,
-        leavePolicies,
-        leaveBalances,
-      ] = await Promise.all([
-        tx.officeLocation.count({ where: { tenantId } }),
-        tx.attendancePolicy.count({ where: { tenantId } }),
-        tx.shift.count({ where: { tenantId } }),
-        tx.policyAssignment.count({ where: { tenantId } }),
-        tx.leavePolicy.count({ where: { tenantId, isActive: true } }),
-        tx.leaveBalance.count({ where: { tenantId } }),
-      ]);
-      return {
-        configuration: {
-          offices,
-          policies,
-          shifts,
-          assignments,
-          leavePolicies,
-          leaveBalances,
-        },
-        issues: [
-          ...(offices
-            ? []
-            : [
-                setupIssue(
-                  'NO_OFFICE',
-                  'Add an office or field location rule.',
-                  '/app/attendance/offices',
-                ),
-              ]),
-          ...(policies
-            ? []
-            : [
-                setupIssue(
-                  'NO_ATTENDANCE_POLICY',
-                  'Create an Attendance policy.',
-                  '/app/attendance/policies',
-                ),
-              ]),
-          ...(shifts
-            ? []
-            : [
-                setupIssue(
-                  'NO_SHIFT',
-                  'Create the default working shift.',
-                  '/app/attendance/shifts',
-                ),
-              ]),
-          ...(assignments
-            ? []
-            : [
-                setupIssue(
-                  'NO_POLICY_ASSIGNMENT',
-                  'Assign a tenant, department, or employee policy.',
-                  '/app/attendance/policies',
-                ),
-              ]),
-          ...(leavePolicies
-            ? []
-            : [
-                setupIssue(
-                  'NO_LEAVE_POLICY',
-                  'Create a Leave policy for Attendance.',
-                  '/app/attendance/setup/leave',
-                ),
-              ]),
-        ],
-      };
-    }
-    if (key === 'LEAVE') {
-      const [activePolicies, assignedBalances] = await Promise.all([
-        tx.leavePolicy.count({ where: { tenantId, isActive: true } }),
-        tx.leaveBalance.count({ where: { tenantId } }),
-      ]);
-      return {
-        configuration: { activePolicies, assignedBalances },
-        issues: activePolicies
-          ? []
-          : [
-              setupIssue(
-                'NO_LEAVE_POLICY',
-                'Create an active Leave policy.',
-                '/app/modules/leave/policies',
-              ),
-            ],
-      };
-    }
-    if (key === 'PAYROLL') {
-      const [completedExports, lockedPeriods] = await Promise.all([
-        tx.reportExport.count({
-          where: {
-            tenantId,
-            reportType: ReportType.PAYROLL,
-            status: JobStatus.COMPLETED,
-          },
-        }),
-        tx.payrollLockPeriod.count({ where: { tenantId } }),
-      ]);
-      return {
-        configuration: { completedExports, lockedPeriods },
-        issues: completedExports
-          ? []
-          : [
-              setupIssue(
-                'NO_PAYROLL_EXPORT',
-                'Generate a payroll export before closing a period.',
-                '/app/reports/payroll',
-              ),
-            ],
-      };
-    }
-    return { configuration: {}, issues: [] };
-  }
-
   private statusErrorCode(status: TenantStatus) {
     if (status === TenantStatus.SUSPENDED) {
       return 'TENANT_SUSPENDED';
@@ -605,10 +334,6 @@ function healthIssue(
   };
 }
 
-function hasAnyPermission(permissions: Set<string>, required: string[]) {
-  return required.some((permission) => permissions.has(permission));
-}
-
 function integrationProviders() {
   return [
     providerDiagnostic(
@@ -624,28 +349,11 @@ function integrationProviders() {
       true,
     ),
     providerDiagnostic(
-      'BIOMETRICS',
-      'Face verification',
-      [
-        'FACE_LIVENESS_PROVIDER_URL',
-        'FACE_LIVENESS_PROVIDER_TOKEN',
-        'FACE_MATCH_PROVIDER_URL',
-        'FACE_MATCH_PROVIDER_TOKEN',
-      ],
-      process.env.BIOMETRICS_ENFORCEMENT_ENABLED === 'true',
-    ),
-    providerDiagnostic(
       'PAYMENTS',
       'Online payments',
       ['STRIPE_CHARGE_URL', 'STRIPE_HEALTH_URL', 'STRIPE_API_KEY'],
       process.env.STRIPE_ENABLED === 'true',
     ),
-    {
-      key: 'MAPS',
-      name: 'OpenStreetMap',
-      status: 'AVAILABLE',
-      message: 'Web and mobile maps use OpenStreetMap-compatible tiles.',
-    },
   ];
 }
 
@@ -698,8 +406,4 @@ function integrationIssues() {
         '/app/settings/integrations',
       ),
     );
-}
-
-function setupIssue(code: string, message: string, actionHref: string) {
-  return { code, severity: 'RECOMMENDED', message, actionHref };
 }

@@ -14,7 +14,7 @@ import {
   REQUIRED_LOCALIZATION_NAMESPACES,
   regionalLocaleForCountry,
   type SupportedLocale,
-} from '../../../platform/localization/localization.constants';
+} from '../../localization/public';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
   CreatePlatformLocalePackDto,
@@ -567,10 +567,9 @@ export class PlatformLocalizationService {
         tx,
         tenantId,
       );
-      const offices = await tx.officeLocation.findMany({
-        where: { tenantId, countryCode: { not: null } },
-        select: { id: true, officeName: true, countryCode: true },
-        orderBy: { createdAt: 'asc' },
+      const billingProfile = await tx.tenantBillingProfile.findUnique({
+        where: { tenantId },
+        select: { address: true },
       });
       return {
         data: {
@@ -580,7 +579,10 @@ export class PlatformLocalizationService {
             companyName: tenant.companyName,
             subdomain: tenant.subdomain,
           },
-          offices,
+          market: {
+            countryCode:
+              countryCodeFromAddress(billingProfile?.address) ?? null,
+          },
           suggestedRegionalLocale,
           overrides: tenant.translationOverrides,
         },
@@ -770,11 +772,13 @@ export class PlatformLocalizationService {
     tx: PlatformTransaction,
     tenantId: string,
   ) {
-    const office = await tx.officeLocation.findFirst({
-      where: { tenantId, countryCode: { not: null } },
-      select: { countryCode: true },
+    const billingProfile = await tx.tenantBillingProfile.findUnique({
+      where: { tenantId },
+      select: { address: true },
     });
-    return regionalLocaleForCountry(office?.countryCode);
+    return regionalLocaleForCountry(
+      countryCodeFromAddress(billingProfile?.address),
+    );
   }
 
   private validateValue(source: string, translated: string) {
@@ -831,4 +835,14 @@ export class PlatformLocalizationService {
       message: `${subject} not found`,
     });
   }
+}
+
+function countryCodeFromAddress(address: unknown) {
+  if (!address || Array.isArray(address) || typeof address !== 'object') {
+    return undefined;
+  }
+  const countryCode = (address as Record<string, unknown>).countryCode;
+  return typeof countryCode === 'string'
+    ? countryCode.toUpperCase()
+    : undefined;
 }

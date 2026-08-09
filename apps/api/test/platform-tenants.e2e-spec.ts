@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 import { OutboxService } from '../src/shared/events/outbox.service';
 
@@ -43,12 +43,12 @@ describe('Platform tenant lifecycle (e2e)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [PlatformApiModule],
     }).compile();
     app = moduleFixture.createNestApplication<INestApplication<App>>();
     await app.init();
     failingApp = (
-      await Test.createTestingModule({ imports: [AppModule] })
+      await Test.createTestingModule({ imports: [PlatformApiModule] })
         .overrideProvider(OutboxService)
         .useValue({
           append: () => Promise.reject(new Error('Forced outbox failure')),
@@ -130,9 +130,6 @@ describe('Platform tenant lifecycle (e2e)', () => {
     await prisma.role.deleteMany({ where: { tenantId: id } });
     await prisma.tenantModule.deleteMany({ where: { tenantId: id } });
     await prisma.tenantSubscription.deleteMany({ where: { tenantId: id } });
-    await prisma.policyAssignment.deleteMany({ where: { tenantId: id } });
-    await prisma.attendancePolicy.deleteMany({ where: { tenantId: id } });
-    await prisma.shift.deleteMany({ where: { tenantId: id } });
     await prisma.tenantSettings.deleteMany({ where: { tenantId: id } });
     await prisma.tenant.delete({ where: { id } });
   }
@@ -247,16 +244,6 @@ describe('Platform tenant lifecycle (e2e)', () => {
     expect(created.invitation.debugInvitationToken).toHaveLength(64);
     expect(JSON.stringify(created)).not.toMatch(/password|passwordHash/i);
     expect(await prisma.user.count({ where: { tenantId } })).toBe(0);
-    expect(
-      await prisma.policyAssignment.count({
-        where: { tenantId, scope: 'TENANT_DEFAULT' },
-      }),
-    ).toBe(1);
-    expect(await prisma.attendancePolicy.count({ where: { tenantId } })).toBe(
-      1,
-    );
-    expect(await prisma.shift.count({ where: { tenantId } })).toBe(1);
-
     const storedInvitation = await prisma.verificationToken.findFirst({
       where: { tenantId, purpose: 'USER_INVITE' },
     });

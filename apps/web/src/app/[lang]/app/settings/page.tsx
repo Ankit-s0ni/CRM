@@ -1,5 +1,5 @@
-import { SettingsHub } from "@/features/platform/organization/workspace-hubs";
+import { PlatformSettingsHub } from "@/features/platform/workspace-settings/platform-settings-hub";
 
 export default function SettingsPage() {
-  return <SettingsHub />;
+  return <PlatformSettingsHub />;
 }

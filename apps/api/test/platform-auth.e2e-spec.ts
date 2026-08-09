@@ -7,7 +7,7 @@ import * as argon2 from 'argon2';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 
 type ChallengeResponse = {
@@ -37,7 +37,7 @@ describe('Platform authentication (e2e)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [PlatformApiModule],
     }).compile();
     app = moduleFixture.createNestApplication<INestApplication<App>>();
     await app.init();

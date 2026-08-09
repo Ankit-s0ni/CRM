@@ -52,7 +52,7 @@ export class NotificationDispatcherService {
     return this.runner.run(task, () =>
       this.prisma.forTenant(async (tx) => {
         const payload = jsonObject(task.payload);
-        const recipients = await this.recipients(tx, task.eventKey, payload);
+        const recipients = this.recipients(payload);
         for (const recipient of recipients) {
           await this.notify(tx, task, payload, recipient);
         }
@@ -106,21 +106,12 @@ export class NotificationDispatcherService {
       preferences.find((item) => item.channel === channel)?.enabled !== false;
 
     if (templates.has(NotifChannel.PUSH) && enabled(NotifChannel.PUSH)) {
-      const devices = await tx.registeredDevice.findMany({
-        where: {
-          employeeId: recipient.employeeId,
-          status: 'ACTIVE',
-          pushToken: { not: null },
-        },
-        select: { id: true, pushToken: true },
-      });
-      for (const device of devices) {
-        if (!device.pushToken) continue;
+      if (recipient.pushToken && recipient.deviceId) {
         await this.deliverPush(
           tx,
           notification.id,
-          device.id,
-          device.pushToken,
+          recipient.deviceId,
+          recipient.pushToken,
           templates.get(NotifChannel.PUSH)!,
           variables,
         );
@@ -193,13 +184,7 @@ export class NotificationDispatcherService {
             : new Date(Date.now() + backoff(attemptNumber)),
         },
       });
-      if (failure.terminal) {
-        await tx.registeredDevice.updateMany({
-          where: { id: deviceId },
-          data: { pushToken: null },
-        });
-        return;
-      }
+      if (failure.terminal) return;
       throw error;
     }
   }
@@ -278,45 +263,20 @@ export class NotificationDispatcherService {
     return templates;
   }
 
-  private async recipients(
-    tx: PrismaTransaction,
-    eventKey: string,
-    payload: Record<string, Prisma.JsonValue>,
-  ): Promise<Recipient[]> {
-    const employeeId = stringValue(payload.employeeId);
-    if (!employeeId) return [];
-    const employee = await tx.employee.findUnique({
-      where: { id: employeeId },
-      include: { user: true, manager: { include: { user: true } } },
-    });
-    if (!employee) return [];
-    const settings = await tx.tenantSettings.findUniqueOrThrow({
-      where: { tenantId: employee.tenantId },
-    });
-    const own = employee.user
-      ? [
-          {
-            userId: employee.user.id,
-            employeeId: employee.id,
-            email: employee.user.email,
-            employeeName: employee.fullName,
-            locale: settings.locale,
-          },
-        ]
-      : [];
-    if (!eventKey.endsWith('.submitted')) return own;
-    const manager = employee.manager?.user
-      ? [
-          {
-            userId: employee.manager.user.id,
-            employeeId: employee.manager.id,
-            email: employee.manager.user.email,
-            employeeName: employee.fullName,
-            locale: settings.locale,
-          },
-        ]
-      : [];
-    return manager.length ? manager : own;
+  private recipients(payload: Record<string, Prisma.JsonValue>): Recipient[] {
+    const userId = uuidValue(payload.recipientUserId);
+    const email = stringValue(payload.recipientEmail);
+    if (!userId || !email) return [];
+    return [
+      {
+        userId,
+        email,
+        employeeName: stringValue(payload.recipientName) ?? '',
+        locale: stringValue(payload.recipientLocale) ?? 'en',
+        deviceId: uuidValue(payload.recipientDeviceId),
+        pushToken: stringValue(payload.recipientPushToken),
+      },
+    ];
   }
 
   private delivered(
@@ -357,10 +317,11 @@ type Template = {
 
 type Recipient = {
   userId: string;
-  employeeId: string;
   email: string;
   employeeName: string;
   locale: string;
+  deviceId?: string;
+  pushToken?: string;
 };
 
 function jsonObject(value: Prisma.JsonValue): Record<string, Prisma.JsonValue> {

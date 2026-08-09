@@ -9,7 +9,8 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       HRMS_UPSTREAM_PORT: "${HRMS_UPSTREAM_PORT:-4015}"
-      NGINX_ENVSUBST_FILTER: "^HRMS_UPSTREAM_PORT$"
+      HRMS_WEB_UPSTREAM_PORT: "${HRMS_WEB_UPSTREAM_PORT:-4023}"
+      NGINX_ENVSUBST_FILTER: "^(HRMS_UPSTREAM_PORT|HRMS_WEB_UPSTREAM_PORT)$"
     volumes:
       - ./infra/local-product-separation/gateway.conf:/etc/nginx/templates/default.conf.template:ro
     healthcheck:

@@ -31,7 +31,9 @@ export class ProductIntegrationController {
   @Post('product-integration/token')
   @UseGuards(JwtTenantGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Issue a short-lived token for an entitled product' })
+  @ApiOperation({
+    summary: 'Issue a short-lived token for an entitled product',
+  })
   issueToken(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: ProductTokenDto,
@@ -51,7 +53,9 @@ export class ProductIntegrationController {
   @Get('product-integration/navigation')
   @UseGuards(JwtTenantGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get entitled product navigation for the current user' })
+  @ApiOperation({
+    summary: 'Get entitled product navigation for the current user',
+  })
   navigation(@CurrentUser() user: AuthenticatedUser) {
     return this.integration.navigation(user);
   }
@@ -65,14 +69,18 @@ export class ProductIntegrationController {
 
   @Get('internal/v1/tenants/:tenantId/entitlements')
   @UseGuards(InternalProductServiceGuard)
-  @ApiOperation({ summary: 'Get tenant entitlements for an internal product service' })
+  @ApiOperation({
+    summary: 'Get tenant entitlements for an internal product service',
+  })
   internalEntitlements(@Param('tenantId') tenantId: string) {
     return this.integration.getEntitlements(tenantId);
   }
 
   @Get('internal/v1/tenants/:tenantId/users/:userId/identity-status')
   @UseGuards(InternalProductServiceGuard)
-  @ApiOperation({ summary: 'Validate tenant membership for an internal product service' })
+  @ApiOperation({
+    summary: 'Validate tenant membership for an internal product service',
+  })
   identityStatus(
     @Param('tenantId') tenantId: string,
     @Param('userId') userId: string,

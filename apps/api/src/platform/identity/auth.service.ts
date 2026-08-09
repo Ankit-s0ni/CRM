@@ -23,7 +23,6 @@ import {
   DEFAULT_ROLE_PERMISSIONS,
   PERMISSIONS,
 } from '../../shared/authorization/permissions.constants';
-import { provisionTenantAttendanceDefaults } from '../tenancy/public';
 import { TenantAssetStorageService } from '../workspace/public';
 import {
   TRANSACTIONAL_EMAIL_PORT,
@@ -33,7 +32,7 @@ import {
   normalizeEnabledLanguages,
   publicLanguageForLocale,
   resolveCatalogLocale,
-} from '../localization/localization.constants';
+} from '../localization/public';
 import { buildTenantPublicUrl } from '../../shared/http/tenant-public-url';
 
 @Injectable()
@@ -90,8 +89,6 @@ export class AuthService {
           enabledLocales: ['en', 'ar'],
         },
       });
-      await provisionTenantAttendanceDefaults(tx, createdTenant.id);
-
       const trialPlan = await tx.subscriptionPlan.upsert({
         where: { name: 'Starter Trial' },
         update: {},
@@ -170,22 +167,6 @@ export class AuthService {
         data: {
           userId: adminUser.id,
           roleId: adminRole.id,
-        },
-      });
-
-      const attendanceModule = await tx.module.upsert({
-        where: { key: 'ATTENDANCE' },
-        update: { name: 'Attendance' },
-        create: { key: 'ATTENDANCE', name: 'Attendance' },
-      });
-
-      await tx.tenantModule.create({
-        data: {
-          tenantId: createdTenant.id,
-          moduleId: attendanceModule.id,
-          isActive: true,
-          activatedAt: new Date(),
-          activatedBy: adminUser.id,
         },
       });
 
@@ -278,6 +259,7 @@ export class AuthService {
     userAgent?: string,
     deviceUuid?: string,
   ) {
+    void deviceUuid;
     const user = await this.prisma.forTenant(async (tx) => {
       return tx.user.findFirst({
         where: { email },
@@ -375,7 +357,7 @@ export class AuthService {
 
     await this.recordLoginAttempt(email, true, null, ipAddress, userAgent);
 
-    return this.buildSession(user, ipAddress, userAgent, undefined, deviceUuid);
+    return this.buildSession(user, ipAddress, userAgent);
   }
 
   async mobileLogin(
@@ -429,6 +411,7 @@ export class AuthService {
     userAgent?: string,
     deviceUuid?: string,
   ) {
+    void deviceUuid;
     const tokenHash = this.hashToken(refreshToken);
 
     const storedToken = await this.prisma.forTenant((tx) =>
@@ -474,27 +457,6 @@ export class AuthService {
 
     this.assertTenantAvailable(user.tenant.status);
 
-    if (storedToken.deviceId) {
-      const boundDevice = await this.prisma.forTenant((tx) =>
-        tx.registeredDevice.findUnique({
-          where: { id: storedToken.deviceId! },
-        }),
-      );
-      if (!boundDevice || boundDevice.status !== 'ACTIVE') {
-        await this.revokeTokenFamily(storedToken.familyId, RevokeReason.ADMIN);
-        throw new UnauthorizedException({
-          code: 'DEVICE_SESSION_REVOKED',
-          message: 'The device session is no longer active',
-        });
-      }
-      if (deviceUuid && deviceUuid !== boundDevice.deviceUuid) {
-        throw new UnauthorizedException({
-          code: 'DEVICE_SESSION_MISMATCH',
-          message: 'The refresh token belongs to another device',
-        });
-      }
-    }
-
     await this.prisma.forTenant((tx) =>
       tx.refreshToken.update({
         where: { id: storedToken.id },
@@ -505,14 +467,7 @@ export class AuthService {
       }),
     );
 
-    return this.buildSession(
-      user,
-      ipAddress,
-      userAgent,
-      storedToken.familyId,
-      deviceUuid,
-      storedToken.deviceId,
-    );
+    return this.buildSession(user, ipAddress, userAgent, storedToken.familyId);
   }
 
   async logout(userId: string, refreshToken: string) {
@@ -658,8 +613,7 @@ export class AuthService {
       email: user.email,
       workspaceName: user.tenant.companyName,
       locale:
-        user.tenant.localePolicy?.defaultLocale ??
-        user.tenant.settings?.locale,
+        user.tenant.localePolicy?.defaultLocale ?? user.tenant.settings?.locale,
       resetUrl,
     });
 
@@ -785,20 +739,12 @@ export class AuthService {
     ipAddress?: string,
     userAgent?: string,
     familyId: string = randomUUID(),
-    deviceUuid?: string,
-    preferredDeviceId?: string | null,
   ) {
-    const device = await this.resolveSessionDevice(
-      user.id,
-      deviceUuid,
-      preferredDeviceId,
-    );
     const payload = {
       sub: user.id,
       email: user.email,
       tenantId: user.tenantId,
       roles: user.roles.map((r) => r.role.name),
-      ...(device?.status === 'ACTIVE' ? { deviceId: device.id } : {}),
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -811,7 +757,7 @@ export class AuthService {
           userId: user.id,
           tokenHash: refreshTokenHash,
           familyId,
-          deviceId: device?.status === 'ACTIVE' ? device.id : null,
+          deviceId: null,
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           createdIp: ipAddress ?? null,
           userAgent: userAgent ?? null,
@@ -835,41 +781,9 @@ export class AuthService {
           user.tenant?.localePolicy?.enabledLocales ?? ['en'],
         ),
         roles: user.roles.map(({ role }) => role.name),
-        device: device
-          ? {
-              id: device.id,
-              status: device.status,
-              isPrimary: device.isPrimary,
-            }
-          : null,
+        device: null,
       },
     };
-  }
-
-  private async resolveSessionDevice(
-    userId: string,
-    deviceUuid?: string,
-    preferredDeviceId?: string | null,
-  ) {
-    if (!deviceUuid && !preferredDeviceId) return null;
-    const device = await this.prisma.forTenant((tx) =>
-      tx.registeredDevice.findFirst({
-        where: {
-          ...(preferredDeviceId
-            ? { id: preferredDeviceId }
-            : { deviceUuid, employee: { userId } }),
-        },
-      }),
-    );
-    if (!device) return null;
-    if (device.status === 'BLOCKED' || device.status === 'REPLACED') {
-      throw new ForbiddenException({
-        code:
-          device.status === 'BLOCKED' ? 'DEVICE_BLOCKED' : 'DEVICE_REPLACED',
-        message: 'This device is no longer permitted to access the workspace',
-      });
-    }
-    return device;
   }
 
   private async recordLoginAttempt(

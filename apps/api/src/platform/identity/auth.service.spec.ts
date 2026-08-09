@@ -35,6 +35,8 @@ describe('AuthService password change', () => {
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'user-id' },
+        // Jest asymmetric matchers are intentionally untyped at this boundary.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         data: expect.objectContaining({ passwordChangedAt: expect.any(Date) }),
       }),
     );

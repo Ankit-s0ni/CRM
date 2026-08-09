@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 import { Pool } from 'pg';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { PlatformApiModule } from '../src/composition/platform-api.module';
 import { generateTotp } from '../src/platform/control-plane/platform-auth/totp';
 
 type ChallengeBody = { challengeToken: string };
@@ -37,7 +37,7 @@ describe('Platform modules and impersonation (e2e)', () => {
 
   beforeAll(async () => {
     app = (
-      await Test.createTestingModule({ imports: [AppModule] }).compile()
+      await Test.createTestingModule({ imports: [PlatformApiModule] }).compile()
     ).createNestApplication<INestApplication<App>>();
     await app.init();
     pool = new Pool({
@@ -80,9 +80,9 @@ describe('Platform modules and impersonation (e2e)', () => {
       },
     });
     const permission = await prisma.permission.upsert({
-      where: { key: 'organization.employees.read' },
+      where: { key: 'workspace.modules.read' },
       update: {},
-      create: { key: 'organization.employees.read' },
+      create: { key: 'workspace.modules.read' },
     });
     roleId = (
       await prisma.role.create({ data: { tenantId, name: `Reader ${stamp}` } })
@@ -186,8 +186,8 @@ describe('Platform modules and impersonation (e2e)', () => {
       .set('x-request-id', `impersonate-${stamp}`)
       .send({
         targetUserId,
-        reason: 'Investigating an employee directory support issue',
-        scopes: ['organization.employees.read'],
+        reason: 'Investigating a workspace module support issue',
+        scopes: ['workspace.modules.read'],
         minutes: 10,
       })
       .expect(201);
@@ -200,7 +200,7 @@ describe('Platform modules and impersonation (e2e)', () => {
       workspace: { id: tenantId },
     });
     await request(app.getHttpServer())
-      .get('/employees')
+      .get('/workspace/modules')
       .set('Authorization', `Bearer ${impersonationToken}`)
       .set('x-tenant-id', tenantId)
       .expect(200);
@@ -224,7 +224,7 @@ describe('Platform modules and impersonation (e2e)', () => {
       .send({ reason: 'Support investigation completed' })
       .expect(201);
     await request(app.getHttpServer())
-      .get('/employees')
+      .get('/workspace/modules')
       .set('Authorization', `Bearer ${impersonationToken}`)
       .set('x-tenant-id', tenantId)
       .expect(401);

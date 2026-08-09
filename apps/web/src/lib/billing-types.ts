@@ -56,7 +56,7 @@ export type TenantSubscription = {
   plan: BillingPlan;
   availablePlans: BillingPlan[];
   usage: {
-    activeEmployees: number;
+    provisionedSeats: number;
     seats: number;
     maximumEmployees: number;
   };

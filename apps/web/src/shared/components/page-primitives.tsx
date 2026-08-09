@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { FeatureInfo, RouteFeatureInfo } from "@/features/platform/help/feature-info";
-import type { AttendanceHelpKey } from "@/content/attendance-help";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -29,12 +27,7 @@ export function AdminPage({
       <div className="mx-auto w-full max-w-[1440px]">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className={uxTypography.pageTitle}>
-              {title}
-            </h1>
-            <RouteFeatureInfo />
-          </div>
+          <h1 className={uxTypography.pageTitle}>{title}</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
             {description}
           </p>
@@ -77,22 +70,18 @@ export function PrimaryButton(
 export function Field({
   label,
   children,
-  helpKey,
   hint,
   error,
 }: {
   label: string;
   children: ReactNode;
-  helpKey?: AttendanceHelpKey;
   hint?: string;
   error?: string;
 }) {
   return (
-    <div className="relative">
+    <div>
       <label className="grid gap-2 text-sm font-medium text-foreground">
-        <span className={helpKey ? "min-h-9 pr-10" : undefined}>
-          {label}
-        </span>
+        <span>{label}</span>
         {children}
       </label>
       {hint && !error && (
@@ -102,12 +91,6 @@ export function Field({
         <p className="mt-1 text-xs leading-5 text-destructive" role="alert">
           {error}
         </p>
-      )}
-      {helpKey && (
-        <FeatureInfo
-          className="absolute right-0 top-0 min-h-9 min-w-9"
-          helpKey={helpKey}
-        />
       )}
     </div>
   );

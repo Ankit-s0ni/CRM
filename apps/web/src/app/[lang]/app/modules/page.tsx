@@ -1,5 +1,5 @@
-import { ModulesHub } from "@/features/platform/organization/workspace-hubs";
+import { TenantDashboard } from "@/shared/layouts/tenant-dashboard";
 
 export default function ModulesPage() {
-  return <ModulesHub />;
+  return <TenantDashboard />;
 }

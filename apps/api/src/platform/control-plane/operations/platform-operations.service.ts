@@ -37,10 +37,9 @@ export class PlatformOperationsService {
 
   dashboard() {
     return this.database.transaction(async (tx) => {
-      const [tenants, employees, subscriptions, failedPayments, recentTenants] =
+      const [tenants, subscriptions, failedPayments, recentTenants] =
         await Promise.all([
           tx.tenant.groupBy({ by: ['status'], _count: { _all: true } }),
-          tx.employee.count(),
           tx.tenantSubscription.findMany({
             where: {
               status: {
@@ -93,7 +92,10 @@ export class PlatformOperationsService {
             (statusCounts[TenantStatus.ACTIVE] ?? 0) +
             (statusCounts[TenantStatus.TRIAL] ?? 0),
           suspendedTenants: statusCounts[TenantStatus.SUSPENDED] ?? 0,
-          employees,
+          provisionedSeats: subscriptions.reduce(
+            (sum, subscription) => sum + subscription.seatCount,
+            0,
+          ),
           projectedMrr: Math.round(projectedMrr * 100) / 100,
           currency: subscriptions[0]?.plan.currency ?? 'INR',
           failedPayments,

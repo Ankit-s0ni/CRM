@@ -1,5 +1,5 @@
-import { ModuleSettingsView } from "@/features/platform/organization/workspace-hubs";
+import { ProductSettingsView } from "@/features/platform/workspace-settings/platform-settings-hub";
 
 export default function ModuleSettingsPage() {
-  return <ModuleSettingsView />;
+  return <ProductSettingsView />;
 }

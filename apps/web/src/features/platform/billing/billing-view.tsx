@@ -167,7 +167,7 @@ export function TenantBillingView() {
   const seatPercent = Math.min(
     100,
     Math.round(
-      (subscription.usage.activeEmployees /
+      (subscription.usage.provisionedSeats /
         Math.max(1, subscription.usage.maximumEmployees)) *
         100,
     ),
@@ -213,9 +213,9 @@ export function TenantBillingView() {
         />
         <MetricCard
           icon={<Gauge className="size-5" />}
-          label="Employee usage"
-          value={`${subscription.usage.activeEmployees} / ${subscription.usage.maximumEmployees}`}
-          detail={`${Math.max(0, subscription.usage.maximumEmployees - subscription.usage.activeEmployees)} employee seats remaining`}
+          label="Provisioned seats"
+          value={`${subscription.usage.provisionedSeats} / ${subscription.usage.maximumEmployees}`}
+          detail={`${Math.max(0, subscription.usage.maximumEmployees - subscription.usage.provisionedSeats)} seats available`}
         />
         <MetricCard
           icon={<CreditCard className="size-5" />}
@@ -272,7 +272,7 @@ export function TenantBillingView() {
               />
             </div>
             <div className="mt-2 flex justify-between text-xs text-outline">
-              <span>{subscription.usage.activeEmployees} active employees</span>
+              <span>{subscription.usage.provisionedSeats} provisioned seats</span>
               <span>{subscription.usage.maximumEmployees} maximum</span>
             </div>
             <div className="mt-6 flex flex-wrap gap-2">

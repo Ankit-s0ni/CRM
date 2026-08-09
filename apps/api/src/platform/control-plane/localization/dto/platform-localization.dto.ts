@@ -13,7 +13,7 @@ import { Type } from 'class-transformer';
 import {
   PUBLIC_LANGUAGES,
   SUPPORTED_LOCALES,
-} from '../../../localization/localization.constants';
+} from '../../../localization/public';
 
 export class CreatePlatformLocalePackDto {
   @IsIn(SUPPORTED_LOCALES)

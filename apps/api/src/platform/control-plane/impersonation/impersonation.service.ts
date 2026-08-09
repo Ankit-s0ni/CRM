@@ -37,7 +37,6 @@ export class ImpersonationService {
         where: { tenantId, status: UserStatus.ACTIVE },
         include: {
           roles: { include: { role: true } },
-          employee: { select: { fullName: true, employeeCode: true } },
         },
         orderBy: { email: 'asc' },
       });
@@ -45,8 +44,6 @@ export class ImpersonationService {
         data: users.map((user) => ({
           id: user.id,
           email: user.email,
-          name: user.employee?.fullName ?? null,
-          employeeCode: user.employee?.employeeCode ?? null,
           roles: user.roles.map(({ role }) => role.name),
         })),
       };

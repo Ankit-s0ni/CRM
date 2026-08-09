@@ -106,9 +106,8 @@ export class BillingService {
   subscription() {
     const tenantId = this.tenantId();
     return this.prisma.forTenant(async (tx) => {
-      const [subscription, activeEmployees, profile] = await Promise.all([
+      const [subscription, profile] = await Promise.all([
         this.currentSubscription(tx),
-        tx.employee.count({ where: { status: 'ACTIVE' } }),
         tx.tenantBillingProfile.findUnique({ where: { tenantId } }),
       ]);
       const availablePlans = await tx.subscriptionPlan.findMany({
@@ -123,7 +122,7 @@ export class BillingService {
         data: {
           ...serialize(subscription),
           usage: {
-            activeEmployees,
+            provisionedSeats: subscription.seatCount,
             seats: subscription.seatCount,
             maximumEmployees: subscription.plan.maxEmployees,
           },
@@ -145,13 +144,10 @@ export class BillingService {
         include: { modules: { include: { module: true } } },
       });
       if (!target) this.notFound('PLAN_NOT_FOUND', 'Subscription plan');
-      const activeEmployees = await tx.employee.count({
-        where: { status: 'ACTIVE' },
-      });
-      if (activeEmployees > target.maxEmployees) {
+      if (current.seatCount > target.maxEmployees) {
         throw new ConflictException({
           code: 'PLAN_DOWNGRADE_BLOCKED',
-          message: `The target plan supports ${target.maxEmployees} employees but ${activeEmployees} are active`,
+          message: `The target plan supports ${target.maxEmployees} seats but ${current.seatCount} are provisioned`,
         });
       }
       if (target.currency !== current.plan.currency) {

@@ -219,7 +219,9 @@ export function TenantDirectory() {
                 ? Math.min(
                     100,
                     Math.round(
-                      (tenant.employees / tenant.subscription.seatCount) * 100,
+                      (tenant.provisionedSeats /
+                        tenant.subscription.seatCount) *
+                        100,
                     ),
                   )
                 : 0;
@@ -258,7 +260,8 @@ export function TenantDirectory() {
                   <div>
                     <div className="flex justify-between text-[10px]">
                       <span>
-                        {tenant.employees}/{tenant.subscription?.seatCount || 0}
+                        {tenant.provisionedSeats}/
+                        {tenant.subscription?.seatCount || 0}
                       </span>
                       <span>{usage}%</span>
                     </div>

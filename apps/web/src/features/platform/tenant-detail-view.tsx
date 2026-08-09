@@ -444,7 +444,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </div>
             <div className="mt-4 flex items-end justify-between">
               <span className="text-lg font-semibold">
-                {usage.employees} / {usage.seats}
+                {usage.provisionedSeats} / {usage.seats}
               </span>
               <span className="text-xs font-semibold theme-tone-text">
                 {usage.percentage}% used
@@ -457,7 +457,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
               />
             </div>
             <p className="mt-4 text-xs text-on-surface-variant">
-              {Math.max(0, usage.seats - usage.employees)} seats remaining for
+              {Math.max(0, usage.seats - usage.provisionedSeats)} seats remaining for
               this billing cycle.
             </p>
           </section>

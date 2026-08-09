@@ -5,22 +5,17 @@ import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
 import { PermissionsGuard } from '../../shared/authorization/permissions.guard';
 import { RequirePermissions } from '../../shared/authorization/require-permissions.decorator';
 import {
-  CompleteOnboardingDto,
   LogoPresignDto,
   UpdateTenantSettingsDto,
 } from './dto/workspace-settings.dto';
 import { WorkspaceSettingsService } from './workspace-settings.service';
-import { WorkspaceOnboardingService } from './workspace-onboarding.service';
 
 @ApiTags('Tenant settings')
 @ApiBearerAuth()
 @UseGuards(JwtTenantGuard, PermissionsGuard)
 @Controller()
 export class WorkspaceSettingsController {
-  constructor(
-    private readonly service: WorkspaceSettingsService,
-    private readonly onboarding: WorkspaceOnboardingService,
-  ) {}
+  constructor(private readonly service: WorkspaceSettingsService) {}
 
   @Get('tenant-settings')
   @RequirePermissions(PERMISSIONS.SETTINGS_READ)
@@ -43,19 +38,5 @@ export class WorkspaceSettingsController {
   })
   presignLogo(@Body() dto: LogoPresignDto) {
     return this.service.presignLogo(dto);
-  }
-
-  @Get('onboarding/status')
-  @RequirePermissions(PERMISSIONS.SETTINGS_READ)
-  @ApiOperation({ summary: 'Get resumable onboarding progress' })
-  onboardingStatus() {
-    return this.onboarding.status();
-  }
-
-  @Post('onboarding/complete')
-  @RequirePermissions(PERMISSIONS.SETTINGS_UPDATE)
-  @ApiOperation({ summary: 'Idempotently complete workspace onboarding' })
-  completeOnboarding(@Body() dto: CompleteOnboardingDto) {
-    return this.onboarding.complete(dto);
   }
 }

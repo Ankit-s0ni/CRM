@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { AppModule } from './app.module';
+import { PlatformApiModule } from './composition/platform-api.module';
 import { createOpenApiDocument } from './openapi';
 
 interface DocumentedOperation {
@@ -13,7 +13,7 @@ describe('OpenAPI document', () => {
     process.env.IMPORT_QUEUE_MODE = 'inline';
     process.env.IMPORT_STORAGE_MODE = 'memory';
     const testingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [PlatformApiModule],
     }).compile();
     const app = testingModule.createNestApplication();
     await app.init();

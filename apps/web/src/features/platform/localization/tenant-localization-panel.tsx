@@ -23,11 +23,7 @@ type TenantPolicy = {
 type PolicyResponse = {
   policy: TenantPolicy;
   tenant: { id: string; companyName: string; subdomain: string };
-  offices: Array<{
-    id: string;
-    officeName: string;
-    countryCode: string | null;
-  }>;
+  market: { countryCode: string | null };
   suggestedRegionalLocale: Locale;
   overrides: Array<{
     id: string;
@@ -281,28 +277,27 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
                 className="min-h-20 rounded-lg border theme-tone theme-tone-amber border p-3 text-sm"
                 disabled={!canManage}
                 onChange={(event) => setOverrideReason(event.target.value)}
-                placeholder="Explain why this tenant does not use its office-country locale..."
+                placeholder="Explain why this tenant does not use its market locale..."
                 value={overrideReason}
               />
             </label>
           )}
           <div className="md:col-span-2">
             <span className="text-sm font-semibold">
-              Office-country evidence
+              Tenant market
             </span>
             <div className="mt-2 flex flex-wrap gap-2">
-              {data.offices.map((office) => (
+              {data.market.countryCode && (
                 <span
                   className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs"
-                  key={office.id}
                 >
                   <MapPin className="size-3 text-foreground" />
-                  {office.officeName} · {office.countryCode}
+                  Billing country · {data.market.countryCode}
                 </span>
-              ))}
-              {!data.offices.length && (
+              )}
+              {!data.market.countryCode && (
                 <span className="text-xs theme-tone-text">
-                  No office country is configured; base Arabic is suggested.
+                  No billing country is configured; base Arabic is suggested.
                 </span>
               )}
             </div>
