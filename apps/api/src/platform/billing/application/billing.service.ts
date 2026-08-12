@@ -10,7 +10,7 @@ import {
   PaymentMethodStatus,
   Prisma,
   SubscriptionStatus,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { createHash } from 'node:crypto';
 import { AuditService } from '../../audit/public';
 import {
@@ -698,7 +698,7 @@ function serializePreview(preview: ReturnType<BillingService['proration']>) {
 function serialize<T>(value: T): T {
   return JSON.parse(
     JSON.stringify(value, (_key, item: unknown) =>
-      Prisma.Decimal.isDecimal(item) ? item.toString() : item,
+      Prisma.Decimal.isDecimal(item) ? String(item) : item,
     ),
   ) as T;
 }

@@ -3,7 +3,10 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { PaymentGateway, PaymentStatus } from '@prisma/client';
+import {
+  PaymentGateway,
+  PaymentStatus,
+} from '../../../generated/platform-client';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type {
   NormalizedPaymentEvent,

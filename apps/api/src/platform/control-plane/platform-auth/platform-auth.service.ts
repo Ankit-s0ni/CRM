@@ -6,7 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PlatformRole, RevokeReason, UserStatus } from '@prisma/client';
+import {
+  PlatformRole,
+  RevokeReason,
+  UserStatus,
+} from '../../../generated/platform-client';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import { PlatformDatabaseService } from './platform-database.service';

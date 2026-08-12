@@ -1,4 +1,7 @@
-import { LocalizationStatus, PlatformRole } from '@prisma/client';
+import {
+  LocalizationStatus,
+  PlatformRole,
+} from '../../../generated/platform-client';
 import type { PlatformDatabaseService } from '../../../shared/database/platform-database.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import { PlatformLocalizationService } from './platform-localization.service';

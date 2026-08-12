@@ -3,7 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { LocalizationStatus, Prisma, type LocalePack } from '@prisma/client';
+import {
+  LocalizationStatus,
+  Prisma,
+  type LocalePack,
+} from '../../../generated/platform-client';
 import type { PlatformTransaction } from '../../../shared/database/platform-database.service';
 import { PlatformDatabaseService } from '../../../shared/database/platform-database.service';
 import {

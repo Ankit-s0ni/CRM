@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '../../../generated/platform-client';
 import { PlatformDatabaseService } from './platform-database.service';
 import type { AuthenticatedPlatformUser } from './platform-auth.types';
 

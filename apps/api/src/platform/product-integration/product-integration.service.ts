@@ -7,30 +7,22 @@ import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import {
   PRODUCT_PLATFORM_PORT,
+  assertProductManifestV2,
   type EffectiveEntitlements,
   type NavigationContract,
-  type ProductAudience,
   type ProductIdentityStatus,
   type ProductKey,
   type ProductPlatformPort,
   type ProductProvisioningStatus,
-  type StableIdentifiers,
+  type ProductTokenRequest,
   type ProductTokenResponse,
-} from '@deltcrm/product-contracts';
-import {
-  HRMS_AUDIENCE,
-  HRMS_CAPABILITIES,
-  HRMS_MANIFEST,
-  HRMS_PERMISSIONS,
-} from '@deltcrm/product-contracts/hrms';
-import { PrismaService } from '../../shared/database/prisma.service';
-import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
+  type StableIdentifiers,
+} from '@mariya-abdul/deltcrm-product-contracts';
+import { PlatformDatabaseService } from '../../shared/database/platform-database.service';
 import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
+import { ProductEntitlementService } from './product-entitlement.service';
+import { ProductRegistryService } from './product-registry.service';
 import { ProductSigningKeyService } from './product-signing-key.service';
-import {
-  resolveHrmsProvisioningStatus,
-  type ProductLifecycleDeliverySnapshot,
-} from './product-lifecycle';
 
 const TOKEN_TTL_SECONDS = 15 * 60;
 
@@ -39,19 +31,15 @@ export class ProductIntegrationService implements ProductPlatformPort {
   readonly platformPortToken = PRODUCT_PLATFORM_PORT;
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly database: PlatformDatabaseService,
     private readonly jwt: JwtService,
     private readonly signingKeys: ProductSigningKeyService,
+    private readonly registry: ProductRegistryService,
+    private readonly entitlementResolver: ProductEntitlementService,
   ) {}
 
-  manifest(productKey: ProductKey) {
-    if (productKey !== 'HRMS') {
-      throw new NotFoundException({
-        code: 'PRODUCT_NOT_REGISTERED',
-        message: `${productKey} is not registered`,
-      });
-    }
-    return HRMS_MANIFEST;
+  async manifest(productKey: ProductKey) {
+    return (await this.registry.active(productKey)).manifest;
   }
 
   jwks() {
@@ -60,20 +48,54 @@ export class ProductIntegrationService implements ProductPlatformPort {
 
   async issueToken(
     user: AuthenticatedUser,
-    audience: ProductAudience,
+    request: ProductTokenRequest,
     requestId?: string,
   ): Promise<ProductTokenResponse> {
-    const productKey = this.productForAudience(audience);
+    if (!request.productKey && !request.audience) {
+      throw new NotFoundException({
+        code: 'PRODUCT_SELECTOR_REQUIRED',
+        message: 'A productKey is required',
+      });
+    }
+    const registered = request.productKey
+      ? await this.registry.active(request.productKey.toUpperCase())
+      : await this.registry.byAudience(request.audience!);
+    if (request.audience && request.audience !== registered.audience) {
+      throw new NotFoundException({
+        code: 'PRODUCT_SELECTOR_MISMATCH',
+        message: 'Product key and audience do not identify the same product',
+      });
+    }
+    const productKey = registered.productKey;
+    if (process.env.PRODUCT_TOKEN_REQUIRE_HEALTHY === 'true') {
+      const environment = process.env.DEPLOYMENT_ENVIRONMENT ?? 'development';
+      const deployment = registered.deployments.find(
+        (candidate) => candidate.environment === environment,
+      );
+      if (
+        !deployment ||
+        deployment.maintenance ||
+        deployment.health !== 'HEALTHY'
+      ) {
+        throw new ForbiddenException({
+          code: 'PRODUCT_UNHEALTHY',
+          message: `${productKey} is not healthy enough to issue new sessions`,
+        });
+      }
+    }
     const identity = {
       tenantId: user.tenantId,
       userId: user.userId,
       membershipId: user.userId,
     };
-    const [identityStatus, entitlements, locale] = await Promise.all([
-      this.getIdentityStatus(identity),
-      this.getEntitlements(user.tenantId),
-      this.resolveTenantLocale(user.tenantId),
-    ]);
+    const [identityStatus, entitlements, locale, provisioning, permissions] =
+      await Promise.all([
+        this.getIdentityStatus(identity),
+        this.getEntitlements(user.tenantId),
+        this.resolveTenantLocale(user.tenantId),
+        this.getProvisioningStatus(user.tenantId, productKey),
+        this.resolvePermissions(user.tenantId, user.userId),
+      ]);
     this.assertActiveIdentity(identityStatus);
     const product = entitlements.products.find(({ key }) => key === productKey);
     if (!product?.active) {
@@ -82,22 +104,26 @@ export class ProductIntegrationService implements ProductPlatformPort {
         message: `${productKey} is not enabled for this workspace`,
       });
     }
+    if (provisioning.state !== 'ACTIVE') {
+      throw new ForbiddenException({
+        code: 'PRODUCT_NOT_PROVISIONED',
+        message: `${productKey} is not active for this workspace`,
+      });
+    }
 
-    const permissions = await this.resolvePermissions(
-      user.tenantId,
-      user.userId,
-    );
-    const productPermissions = this.mapHrmsPermissions(permissions);
     const capabilities = Object.entries(product.capabilities)
       .filter(([, enabled]) => enabled)
       .map(([key]) => key);
+    const productPermissions = this.productPermissions(
+      registered.permissions,
+      permissions,
+      new Set(capabilities),
+    );
     const tokenId = randomUUID();
     const accessToken = this.jwt.sign(
       {
         tenantId: user.tenantId,
         userId: user.userId,
-        // The current schema has one tenant membership per user. Keep this
-        // compatibility projection until Membership becomes a Platform entity.
         membershipId: user.userId,
         roles: user.roles,
         products: [productKey],
@@ -111,25 +137,23 @@ export class ProductIntegrationService implements ProductPlatformPort {
         algorithm: 'RS256',
         keyid: this.signingKeys.keyId,
         issuer: this.signingKeys.issuer,
-        audience,
+        audience: registered.audience,
         subject: user.userId,
         jwtid: tokenId,
         expiresIn: TOKEN_TTL_SECONDS,
       },
     );
 
-    await this.prisma.forAdmin((tx) =>
-      tx.tenantAuditLog.create({
+    await this.database.transaction((tx) =>
+      tx.systemAuditLog.create({
         data: {
           tenantId: user.tenantId,
-          actorUserId: user.userId,
           action: 'platform.product-token.issued',
           module: 'product-integration',
-          entityType: 'User',
-          entityId: user.userId,
           newValue: {
-            audience,
+            audience: registered.audience,
             productKey,
+            userId: user.userId,
             jti: tokenId,
             expiresIn: TOKEN_TTL_SECONDS,
           },
@@ -145,37 +169,46 @@ export class ProductIntegrationService implements ProductPlatformPort {
     };
   }
 
-  private async resolveTenantLocale(tenantId: string): Promise<'en' | 'ar'> {
-    const settings = await this.prisma.forAdmin((tx) =>
-      tx.tenantSettings.findUnique({
-        where: { tenantId },
-        select: { locale: true },
-      }),
-    );
-    return settings?.locale?.startsWith('ar') ? 'ar' : 'en';
-  }
-
   async navigation(user: AuthenticatedUser): Promise<NavigationContract> {
-    const [identityStatus, entitlements, permissions] = await Promise.all([
-      this.getIdentityStatus({
-        tenantId: user.tenantId,
-        userId: user.userId,
-        membershipId: user.userId,
-      }),
-      this.getEntitlements(user.tenantId),
-      this.resolvePermissions(user.tenantId, user.userId),
-    ]);
+    const [identityStatus, entitlements, sourcePermissions, products] =
+      await Promise.all([
+        this.getIdentityStatus({
+          tenantId: user.tenantId,
+          userId: user.userId,
+          membershipId: user.userId,
+        }),
+        this.getEntitlements(user.tenantId),
+        this.resolvePermissions(user.tenantId, user.userId),
+        this.registry.list(),
+      ]);
     this.assertActiveIdentity(identityStatus);
-    const hrms = entitlements.products.find(({ key }) => key === 'HRMS');
-    const mapped = new Set(this.mapHrmsPermissions(permissions));
     const items: NavigationContract['items'] = [
       { key: 'home', hrefTemplate: '/{locale}/app' },
     ];
-    if (hrms?.active && mapped.size > 0) {
+    for (const registered of products) {
+      if (registered.status !== 'ACTIVE' || !registered.activeRevision)
+        continue;
+      const entitlement = entitlements.products.find(
+        ({ key }) => key === registered.productKey,
+      );
+      if (!entitlement?.active) continue;
+      const capabilities = new Set(
+        Object.entries(entitlement.capabilities)
+          .filter(([, active]) => active)
+          .map(([key]) => key),
+      );
+      const permissions = this.productPermissions(
+        registered.permissions,
+        sourcePermissions,
+        capabilities,
+      );
+      if (!permissions.length) continue;
+      const manifest: unknown = registered.activeRevision.manifest;
+      assertProductManifestV2(manifest);
       items.push({
-        key: 'hrms',
-        hrefTemplate: '/{locale}/app/hrms',
-        requiredProduct: 'HRMS',
+        key: manifest.navigation.key,
+        hrefTemplate: manifest.routes.webPath,
+        requiredProduct: registered.productKey,
       });
     }
     return { items };
@@ -184,7 +217,7 @@ export class ProductIntegrationService implements ProductPlatformPort {
   async getIdentityStatus(
     identity: StableIdentifiers,
   ): Promise<ProductIdentityStatus> {
-    return this.prisma.forAdmin(async (tx) => {
+    return this.database.transaction(async (tx) => {
       const [tenant, user] = await Promise.all([
         tx.tenant.findUnique({
           where: { id: identity.tenantId },
@@ -207,7 +240,6 @@ export class ProductIntegrationService implements ProductPlatformPort {
           : 'SUSPENDED';
       const membershipStatus =
         !user || identity.membershipId !== user.id ? 'UNAVAILABLE' : userStatus;
-
       return {
         ...identity,
         tenantStatus,
@@ -218,172 +250,44 @@ export class ProductIntegrationService implements ProductPlatformPort {
     });
   }
 
-  async getEntitlements(tenantId: string): Promise<EffectiveEntitlements> {
-    return this.prisma.forAdmin(async (tx) => {
-      const tenant = await tx.tenant.findUnique({
-        where: { id: tenantId },
-        select: {
-          id: true,
-          status: true,
-          settings: { select: { runtimeConfigVersion: true } },
-        },
-      });
-      if (!tenant) {
-        throw new NotFoundException({
-          code: 'TENANT_NOT_FOUND',
-          message: 'Tenant does not exist',
-        });
-      }
-
-      const now = new Date();
-      const [activeModules, subscription, overrides] = await Promise.all([
-        tx.tenantModule.findMany({
-          where: { tenantId, isActive: true },
-          include: { module: true },
-        }),
-        tx.tenantSubscription.findFirst({
-          where: { tenantId },
-          include: {
-            plan: {
-              include: {
-                capabilities: { include: { capability: true } },
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        tx.tenantCapabilityOverride.findMany({
-          where: { tenantId },
-          include: { capability: true },
-        }),
-      ]);
-      const moduleKeys = new Set(activeModules.map(({ module }) => module.key));
-      const capabilityKeys = new Set(
-        subscription?.plan.capabilities
-          .filter(({ included }) => included)
-          .map(({ capability }) => capability.key) ?? [],
-      );
-      for (const override of overrides) {
-        const active =
-          (!override.startsAt || override.startsAt <= now) &&
-          (!override.endsAt || override.endsAt > now);
-        if (!active || override.mode === 'INHERIT') continue;
-        if (override.mode === 'ENABLE')
-          capabilityKeys.add(override.capability.key);
-        if (override.mode === 'DISABLE')
-          capabilityKeys.delete(override.capability.key);
-      }
-
-      const tenantAvailable = !['SUSPENDED', 'CHURNED'].includes(tenant.status);
-      const attendanceActive = tenantAvailable && moduleKeys.has('ATTENDANCE');
-      const payrollActive = tenantAvailable && moduleKeys.has('PAYROLL');
-      const hrmsActive = attendanceActive || payrollActive;
-      return {
-        tenantId,
-        subscriptionStatus:
-          tenant.status === 'SUSPENDED'
-            ? 'SUSPENDED'
-            : subscription?.status === 'CANCELLED'
-              ? 'CANCELED'
-              : (subscription?.status ?? 'NONE'),
-        products: [
-          {
-            key: 'HRMS',
-            active: hrmsActive,
-            capabilities: {
-              [HRMS_CAPABILITIES.EMPLOYEES]: hrmsActive,
-              [HRMS_CAPABILITIES.ORGANIZATION]: hrmsActive,
-              [HRMS_CAPABILITIES.ATTENDANCE]:
-                attendanceActive && capabilityKeys.has('ATTENDANCE_CORE'),
-              [HRMS_CAPABILITIES.LEAVE]:
-                attendanceActive && capabilityKeys.has('ATTENDANCE_LEAVE'),
-              [HRMS_CAPABILITIES.PAYROLL]: payrollActive,
-            },
-            limits: { employees: subscription?.plan.maxEmployees ?? 0 },
-          },
-        ],
-        version: tenant.settings?.runtimeConfigVersion ?? 0,
-        effectiveAt: now.toISOString(),
-      };
-    });
+  getEntitlements(tenantId: string): Promise<EffectiveEntitlements> {
+    return this.entitlementResolver.resolve(tenantId);
   }
 
   async getProvisioningStatus(
     tenantId: string,
     productKey: ProductKey,
   ): Promise<ProductProvisioningStatus> {
-    this.manifest(productKey);
-    const entitlement = await this.getEntitlements(tenantId);
-    const product = entitlement.products.find(({ key }) => key === productKey);
-    const delivery = await this.latestLifecycleDelivery(tenantId);
+    const registered = await this.registry.active(productKey);
+    const provisioning = await this.database.transaction((tx) =>
+      tx.productProvisioningInstance.findUnique({
+        where: {
+          tenantId_productId: { tenantId, productId: registered.id },
+        },
+      }),
+    );
     return {
       tenantId,
-      productKey,
-      ...resolveHrmsProvisioningStatus({
-        productActive: product?.active ?? false,
-        subscriptionStatus: entitlement.subscriptionStatus,
-        effectiveAt: entitlement.effectiveAt,
-        delivery,
-      }),
+      productKey: registered.productKey,
+      state: provisioning?.state ?? 'NOT_REQUESTED',
+      attempt: provisioning?.attempt ?? 0,
+      updatedAt: (provisioning?.updatedAt ?? new Date()).toISOString(),
+      failureCode: provisioning?.failureCode ?? undefined,
     };
   }
 
-  private latestLifecycleDelivery(
-    tenantId: string,
-  ): Promise<ProductLifecycleDeliverySnapshot | null> {
-    return this.prisma.forAdmin((tx) =>
-      tx.outboxEvent.findFirst({
-        where: {
-          tenantId,
-          eventKey: {
-            in: [
-              'platform.product.activation-requested.v1',
-              'platform.product.suspension-requested.v1',
-            ],
-          },
-        },
-        select: {
-          eventKey: true,
-          createdAt: true,
-          publishedAt: true,
-          lockedAt: true,
-          attemptCount: true,
-          lastError: true,
-          deadLetteredAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
+  private async resolveTenantLocale(tenantId: string): Promise<'en' | 'ar'> {
+    const settings = await this.database.transaction((tx) =>
+      tx.tenantSettings.findUnique({
+        where: { tenantId },
+        select: { locale: true },
       }),
-    ) as Promise<ProductLifecycleDeliverySnapshot | null>;
-  }
-
-  private productForAudience(audience: ProductAudience): ProductKey {
-    if (audience === HRMS_AUDIENCE) return 'HRMS';
-    throw new NotFoundException({
-      code: 'PRODUCT_NOT_REGISTERED',
-      message: `No product is registered for ${audience}`,
-    });
-  }
-
-  private assertActiveIdentity(identity: ProductIdentityStatus) {
-    if (identity.tenantStatus !== 'ACTIVE') {
-      throw new ForbiddenException({
-        code: 'TENANT_ACCESS_SUSPENDED',
-        message: 'This workspace is not active',
-      });
-    }
-    if (
-      identity.userStatus !== 'ACTIVE' ||
-      identity.membershipStatus !== 'ACTIVE'
-    ) {
-      throw new ForbiddenException({
-        code: 'PRODUCT_IDENTITY_INACTIVE',
-        message: 'This user does not have an active workspace membership',
-      });
-    }
+    );
+    return settings?.locale?.startsWith('ar') ? 'ar' : 'en';
   }
 
   private async resolvePermissions(tenantId: string, userId: string) {
-    return this.prisma.forAdmin(async (tx) => {
+    return this.database.transaction(async (tx) => {
       const user = await tx.user.findFirst({
         where: { id: userId, tenantId },
         select: {
@@ -408,78 +312,48 @@ export class ProductIntegrationService implements ProductPlatformPort {
     });
   }
 
-  private mapHrmsPermissions(source: Set<string>) {
-    const mapped = new Set<string>();
-    const hasPrefix = (prefix: string) =>
-      [...source].some((permission) => permission.startsWith(prefix));
-    if (source.has(PERMISSIONS.EMPLOYEES_READ))
-      mapped.add(HRMS_PERMISSIONS.EMPLOYEES_READ);
-    if (
-      [
-        PERMISSIONS.EMPLOYEES_CREATE,
-        PERMISSIONS.EMPLOYEES_UPDATE,
-        PERMISSIONS.EMPLOYEES_LIFECYCLE,
-      ].some((permission) => source.has(permission))
-    )
-      mapped.add(HRMS_PERMISSIONS.EMPLOYEES_MANAGE);
-    if (source.has(PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ))
-      mapped.add(HRMS_PERMISSIONS.ATTENDANCE_SELF_READ);
-    if (source.has(PERMISSIONS.ATTENDANCE_RECORDS_SELF_WRITE))
-      mapped.add(HRMS_PERMISSIONS.ATTENDANCE_SELF_WRITE);
-    if (source.has(PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ))
-      mapped.add(HRMS_PERMISSIONS.DEVICES_SELF_READ);
-    if (source.has(PERMISSIONS.ATTENDANCE_RECORDS_SELF_WRITE))
-      mapped.add(HRMS_PERMISSIONS.DEVICES_SELF_WRITE);
-    if (source.has(PERMISSIONS.ATTENDANCE_DEVICES_READ))
-      mapped.add(HRMS_PERMISSIONS.DEVICES_READ);
-    if (source.has(PERMISSIONS.ATTENDANCE_DEVICES_MANAGE)) {
-      mapped.add(HRMS_PERMISSIONS.DEVICES_READ);
-      mapped.add(HRMS_PERMISSIONS.DEVICES_MANAGE);
-    }
-    const selfAttendancePermissions = new Set<string>([
-      PERMISSIONS.ATTENDANCE_RECORDS_SELF_READ,
-      PERMISSIONS.ATTENDANCE_RECORDS_SELF_WRITE,
-      PERMISSIONS.REGULARIZATIONS_SELF,
-    ]);
-    if (
-      [...source].some(
-        (permission) =>
-          permission.startsWith('attendance.') &&
-          !selfAttendancePermissions.has(permission),
+  private productPermissions(
+    definitions: Array<{
+      key: string;
+      platformPermissionAliases: string[];
+      platformPermissionPrefixAliases: string[];
+      requiredCapabilityKeys: string[];
+      deprecated: boolean;
+    }>,
+    source: ReadonlySet<string>,
+    capabilities: ReadonlySet<string>,
+  ) {
+    return definitions
+      .filter((definition) => !definition.deprecated)
+      .filter((definition) =>
+        definition.requiredCapabilityKeys.every((key) => capabilities.has(key)),
       )
-    )
-      mapped.add(HRMS_PERMISSIONS.ATTENDANCE_READ);
-    if (
-      [...source].some(
-        (permission) =>
-          permission.startsWith('attendance.') &&
-          (permission.endsWith('.manage') || permission.endsWith('.generate')),
+      .filter(
+        (definition) =>
+          source.has(definition.key) ||
+          definition.platformPermissionAliases.some((key) => source.has(key)) ||
+          definition.platformPermissionPrefixAliases.some((prefix) =>
+            [...source].some((permission) => permission.startsWith(prefix)),
+          ),
       )
-    )
-      mapped.add(HRMS_PERMISSIONS.ATTENDANCE_MANAGE);
-    if (source.has(PERMISSIONS.LEAVE_SELF)) {
-      mapped.add(HRMS_PERMISSIONS.LEAVE_SELF_READ);
-      mapped.add(HRMS_PERMISSIONS.LEAVE_SELF_WRITE);
+      .map(({ key }) => key);
+  }
+
+  private assertActiveIdentity(identity: ProductIdentityStatus) {
+    if (identity.tenantStatus !== 'ACTIVE') {
+      throw new ForbiddenException({
+        code: 'TENANT_ACCESS_SUSPENDED',
+        message: 'This workspace is not active',
+      });
     }
-    if (source.has(PERMISSIONS.LEAVE_APPROVE)) {
-      mapped.add(HRMS_PERMISSIONS.LEAVE_READ);
-      mapped.add(HRMS_PERMISSIONS.LEAVE_APPROVE);
-    }
-    if (source.has(PERMISSIONS.LEAVE_MANAGE)) {
-      mapped.add(HRMS_PERMISSIONS.LEAVE_READ);
-      mapped.add(HRMS_PERMISSIONS.LEAVE_MANAGE);
-      mapped.add(HRMS_PERMISSIONS.LEAVE_APPROVE);
-    }
-    if (hasPrefix('payroll.')) mapped.add(HRMS_PERMISSIONS.PAYROLL_READ);
     if (
-      [...source].some(
-        (permission) =>
-          permission.startsWith('payroll.') &&
-          !permission.endsWith('.read') &&
-          !permission.endsWith('.self'),
-      )
-    )
-      mapped.add(HRMS_PERMISSIONS.PAYROLL_MANAGE);
-    return [...mapped];
+      identity.userStatus !== 'ACTIVE' ||
+      identity.membershipStatus !== 'ACTIVE'
+    ) {
+      throw new ForbiddenException({
+        code: 'PRODUCT_IDENTITY_INACTIVE',
+        message: 'This user does not have an active workspace membership',
+      });
+    }
   }
 }

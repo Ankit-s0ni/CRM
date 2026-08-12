@@ -204,7 +204,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-6 rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
+    <div className="flex w-full flex-col gap-6">
       {error && (
         <div className="flex items-center gap-3 rounded-lg border theme-tone theme-tone-red border p-4 text-sm" id="error-banner" role="alert">
           <span className="material-symbols-outlined text-error">report</span>
@@ -214,19 +214,19 @@ export function LoginForm() {
 
       <form className="space-y-6" onSubmit={handleLogin}>
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-foreground" htmlFor="email">Email Address</label>
+          <label className="block text-sm font-semibold text-slate-800" htmlFor="email">Email address</label>
           {workspace ? (
-            <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500">
               Workspace: <span className="font-medium text-on-surface">{workspace}.{APP_DOMAIN}</span>
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-500">
               Start from your workspace invite, verification page, or company subdomain before signing in.
             </p>
           )}
           <div className="relative">
             <input
-              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20" autoComplete="email" aria-describedby={error ? "error-banner" : undefined}
+              className="h-13 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm text-foreground outline-none transition placeholder:text-slate-400 focus:border-primary focus:bg-white focus:ring-4 focus:ring-blue-100" autoComplete="email" aria-describedby={error ? "error-banner" : undefined}
               id="email" 
               name="email" 
               placeholder="e.g. sarah.j@acme.com" 
@@ -240,9 +240,9 @@ export function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="password">Password</label>
+            <label className="block text-sm font-semibold text-slate-800" htmlFor="password">Password</label>
             <Link
-              className="text-sm font-semibold text-foreground transition hover:underline"
+              className="text-sm font-semibold text-primary transition hover:underline"
               href={forgotPasswordHref}
             >
               Forgot password?
@@ -250,7 +250,7 @@ export function LoginForm() {
           </div>
           <div className="relative">
             <input 
-              className="h-12 w-full rounded-lg border border-border bg-background px-4 pt-1 pr-12 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20" autoComplete="current-password" aria-describedby={error ? "error-banner" : undefined}
+              className="h-13 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 pr-12 text-sm text-foreground outline-none transition placeholder:text-slate-400 focus:border-primary focus:bg-white focus:ring-4 focus:ring-blue-100" autoComplete="current-password" aria-describedby={error ? "error-banner" : undefined}
               id="password"
               name="password"
               placeholder="Enter your password"
@@ -278,12 +278,12 @@ export function LoginForm() {
             <div className="relative flex items-center">
               <input className="peer h-5 w-5 cursor-pointer rounded border-border bg-background text-foreground transition focus:ring-ring" type="checkbox"/>
             </div>
-            <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">Remember this device</span>
+            <span className="text-sm text-slate-500 transition-colors group-hover:text-slate-800">Remember this device</span>
           </label>
         </div>
 
         <button 
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-on-primary shadow-sm shadow-primary/20 transition hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-on-primary shadow-lg shadow-blue-200 transition hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
           id="signin-btn" 
           type="submit"
           disabled={loading}
@@ -303,9 +303,9 @@ export function LoginForm() {
       </form>
 
       <div className="mt-2 border-t border-border pt-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Not your workspace? 
-          <Link className="ml-1 font-semibold text-foreground hover:underline" href="/signup">
+        <p className="text-sm text-slate-500">
+          Not your workspace?
+          <Link className="ml-1 font-semibold text-primary hover:underline" href="/signup">
             Switch company
           </Link>
         </p>

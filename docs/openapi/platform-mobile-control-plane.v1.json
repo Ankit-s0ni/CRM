@@ -1,0 +1,1029 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Delsia Platform Mobile Control Plane API",
+    "version": "1.0.0",
+    "description": "Platform-owned mobile identity, HRMS product-token exchange, and notification operations."
+  },
+  "servers": [],
+  "paths": {
+    "/auth/mobile-login": {
+      "post": {
+        "operationId": "AuthController_mobileLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful employee login"
+          }
+        },
+        "summary": "Login an employee and automatically resolve their workspace",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke the current refresh token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the authenticated user password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated user and workspace session",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/product-integration/token": {
+      "post": {
+        "operationId": "ProductIntegrationController_issueToken",
+        "parameters": [
+          {
+            "name": "x-request-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Issue a short-lived token for an entitled product",
+        "tags": [
+          "Product integration"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 25,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List authenticated user inbox notifications",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get authenticated user unread count",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark one owned notification as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_markAllRead",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark all owned notifications as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "tenant-id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-tenant-id"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@acme.com"
+          },
+          "password": {
+            "type": "string"
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          },
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "UpdateTenantSettingsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kolkata"
+          },
+          "locale": {
+            "type": "string",
+            "example": "en-AE"
+          },
+          "weeklyOffs": {
+            "type": "object",
+            "example": [
+              {
+                "weekday": "SAT",
+                "occurrences": [
+                  2,
+                  4
+                ]
+              },
+              {
+                "weekday": "SUN"
+              }
+            ]
+          }
+        }
+      },
+      "LogoPresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "company-logo.png"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "fileSize": {
+            "type": "number",
+            "example": 245760
+          }
+        },
+        "required": [
+          "filename",
+          "contentType",
+          "fileSize"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "NotificationPreferencesDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateTenantLocalePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateTenantTranslationOverrideDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateTenantTranslationOverrideDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Attendance Supervisor"
+          },
+          "permissionKeys": {
+            "example": [
+              "organization.employees.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "permissionKeys"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Senior Attendance Supervisor"
+          }
+        }
+      },
+      "ReplaceRolePermissionsDto": {
+        "type": "object",
+        "properties": {
+          "permissionKeys": {
+            "example": [
+              "organization.employees.read",
+              "attendance.records.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "permissionKeys"
+        ]
+      },
+      "UpdateUserRolesDto": {
+        "type": "object",
+        "properties": {
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "roleIds"
+        ]
+      },
+      "UpdateUserStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "LOCKED",
+              "DISABLED"
+            ],
+            "example": "DISABLED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "hr.admin@example.com"
+          },
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Employee to link atomically when the invited user accepts the invitation"
+          }
+        },
+        "required": [
+          "email",
+          "roleIds"
+        ]
+      },
+      "ResendInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "hr.admin@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "AcceptInvitationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "4ad83d..."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "Secure123!"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "UpdateBillingProfileDto": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string"
+          },
+          "billingEmail": {
+            "type": "string"
+          },
+          "gstin": {
+            "type": "string"
+          },
+          "pan": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "INR",
+              "AED",
+              "OMR",
+              "QAR",
+              "SAR",
+              "USD"
+            ]
+          }
+        },
+        "required": [
+          "legalName",
+          "billingEmail",
+          "currency"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "object",
+            "default": false
+          }
+        }
+      },
+      "AddPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "providerMethodRef": {
+            "type": "string",
+            "description": "Token/reference returned by the provider SDK"
+          }
+        },
+        "required": [
+          "providerMethodRef"
+        ]
+      },
+      "CreatePlatformTenantDto": {
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "example": "Oman Tech Solutions"
+          },
+          "subdomain": {
+            "type": "string",
+            "example": "oman-tech"
+          },
+          "adminEmail": {
+            "type": "string",
+            "example": "admin@omantech.com"
+          },
+          "planId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "moduleKeys": {
+            "example": [
+              "ATTENDANCE"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kolkata"
+          },
+          "seatCount": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100000,
+            "example": 150
+          },
+          "adminPassword": {
+            "type": "string",
+            "description": "Pre-set admin password. When provided the user account is created immediately.",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "employeeCount": {
+            "type": "string",
+            "description": "Employee count band (e.g. \"1-10\", \"11-50\")"
+          }
+        },
+        "required": [
+          "companyName",
+          "subdomain",
+          "adminEmail",
+          "planId",
+          "moduleKeys",
+          "timezone",
+          "seatCount"
+        ]
+      },
+      "UpdatePlatformTenantDto": {
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kolkata"
+          }
+        }
+      },
+      "TenantLifecycleDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "ScheduleTenantDeletionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "legalHoldUntil": {
+            "type": "string",
+            "description": "Optional legal-hold expiry. The purge cannot run before this timestamp.",
+            "example": "2027-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RetryTenantDeletionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PlatformLoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "owner@deltcrm.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "VerifyPlatformMfaDto": {
+        "type": "object",
+        "properties": {
+          "challengeToken": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "challengeToken",
+          "code"
+        ]
+      },
+      "PlatformRefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePlatformModuleDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "LEAVE"
+          },
+          "name": {
+            "type": "string",
+            "example": "Leave Management"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "example": "calendar-days"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "COMING_SOON",
+              "DEPRECATED"
+            ]
+          },
+          "dependencyKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PRODUCT",
+              "ADD_ON"
+            ]
+          },
+          "parentModuleId": {
+            "type": "string"
+          },
+          "catalogOrder": {
+            "type": "number"
+          },
+          "customerVisible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ]
+      },
+      "UpdatePlatformModuleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "COMING_SOON",
+              "DEPRECATED"
+            ]
+          },
+          "dependencyKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PRODUCT",
+              "ADD_ON"
+            ]
+          },
+          "parentModuleId": {
+            "type": "string"
+          },
+          "catalogOrder": {
+            "type": "number"
+          },
+          "customerVisible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReplaceTenantModulesDto": {
+        "type": "object",
+        "properties": {
+          "moduleKeys": {
+            "example": [
+              "ATTENDANCE"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "moduleKeys"
+        ]
+      },
+      "ReplaceTenantCapabilityOverridesDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateImpersonationDto": {
+        "type": "object",
+        "properties": {
+          "targetUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 15
+          }
+        },
+        "required": [
+          "targetUserId",
+          "reason",
+          "scopes",
+          "minutes"
+        ]
+      },
+      "EndImpersonationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "SystemAlertDecisionDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "CreatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformPlanDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "DunningRetryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePlatformLocalePackDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SavePlatformTranslationDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ImportPlatformTranslationsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformTenantLocalePolicyDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ProductTokenDto": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

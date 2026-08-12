@@ -9,7 +9,7 @@ import {
   Prisma,
   SubscriptionStatus,
   TenantStatus,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { HealthService } from '../../../shared/health/health.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {

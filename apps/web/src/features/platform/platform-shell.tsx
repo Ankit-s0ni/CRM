@@ -32,7 +32,7 @@ const navigation = [
   { label: "Tenants", href: "/platform/tenants", icon: Building2, enabled: true },
   { label: "Plans", href: "/platform/plans", icon: CreditCard, enabled: true },
   { label: "Billing", href: "/platform/billing", icon: ClipboardList, enabled: true },
-  { label: "Modules", href: "/platform/modules", icon: Blocks, enabled: true },
+  { label: "Products", href: "/platform/products", icon: Blocks, enabled: true },
   { label: "Audit Logs", href: "/platform/audit", icon: ShieldCheck, enabled: true },
   { label: "Health", href: "/platform/health", icon: Activity, enabled: true },
   {

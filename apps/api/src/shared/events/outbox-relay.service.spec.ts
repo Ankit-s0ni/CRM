@@ -5,7 +5,7 @@ jest.mock('bullmq', () => ({
   })),
 }));
 
-import type { PrismaService } from '../database/prisma.service';
+import type { PlatformDatabaseService } from '../database/platform-database.service';
 import { OutboxRelayService } from './outbox-relay.service';
 
 type AddJob = (
@@ -45,12 +45,12 @@ describe('OutboxRelayService', () => {
       .fn<Promise<{ count: number }>, [unknown]>()
       .mockResolvedValue({ count: 1 });
     type Transaction = { outboxEvent: { updateMany: UpdateEvents } };
-    const prisma = {
-      forAdmin: jest.fn((callback: (tx: Transaction) => Promise<unknown>) =>
+    const database = {
+      transaction: jest.fn((callback: (tx: Transaction) => Promise<unknown>) =>
         callback({ outboxEvent: { updateMany } }),
       ),
-    } as unknown as PrismaService;
-    const service = new OutboxRelayService(prisma);
+    } as unknown as PlatformDatabaseService;
+    const service = new OutboxRelayService(database);
     const relay = service as unknown as RelayInternals;
     relay.queue = { add };
     relay.evidenceDeletionQueue = { add: deletionAdd };
@@ -158,16 +158,16 @@ describe('OutboxRelayService', () => {
       $queryRaw: () => Promise<(typeof persistedEvent)[]>;
       outboxEvent: { updateMany: UpdateEvents };
     };
-    const prisma = {
-      forAdmin: jest.fn(
+    const database = {
+      transaction: jest.fn(
         (callback: (tx: RestartTransaction) => Promise<unknown>) =>
           callback({
             $queryRaw: queryRaw,
             outboxEvent: { updateMany },
           }),
       ),
-    } as unknown as PrismaService;
-    const freshRelay = new OutboxRelayService(prisma);
+    } as unknown as PlatformDatabaseService;
+    const freshRelay = new OutboxRelayService(database);
     (freshRelay as unknown as RelayInternals).queue = { add };
 
     await freshRelay.drain();

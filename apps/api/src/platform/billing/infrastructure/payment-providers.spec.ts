@@ -1,4 +1,4 @@
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '../../../generated/platform-client';
 import { createHmac } from 'node:crypto';
 import { RazorpayProvider, StripeProvider } from './payment-providers';
 

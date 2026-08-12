@@ -5,11 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { timingSafeEqual } from 'node:crypto';
-import type { ProductKey } from '@deltcrm/product-contracts';
+import type { ProductKey } from '@mariya-abdul/deltcrm-product-contracts';
 
 export const AUTHENTICATED_PRODUCT_SERVICE = 'authenticatedProductService';
 
-const PRODUCT_KEYS = new Set<ProductKey>(['HRMS', 'MAIL', 'POS']);
+const PRODUCT_KEY_PATTERN = /^[A-Z][A-Z0-9_]{1,63}$/;
 
 @Injectable()
 export class InternalProductServiceGuard implements CanActivate {
@@ -29,8 +29,8 @@ export class InternalProductServiceGuard implements CanActivate {
     }>();
     const suppliedProduct = this.header(request.headers['x-product-key'])
       ?.trim()
-      .toUpperCase() as ProductKey | undefined;
-    if (!suppliedProduct || !PRODUCT_KEYS.has(suppliedProduct)) {
+      .toUpperCase();
+    if (!suppliedProduct || !PRODUCT_KEY_PATTERN.test(suppliedProduct)) {
       throw this.invalidCredential();
     }
     const supplied = request.headers['x-product-service-key'];
@@ -63,7 +63,7 @@ export class InternalProductServiceGuard implements CanActivate {
             .map(
               ([product, values]) =>
                 [
-                  product.toUpperCase() as ProductKey,
+                  product.toUpperCase(),
                   Array.isArray(values)
                     ? values.filter(
                         (value): value is string =>
@@ -74,20 +74,14 @@ export class InternalProductServiceGuard implements CanActivate {
             )
             .filter(
               ([product, values]) =>
-                PRODUCT_KEYS.has(product) && values.length > 0,
+                PRODUCT_KEY_PATTERN.test(product) && values.length > 0,
             ),
         );
       } catch {
         return new Map<ProductKey, string[]>();
       }
     }
-    const legacy = process.env.PRODUCT_SERVICE_API_KEY;
-    if (legacy) return new Map<ProductKey, string[]>([['HRMS', [legacy]]]);
-    return process.env.NODE_ENV === 'production'
-      ? new Map<ProductKey, string[]>()
-      : new Map<ProductKey, string[]>([
-          ['HRMS', ['local-product-service-key']],
-        ]);
+    return new Map<ProductKey, string[]>();
   }
 
   private header(value: string | string[] | undefined) {

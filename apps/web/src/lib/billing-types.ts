@@ -41,6 +41,25 @@ export type BillingPlan = {
   isActive: boolean;
   modules: BillingModule[];
   capabilities: BillingCapability[];
+  productGrants: Array<{
+    included: boolean;
+    product: { id: string; productKey: string; displayName: string };
+  }>;
+  productCapabilityGrants: Array<{
+    included: boolean;
+    product: { id: string; productKey: string; displayName: string };
+    capability: {
+      id: string;
+      key: string;
+      description: string;
+      commercialType: "CORE" | "ADD_ON";
+    };
+  }>;
+  productLimitGrants: Array<{
+    value: string;
+    product: { id: string; productKey: string; displayName: string };
+    limit: { id: string; key: string; description?: string | null; unit: string };
+  }>;
   _count?: { subscriptions: number };
 };
 

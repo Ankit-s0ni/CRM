@@ -3,7 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DeletionJobStatus, Prisma, TenantStatus } from '@prisma/client';
+import {
+  DeletionJobStatus,
+  Prisma,
+  TenantStatus,
+} from '../../../generated/platform-client';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
   PlatformDatabaseService,

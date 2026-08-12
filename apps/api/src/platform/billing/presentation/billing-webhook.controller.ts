@@ -7,7 +7,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PaymentGateway } from '@prisma/client';
+import { PaymentGateway } from '../../../generated/platform-client';
 import type { Request } from 'express';
 import { BillingWebhookService } from '../application/billing-webhook.service';
 

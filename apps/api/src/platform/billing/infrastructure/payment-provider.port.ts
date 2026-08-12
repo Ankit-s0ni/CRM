@@ -1,4 +1,7 @@
-import { PaymentGateway, PaymentStatus } from '@prisma/client';
+import {
+  PaymentGateway,
+  PaymentStatus,
+} from '../../../generated/platform-client';
 
 export type NormalizedPaymentEvent = {
   provider: PaymentGateway;

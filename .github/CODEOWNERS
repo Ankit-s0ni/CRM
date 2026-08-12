@@ -1,15 +1,29 @@
+# ────────────────────────────────────────────────────────────────────────────────
+# DeltCRM Platform — CODEOWNERS
+# Phase 0 boundary freeze: every path has exactly one owning team.
+# Changes to this file require platform-team + security-team approval.
+# ────────────────────────────────────────────────────────────────────────────────
+
 # Platform-owned control plane and shared integration contracts
 /apps/api/src/platform/ @deltcrm/platform-team
-/packages/product-contracts/ @deltcrm/platform-team @deltcrm/security-team
 /apps/web/src/features/platform/ @deltcrm/platform-team
 
-# HRMS product composition and business data plane
-/apps/api/src/products/attendance/ @deltcrm/hrms-team
-/apps/api/src/products/payroll/ @deltcrm/hrms-team
-/apps/api/src/products/hrms/ @deltcrm/hrms-team @deltcrm/platform-team
-/apps/web/src/features/attendance/ @deltcrm/hrms-team
-/apps/web/src/features/payroll/ @deltcrm/hrms-team
+# Shared infrastructure (database module, events, storage, health, observability)
+/apps/api/src/shared/ @deltcrm/platform-team
 
-# Production schema changes require both data owners and release review.
-/apps/api/prisma/schema.prisma @deltcrm/platform-team @deltcrm/hrms-team @deltcrm/security-team
-/apps/api/prisma/migrations/ @deltcrm/platform-team @deltcrm/hrms-team @deltcrm/security-team
+# Gateway routing and local topology configuration
+/docker-compose.platform-local.yml @deltcrm/platform-team @deltcrm/hrms-team
+/docker-compose.product-separation.yml @deltcrm/platform-team @deltcrm/hrms-team
+/infra/ @deltcrm/platform-team @deltcrm/security-team
+/deploy/ @deltcrm/platform-team @deltcrm/security-team
+
+# Platform schema and migrations — production changes require DBA + security approval
+/apps/api/prisma/schema.prisma @deltcrm/platform-team @deltcrm/security-team
+/apps/api/prisma/migrations/ @deltcrm/platform-team @deltcrm/security-team
+
+# Transitional read-only HRMS mobile copy. HRMS is the canonical owner; Platform
+# review is required until this directory is removed after the migration gates.
+/apps/mobile/ @deltcrm/hrms-team @deltcrm/platform-team @deltcrm/security-team
+
+# CI and pipeline configuration
+/.github/ @deltcrm/platform-team @deltcrm/security-team

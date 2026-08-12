@@ -9,7 +9,7 @@ import {
   PaymentStatus,
   Prisma,
   WebhookReceiptStatus,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { createHash } from 'node:crypto';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import {
@@ -255,16 +255,6 @@ export class BillingWebhookService {
           module: 'platform.billing',
           newValue: evidence,
           requestId: event.eventId,
-        },
-      }),
-      tx.tenantAuditLog.create({
-        data: {
-          tenantId,
-          action: 'billing.webhook.processed',
-          module: 'billing',
-          entityType: 'PaymentTransaction',
-          entityId: transactionId,
-          newValue: evidence,
         },
       }),
     ]);

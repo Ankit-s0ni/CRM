@@ -28,5 +28,18 @@ module.exports = {
       max_restarts: 10,
       restart_delay: 5000,
     },
+    {
+      name: "platform-worker",
+      cwd: "/home/ubuntu/deltcrm-platform",
+      script: "./scripts/pm2-run-worker.sh",
+      interpreter: "/bin/bash",
+      env: {
+        NODE_ENV: "production",
+      },
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 5000,
+    },
   ],
 };

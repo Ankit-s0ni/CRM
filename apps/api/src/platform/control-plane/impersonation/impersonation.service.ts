@@ -4,7 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, TenantStatus, UserStatus } from '@prisma/client';
+import {
+  Prisma,
+  TenantStatus,
+  UserStatus,
+} from '../../../generated/platform-client';
 import { randomUUID } from 'crypto';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
@@ -137,19 +141,6 @@ export class ImpersonationService {
         snapshot,
         tenantId,
       );
-      await tx.tenantAuditLog.create({
-        data: {
-          tenantId,
-          actorUserId: target.id,
-          impersonationSessionId: session.id,
-          action: 'support.impersonation.started',
-          module: 'identity',
-          newValue: this.json(snapshot),
-          ipAddress: metadata.ipAddress,
-          userAgent: metadata.userAgent,
-          requestId: metadata.requestId,
-        },
-      });
       const roles = target.roles.map(({ role }) => role.name);
       const accessToken = this.jwt.sign(
         {
@@ -244,19 +235,6 @@ export class ImpersonationService {
         snapshot,
         session.tenantId,
       );
-      await tx.tenantAuditLog.create({
-        data: {
-          tenantId: session.tenantId,
-          actorUserId: session.targetUserId,
-          impersonationSessionId: id,
-          action: 'support.impersonation.ended',
-          module: 'identity',
-          newValue: this.json(snapshot),
-          ipAddress: metadata.ipAddress,
-          userAgent: metadata.userAgent,
-          requestId: metadata.requestId,
-        },
-      });
       return { session: { ...ended, active: false } };
     });
   }

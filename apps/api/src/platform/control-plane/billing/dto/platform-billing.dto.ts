@@ -1,4 +1,7 @@
-import { BillingPeriod, PaymentGateway } from '@prisma/client';
+import {
+  BillingPeriod,
+  PaymentGateway,
+} from '../../../../generated/platform-client';
 import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,

@@ -2,30 +2,32 @@ import { Suspense } from "react";
 import { Building2, CheckCircle2, ShieldCheck, UsersRound } from "lucide-react";
 import { LoginForm } from "@/features/platform/identity/login-form";
 import { publicLinks } from "@/lib/public-links";
-import { APP_DOMAIN } from "@/lib/app-domain";
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-8">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-card shadow-xl shadow-border/70 lg:grid-cols-[1fr_440px]">
-        <section className="hidden bg-foreground p-10 text-on-tone lg:flex lg:flex-col lg:justify-between">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f7fb] px-4 py-6 sm:px-8 sm:py-10">
+      <div className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-blue-200/40 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-20 size-96 rounded-full bg-indigo-200/40 blur-3xl" />
+      <div className="relative grid w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_24px_80px_-28px_rgba(30,64,175,0.35)] lg:min-h-[680px] lg:grid-cols-[1.08fr_.92fr]">
+        <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#eef4ff] via-white to-[#f5f3ff] p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
+          <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full border-[36px] border-blue-100/70" />
           <div>
-            <div className="inline-flex size-12 items-center justify-center rounded-lg bg-primary text-on-tone shadow-lg shadow-primary/20">
+            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary text-on-tone shadow-lg shadow-primary/25">
               <Building2 className="size-6" />
             </div>
-            <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-on-tone/55">
-              DELTCRM Workspace
+            <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              DeltCRM workspace
             </p>
-            <h1 className="mt-3 max-w-lg text-4xl font-semibold leading-tight tracking-tight">
-              Sign in to your operations workspace
+            <h1 className="mt-4 max-w-xl text-4xl font-semibold leading-[1.08] tracking-tight text-slate-950 xl:text-5xl">
+              One secure home for every product.
             </h1>
-            <p className="mt-4 max-w-md text-sm leading-6 text-on-tone/70">
-              Review attendance, employees, payroll, permissions, and daily HR
-              queues from one focused console.
+            <p className="mt-5 max-w-md text-base leading-7 text-slate-600">
+              Sign in once to move between HRMS, payroll, and the tools your
+              company has enabled for you.
             </p>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 xl:max-w-lg">
             {[
               {
                 icon: UsersRound,
@@ -44,13 +46,15 @@ export default function LoginPage() {
               },
             ].map(({ icon: Icon, title, body }) => (
               <div
-                className="flex gap-3 rounded-lg border border-on-tone/10 bg-card/5 p-4"
+                className="flex gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-sm"
                 key={title}
               >
-                <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-primary">
+                  <Icon className="size-4" />
+                </span>
                 <div>
-                  <div className="text-sm font-semibold">{title}</div>
-                  <div className="mt-1 text-xs leading-5 text-on-tone/60">
+                  <div className="text-sm font-semibold text-slate-900">{title}</div>
+                  <div className="mt-1 text-xs leading-5 text-slate-500">
                     {body}
                   </div>
                 </div>
@@ -59,16 +63,19 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <section className="p-6 sm:p-10">
-          <div className="mb-8 text-center">
-            <div className="mx-auto inline-flex size-14 items-center justify-center rounded-lg bg-primary text-on-tone shadow-lg shadow-primary/20">
+        <section className="flex flex-col justify-center p-6 sm:p-12 lg:p-14">
+          <div className="mb-9">
+            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary text-on-tone shadow-lg shadow-primary/20">
               <Building2 className="size-7" />
             </div>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-              DELTCRM
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+              Welcome back
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              Sign in to your workspace
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              app.{APP_DOMAIN}
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Access your company workspace securely.
             </p>
           </div>
 
@@ -76,7 +83,7 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
 
-          <footer className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+          <footer className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
             <a className="hover:text-foreground" href={publicLinks.privacy}>
               Privacy Policy
             </a>

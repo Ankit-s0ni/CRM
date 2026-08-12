@@ -1,4 +1,4 @@
-import { ProductIntegrationClient } from '@deltcrm/product-contracts/generated';
+import { ProductIntegrationClient } from '@mariya-abdul/deltcrm-product-contracts/generated';
 
 describe('ProductIntegrationClient correlation propagation', () => {
   it('adds correlation headers to user and service requests', async () => {
@@ -61,12 +61,12 @@ describe('ProductIntegrationClient correlation propagation', () => {
       getCorrelationContext: () => ({ requestId: 'ambient-request' }),
     });
 
-    await client.issueToken('hrms-api', 'explicit-request');
+    await client.issueToken('HRMS', 'explicit-request');
 
     const headers = new Headers(requests[0]?.headers);
     expect(headers.get('X-Request-Id')).toBe('explicit-request');
     expect(headers.get('Authorization')).toBe('Bearer platform-session-token');
-    expect(requests[0]?.body).toBe(JSON.stringify({ audience: 'hrms-api' }));
+    expect(requests[0]?.body).toBe(JSON.stringify({ productKey: 'HRMS' }));
     expect(requests[0]?.body).not.toContain('password');
   });
 
@@ -113,7 +113,7 @@ describe('ProductIntegrationClient correlation propagation', () => {
     );
 
     expect(requests[0]?.input).toBe(
-      'https://platform.internal/internal/v1/tenants/0198a4f6-5c53-7e10-8a88-5ab48df8a93a/users/0198a4f6-5c53-7e10-8a88-5ab48df8a93b/identity-status?membershipId=0198a4f6-5c53-7e10-8a88-5ab48df8a93c',
+      'https://platform.internal/internal/platform/v1/products/HRMS/identity/0198a4f6-5c53-7e10-8a88-5ab48df8a93b?tenantId=0198a4f6-5c53-7e10-8a88-5ab48df8a93a&membershipId=0198a4f6-5c53-7e10-8a88-5ab48df8a93c',
     );
     const headers = new Headers(requests[0]?.init.headers);
     expect(headers.get('X-Product-Key')).toBe('HRMS');

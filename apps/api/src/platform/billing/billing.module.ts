@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrivateObjectStorageModule } from '../../shared/storage/private-object-storage.module';
+import { AuditModule } from '../audit/public';
 import { PlatformTenantsModule } from '../control-plane/tenants/platform-tenants.module';
 import { BillingWebhookService } from './application/billing-webhook.service';
 import { BillingService } from './application/billing.service';
@@ -13,7 +14,7 @@ import { BillingWebhookController } from './presentation/billing-webhook.control
 import { BillingController } from './presentation/billing.controller';
 
 @Module({
-  imports: [PrivateObjectStorageModule, PlatformTenantsModule],
+  imports: [AuditModule, PrivateObjectStorageModule, PlatformTenantsModule],
   controllers: [BillingController, BillingWebhookController],
   providers: [
     BillingService,

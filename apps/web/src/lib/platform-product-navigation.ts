@@ -26,7 +26,7 @@ export function usePlatformProductNavigation(enabled = true) {
     let active = true;
     apiClient
       .get<{ items: PlatformNavigationItem[] }>(
-        "/product-integration/navigation",
+        "/product-integration/navigation?client=platform-shell-v2",
       )
       .then(({ data }) => {
         if (active) setItems(data.items);

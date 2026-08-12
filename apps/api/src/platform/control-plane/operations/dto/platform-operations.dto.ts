@@ -11,7 +11,10 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { AlertSeverity, AlertStatus } from '@prisma/client';
+import {
+  AlertSeverity,
+  AlertStatus,
+} from '../../../../generated/platform-client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PaginationQueryDto {

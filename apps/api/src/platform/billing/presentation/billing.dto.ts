@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentGateway, PaymentMethodType } from '@prisma/client';
+import {
+  PaymentGateway,
+  PaymentMethodType,
+} from '../../../generated/platform-client';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,

@@ -55,6 +55,59 @@ export type PlatformCapability = {
   displayOrder: number;
 };
 
+export type RegisteredProduct = {
+  id: string;
+  productKey: string;
+  audience: string;
+  displayName: string;
+  description: string;
+  status: "DRAFT" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+  webPath: string;
+  apiPrefix: string;
+  version: number;
+  activeRevision: null | {
+    manifestVersion: string;
+    schemaVersion: number;
+    contentHash: string;
+    manifest: {
+      navigation: { key: string; labelKey: string; iconKey: string };
+      lifecycle: { mode: string; consumes: string[]; publishes: string[] };
+      health: { livenessPath: string; readinessPath: string };
+      localization: { supportedLocales: string[]; namespaces: string[] };
+    };
+  };
+  permissions: Array<{ key: string; description: string; deprecated: boolean }>;
+  capabilities: Array<{
+    key: string;
+    description: string;
+    required: boolean;
+    commercialType: "CORE" | "ADD_ON";
+    dependencyKeys: string[];
+    conflictKeys: string[];
+  }>;
+  limits: Array<{ key: string; description: string | null; unit: string; enforcement: string }>;
+  deployments: Array<{
+    environment: string;
+    region: string | null;
+    health: string;
+    maintenance: boolean;
+    lastHealthCheckAt: string | null;
+  }>;
+};
+
+export type EffectiveProductEntitlements = {
+  tenantId: string;
+  subscriptionStatus: string;
+  version: number;
+  effectiveAt: string;
+  products: Array<{
+    key: string;
+    active: boolean;
+    capabilities: Record<string, boolean>;
+    limits: Record<string, number>;
+  }>;
+};
+
 export type TenantListItem = {
   id: string;
   companyName: string;

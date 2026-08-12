@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  GoneException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -10,7 +11,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../../../shared/http/current-user.decorator';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
@@ -99,16 +100,12 @@ export class PlatformTenantModulesController {
   @Put()
   @RequirePlatformPermissions('platform.modules.manage')
   @ApiOperation({ summary: 'Atomically replace active tenant modules' })
-  replace(
-    @Param('tenantId', ParseUUIDPipe) tenantId: string,
-    @Body() dto: ReplaceTenantModulesDto,
-    @CurrentUser() actor: AuthenticatedPlatformUser,
-    @Req() request: Request,
-  ) {
-    return this.modules.replaceTenantModules(tenantId, dto, actor, {
-      ipAddress: request.ip,
-      userAgent: request.get('user-agent'),
-      requestId: String(request.headers['x-request-id'] ?? ''),
+  @ApiBody({ type: ReplaceTenantModulesDto })
+  replace() {
+    throw new GoneException({
+      code: 'LEGACY_MODULE_ASSIGNMENT_RETIRED',
+      message:
+        'Direct module assignments are retired. Configure product plan grants or bounded product overrides.',
     });
   }
 }

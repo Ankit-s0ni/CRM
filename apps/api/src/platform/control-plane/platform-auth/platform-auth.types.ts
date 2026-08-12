@@ -1,4 +1,4 @@
-import type { PlatformRole } from '@prisma/client';
+import type { PlatformRole } from '../../../generated/platform-client';
 
 export interface AuthenticatedPlatformUser {
   platformUserId: string;

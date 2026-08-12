@@ -6,11 +6,16 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prebuild": "pnpm --dir ../.. --filter @deltcrm/product-contracts build && prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:generate:platform": "prisma generate --schema=prisma/platform/schema.prisma",
+    "prisma:generate:all": "pnpm prisma:generate && pnpm prisma:generate:platform",
+    "prisma:seed:platform": "node prisma/platform-seed.js",
+    "prisma:migrate:deploy:platform": "prisma migrate deploy --schema=prisma/platform/schema.prisma",
+    "prebuild": "pnpm prisma:generate:all",
     "build": "nest build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "prestart": "pnpm --dir ../.. --filter @deltcrm/product-contracts build",
+    "prestart": "pnpm prisma:generate:all",
     "start": "nest start --entryFile platform-main",
     "start:dev": "nest start --entryFile platform-main --watch",
     "start:platform:dev": "nest start --entryFile platform-main --watch",
@@ -24,16 +29,17 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:architecture": "jest src/shared/tests/platform-schema-purity.spec.ts --no-coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "architecture:check": "ts-node scripts/check-architecture.ts",
     "architecture:test": "ts-node scripts/check-architecture.ts --self-test",
-    "quality": "pnpm architecture:test && pnpm typecheck && pnpm lint && pnpm build",
+    "quality": "pnpm test:architecture && pnpm architecture:test && pnpm typecheck && pnpm lint && pnpm build",
     "openapi:export": "ts-node scripts/export-openapi.ts",
     "ops:observability-drill": "ts-node scripts/observability-drill.ts"
   },
   "dependencies": {
-    "@deltcrm/product-contracts": "workspace:*",
+    "@mariya-abdul/deltcrm-product-contracts": "2.0.0",
     "@aws-sdk/client-s3": "^3.1087.0",
     "@aws-sdk/s3-request-presigner": "^3.1087.0",
     "@casl/ability": "^7.0.1",
@@ -52,6 +58,7 @@
     "@opentelemetry/semantic-conventions": "^1.43.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@prisma/client-runtime-utils": "7.8.0",
     "@sentry/node": "^10.66.0",
     "argon2": "^0.44.0",
     "bullmq": "^5.80.3",
@@ -114,11 +121,6 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "moduleNameMapper": {
-      "^@deltcrm/product-contracts/generated$": "<rootDir>/../../../packages/product-contracts/generated/product-integration-client.ts",
-      "^@deltcrm/product-contracts/hrms$": "<rootDir>/../../../packages/product-contracts/src/hrms.ts",
-      "^@deltcrm/product-contracts$": "<rootDir>/../../../packages/product-contracts/src/index.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

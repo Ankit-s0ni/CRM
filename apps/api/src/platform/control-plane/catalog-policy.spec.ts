@@ -1,4 +1,4 @@
-import { ModuleAvailability } from '@prisma/client';
+import { ModuleAvailability } from '../../generated/platform-client';
 import {
   CatalogSelectionError,
   resolveCatalogSelection,

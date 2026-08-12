@@ -21,6 +21,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@mariya-abdul/deltcrm-product-contracts':
+        specifier: 2.0.0
+        version: 2.0.0
       '@aws-sdk/client-s3':
         specifier: ^3.1087.0
         version: 3.1087.0
@@ -33,9 +36,6 @@ importers:
       '@casl/prisma':
         specifier: ^2.0.2
         version: 2.0.2(@casl/ability@7.0.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))
-      '@deltcrm/product-contracts':
-        specifier: workspace:*
-        version: link:../../packages/product-contracts
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -78,6 +78,9 @@ importers:
       '@prisma/client':
         specifier: ^7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client-runtime-utils':
+        specifier: 7.8.0
+        version: 7.8.0
       '@sentry/node':
         specifier: ^10.66.0
         version: 10.66.0(@opentelemetry/core@2.9.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.220.0(@opentelemetry/api@1.9.1))
@@ -419,6 +422,10 @@ packages:
   '@angular-devkit/schematics@19.2.27':
     resolution: {integrity: sha512-/PZmyAlb2NGWPikRRuiWLdfHQd8Wrx6lX4HqvTcaDhlU43M3T0ud4PH2T3QDp7BzHYY92xtD8iPxX2asg67G1A==}
     engines: {node: ^18.19.1 || ^20.11.1 || >=22.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
+
+  '@mariya-abdul/deltcrm-product-contracts@2.0.0':
+    resolution: {integrity: sha512-6ak+F+9w9Qkqb8sEaTgPVnrp7Ru4cJnOY6y3jxbq5LOCH/N1e4Ajl0s7Tt5KPFi4vLw9noEQc9Icn5Bufdwepg==}
+    hasBin: true
 
   '@apm-js-collab/code-transformer-bundler-plugins@0.6.2':
     resolution: {integrity: sha512-5vBrtIEL+UVbO0YWWoyYG4QMgR+ZfnIL3xlteIkAmU7YaAPhc28k3md/NM14tnkfXKjKOn9yUzEA9AYUmNpvJg==}
@@ -6811,6 +6818,8 @@ snapshots:
       rxjs: 7.8.1
     transitivePeerDependencies:
       - chokidar
+
+  '@mariya-abdul/deltcrm-product-contracts@2.0.0': {}
 
   '@apm-js-collab/code-transformer-bundler-plugins@0.6.2':
     dependencies:

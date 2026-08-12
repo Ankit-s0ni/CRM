@@ -3,18 +3,28 @@ import { JwtModule } from '@nestjs/jwt';
 import {
   PRODUCT_PLATFORM_PORT,
   PRODUCT_TOKEN_VERIFICATION_KEY,
-} from '@deltcrm/product-contracts';
+} from '@mariya-abdul/deltcrm-product-contracts';
 import { ProductIntegrationService } from './product-integration.service';
+import { ProductEntitlementService } from './product-entitlement.service';
+import { ProductRegistryService } from './product-registry.service';
 import { ProductSigningKeyService } from './product-signing-key.service';
+import { ProductOperationsService } from './product-operations.service';
+import { ProductHealthService } from './product-health.service';
+import { ProductCommercialService } from './product-commercial.service';
 
-// Temporary in-process adapter used until HRMS calls the Platform contract over
-// the internal service boundary. It deliberately exposes no HTTP controllers.
+// Generic in-process Platform protocol adapter. Product services consume the
+// same contract over the authenticated HTTP boundary.
 @Global()
 @Module({
   imports: [JwtModule.register({})],
   providers: [
     ProductSigningKeyService,
+    ProductRegistryService,
+    ProductEntitlementService,
     ProductIntegrationService,
+    ProductOperationsService,
+    ProductHealthService,
+    ProductCommercialService,
     {
       provide: PRODUCT_PLATFORM_PORT,
       useExisting: ProductIntegrationService,
@@ -30,6 +40,11 @@ import { ProductSigningKeyService } from './product-signing-key.service';
   ],
   exports: [
     ProductIntegrationService,
+    ProductRegistryService,
+    ProductEntitlementService,
+    ProductOperationsService,
+    ProductHealthService,
+    ProductCommercialService,
     PRODUCT_PLATFORM_PORT,
     PRODUCT_TOKEN_VERIFICATION_KEY,
   ],

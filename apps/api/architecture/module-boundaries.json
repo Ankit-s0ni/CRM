@@ -87,8 +87,8 @@
     "identity": ["localization", "notifications", "workspace"],
     "localization": ["audit", "tenancy"],
     "notifications": ["tenancy"],
-    "platform": ["billing", "identity", "localization", "notifications", "product-integration"],
-    "product-integration": ["identity"],
+    "platform": ["billing", "identity", "localization", "notifications"],
+    "product-integration": ["identity", "platform"],
     "tenant-audit": ["identity", "tenancy"],
     "workspace": ["localization", "workspace-settings"],
     "workspace-settings": ["audit", "tenancy"]

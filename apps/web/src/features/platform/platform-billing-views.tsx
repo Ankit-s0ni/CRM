@@ -32,7 +32,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import { platformApiClient } from "@/lib/platform-api-client";
 import { usePlatformAuthStore } from "@/lib/platform-auth-store";
-import type { PlatformModule } from "@/lib/platform-types";
+import type { PlatformModule, RegisteredProduct } from "@/lib/platform-types";
 import type {
   BillingDashboardData,
   BillingInvoice,
@@ -164,7 +164,7 @@ export function PlatformPlansView() {
   );
   const canManage = permissions.includes("platform.plans.manage");
   const [plans, setPlans] = useState<BillingPlan[]>([]);
-  const [modules, setModules] = useState<PlatformModule[]>([]);
+  const [products, setProducts] = useState<RegisteredProduct[]>([]);
   const [selected, setSelected] = useState<BillingPlan | null | undefined>(
     undefined,
   );
@@ -172,12 +172,12 @@ export function PlatformPlansView() {
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     try {
-      const [planResponse, moduleResponse] = await Promise.all([
+      const [planResponse, productResponse] = await Promise.all([
         platformApiClient.get<{ data: BillingPlan[] }>("/platform/plans"),
-        platformApiClient.get<{ data: PlatformModule[] }>("/platform/catalog"),
+        platformApiClient.get<RegisteredProduct[]>("/platform/products"),
       ]);
       setPlans(planResponse.data.data);
-      setModules(moduleResponse.data.data);
+      setProducts(productResponse.data);
       setError("");
     } catch {
       setError("Plans and feature bundles could not be loaded.");
@@ -189,12 +189,12 @@ export function PlatformPlansView() {
     let active = true;
     Promise.all([
       platformApiClient.get<{ data: BillingPlan[] }>("/platform/plans"),
-      platformApiClient.get<{ data: PlatformModule[] }>("/platform/catalog"),
+      platformApiClient.get<RegisteredProduct[]>("/platform/products"),
     ])
-      .then(([planResponse, moduleResponse]) => {
+      .then(([planResponse, productResponse]) => {
         if (!active) return;
         setPlans(planResponse.data.data);
-        setModules(moduleResponse.data.data);
+        setProducts(productResponse.data);
       })
       .catch(() => {
         if (active) setError("Plans and feature bundles could not be loaded.");
@@ -209,7 +209,7 @@ export function PlatformPlansView() {
   return (
     <BillingPage
       title="Plans & entitlements"
-      description="Define exactly which products, Attendance features, add-ons and employee limits each plan grants."
+      description="Define registered products, core capabilities, optional add-ons, and typed limits for each commercial plan."
       action={
         canManage ? (
           <Button
@@ -277,12 +277,12 @@ export function PlatformPlansView() {
                 />
               </div>
               <div className="mt-5 flex flex-wrap gap-1.5">
-                {plan.modules.map(({ module }) => (
+                {plan.productGrants?.filter(({ included }) => included).map(({ product }) => (
                   <span
                     className="rounded-lg theme-tone theme-tone-emerald px-2 py-1 text-[10px] font-semibold"
-                    key={module.id}
+                    key={product.id}
                   >
-                    {module.name}
+                    {product.displayName}
                   </span>
                 ))}
               </div>
@@ -291,18 +291,18 @@ export function PlatformPlansView() {
                   Included features
                 </div>
                 <div className="space-y-2">
-                  {plan.capabilities?.slice(0, 6).map(({ capability }) => (
+                  {plan.productCapabilityGrants?.filter(({ included }) => included).slice(0, 6).map(({ capability }) => (
                     <div
                       className="flex items-center gap-2 text-xs"
                       key={capability.id}
                     >
                       <Check className="size-3.5 theme-tone-text" />
-                      {capability.name}
+                      {capability.description || capability.key}
                     </div>
                   ))}
-                  {(plan.capabilities?.length ?? 0) > 6 && (
+                  {(plan.productCapabilityGrants?.filter(({ included }) => included).length ?? 0) > 6 && (
                     <div className="text-xs font-semibold text-foreground">
-                      +{plan.capabilities.length - 6} more features
+                      +{plan.productCapabilityGrants.filter(({ included }) => included).length - 6} more features
                     </div>
                   )}
                 </div>
@@ -314,7 +314,7 @@ export function PlatformPlansView() {
       {selected !== undefined && (
         <PlanEditor
           plan={selected}
-          modules={modules}
+          products={products}
           onClose={() => setSelected(undefined)}
           onSaved={() => {
             setSelected(undefined);
@@ -745,6 +745,194 @@ function BillingFilters({
 }
 
 function PlanEditor({
+  plan,
+  products,
+  onClose,
+  onSaved,
+}: {
+  plan: BillingPlan | null;
+  products: RegisteredProduct[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const activeProducts = products.filter(({ status }) => status === "ACTIVE");
+  const existingProductIds = new Set(
+    plan?.productGrants?.filter(({ included }) => included).map(({ product }) => product.id) ?? [],
+  );
+  const [value, setValue] = useState({
+    name: plan?.name ?? "",
+    description: plan?.description ?? "",
+    pricePerUser: plan?.pricePerUser ?? "",
+    currency: plan?.currency ?? "OMR",
+    maxEmployees: plan?.maxEmployees ?? 100,
+    billingPeriod: plan?.billingPeriod ?? "MONTHLY",
+    isActive: plan?.isActive ?? true,
+  });
+  const [configuration, setConfiguration] = useState(() =>
+    Object.fromEntries(
+      activeProducts.map((product) => [
+        product.productKey,
+        {
+          included: existingProductIds.has(product.id),
+          capabilities: Object.fromEntries(
+            product.capabilities.map((capability) => [
+              capability.key,
+              capability.required ||
+                Boolean(
+                  plan?.productCapabilityGrants?.some(
+                    (grant) => grant.capability.key === capability.key && grant.included,
+                  ),
+                ),
+            ]),
+          ),
+          limits: Object.fromEntries(
+            product.limits.map((limit) => [
+              limit.key,
+              Number(
+                plan?.productLimitGrants?.find((grant) => grant.limit.key === limit.key)?.value ??
+                  (limit.key.endsWith("_EMPLOYEES") ? value.maxEmployees : 0),
+              ),
+            ]),
+          ),
+        },
+      ]),
+    ),
+  );
+  const [impact, setImpact] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  function toggleCapability(product: RegisteredProduct, capabilityKey: string, enabled: boolean) {
+    const current = configuration[product.productKey];
+    const next = { ...current.capabilities, [capabilityKey]: enabled };
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const capability of product.capabilities) {
+        if (!next[capability.key]) continue;
+        for (const dependency of capability.dependencyKeys) {
+          if (!next[dependency]) {
+            next[dependency] = true;
+            changed = true;
+          }
+        }
+      }
+    }
+    setConfiguration({
+      ...configuration,
+      [product.productKey]: { ...current, capabilities: next },
+    });
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      if (plan && impact === null) {
+        const previews = await Promise.all(
+          activeProducts.map((product) =>
+            platformApiClient.post<{ affectedTenantCount: number }>(
+              `/platform/plans/${plan.id}/products/${product.productKey}/impact`,
+              payloadFor(product),
+            ),
+          ),
+        );
+        setImpact(Math.max(0, ...previews.map(({ data }) => data.affectedTenantCount)));
+        return;
+      }
+      const commercial = { ...value, moduleKeys: [], capabilityKeys: [], impactAcknowledged: true };
+      let planId = plan?.id;
+      if (planId) {
+        await platformApiClient.patch(`/platform/plans/${planId}`, commercial);
+      } else {
+        const response = await platformApiClient.post<{ data: BillingPlan }>(
+          "/platform/plans",
+          commercial,
+        );
+        planId = response.data.data.id;
+      }
+      await Promise.all(
+        activeProducts.map((product) =>
+          platformApiClient.put(
+            `/platform/plans/${planId}/products/${product.productKey}`,
+            payloadFor(product),
+            { headers: { "Idempotency-Key": crypto.randomUUID() } },
+          ),
+        ),
+      );
+      onSaved();
+    } catch (cause) {
+      const message = (cause as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setError(message || "The registry-backed plan could not be saved.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function payloadFor(product: RegisteredProduct) {
+    const selected = configuration[product.productKey];
+    return {
+      included: selected.included,
+      capabilities: product.capabilities.map((capability) => ({
+        capabilityKey: capability.key,
+        included: selected.included && (capability.required || Boolean(selected.capabilities[capability.key])),
+      })),
+      limits: product.limits.map((limit) => ({
+        limitKey: limit.key,
+        value: Number(selected.limits[limit.key] ?? 0),
+      })),
+    };
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-foreground/45 p-4">
+      <form className="mx-auto my-8 w-full max-w-4xl rounded-2xl bg-card p-6 shadow-2xl" onSubmit={submit}>
+        <div className="flex items-start gap-4">
+          <div className="grid size-11 place-items-center rounded-xl bg-muted"><Boxes /></div>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold">{plan ? "Edit plan" : "Create plan"}</h2>
+            <p className="mt-1 text-sm text-on-surface-variant">Commercial details are resolved from registered products, capabilities, add-ons, and typed limits.</p>
+          </div>
+          <button aria-label="Close" type="button" onClick={onClose}><X /></button>
+        </div>
+        {error && <div className="mt-5"><BillingError message={error} /></div>}
+        {impact !== null && (
+          <div className="mt-5"><BillingNotice tone="warning">Impact reviewed: {impact} active tenant subscriptions will be recalculated. Submit again to confirm.</BillingNotice></div>
+        )}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-semibold">Plan name<Input className="mt-2" value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} required /></label>
+          <label className="text-sm font-semibold">Price per employee<Input className="mt-2" type="number" min="0" step="0.001" value={value.pricePerUser} onChange={(event) => setValue({ ...value, pricePerUser: event.target.value })} required /></label>
+          <label className="text-sm font-semibold">Currency<select className="mt-2 h-10 w-full rounded-lg border bg-card px-3" value={value.currency} onChange={(event) => setValue({ ...value, currency: event.target.value })}><option>OMR</option><option>INR</option><option>USD</option><option>AED</option></select></label>
+          <label className="text-sm font-semibold">Employee ceiling<Input className="mt-2" type="number" min="1" value={value.maxEmployees} onChange={(event) => setValue({ ...value, maxEmployees: Number(event.target.value) })} required /></label>
+          <label className="text-sm font-semibold sm:col-span-2">Description<Input className="mt-2" value={value.description ?? ""} onChange={(event) => setValue({ ...value, description: event.target.value })} /></label>
+        </div>
+        <div className="mt-7 space-y-4">
+          {activeProducts.map((product) => {
+            const selected = configuration[product.productKey];
+            return (
+              <section className="rounded-2xl border border-outline-variant p-5" key={product.id}>
+                <div className="flex items-start gap-3">
+                  <Checkbox checked={selected.included} onCheckedChange={(checked) => setConfiguration({ ...configuration, [product.productKey]: { ...selected, included: checked === true } })} />
+                  <div><h3 className="font-bold">{product.displayName}</h3><p className="text-xs text-outline">{product.productKey} · manifest {product.activeRevision?.manifestVersion}</p></div>
+                </div>
+                {selected.included && (
+                  <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                    <div><div className="mb-3 text-xs font-bold uppercase text-outline">Capabilities and add-ons</div><div className="space-y-3">{product.capabilities.map((capability) => <label className="flex items-start gap-3 text-sm" key={capability.key}><Checkbox checked={capability.required || selected.capabilities[capability.key]} disabled={capability.required} onCheckedChange={(checked) => toggleCapability(product, capability.key, checked === true)} /><span><strong>{capability.description}</strong><span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px]">{capability.required ? "REQUIRED" : capability.commercialType}</span></span></label>)}</div></div>
+                    <div><div className="mb-3 text-xs font-bold uppercase text-outline">Typed limits</div><div className="space-y-3">{product.limits.map((limit) => <label className="block text-sm font-semibold" key={limit.key}>{limit.description || limit.key}<Input className="mt-1" type="number" min="0" value={selected.limits[limit.key] ?? 0} onChange={(event) => setConfiguration({ ...configuration, [product.productKey]: { ...selected, limits: { ...selected.limits, [limit.key]: Number(event.target.value) } } })} /><span className="text-xs font-normal text-outline">{limit.unit} · {limit.enforcement}</span></label>)}</div></div>
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
+        <div className="mt-7 flex justify-end gap-3"><Button type="button" variant="outline" onClick={onClose}>Cancel</Button><Button className="bg-primary text-on-tone" disabled={busy || !value.name || !value.pricePerUser}>{busy ? "Saving..." : plan && impact === null ? "Review impact" : "Save plan"}</Button></div>
+      </form>
+    </div>
+  );
+}
+
+function LegacyPlanEditor({
   plan,
   modules,
   onClose,

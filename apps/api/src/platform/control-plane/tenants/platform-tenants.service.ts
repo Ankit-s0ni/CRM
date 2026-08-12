@@ -10,7 +10,7 @@ import {
   SubscriptionStatus,
   TenantStatus,
   TokenPurpose,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { createHash, randomBytes } from 'crypto';
 import * as argon2 from 'argon2';
 import {
@@ -562,16 +562,6 @@ export class PlatformTenantsService {
               reason,
               actor: 'billing-system',
             }),
-            requestId,
-          },
-        }),
-        tx.tenantAuditLog.create({
-          data: {
-            tenantId: id,
-            action: `billing.tenant.${action === 'suspend' ? 'suspended' : 'reactivated'}`,
-            module: 'billing',
-            oldValue: this.json({ status: tenant.status }),
-            newValue: this.json({ status: updated.status, reason }),
             requestId,
           },
         }),

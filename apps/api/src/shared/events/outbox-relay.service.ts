@@ -4,10 +4,10 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
-import { PrismaService } from '../database/prisma.service';
+import { Prisma } from '../../generated/platform-client';
+import { PlatformDatabaseService } from '../database/platform-database.service';
 
 type ClaimedEvent = {
   id: string;
@@ -25,10 +25,11 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
   private readonly evidenceDeletionQueue: Queue;
   private readonly notificationQueue: Queue;
   private readonly leaveEventQueue: Queue;
+  private readonly productLifecycleQueues = new Map<string, Queue>();
   private timer?: NodeJS.Timeout;
   private draining = false;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(private readonly database: PlatformDatabaseService) {
     const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379');
     this.queue = new Queue('domain-events', {
       connection: redisConnection(url),
@@ -58,6 +59,9 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
       this.evidenceDeletionQueue.close(),
       this.notificationQueue.close(),
       this.leaveEventQueue.close(),
+      ...[...this.productLifecycleQueues.values()].map((queue) =>
+        queue.close(),
+      ),
     ]);
   }
 
@@ -81,7 +85,7 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
     const batchSize = Number(process.env.OUTBOX_BATCH_SIZE ?? 50);
     const leaseSeconds = Number(process.env.OUTBOX_LEASE_SECONDS ?? 60);
 
-    return this.prisma.forAdmin(
+    return this.database.transaction(
       (tx) =>
         tx.$queryRaw<ClaimedEvent[]>`
         WITH candidates AS (
@@ -106,7 +110,11 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
 
   private async publish(event: ClaimedEvent) {
     try {
-      await this.queue.add(
+      const productKey = this.lifecycleProductKey(event.payload);
+      const destination = productKey
+        ? this.productLifecycleQueue(productKey)
+        : this.queue;
+      await destination.add(
         event.eventKey,
         {
           eventId: event.id,
@@ -176,25 +184,37 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
         );
       }
 
-      await this.prisma.forAdmin((tx) =>
-        tx.outboxEvent.updateMany({
+      await this.database.transaction(async (tx) => {
+        const publishedAt = new Date();
+        await tx.outboxEvent.updateMany({
           where: { id: event.id, lockedBy: this.workerId },
           data: {
-            publishedAt: new Date(),
+            publishedAt,
             lockedAt: null,
             lockedBy: null,
             lastError: null,
           },
-        }),
-      );
+        });
+        const lifecycleEventId = this.lifecycleEventId(event.payload);
+        if (lifecycleEventId) {
+          await tx.productLifecycleDelivery.updateMany({
+            where: { eventId: lifecycleEventId },
+            data: {
+              publishedAt,
+              attemptCount: { increment: 1 },
+              lastError: null,
+            },
+          });
+        }
+      });
     } catch (error) {
       const nextAttempt = event.attemptCount + 1;
       const maxAttempts = Number(process.env.OUTBOX_MAX_ATTEMPTS ?? 10);
       const delaySeconds = Math.min(300, 2 ** Math.min(nextAttempt, 8));
       const message = error instanceof Error ? error.message : String(error);
 
-      await this.prisma.forAdmin((tx) =>
-        tx.outboxEvent.updateMany({
+      await this.database.transaction(async (tx) => {
+        await tx.outboxEvent.updateMany({
           where: { id: event.id, lockedBy: this.workerId },
           data: {
             attemptCount: nextAttempt,
@@ -204,9 +224,50 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
             lockedAt: null,
             lockedBy: null,
           },
-        }),
-      );
+        });
+        const lifecycleEventId = this.lifecycleEventId(event.payload);
+        if (lifecycleEventId) {
+          await tx.productLifecycleDelivery.updateMany({
+            where: { eventId: lifecycleEventId },
+            data: {
+              attemptCount: { increment: 1 },
+              deadLetteredAt: nextAttempt >= maxAttempts ? new Date() : null,
+              lastError: message.slice(0, 1000),
+            },
+          });
+        }
+      });
     }
+  }
+
+  private lifecycleEventId(payload: Prisma.JsonValue) {
+    if (!payload || Array.isArray(payload) || typeof payload !== 'object')
+      return null;
+    const eventId = (payload as Record<string, Prisma.JsonValue>).eventId;
+    return typeof eventId === 'string' ? eventId : null;
+  }
+
+  private lifecycleProductKey(payload: Prisma.JsonValue) {
+    if (!payload || Array.isArray(payload) || typeof payload !== 'object')
+      return null;
+    const body = (payload as Record<string, Prisma.JsonValue>).payload;
+    if (!body || Array.isArray(body) || typeof body !== 'object') return null;
+    const key = (body as Record<string, Prisma.JsonValue>).productKey;
+    return typeof key === 'string' && /^[A-Z][A-Z0-9_]{1,63}$/.test(key)
+      ? key
+      : null;
+  }
+
+  private productLifecycleQueue(productKey: string) {
+    let queue = this.productLifecycleQueues.get(productKey);
+    if (!queue) {
+      const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6379');
+      queue = new Queue(`product-lifecycle-${productKey}`, {
+        connection: redisConnection(url),
+      });
+      this.productLifecycleQueues.set(productKey, queue);
+    }
+    return queue;
   }
 }
 

@@ -11,7 +11,7 @@ import {
   PaymentStatus,
   Prisma,
   SubscriptionStatus,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { randomUUID } from 'node:crypto';
 import {
   DunningService,
@@ -67,6 +67,11 @@ export class PlatformBillingService {
         include: {
           modules: { include: { module: true } },
           capabilities: { include: { capability: true } },
+          productGrants: { include: { product: true } },
+          productCapabilityGrants: {
+            include: { product: true, capability: true },
+          },
+          productLimitGrants: { include: { product: true, limit: true } },
           _count: { select: { subscriptions: true } },
         },
         orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
@@ -111,6 +116,11 @@ export class PlatformBillingService {
           include: {
             modules: { include: { module: true } },
             capabilities: { include: { capability: true } },
+            productGrants: { include: { product: true } },
+            productCapabilityGrants: {
+              include: { product: true, capability: true },
+            },
+            productLimitGrants: { include: { product: true, limit: true } },
           },
         });
         await this.audit(
@@ -798,7 +808,9 @@ export class PlatformBillingService {
 
   private planConflict(error: unknown): never {
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
       error.code === 'P2002'
     ) {
       throw new ConflictException({
@@ -826,7 +838,7 @@ function pagination(query: { page: number; limit: number }, total: number) {
 function serialize<T>(value: T): T {
   return JSON.parse(
     JSON.stringify(value, (_key, item: unknown) =>
-      Prisma.Decimal.isDecimal(item) ? item.toString() : item,
+      Prisma.Decimal.isDecimal(item) ? String(item) : item,
     ),
   ) as T;
 }

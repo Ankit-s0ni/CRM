@@ -3,7 +3,7 @@ import {
   ModuleAvailability,
   ModuleKind,
   TenantOverrideMode,
-} from '@prisma/client';
+} from '../../../../generated/platform-client';
 import {
   ArrayMaxSize,
   ArrayUnique,

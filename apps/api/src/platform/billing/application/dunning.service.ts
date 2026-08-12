@@ -5,7 +5,7 @@ import {
   Prisma,
   SubscriptionStatus,
   TenantStatus,
-} from '@prisma/client';
+} from '../../../generated/platform-client';
 import { randomUUID } from 'node:crypto';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import {
@@ -259,14 +259,6 @@ export class DunningService {
           module: 'platform.billing',
           newValue: payload as Prisma.InputJsonValue,
           requestId: randomUUID(),
-        },
-      }),
-      tx.tenantAuditLog.create({
-        data: {
-          tenantId,
-          action: eventKey,
-          module: 'billing',
-          newValue: payload as Prisma.InputJsonValue,
         },
       }),
     ]);

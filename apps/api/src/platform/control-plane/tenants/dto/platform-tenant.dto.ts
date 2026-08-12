@@ -17,7 +17,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TenantStatus } from '@prisma/client';
+import { TenantStatus } from '../../../../generated/platform-client';
 
 export class CreatePlatformTenantDto {
   @ApiProperty({ example: 'Oman Tech Solutions' })

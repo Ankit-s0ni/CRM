@@ -1,4 +1,8 @@
-import { ModuleAvailability, PlatformRole, TenantStatus } from '@prisma/client';
+import {
+  ModuleAvailability,
+  PlatformRole,
+  TenantStatus,
+} from '../../generated/platform-client';
 import {
   impersonationScopeViolation,
   isReservedSubdomain,

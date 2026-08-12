@@ -3,9 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ModuleAvailability, Prisma } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import type { ProductLifecycleEvent } from '@deltcrm/product-contracts';
+import { ModuleAvailability, Prisma } from '../../../generated/platform-client';
 import { OutboxService } from '../../../shared/events/outbox.service';
 import type { AuthenticatedPlatformUser } from '../platform-auth/platform-auth.types';
 import {
@@ -24,7 +22,6 @@ import {
   CatalogSelectionError,
   resolveCatalogSelection,
 } from '../catalog-policy';
-import { resolveHrmsLifecycleTransition } from '../../product-integration/public';
 
 type RequestMetadata = {
   ipAddress?: string;
@@ -96,7 +93,9 @@ export class PlatformModulesService {
       })
       .catch((error: unknown) => {
         if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
           error.code === 'P2002'
         ) {
           throw new ConflictException({
@@ -457,10 +456,6 @@ export class PlatformModulesService {
         include: { module: true },
       });
       const effectiveKeys = active.map(({ module }) => module.key).sort();
-      const lifecycleEventType = resolveHrmsLifecycleTransition(
-        oldKeys,
-        effectiveKeys,
-      );
       await this.systemAudit(
         tx,
         actor,
@@ -470,46 +465,12 @@ export class PlatformModulesService {
         { tenantId, moduleKeys: effectiveKeys },
         tenantId,
       );
-      await tx.tenantAuditLog.create({
-        data: {
-          tenantId,
-          action: 'workspace.modules.replaced',
-          module: 'workspace',
-          oldValue: this.json({ moduleKeys: oldKeys }),
-          newValue: this.json({ moduleKeys: effectiveKeys }),
-          ipAddress: metadata.ipAddress,
-          userAgent: metadata.userAgent,
-          requestId: metadata.requestId,
-        },
-      });
       await this.outbox.append(tx, {
         tenantId,
         eventKey: 'tenant.modules.replaced',
         payload: { tenantId, moduleKeys: effectiveKeys },
       });
-      const entitlementVersion = await bumpRuntimeConfigVersion(tx, tenantId);
-      if (lifecycleEventType) {
-        const event: ProductLifecycleEvent = {
-          eventId: randomUUID(),
-          eventType: lifecycleEventType,
-          occurredAt: now.toISOString(),
-          producer: 'PLATFORM',
-          tenantId,
-          actorId: actor.platformUserId,
-          correlationId: metadata.requestId ?? randomUUID(),
-          schemaVersion: 1,
-          payload: {
-            productKey: 'HRMS',
-            entitlementVersion,
-            requestedBy: actor.platformUserId,
-          },
-        };
-        await this.outbox.append(tx, {
-          tenantId,
-          eventKey: event.eventType,
-          payload: this.json(event)!,
-        });
-      }
+      await bumpRuntimeConfigVersion(tx, tenantId);
       return this.tenantModulesInTransaction(tx, tenantId);
     });
   }

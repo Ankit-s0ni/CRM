@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM node:22-alpine
 
 # Install pnpm
@@ -9,7 +10,8 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies for the whole workspace
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=secret,id=npm_token \
+    NODE_AUTH_TOKEN="$(cat /run/secrets/npm_token)" pnpm install --frozen-lockfile
 
 # Generate Prisma Client
 RUN pnpm --filter api exec prisma generate

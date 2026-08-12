@@ -1,14 +1,26 @@
-name: Product contracts
+name: Dynamic product architecture
 
 on:
   pull_request:
     paths:
-      - "packages/product-contracts/**"
+      - "apps/api/src/platform/product-integration/**"
+      - "apps/api/prisma/platform/**"
+      - "apps/api/package.json"
+      - "pnpm-lock.yaml"
+      - "scripts/check-dynamic-product-architecture.mjs"
       - ".github/workflows/product-contracts.yml"
   push:
     branches: [main]
     paths:
-      - "packages/product-contracts/**"
+      - "apps/api/src/platform/product-integration/**"
+      - "apps/api/prisma/platform/**"
+      - "apps/api/package.json"
+      - "pnpm-lock.yaml"
+      - "scripts/check-dynamic-product-architecture.mjs"
+
+permissions:
+  contents: read
+  packages: read
 
 jobs:
   validate:
@@ -20,8 +32,9 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: '@mariya-abdul'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @deltcrm/product-contracts typecheck
-      - run: pnpm --filter @deltcrm/product-contracts test
-      - run: pnpm --filter @deltcrm/product-contracts compatibility:check
-      - run: pnpm --filter @deltcrm/product-contracts pack:check
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm architecture:check
