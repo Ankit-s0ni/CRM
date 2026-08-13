@@ -141,7 +141,15 @@ updates.PRODUCT_SERVICE_CREDENTIALS_JSON =
 
 const lines = original.split(/\r?\n/);
 for (const [key, value] of Object.entries(updates)) {
-  const rendered = `${key}=${JSON.stringify(value)}`;
+  // Node's --env-file parser preserves backslashes inside double-quoted
+  // values. JSON.stringify(JSON text) therefore turns {"key":...} into an
+  // invalid runtime value such as {\"key\":...}. Single-quote JSON-shaped
+  // values so the service receives the exact JSON document.
+  const renderedValue =
+    key === "PRODUCT_SERVICE_CREDENTIALS_JSON"
+      ? `'${value.replaceAll("'", "\\'")}'`
+      : JSON.stringify(value);
+  const rendered = `${key}=${renderedValue}`;
   const index = lines.findIndex((line) => line.startsWith(`${key}=`));
 
   if (index >= 0) {
