@@ -34,6 +34,12 @@ function canonicalizePlatformHost(request: NextRequest) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (pathname === "/en/login" || pathname === "/ar/login") {
+    const destination = request.nextUrl.clone();
+    destination.pathname = "/login";
+    return NextResponse.redirect(destination);
+  }
+
   if (isPlatformRoute(pathname)) {
     return canonicalizePlatformHost(request) ?? NextResponse.next();
   }
@@ -61,5 +67,6 @@ export const config = {
     "/:lang/app/:path*",
     "/platform",
     "/platform/:path*",
+    "/:lang/login",
   ],
 };
