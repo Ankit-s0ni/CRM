@@ -41,6 +41,7 @@ test.describe("localized route helpers", () => {
         savedLanguage: "en",
         defaultLanguage: "en",
         enabledLanguages: ["en", "ar"],
+        onboardingCompletedAt: "2026-08-12T00:00:00.000Z",
       }),
     ).toBe("/ar/app/employees/123?tab=attendance");
     expect(
@@ -49,7 +50,7 @@ test.describe("localized route helpers", () => {
         defaultLanguage: "en",
         enabledLanguages: ["en", "ar"],
       }),
-    ).toBe("/ar/app/onboarding");
+    ).toBe("/ar/app");
     expect(
       resolveTenantLoginDestination({
         nextPath: "/ar/app/employees",
@@ -57,7 +58,7 @@ test.describe("localized route helpers", () => {
         defaultLanguage: "en",
         enabledLanguages: ["en"],
       }),
-    ).toBe("/en/app/onboarding");
+    ).toBe("/en/app");
   });
 });
 
@@ -107,9 +108,7 @@ test.describe("tenant URL localization", () => {
   }) => {
     await page.goto("/en/app/employees?page=2&status=ACTIVE");
     await page.getByRole("button", { name: "Switch to Arabic" }).click();
-    await page.waitForURL(
-      /\/ar\/app\/employees\?page=2&status=ACTIVE$/,
-    );
+    await page.waitForURL(/\/ar\/app\/employees\?page=2&status=ACTIVE$/);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   });
 
