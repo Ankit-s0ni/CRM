@@ -13,6 +13,7 @@ import {
   IsUUID,
   Max,
   Min,
+  MinLength,
 } from 'class-validator';
 
 export class CreateEmployeeAccountDto {
@@ -24,10 +25,15 @@ export class CreateEmployeeAccountDto {
   @IsUUID()
   employeeId!: string;
 
-  @ApiPropertyOptional({ example: '+919876543210' })
-  @IsOptional()
+  @ApiProperty({ example: 'Ankit Soni' })
   @IsString()
-  phone?: string;
+  @MinLength(1)
+  fullName!: string;
+
+  @ApiProperty({ example: '+919876543210' })
+  @IsString()
+  @MinLength(6)
+  phone!: string;
 }
 
 export class ListUsersQueryDto {

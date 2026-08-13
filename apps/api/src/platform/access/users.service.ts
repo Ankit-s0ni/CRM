@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { RevokeReason, UserStatus } from '@prisma/client';
 import * as argon2 from 'argon2';
-import { randomBytes } from 'crypto';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { AuditService } from '../audit/public';
@@ -16,6 +15,7 @@ import {
   UpdateUserRolesDto,
   UpdateUserStatusDto,
 } from './dto/user-access.dto';
+import { employeeTemporaryPassword } from './employee-temporary-password';
 
 @Injectable()
 export class UsersService {
@@ -78,7 +78,10 @@ export class UsersService {
     actorUserId: string,
   ) {
     const email = dto.email.trim().toLowerCase();
-    const temporaryPassword = `Temp-${randomBytes(12).toString('base64url')}!9`;
+    const temporaryPassword = employeeTemporaryPassword(
+      dto.fullName,
+      dto.phone,
+    );
     const passwordHash = await argon2.hash(temporaryPassword);
 
     return this.prisma.forTenant(async (tx) => {
@@ -109,7 +112,7 @@ export class UsersService {
         data: {
           tenantId: actor.tenantId,
           email,
-          phone: dto.phone?.trim() || undefined,
+          phone: dto.phone.trim(),
           passwordHash,
           status: UserStatus.ACTIVE,
           emailVerifiedAt: new Date(),
@@ -140,7 +143,10 @@ export class UsersService {
 
       return {
         data: { userId: user.id, email: user.email },
-        temporaryCredentials: { email: user.email, password: temporaryPassword },
+        temporaryCredentials: {
+          email: user.email,
+          password: temporaryPassword,
+        },
       };
     });
   }
