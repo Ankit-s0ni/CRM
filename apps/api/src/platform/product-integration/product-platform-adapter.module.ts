@@ -11,6 +11,8 @@ import { ProductSigningKeyService } from './product-signing-key.service';
 import { ProductOperationsService } from './product-operations.service';
 import { ProductHealthService } from './product-health.service';
 import { ProductCommercialService } from './product-commercial.service';
+import { PRODUCT_READINESS_PORT } from '../../shared/products/product-readiness.port';
+import { ProductReadinessAdapter } from './product-readiness.adapter';
 
 // Generic in-process Platform protocol adapter. Product services consume the
 // same contract over the authenticated HTTP boundary.
@@ -25,6 +27,7 @@ import { ProductCommercialService } from './product-commercial.service';
     ProductOperationsService,
     ProductHealthService,
     ProductCommercialService,
+    ProductReadinessAdapter,
     {
       provide: PRODUCT_PLATFORM_PORT,
       useExisting: ProductIntegrationService,
@@ -37,6 +40,10 @@ import { ProductCommercialService } from './product-commercial.service';
         publicKey: keys.publicKey,
       }),
     },
+    {
+      provide: PRODUCT_READINESS_PORT,
+      useExisting: ProductReadinessAdapter,
+    },
   ],
   exports: [
     ProductIntegrationService,
@@ -46,6 +53,7 @@ import { ProductCommercialService } from './product-commercial.service';
     ProductHealthService,
     ProductCommercialService,
     PRODUCT_PLATFORM_PORT,
+    PRODUCT_READINESS_PORT,
     PRODUCT_TOKEN_VERIFICATION_KEY,
   ],
 })

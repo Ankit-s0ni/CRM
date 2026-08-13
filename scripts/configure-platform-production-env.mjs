@@ -45,6 +45,24 @@ if (!fs.existsSync(environmentPath)) {
 
 const original = fs.readFileSync(environmentPath, "utf8");
 const parsed = parseEnvironment(original);
+const randomSecret = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("base64url");
+const randomPassword = () =>
+  `${randomSecret(24)}Aa1!`;
+const randomBase32 = (length = 32) => {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bytes = crypto.randomBytes(length);
+  return [...bytes]
+    .map((byte) => alphabet[byte % alphabet.length])
+    .join("");
+};
+const stable = (key, create) => parsed[key] || create();
+const tenantAdminPassword = stable("TENANT_ADMIN_PASSWORD", randomPassword);
+const tenantHrPassword = stable("TENANT_HR_PASSWORD", randomPassword);
+const tenantEmployeePassword = stable(
+  "TENANT_EMPLOYEE_PASSWORD",
+  randomPassword,
+);
 const updates = {
   NODE_ENV: "production",
   PORT: "4011",
@@ -55,6 +73,36 @@ const updates = {
   PRODUCT_TOKEN_ISSUER: "https://platformapi.blufield.cloud",
   PRODUCT_TOKEN_KEY_ID:
     parsed.PRODUCT_TOKEN_KEY_ID || "platform-prod-2026-08",
+  PLATFORM_ADMIN_EMAIL:
+    parsed.PLATFORM_ADMIN_EMAIL || "owner@deltcrm.local",
+  PLATFORM_ADMIN_PASSWORD: stable("PLATFORM_ADMIN_PASSWORD", randomPassword),
+  PLATFORM_ADMIN_MFA_SECRET: stable(
+    "PLATFORM_ADMIN_MFA_SECRET",
+    randomBase32,
+  ),
+  PLATFORM_SUPPORT_EMAIL:
+    parsed.PLATFORM_SUPPORT_EMAIL || "support@deltcrm.local",
+  PLATFORM_SUPPORT_PASSWORD: stable(
+    "PLATFORM_SUPPORT_PASSWORD",
+    randomPassword,
+  ),
+  PLATFORM_SUPPORT_MFA_SECRET: stable(
+    "PLATFORM_SUPPORT_MFA_SECRET",
+    randomBase32,
+  ),
+  TENANT_ADMIN_PASSWORD: tenantAdminPassword,
+  TENANT_HR_PASSWORD: tenantHrPassword,
+  TENANT_EMPLOYEE_PASSWORD: tenantEmployeePassword,
+  ACME_ADMIN_PASSWORD:
+    parsed.ACME_ADMIN_PASSWORD || tenantAdminPassword,
+  ACME_HR_PASSWORD: parsed.ACME_HR_PASSWORD || tenantHrPassword,
+  ACME_EMPLOYEE_PASSWORD:
+    parsed.ACME_EMPLOYEE_PASSWORD || tenantEmployeePassword,
+  GLOBEX_ADMIN_PASSWORD:
+    parsed.GLOBEX_ADMIN_PASSWORD || tenantAdminPassword,
+  GLOBEX_HR_PASSWORD: parsed.GLOBEX_HR_PASSWORD || tenantHrPassword,
+  GLOBEX_EMPLOYEE_PASSWORD:
+    parsed.GLOBEX_EMPLOYEE_PASSWORD || tenantEmployeePassword,
 };
 
 if (!parsed.PRODUCT_TOKEN_PRIVATE_KEY || !parsed.PRODUCT_TOKEN_PUBLIC_KEY) {
@@ -111,5 +159,5 @@ fs.renameSync(temporaryPath, environmentPath);
 fs.chmodSync(environmentPath, 0o600);
 
 console.log(
-  "Protected Platform API environment configured without exposing secret values.",
+  "Protected Platform API environment configured idempotently without rotating or exposing existing secrets.",
 );

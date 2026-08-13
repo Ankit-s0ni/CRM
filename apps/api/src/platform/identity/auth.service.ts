@@ -489,7 +489,10 @@ export class AuthService {
   }
 
   async getCurrentUser(userId: string) {
-    const user = await this.prisma.forTenant((tx) =>
+    // The authenticated workspace projection is Platform-owned. Query it
+    // through the Platform-only client so this endpoint never asks the
+    // Platform database for legacy HRMS TenantSettings columns.
+    const user = await this.platformDatabase.transaction((tx) =>
       tx.user.findUnique({
         where: { id: userId },
         include: {

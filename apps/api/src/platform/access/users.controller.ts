@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,8 +15,10 @@ import { PERMISSIONS } from '../../shared/authorization/permissions.constants';
 import { PermissionsGuard } from '../../shared/authorization/permissions.guard';
 import { RequirePermissions } from '../../shared/authorization/require-permissions.decorator';
 import {
+  CreateEmployeeAccountDto,
   ListUsersQueryDto,
   UpdateUserRolesDto,
+  UpdateUserEmailDto,
   UpdateUserStatusDto,
 } from './dto/user-access.dto';
 import { UsersService } from './users.service';
@@ -34,6 +37,26 @@ export class UsersController {
   @ApiOperation({ summary: 'List tenant users and assigned roles' })
   listUsers(@Query() query: ListUsersQueryDto) {
     return this.usersService.list(query);
+  }
+
+  @Get(':id')
+  @RequirePermissions(PERMISSIONS.USERS_READ)
+  @ApiOperation({ summary: 'Get a tenant user by ID' })
+  getUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.get(id);
+  }
+
+  @Post('employee-accounts')
+  @RequirePermissions(PERMISSIONS.USERS_INVITE)
+  @ApiOperation({
+    summary:
+      'Create an Employee login and return its one-time temporary credentials',
+  })
+  createEmployeeAccount(
+    @Body() dto: CreateEmployeeAccountDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    return this.usersService.createEmployeeAccount(dto, actor.userId);
   }
 
   @Patch(':id/roles')
@@ -56,5 +79,16 @@ export class UsersController {
     @CurrentUser() actor: AuthenticatedUser,
   ) {
     return this.usersService.updateStatus(id, dto, actor.userId);
+  }
+
+  @Patch(':id/email')
+  @RequirePermissions(PERMISSIONS.USERS_INVITE)
+  @ApiOperation({ summary: 'Update an employee login email' })
+  updateEmail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserEmailDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    return this.usersService.updateEmail(id, dto.email, actor.userId);
   }
 }

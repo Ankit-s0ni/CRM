@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import { APP_DOMAIN } from "@/lib/app-domain";
+import { APP_DOMAIN, resolveWorkspaceFromHostname } from "@/lib/app-domain";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { isAppLanguage } from "@/i18n/routing";
@@ -14,41 +14,32 @@ const subscribeToHostname = () => () => undefined;
 
 function resolveHostnameWorkspace() {
   if (typeof window === "undefined") return null;
-
-  const host = window.location.hostname;
-  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || "";
-  if (
-    !appDomain ||
-    host === appDomain ||
-    host === `www.${appDomain}` ||
-    !host.endsWith(`.${appDomain}`)
-  ) {
-    return null;
-  }
-
-  const subdomain = host.slice(0, host.length - appDomain.length - 1);
-  return subdomain && subdomain !== "api" && subdomain !== "www"
-    ? subdomain
-    : null;
+  return resolveWorkspaceFromHostname(window.location.hostname);
 }
 
-export function LoginForm() {
-  const searchParams = useSearchParams();
+interface LoginFormProps {
+  initialWorkspace?: string | null;
+  initialNextPath?: string | null;
+}
+
+export function LoginForm({
+  initialWorkspace = null,
+  initialNextPath = null,
+}: LoginFormProps) {
   const pendingAuth = useAuthStore((state) => state.pendingAuth);
   const setPendingAuth = useAuthStore((state) => state.setPendingAuth);
   const clearPendingAuth = useAuthStore((state) => state.clearPendingAuth);
-  const workspaceParam = searchParams.get("workspace");
-
   const hostnameWorkspace = useSyncExternalStore(
     subscribeToHostname,
     resolveHostnameWorkspace,
     () => null,
   );
 
-  const workspace = workspaceParam ?? hostnameWorkspace ?? pendingAuth.workspace ?? "";
-  const suppliedTenantId = searchParams.get("tenantId") ??
-    (workspaceParam && workspaceParam !== pendingAuth.workspace ? "" : pendingAuth.tenantId) ?? "";
-  const initialEmail = searchParams.get("email") ?? pendingAuth.email ?? "";
+  const workspace = initialWorkspace ?? hostnameWorkspace ?? pendingAuth.workspace ?? "";
+  const suppliedTenantId =
+    (workspace && workspace === pendingAuth.workspace ? pendingAuth.tenantId : "") ?? "";
+  const initialEmail =
+    (workspace && workspace === pendingAuth.workspace ? pendingAuth.email : "") ?? "";
   const [tenantId, setTenantId] = useState(suppliedTenantId);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
@@ -67,21 +58,26 @@ export function LoginForm() {
       APP_DOMAIN,
       `www.${APP_DOMAIN}`,
       `app.${APP_DOMAIN}`,
+      `platform.${APP_DOMAIN}`,
     ]);
-    if (!sharedLoginHosts.has(currentUrl.hostname)) return;
+    if (!sharedLoginHosts.has(currentUrl.hostname)) {
+      if (currentUrl.hostname === `${workspace}.${APP_DOMAIN}` && currentUrl.search) {
+        currentUrl.pathname = "/login";
+        currentUrl.search = "";
+        if (initialNextPath) currentUrl.searchParams.set("next", initialNextPath);
+        window.history.replaceState({}, "", currentUrl.toString());
+      }
+      return;
+    }
 
     currentUrl.protocol = "https:";
     currentUrl.hostname = `${workspace}.${APP_DOMAIN}`;
     currentUrl.port = "";
-    currentUrl.searchParams.set("workspace", workspace);
-    if (suppliedTenantId)
-      currentUrl.searchParams.set("tenantId", suppliedTenantId);
-    if (initialEmail) currentUrl.searchParams.set("email", initialEmail);
-
-    // Cross-origin storage is isolated, so carry the pending auth context in
-    // the URL when moving from the shared login host to the tenant host.
+    currentUrl.pathname = "/login";
+    currentUrl.search = "";
+    if (initialNextPath) currentUrl.searchParams.set("next", initialNextPath);
     window.location.replace(currentUrl.toString());
-  }, [initialEmail, suppliedTenantId, workspace]);
+  }, [initialNextPath, workspace]);
 
   const forgotPasswordHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -173,7 +169,7 @@ export function LoginForm() {
         ?.split("=")[1];
       router.push(
         resolveTenantLoginDestination({
-          nextPath: searchParams.get("next"),
+          nextPath: initialNextPath,
           savedLanguage,
           defaultLanguage,
           enabledLanguages,

@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   ArrayUnique,
+  IsEmail,
   IsArray,
   IsEnum,
   IsInt,
@@ -13,6 +14,21 @@ import {
   Max,
   Min,
 } from 'class-validator';
+
+export class CreateEmployeeAccountDto {
+  @ApiProperty({ example: 'employee@example.com' })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  employeeId!: string;
+
+  @ApiPropertyOptional({ example: '+919876543210' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}
 
 export class ListUsersQueryDto {
   @ApiPropertyOptional({ example: 'admin@example.com' })
@@ -54,4 +70,10 @@ export class UpdateUserStatusDto {
   @ApiProperty({ enum: UserStatus, example: UserStatus.DISABLED })
   @IsEnum(UserStatus)
   status!: UserStatus;
+}
+
+export class UpdateUserEmailDto {
+  @ApiProperty({ example: 'employee@example.com' })
+  @IsEmail()
+  email!: string;
 }

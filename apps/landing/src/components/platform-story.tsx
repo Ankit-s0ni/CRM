@@ -118,7 +118,7 @@ export function PlatformStory() {
             Shared data lets DeltCRM surface patterns, automate routine work,
             and move every team with the same context.
           </p>
-          <a href="https://blufield.cloud/signup">
+          <a href="https://platform.blufield.cloud/signup">
             Build your operating system
             <ArrowRight aria-hidden="true" size={18} />
           </a>

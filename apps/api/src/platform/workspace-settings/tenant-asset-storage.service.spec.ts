@@ -25,18 +25,30 @@ describe('TenantAssetStorageService', () => {
     expect(result.uploadUrl).toBe(`memory://${result.objectKey}`);
   });
 
-  it.each([
-    ['image/svg+xml', 100_000],
-    ['image/png', 2_000_001],
-  ])('rejects unsafe logo input %s at %i bytes', async (type, size) => {
+  it('rejects unsafe logo content types', async () => {
     await expect(
       new TenantAssetStorageService().presignLogo(
         'tenant-a',
         'logo.file',
-        type,
-        size,
+        'image/svg+xml',
+        100_000,
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('does not impose an application-level logo file-size limit', async () => {
+    await expect(
+      new TenantAssetStorageService().presignLogo(
+        'tenant-a',
+        'large-logo.png',
+        'image/png',
+        25_000_000,
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        uploadUrl: expect.stringMatching(/^memory:\/\//),
+      }),
+    );
   });
 
   it('rejects a logo key owned by another tenant', async () => {

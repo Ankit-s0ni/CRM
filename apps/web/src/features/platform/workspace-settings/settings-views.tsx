@@ -183,7 +183,7 @@ export function CompanySettingsView() {
       setLogoPreview(URL.createObjectURL(file));
       if (user && logoUrl) setUser({ ...user, logoUrl });
     } catch {
-      setError(tText("Logo upload failed. Use PNG, JPEG or WebP up to 2 MB."));
+      setError(tText("Logo upload failed. Use PNG, JPEG or WebP."));
     } finally {
       setUploading(false);
     }
@@ -219,7 +219,7 @@ export function CompanySettingsView() {
               {logoPreview ? <img alt={tText("Company logo preview")} className="size-full object-contain p-4" src={logoPreview} /> : <UploadCloud className="size-10 text-primary" />}
               <input accept="image/png,image/jpeg,image/webp" className="hidden" disabled={uploading} onChange={(event) => event.target.files?.[0] && void upload(event.target.files[0])} type="file" />
             </label>
-            <p className="mt-4 text-xs text-muted-foreground">{uploading ? tText("Uploading...") : tText("PNG, JPEG or WebP up to 2 MB.")}</p>
+            <p className="mt-4 text-xs text-muted-foreground">{uploading ? tText("Uploading...") : tText("PNG, JPEG or WebP.")}</p>
           </Panel>
         </div>
       )}

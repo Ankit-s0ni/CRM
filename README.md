@@ -1,6 +1,6 @@
-# Delsia Platform
+# DeltCRM Platform
 
-This repository owns the Delsia multi-product control plane: workspace identity,
+This repository owns the DeltCRM multi-product control plane: workspace identity,
 tenant administration, product registration, entitlements, plans, billing,
 shared notifications, and product launch/navigation.
 

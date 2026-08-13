@@ -19,9 +19,17 @@ export class TenantAssetStorageService {
   private readonly client = new S3Client(
     createS3ClientConfig(process.env.S3_ENDPOINT),
   );
+  private readonly publicClient = new S3Client(
+    createS3ClientConfig(
+      process.env.S3_PUBLIC_ENDPOINT || process.env.S3_ENDPOINT,
+    ),
+  );
 
   private get bucket() {
-    return requireStorageBucket('S3_BUCKET');
+    return (
+      process.env.S3_BUCKET?.trim() ||
+      requireStorageBucket('S3_PRIVATE_BUCKET')
+    );
   }
 
   async presignLogo(
@@ -30,10 +38,10 @@ export class TenantAssetStorageService {
     contentType: string,
     fileSize: number,
   ) {
-    if (!LOGO_TYPES.has(contentType) || fileSize > 2_000_000) {
+    if (!LOGO_TYPES.has(contentType)) {
       throw new BadRequestException({
         code: 'LOGO_FILE_INVALID',
-        message: 'Logo must be PNG, JPEG, or WebP and no larger than 2 MB',
+        message: 'Logo must be PNG, JPEG, or WebP',
       });
     }
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -43,7 +51,7 @@ export class TenantAssetStorageService {
     }
     await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
     const uploadUrl = await getSignedUrl(
-      this.client,
+      this.publicClient,
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: objectKey,
@@ -65,7 +73,7 @@ export class TenantAssetStorageService {
     }
     if (process.env.NODE_ENV === 'test') return `memory://${objectKey}`;
     return getSignedUrl(
-      this.client,
+      this.publicClient,
       new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
       { expiresIn: 900 },
     );

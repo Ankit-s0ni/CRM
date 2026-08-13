@@ -64,7 +64,7 @@ describe('ProductIntegrationService', () => {
       productKey: 'HRMS' as const,
       manifestVersion: '2.0.0',
       minimumContractVersion: '2.0.0',
-      displayName: 'Delsia HRMS',
+      displayName: 'DeltCRM HRMS',
       description: 'Human resources management',
       audience: 'hrms-api' as const,
       routes: {

@@ -105,10 +105,10 @@ const HRMS_MODEL_NAMES = [
   'RosterImportRow',
   'EmployeeImportRow',
   'ReportExport',
-  // Security/Alert (HRMS-owned because they reference Employee)
+  // HRMS-specific security alerts. TenantAuditLog is Platform-owned because it
+  // records cross-product tenant administration and contains no Employee FK.
   'AlertRule',
   'SecurityAlert',
-  'TenantAuditLog',
 ];
 
 /**

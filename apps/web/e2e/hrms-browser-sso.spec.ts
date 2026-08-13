@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const email = process.env.PLATFORM_TEST_EMAIL ?? "admin@acme.com";
-const password = process.env.PLATFORM_TEST_PASSWORD ?? "TenantAdmin123!";
+const password =
+  process.env.PLATFORM_TEST_PASSWORD ??
+  process.env.ACME_ADMIN_PASSWORD ??
+  process.env.ACME_PASSWORD ??
+  "TenantAdmin123!";
 const workspace = process.env.PLATFORM_TEST_WORKSPACE ?? "acme";
 
 function isExpectedOptionalResourceMiss(

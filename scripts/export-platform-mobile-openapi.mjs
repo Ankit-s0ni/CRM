@@ -35,7 +35,7 @@ for (const [, path] of requiredOperations) selectedPaths[path] = source.paths[pa
 const mobileDocument = {
   openapi: source.openapi,
   info: {
-    title: 'Delsia Platform Mobile Control Plane API',
+    title: 'DeltCRM Platform Mobile Control Plane API',
     version: '1.0.0',
     description:
       'Platform-owned mobile identity, HRMS product-token exchange, and notification operations.',

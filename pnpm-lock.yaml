@@ -21,9 +21,6 @@ importers:
 
   apps/api:
     dependencies:
-      '@mariya-abdul/deltcrm-product-contracts':
-        specifier: 2.0.0
-        version: 2.0.0
       '@aws-sdk/client-s3':
         specifier: ^3.1087.0
         version: 3.1087.0
@@ -36,6 +33,9 @@ importers:
       '@casl/prisma':
         specifier: ^2.0.2
         version: 2.0.2(@casl/ability@7.0.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))
+      '@mariya-abdul/deltcrm-product-contracts':
+        specifier: 2.0.1
+        version: 2.0.1
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -422,10 +422,6 @@ packages:
   '@angular-devkit/schematics@19.2.27':
     resolution: {integrity: sha512-/PZmyAlb2NGWPikRRuiWLdfHQd8Wrx6lX4HqvTcaDhlU43M3T0ud4PH2T3QDp7BzHYY92xtD8iPxX2asg67G1A==}
     engines: {node: ^18.19.1 || ^20.11.1 || >=22.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
-
-  '@mariya-abdul/deltcrm-product-contracts@2.0.0':
-    resolution: {integrity: sha512-6ak+F+9w9Qkqb8sEaTgPVnrp7Ru4cJnOY6y3jxbq5LOCH/N1e4Ajl0s7Tt5KPFi4vLw9noEQc9Icn5Bufdwepg==}
-    hasBin: true
 
   '@apm-js-collab/code-transformer-bundler-plugins@0.6.2':
     resolution: {integrity: sha512-5vBrtIEL+UVbO0YWWoyYG4QMgR+ZfnIL3xlteIkAmU7YaAPhc28k3md/NM14tnkfXKjKOn9yUzEA9AYUmNpvJg==}
@@ -1345,6 +1341,10 @@ packages:
   '@lukeed/csprng@1.1.0':
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
+
+  '@mariya-abdul/deltcrm-product-contracts@2.0.1':
+    resolution: {integrity: sha512-J5bLU31Ywv14OmSGkKyZhnH7iihXgOX0XnfHEwJyseUTSxukUVPdcQdaF78udkG7TxBv73yJPBNNd/hKD4kx4w==}
+    hasBin: true
 
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
@@ -6819,8 +6819,6 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@mariya-abdul/deltcrm-product-contracts@2.0.0': {}
-
   '@apm-js-collab/code-transformer-bundler-plugins@0.6.2':
     dependencies:
       '@apm-js-collab/code-transformer': 0.18.0
@@ -7979,6 +7977,8 @@ snapshots:
   '@kurkle/color@0.3.4': {}
 
   '@lukeed/csprng@1.1.0': {}
+
+  '@mariya-abdul/deltcrm-product-contracts@2.0.1': {}
 
   '@microsoft/tsdoc@0.16.0': {}
 

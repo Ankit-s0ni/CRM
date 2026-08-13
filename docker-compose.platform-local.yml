@@ -67,21 +67,19 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-      secrets:
-        - npm_token
     command:
       - /bin/sh
       - -c
       - >-
-        pnpm --filter api exec prisma migrate deploy --config prisma.config.ts &&
-        pnpm --filter api exec prisma db seed --config prisma.config.ts &&
+        pnpm --filter api prisma:migrate:deploy:platform &&
+        pnpm --filter api prisma:seed:platform &&
         pnpm --filter api start:platform:prod
     environment:
       NODE_ENV: development
       PLATFORM_API_PORT: "4011"
       DATABASE_URL: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
-      DATABASE_URL_APP: postgresql://app_user:app_password@platform-db:5432/platform_local?schema=public
-      DATABASE_URL_PLATFORM: postgresql://platform_runtime:platform_password@platform-db:5432/platform_local?schema=public
+      DATABASE_URL_APP: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
+      DATABASE_URL_PLATFORM: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
       REDIS_URL: redis://platform-redis:6379
       S3_ENDPOINT: http://platform-minio:9000
       S3_PUBLIC_ENDPOINT: http://localhost:9100
@@ -93,9 +91,10 @@ services:
       S3_FORCE_PATH_STYLE: "true"
       CORS_ORIGIN: http://localhost:4080,http://localhost:4022,http://localhost:4023
       JWT_SECRET: local-platform-jwt-secret-change-before-production
-      PRODUCT_TOKEN_ISSUER: http://platform-api:4011
+      PRODUCT_TOKEN_ISSUER: https://auth.local.blufield.test
       PRODUCT_TOKEN_KEY_ID: local-platform-product-token-v1
       PRODUCT_SERVICE_CREDENTIALS_JSON: '{"HRMS":["local-product-service-key"]}'
+      PRODUCT_REGISTRATION_CI_KEY: local-product-registration-key
       PUBLIC_APP_ORIGIN: http://localhost:4080
       PUBLIC_BASE_DOMAIN: localhost
       MAIL_ENABLED: "false"
@@ -120,14 +119,12 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-      secrets:
-        - npm_token
     command: ["pnpm", "--filter", "api", "start:worker:prod"]
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
-      DATABASE_URL_APP: postgresql://app_user:app_password@platform-db:5432/platform_local?schema=public
-      DATABASE_URL_PLATFORM: postgresql://platform_runtime:platform_password@platform-db:5432/platform_local?schema=public
+      DATABASE_URL_APP: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
+      DATABASE_URL_PLATFORM: postgresql://postgres:local_platform_postgres_only@platform-db:5432/platform_local?schema=public
       REDIS_URL: redis://platform-redis:6379
       NOTIFICATION_QUEUE_MODE: enabled
     depends_on:
@@ -142,8 +139,6 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      secrets:
-        - npm_token
       args:
         NEXT_PUBLIC_API_URL: http://localhost:4080
     environment:
@@ -183,10 +178,6 @@ volumes:
   platform_db_data:
   platform_redis_data:
   platform_minio_data:
-
-secrets:
-  npm_token:
-    environment: NODE_AUTH_TOKEN
 
 networks:
   platform:

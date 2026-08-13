@@ -5,10 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { RevokeReason, UserStatus } from '@prisma/client';
+import * as argon2 from 'argon2';
+import { randomBytes } from 'crypto';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { AuditService } from '../audit/public';
 import {
+  CreateEmployeeAccountDto,
   ListUsersQueryDto,
   UpdateUserRolesDto,
   UpdateUserStatusDto,
@@ -50,6 +53,94 @@ export class UsersService {
           total,
           totalPages: total === 0 ? 0 : Math.ceil(total / limit),
         },
+      };
+    });
+  }
+
+  async get(id: string) {
+    return this.prisma.forTenant(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id },
+        include: { roles: { include: { role: true } } },
+      });
+      if (!user) {
+        throw new NotFoundException({
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+      return { data: this.serializeUser(user) };
+    });
+  }
+
+  async createEmployeeAccount(
+    dto: CreateEmployeeAccountDto,
+    actorUserId: string,
+  ) {
+    const email = dto.email.trim().toLowerCase();
+    const temporaryPassword = `Temp-${randomBytes(12).toString('base64url')}!9`;
+    const passwordHash = await argon2.hash(temporaryPassword);
+
+    return this.prisma.forTenant(async (tx) => {
+      const actor = await this.findUser(tx, actorUserId);
+      const existing = await tx.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_EMAIL_EXISTS',
+          message: 'An account already exists for this email',
+        });
+      }
+
+      const employeeRole = await tx.role.findFirst({
+        where: { name: 'EMPLOYEE', tenantId: actor.tenantId },
+        select: { id: true },
+      });
+      if (!employeeRole) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_ROLE_MISSING',
+          message: 'The workspace Employee role is not configured',
+        });
+      }
+
+      const user = await tx.user.create({
+        data: {
+          tenantId: actor.tenantId,
+          email,
+          phone: dto.phone?.trim() || undefined,
+          passwordHash,
+          status: UserStatus.ACTIVE,
+          emailVerifiedAt: new Date(),
+          roles: { create: { roleId: employeeRole.id } },
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          tenantId: user.tenantId,
+          eventKey: 'platform.identity.user.provisioned.v1',
+          payload: {
+            tenantId: user.tenantId,
+            userId: user.id,
+            email: user.email,
+            externalSubjectId: dto.employeeId,
+          },
+        },
+      });
+      await this.auditService.append(tx, {
+        tenantId: user.tenantId,
+        actorUserId,
+        action: 'identity.employee-account.created',
+        module: 'identity',
+        entityType: 'User',
+        entityId: user.id,
+        newValue: { email: user.email, employeeId: dto.employeeId },
+      });
+
+      return {
+        data: { userId: user.id, email: user.email },
+        temporaryCredentials: { email: user.email, password: temporaryPassword },
       };
     });
   }
@@ -129,6 +220,42 @@ export class UsersService {
         newValue: { status: updated.status },
       });
 
+      return { data: this.serializeUser(updated) };
+    });
+  }
+
+  async updateEmail(id: string, nextEmail: string, actorUserId: string) {
+    const email = nextEmail.trim().toLowerCase();
+    return this.prisma.forTenant(async (tx) => {
+      const user = await this.findUser(tx, id);
+      const duplicate = await tx.user.findFirst({
+        where: {
+          id: { not: id },
+          email: { equals: email, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (duplicate) {
+        throw new ConflictException({
+          code: 'EMPLOYEE_EMAIL_EXISTS',
+          message: 'An account already exists for this email',
+        });
+      }
+      const updated = await tx.user.update({
+        where: { id },
+        data: { email },
+        include: { roles: { include: { role: true } } },
+      });
+      await this.auditService.append(tx, {
+        tenantId: updated.tenantId,
+        actorUserId,
+        action: 'identity.user.email-updated',
+        module: 'identity',
+        entityType: 'User',
+        entityId: id,
+        oldValue: { email: user.email },
+        newValue: { email },
+      });
       return { data: this.serializeUser(updated) };
     });
   }

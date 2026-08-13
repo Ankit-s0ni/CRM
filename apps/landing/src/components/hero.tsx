@@ -21,7 +21,7 @@ export function Hero() {
           layer, without forcing every team into the same tool.
         </p>
         <div className="hero-actions">
-          <a className="primary-action" href="https://blufield.cloud/signup">
+          <a className="primary-action" href="https://platform.blufield.cloud/signup">
             Start your workspace
             <ArrowUpRight aria-hidden="true" size={17} />
           </a>

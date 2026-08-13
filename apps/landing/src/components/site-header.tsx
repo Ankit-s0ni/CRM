@@ -20,7 +20,7 @@ export function SiteHeader() {
           <Link href={item.href} key={item.href}>{item.label}</Link>
         ))}
       </nav>
-      <Link className="header-cta" href="https://blufield.cloud/signup">
+      <Link className="header-cta" href="https://platform.blufield.cloud/signup">
         Start workspace
         <ArrowUpRight aria-hidden="true" size={16} />
       </Link>
@@ -32,7 +32,7 @@ export function SiteHeader() {
           {navigation.map((item) => (
             <Link href={item.href} key={item.href}>{item.label}</Link>
           ))}
-          <Link href="https://blufield.cloud/signup">Start workspace</Link>
+          <Link href="https://platform.blufield.cloud/signup">Start workspace</Link>
         </nav>
       </details>
     </header>

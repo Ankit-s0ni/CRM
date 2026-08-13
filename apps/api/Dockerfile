@@ -10,8 +10,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies for the whole workspace
-RUN --mount=type=secret,id=npm_token \
-    NODE_AUTH_TOKEN="$(cat /run/secrets/npm_token)" pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Generate Prisma Client
 RUN pnpm --filter api exec prisma generate

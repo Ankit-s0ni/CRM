@@ -1,9 +1,24 @@
-import { Suspense } from "react";
+import { headers } from "next/headers";
 import { Building2, CheckCircle2, ShieldCheck, UsersRound } from "lucide-react";
 import { LoginForm } from "@/features/platform/identity/login-form";
+import { resolveWorkspaceFromHostname } from "@/lib/app-domain";
 import { publicLinks } from "@/lib/public-links";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const [requestHeaders, params] = await Promise.all([headers(), searchParams]);
+  const hostname = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "";
+  const hostnameWorkspace = resolveWorkspaceFromHostname(hostname);
+  const initialWorkspace = hostnameWorkspace ?? firstValue(params.workspace) ?? null;
+  const initialNextPath = firstValue(params.next) ?? null;
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f7fb] px-4 py-6 sm:px-8 sm:py-10">
       <div className="pointer-events-none absolute -left-24 -top-24 size-72 rounded-full bg-blue-200/40 blur-3xl" />
@@ -79,9 +94,10 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Suspense>
-            <LoginForm />
-          </Suspense>
+          <LoginForm
+            initialNextPath={initialNextPath}
+            initialWorkspace={initialWorkspace}
+          />
 
           <footer className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
             <a className="hover:text-foreground" href={publicLinks.privacy}>

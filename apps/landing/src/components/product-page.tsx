@@ -16,7 +16,7 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
           <h1>{product.headline}</h1>
           <p>{product.summary}</p>
           <div className="page-actions">
-            <Link className="primary-action" href="https://blufield.cloud/signup">
+            <Link className="primary-action" href="https://platform.blufield.cloud/signup">
               Start your workspace <ArrowRight aria-hidden="true" size={17} />
             </Link>
             <Link className="text-action" href="/pricing">
@@ -80,7 +80,7 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
       <section className="cta-band">
         <p className="eyebrow">One business operating system</p>
         <h2>Start with {product.name.replace("DeltCRM ", "")}. Keep room for everything next.</h2>
-        <Link href="https://blufield.cloud/signup">Create your workspace <ArrowRight aria-hidden="true" size={18} /></Link>
+        <Link href="https://platform.blufield.cloud/signup">Create your workspace <ArrowRight aria-hidden="true" size={18} /></Link>
       </section>
       <MarketingFooter />
     </main>

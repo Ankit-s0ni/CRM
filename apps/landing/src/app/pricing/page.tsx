@@ -54,7 +54,7 @@ export default function PricingPage() {
             <ul>
               {plan.features.map((feature) => <li key={feature}><Check aria-hidden="true" size={16} /> {feature}</li>)}
             </ul>
-            <Link href="https://blufield.cloud/signup">{plan.action} <ArrowRight aria-hidden="true" size={17} /></Link>
+            <Link href="https://platform.blufield.cloud/signup">{plan.action} <ArrowRight aria-hidden="true" size={17} /></Link>
           </article>
         ))}
       </section>

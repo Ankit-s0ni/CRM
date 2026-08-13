@@ -1,9 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { AuditService } from '../audit/public';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { OutboxService } from '../../shared/events/outbox.service';
 import { TenantContextService } from '../tenancy/public';
+import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
 import {
+  PRODUCT_READINESS_PORT,
+  type ProductReadinessPort,
+  type ProductSetupHealthCategory,
+} from '../../shared/products/product-readiness.port';
+import {
+  CompleteOnboardingDto,
   LogoPresignDto,
   UpdateTenantSettingsDto,
 } from './dto/workspace-settings.dto';
@@ -22,6 +34,8 @@ export class WorkspaceSettingsService {
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
     private readonly storage: TenantAssetStorageService,
+    @Inject(PRODUCT_READINESS_PORT)
+    private readonly productReadiness: ProductReadinessPort,
   ) {}
 
   get() {
@@ -124,6 +138,147 @@ export class WorkspaceSettingsService {
     return { data: result };
   }
 
+  async onboardingStatus(user: AuthenticatedUser) {
+    const platform = await this.prisma.forTenant(async (tx) => {
+      const [tenant, settings] = await Promise.all([
+        tx.tenant.findUnique({
+          where: { id: user.tenantId },
+          select: {
+            id: true,
+            companyName: true,
+            onboardingCompletedAt: true,
+          },
+        }),
+        tx.tenantSettings.findUnique({ where: { tenantId: user.tenantId } }),
+      ]);
+      return { tenant, settings };
+    });
+    if (!platform.tenant) {
+      throw new BadRequestException({
+        code: 'WORKSPACE_NOT_FOUND',
+        message: 'Workspace could not be resolved',
+      });
+    }
+
+    if (platform.tenant.onboardingCompletedAt) {
+      return {
+        data: {
+          completed: true,
+          currentStep: 6,
+          onboardingVersion: platform.settings?.onboardingVersion ?? 2,
+          steps: readyOnboardingSteps(),
+          missingSteps: [],
+        },
+      };
+    }
+
+    const hrms = await this.hrmsHealth(user);
+    const organization = hrms.get('ORGANIZATION');
+    const attendance = hrms.get('ATTENDANCE');
+    const settings = platform.settings;
+    const steps: OnboardingSteps = {
+      company: Boolean(
+        platform.tenant.companyName && settings?.timezone && settings.locale,
+      ),
+      organization: organization?.status === 'READY',
+      office: (attendance?.configuration.offices ?? 0) > 0,
+      workingDays: Boolean(
+        settings?.workingDayStart &&
+        settings.workingDayEnd &&
+        Array.isArray(settings.weeklyOffs),
+      ),
+      attendancePolicy: Boolean(settings),
+      hrInvite: true,
+    };
+    const missingSteps = REQUIRED_ONBOARDING_STEPS.filter((key) => !steps[key]);
+    const firstMissing = ONBOARDING_STEP_ORDER.findIndex((key) => !steps[key]);
+    const firstRequiredStep = firstMissing >= 0 ? firstMissing + 1 : 6;
+    const savedStep = Math.min(
+      6,
+      Math.max(1, platform.settings?.onboardingStep ?? 1),
+    );
+
+    return {
+      data: {
+        completed: false,
+        // Defaults can make Company Profile technically ready before the admin
+        // has reviewed it. Respect the saved wizard position, while never
+        // allowing it to move past an earlier step that has become incomplete.
+        currentStep: Math.min(savedStep, firstRequiredStep),
+        onboardingVersion: settings?.onboardingVersion ?? 2,
+        steps,
+        missingSteps,
+      },
+    };
+  }
+
+  async completeOnboarding(
+    user: AuthenticatedUser,
+    dto: CompleteOnboardingDto,
+  ) {
+    const readiness = await this.onboardingStatus(user);
+    if (readiness.data.completed) {
+      return { data: { completed: true, idempotent: true } };
+    }
+    if (readiness.data.missingSteps.length) {
+      throw new UnprocessableEntityException({
+        code: 'ONBOARDING_INCOMPLETE',
+        message: 'Complete the required workspace setup before finishing',
+        details: { missingSteps: readiness.data.missingSteps },
+      });
+    }
+
+    const tenantId = user.tenantId;
+    return this.prisma.forTenant(async (tx) => {
+      const tenant = await tx.tenant.findUnique({
+        where: { id: tenantId },
+        select: { onboardingCompletedAt: true },
+      });
+      if (tenant?.onboardingCompletedAt) {
+        return { data: { completed: true, idempotent: true } };
+      }
+      const completedAt = new Date();
+      await tx.tenant.update({
+        where: { id: tenantId },
+        data: { onboardingCompletedAt: completedAt },
+      });
+      await tx.tenantSettings.update({
+        where: { tenantId },
+        data: { onboardingStep: 6, onboardingVersion: 2 },
+      });
+      await this.audit.append(tx, {
+        tenantId,
+        actorUserId: user.userId,
+        action: 'workspace.onboarding.completed',
+        module: 'WORKSPACE',
+        entityType: 'Tenant',
+        entityId: tenantId,
+        newValue: {
+          completedAt,
+          onboardingVersion: 2,
+          ...(dto.progress ? { progress: dto.progress } : {}),
+        },
+      });
+      await this.outbox.append(tx, {
+        tenantId,
+        eventKey: 'tenant.onboarding.completed.v1',
+        payload: {
+          tenantId,
+          completedBy: user.userId,
+          completedAt: completedAt.toISOString(),
+          onboardingVersion: 2,
+        },
+      });
+      return {
+        data: {
+          completed: true,
+          idempotent: false,
+          completedAt: completedAt.toISOString(),
+        },
+      };
+    });
+  }
+
   private updateLogoKey(companyLogoKey: string) {
     const tenantId = this.tenantId();
     return this.prisma.forTenant(async (tx) => {
@@ -160,6 +315,13 @@ export class WorkspaceSettingsService {
     });
   }
 
+  private async hrmsHealth(user: AuthenticatedUser) {
+    const payload = await this.productReadiness.getSetupHealth(user, 'HRMS');
+    return new Map<string, ProductSetupHealthCategory>(
+      payload.categories.map((category) => [category.key, category]),
+    );
+  }
+
   private tenantId() {
     const tenantId = this.context.tenantId;
     if (!tenantId)
@@ -169,4 +331,26 @@ export class WorkspaceSettingsService {
       });
     return tenantId;
   }
+}
+
+const ONBOARDING_STEP_ORDER = [
+  'company',
+  'organization',
+  'office',
+  'workingDays',
+  'attendancePolicy',
+  'hrInvite',
+] as const;
+
+type OnboardingStepKey = (typeof ONBOARDING_STEP_ORDER)[number];
+type OnboardingSteps = Record<OnboardingStepKey, boolean>;
+
+const REQUIRED_ONBOARDING_STEPS = ONBOARDING_STEP_ORDER.filter(
+  (key) => key !== 'hrInvite',
+);
+
+function readyOnboardingSteps(): OnboardingSteps {
+  return Object.fromEntries(
+    ONBOARDING_STEP_ORDER.map((key) => [key, true]),
+  ) as OnboardingSteps;
 }

@@ -19,6 +19,10 @@ export function createS3ClientConfig(endpoint?: string): S3ClientConfig {
   }
 
   return {
+    // Presigned PUT clients do not know the body while signing. The SDK's
+    // WHEN_SUPPORTED default signs a CRC32 for an empty body, which makes S3
+    // compatible stores reject the real browser upload.
+    requestChecksumCalculation: 'WHEN_REQUIRED',
     ...(endpoint ? { endpoint } : {}),
     ...(process.env.S3_REGION?.trim()
       ? { region: process.env.S3_REGION.trim() }

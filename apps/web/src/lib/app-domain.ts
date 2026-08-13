@@ -12,27 +12,51 @@ export const APP_DOMAIN: string =
 
 interface WorkspaceLoginUrlInput {
   workspace: string;
-  email: string;
-  tenantId: string;
   origin: string;
   hostname: string;
   protocol: string;
 }
 
+const NON_TENANT_SUBDOMAINS = new Set(["api", "app", "platform", "www"]);
+
+export function resolveWorkspaceFromHostname(
+  hostname: string,
+  appDomain = APP_DOMAIN,
+) {
+  const normalizedHostname = hostname.trim().toLowerCase().replace(/\.$/, "");
+  const normalizedDomain = appDomain.trim().toLowerCase().replace(/\.$/, "");
+  const hostWithoutPort = normalizedHostname.includes(":")
+    ? normalizedHostname.split(":")[0]
+    : normalizedHostname;
+
+  if (
+    !normalizedDomain ||
+    normalizedDomain === "your-domain.com" ||
+    hostWithoutPort === normalizedDomain ||
+    !hostWithoutPort.endsWith(`.${normalizedDomain}`)
+  ) {
+    return null;
+  }
+
+  const subdomain = hostWithoutPort.slice(
+    0,
+    hostWithoutPort.length - normalizedDomain.length - 1,
+  );
+  return subdomain && !NON_TENANT_SUBDOMAINS.has(subdomain) ? subdomain : null;
+}
+
 export function buildWorkspaceLoginUrl({
   workspace,
-  email,
-  tenantId,
   origin,
   hostname,
   protocol,
 }: WorkspaceLoginUrlInput) {
-  const params = new URLSearchParams({ email, workspace, tenantId });
   const isLocalDevelopment =
     hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
-  const baseUrl = isLocalDevelopment
-    ? origin
-    : `${protocol}//${workspace}.${APP_DOMAIN}`;
+  if (isLocalDevelopment) {
+    const params = new URLSearchParams({ workspace });
+    return `${origin}/login?${params.toString()}`;
+  }
 
-  return `${baseUrl}/login?${params.toString()}`;
+  return `${protocol}//${workspace}.${APP_DOMAIN}/login`;
 }

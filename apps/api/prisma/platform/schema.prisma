@@ -305,15 +305,26 @@ model Tenant {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model TenantSettings {
-  tenantId             String   @id @db.Uuid
-  timezone             String   @default("Asia/Kolkata")
-  locale               String   @default("en")
-  onboardingStep       Int      @default(1)
-  onboardingVersion    Int      @default(1)
-  runtimeConfigVersion Int      @default(1)
-  companyLogoKey       String?
-  updatedAt            DateTime @updatedAt
-  tenant               Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId                 String   @id @db.Uuid
+  timezone                 String   @default("Asia/Kolkata")
+  locale                   String   @default("en")
+  weeklyOffs               Json     @default("[\"SAT\",\"SUN\"]")
+  requireFacialRecognition Boolean  @default(false)
+  faceMatchThreshold       Int      @default(85)
+  fieldTrackingEnabled     Boolean  @default(false)
+  fieldTrackingIntervalMin Int      @default(15)
+  runtimeConfigVersion     Int      @default(1)
+  checkinReminderEnabled   Boolean  @default(true)
+  checkoutReminderMinutes  Int      @default(15)
+  regularizationWindowDays Int      @default(7)
+  absenteeAlertTime        String   @default("10:00")
+  companyLogoKey           String?
+  workingDayStart          String   @default("09:00")
+  workingDayEnd            String   @default("18:00")
+  onboardingStep           Int      @default(1)
+  onboardingVersion        Int      @default(1)
+  updatedAt                DateTime @updatedAt
+  tenant                   Tenant   @relation(fields: [tenantId], references: [id])
 
   @@map("tenant_settings")
 }
@@ -1316,6 +1327,30 @@ model SystemAuditLog {
   @@index([module, createdAt])
   @@index([action, createdAt])
   @@map("system_audit_logs")
+}
+
+/// Tenant-visible, append-only audit history for workspace administration.
+/// This belongs to the Platform database; product business audit data remains
+/// inside each product database.
+model TenantAuditLog {
+  id                     String   @id @default(uuid(7)) @db.Uuid
+  tenantId               String   @db.Uuid
+  actorUserId            String?  @db.Uuid
+  impersonationSessionId String?  @db.Uuid
+  action                 String
+  module                 String
+  entityType             String?
+  entityId               String?  @db.Uuid
+  oldValue               Json?
+  newValue               Json?
+  ipAddress              String?
+  userAgent              String?
+  requestId              String?
+  createdAt              DateTime @default(now())
+
+  @@index([tenantId, module, createdAt])
+  @@index([tenantId, entityType, entityId])
+  @@map("tenant_audit_logs")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

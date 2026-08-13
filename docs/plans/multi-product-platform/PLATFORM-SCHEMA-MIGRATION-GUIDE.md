@@ -20,13 +20,23 @@ Use the Platform-only migration track:
 export PLATFORM_DATABASE_URL="postgresql://..."
 
 # Deploy Platform-only migrations
-npx prisma migrate deploy --schema=apps/api/prisma/platform/schema.prisma
+pnpm --filter api prisma:migrate:deploy:platform
 
 # Seed Platform data
-cd apps/api && node prisma/platform-seed.js
+BOOTSTRAP_PLATFORM=1 bash scripts/deploy-production.sh
 ```
 
+The deployment script generates missing production credentials once and then
+preserves them on every rerun. It configures the environment before seeding, so
+the protected credentials file and stored password hashes cannot drift apart.
+`BOOTSTRAP_PLATFORM=1` is for a new database only; ordinary releases omit it.
+
 This creates a database containing **only Platform-owned tables** — no HRMS tables.
+
+The command uses `apps/api/prisma.platform.config.ts`. Do not invoke the
+Platform schema with the default `prisma.config.ts`: the default configuration
+intentionally points at the legacy migration history for transition-only
+databases.
 
 ---
 

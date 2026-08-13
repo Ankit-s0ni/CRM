@@ -90,8 +90,6 @@ export function SignupForm() {
       window.location.assign(
         buildWorkspaceLoginUrl({
           workspace: payload.subdomain,
-          email: payload.email,
-          tenantId: payload.tenantId,
           origin: window.location.origin,
           hostname: window.location.hostname,
           protocol: window.location.protocol,

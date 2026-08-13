@@ -13,8 +13,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies for the whole workspace
-RUN --mount=type=secret,id=npm_token \
-    NODE_AUTH_TOKEN="$(cat /run/secrets/npm_token)" pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Note: Next.js requires environment variables like NEXT_PUBLIC_API_URL 
 # to be passed DURING the build process, so ensure they are provided to the Docker build argument.
