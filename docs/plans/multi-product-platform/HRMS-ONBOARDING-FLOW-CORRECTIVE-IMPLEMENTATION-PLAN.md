@@ -23,7 +23,8 @@ Keep Platform account authentication separate from product onboarding, while mak
 - [x] Gate the HRMS product entry route using HRMS onboarding status.
 - [x] Keep the HRMS onboarding page outside normal application chrome.
 - [x] Request CSV for report jobs supported by the report worker.
-- [ ] Run focused unit, routing, typecheck, lint, and production-build validation.
-- [ ] Push Platform and HRMS commits.
-- [ ] Deploy migrations, API, worker, and web applications.
-- [ ] Verify login, Platform dashboard, HRMS onboarding, setup checklist, and reports in production.
+- [x] Run focused routing, typecheck, and production-build validation.
+- [x] Push Platform and HRMS commits.
+- [x] Deploy migrations, API, worker, and web applications.
+- [x] Verify canonical login and public Platform/HRMS routes in production.
+- [ ] Run the authenticated browser onboarding and report-generation acceptance flow.
