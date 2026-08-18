@@ -2,15 +2,6 @@ import Link from "next/link";
 import { ArrowRight, Network, Sparkles } from "lucide-react";
 import { platformServices, productDomains } from "@/content/platform";
 
-const toneClasses = {
-  mint: "domain-mint",
-  blue: "domain-blue",
-  amber: "domain-amber",
-  coral: "domain-coral",
-  violet: "domain-violet",
-  slate: "domain-slate",
-} as const;
-
 export function PlatformStory() {
   return (
     <>
@@ -77,7 +68,10 @@ export function PlatformStory() {
         <div className="domain-atlas">
           <div className="domain-stack">
             {productDomains.map((domain, index) => (
-              <article className={`domain-card ${toneClasses[domain.tone]}`} key={domain.id}>
+              <article
+                className={`domain-card ${domain.status === "available" ? "domain-available" : ""}`}
+                key={domain.id}
+              >
                 <div className="domain-card-top">
                   <span className="domain-number">0{index + 1}</span>
                   <span className="domain-status">{domain.status}</span>
