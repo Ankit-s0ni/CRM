@@ -72,10 +72,11 @@ export function TenantDashboard() {
           {products.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {products.map((product) => {
-                const href = resolvePlatformNavigationHref(
-                  product.hrefTemplate,
-                  locale,
-                );
+                const isOnboardingPending =
+                  product.requiredProduct === "HRMS" && !user?.onboardingCompletedAt;
+                const href = isOnboardingPending
+                  ? `/${locale}/app/onboarding`
+                  : resolvePlatformNavigationHref(product.hrefTemplate, locale);
                 const name =
                   product.requiredProduct === "HRMS"
                     ? t("tenant.navigation.hrms", "HRMS")
@@ -98,10 +99,12 @@ export function TenantDashboard() {
                           {name}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {t(
-                            "tenant.platform.productReady",
-                            "Enabled and ready to open",
-                          )}
+                          {isOnboardingPending
+                            ? "Setup required — Click to configure"
+                            : t(
+                                "tenant.platform.productReady",
+                                "Enabled and ready to open",
+                              )}
                         </p>
                       </div>
                       <ArrowRight className="directional-icon size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary rtl:group-hover:-translate-x-1" />
