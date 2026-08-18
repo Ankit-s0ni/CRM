@@ -73,12 +73,18 @@ export function setBrowserSessionCookies(
   const refreshCookie =
     kind === 'platform' ? PLATFORM_REFRESH_COOKIE : TENANT_REFRESH_COOKIE;
 
+  const cookieDomain =
+    process.env.AUTH_CSRF_COOKIE_DOMAIN ||
+    process.env.COOKIE_DOMAIN ||
+    (process.env.NODE_ENV === 'production' ? '.liqaahq.com' : undefined);
+
   response.cookie(accessCookie, tokens.accessToken, {
     httpOnly: true,
     secure,
     sameSite: 'lax',
     path: '/',
     maxAge: ACCESS_TOKEN_TTL_MS,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
   response.cookie(refreshCookie, tokens.refreshToken, {
     httpOnly: true,
@@ -86,6 +92,7 @@ export function setBrowserSessionCookies(
     sameSite: 'lax',
     path: '/',
     maxAge: REFRESH_TOKEN_TTL_MS,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
   const csrfToken = randomBytes(32).toString('base64url');
@@ -95,9 +102,7 @@ export function setBrowserSessionCookies(
     sameSite: 'lax',
     path: '/',
     maxAge: REFRESH_TOKEN_TTL_MS,
-    ...(process.env.AUTH_CSRF_COOKIE_DOMAIN
-      ? { domain: process.env.AUTH_CSRF_COOKIE_DOMAIN }
-      : {}),
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
   response.setHeader(CSRF_HEADER, csrfToken);
 }
@@ -111,11 +116,16 @@ export function clearBrowserSessionCookies(
     kind === 'platform' ? PLATFORM_ACCESS_COOKIE : TENANT_ACCESS_COOKIE;
   const refreshCookie =
     kind === 'platform' ? PLATFORM_REFRESH_COOKIE : TENANT_REFRESH_COOKIE;
+  const cookieDomain =
+    process.env.AUTH_CSRF_COOKIE_DOMAIN ||
+    process.env.COOKIE_DOMAIN ||
+    (process.env.NODE_ENV === 'production' ? '.liqaahq.com' : undefined);
   const authOptions = {
     httpOnly: true,
     secure,
     sameSite: 'lax' as const,
     path: '/',
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   };
 
   response.clearCookie(accessCookie, authOptions);
@@ -125,9 +135,7 @@ export function clearBrowserSessionCookies(
     secure,
     sameSite: 'lax',
     path: '/',
-    ...(process.env.AUTH_CSRF_COOKIE_DOMAIN
-      ? { domain: process.env.AUTH_CSRF_COOKIE_DOMAIN }
-      : {}),
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 }
 
