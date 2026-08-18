@@ -75,7 +75,7 @@ export function TenantDashboard() {
                 const isOnboardingPending =
                   product.requiredProduct === "HRMS" && !user?.onboardingCompletedAt;
                 const href = isOnboardingPending
-                  ? `/${locale}/app/onboarding`
+                  ? `/${locale}/app/hrms/onboarding`
                   : resolvePlatformNavigationHref(product.hrefTemplate, locale);
                 const name =
                   product.requiredProduct === "HRMS"
