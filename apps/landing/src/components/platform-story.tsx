@@ -39,7 +39,7 @@ export function PlatformStory() {
             </span>
           ))}
           <div className="fragment-convergence" aria-hidden="true">
-            <Network size={28} />
+            <img src="/logo-square.png" alt="Liqaa" className="h-10 w-10 object-contain" />
             <span>One connected core</span>
           </div>
         </div>
@@ -53,7 +53,7 @@ export function PlatformStory() {
         </div>
         <div className="platform-core">
           <div className="core-label">
-            <Network aria-hidden="true" size={22} />
+            <img src="/logo-square.png" alt="Liqaa" className="h-7 w-7 object-contain inline-block" />
             <span>Liqaa core</span>
           </div>
           <div className="service-ring">
