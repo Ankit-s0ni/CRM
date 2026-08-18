@@ -110,17 +110,12 @@ h1, h2, h3 { font-family: var(--font-display), sans-serif; }
 }
 
 .brand-mark {
-  --mark-inner: var(--cobalt);
-  --mark-outer: #071b3a;
   display: block;
   flex: 0 0 auto;
-  height: 1.85rem;
-  overflow: visible;
-  width: 2.05rem;
+  height: 2.2rem;
+  width: 2.2rem;
+  object-fit: contain;
 }
-
-.brand-mark-outer { stroke: var(--mark-outer); }
-.brand-mark-inner { fill: var(--mark-inner); }
 
 .site-header nav { color: var(--muted); font-size: 0.78rem; gap: 1.8rem; }
 .site-header nav a { transition: color 180ms ease; }

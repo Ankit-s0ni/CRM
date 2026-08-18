@@ -18,7 +18,7 @@ export function AuthShell({ children, title, subtitle }: AuthShellProps) {
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-on-tone/60">
-                  DELTCRM Workspace
+                  Liqaa Workspace
                 </p>
                 <h1 className="max-w-md text-4xl font-semibold leading-tight tracking-tight">
                   {title}

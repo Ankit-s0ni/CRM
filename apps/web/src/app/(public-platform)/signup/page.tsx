@@ -8,7 +8,7 @@ export default function SignupPage() {
         <div className="absolute bottom-[-80px] left-[-80px] h-52 w-52 rounded-full bg-accent opacity-[0.08] blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-4">
-          <div className="text-[28px] font-bold tracking-tight text-on-tone">DeltCRM</div>
+          <div className="text-[28px] font-bold tracking-tight text-on-tone">Liqaa</div>
         </div>
 
         <div className="relative z-10 flex flex-col gap-10">
@@ -24,7 +24,7 @@ export default function SignupPage() {
           <div className="overflow-hidden rounded-[18px] border border-on-tone/10 shadow-2xl">
             <img
               className="aspect-[16/10] w-full object-cover"
-              alt="DeltCRM dashboard preview"
+              alt="Liqaa dashboard preview"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe5ozwbQlFHeN7yawUSO7GqPsFKbEPPK-7PFlzRMZ1ZfyG3irJ488RlrhVlzrdX_rRHCaOt7QYb5mIrrIX_hPH6CAEGCKXVTi_bgF0TxrXc2jaNKOhJ7hPf3POP_Il113MZuFqq-V2dhJ-QCsYIJz-Mik28sSv3isGXPM_qWlJlb9GDjHWhabnLsDkcYcRycTpYqqLM9XIns8ZpYazNP64g5C_pjj8jWhK2Lo7uwFaCsGwYVe51iSCsrbZ7gckvouwojAd2zt5ug"
             />
           </div>

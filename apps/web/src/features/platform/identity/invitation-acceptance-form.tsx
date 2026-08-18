@@ -62,7 +62,7 @@ export function InvitationAcceptanceForm() {
           Your account is ready
         </h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Sign in to DeltCRM using {email || "your invited email"} and the
+          Sign in to Liqaa using {email || "your invited email"} and the
           password you just created.
         </p>
         <Link
@@ -84,7 +84,7 @@ export function InvitationAcceptanceForm() {
         Create your employee login
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Set the password you will use for the DeltCRM employee app and web
+        Set the password you will use for the Liqaa employee app and web
         self-service.
       </p>
       {email && (

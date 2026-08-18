@@ -40,7 +40,7 @@ export function TenantDashboard() {
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
             {t("tenant.platform.welcome", "Welcome to {company}", {
-              company: user.companyName ?? "DeltCRM",
+              company: user.companyName ?? "Liqaa",
             })}
           </h1>
           <p className="mt-3 text-base text-muted-foreground">

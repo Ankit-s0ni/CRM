@@ -11,7 +11,7 @@ export default function AcceptInvitationPage() {
           <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary text-xl font-black text-on-tone shadow-lg shadow-primary/20">
             D
           </div>
-          <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="mt-3 h-7 w-auto" />
+          <img src="/logo-horizontal.png" alt="Liqaa Logo" className="mt-3 h-7 w-auto" />
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-outline">
             Employee account setup
           </p>

@@ -68,7 +68,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <Building2 className="size-6" />
             </div>
             <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              DeltCRM workspace
+              Liqaa workspace
             </p>
             <h1 className="mt-4 max-w-xl text-4xl font-semibold leading-[1.08] tracking-tight text-slate-950 xl:text-5xl">
               One secure home for every product.

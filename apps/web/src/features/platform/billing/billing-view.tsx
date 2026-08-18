@@ -247,7 +247,7 @@ export function TenantBillingView() {
                 </div>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
                   {subscription.plan.description ||
-                    "Your active DeltCRM workspace plan."}
+                    "Your active Liqaa workspace plan."}
                 </p>
               </div>
               <div className="text-right">
@@ -860,7 +860,7 @@ function PaymentMethodDialog({
   return (
     <Dialog
       title="Attach a payment method"
-      description="Use the token returned by the provider-hosted secure checkout. DeltCRM never receives card or bank secrets."
+      description="Use the token returned by the provider-hosted secure checkout. Liqaa never receives card or bank secrets."
       onClose={onClose}
     >
       <form

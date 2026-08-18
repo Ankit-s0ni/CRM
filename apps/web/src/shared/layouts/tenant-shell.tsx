@@ -31,8 +31,8 @@ import { PortalSearch } from "@/shared/components/portal-search";
 import { ThemeSwitcher } from "@/shared/components/theme-switcher";
 import { focusRingClass } from "@/shared/components/page-primitives";
 
-const SIDEBAR_STORAGE_KEY = "deltcrm-sidebar-collapsed";
-const SIDEBAR_CHANGE_EVENT = "deltcrm:sidebar-change";
+const SIDEBAR_STORAGE_KEY = "liqaa-sidebar-collapsed";
+const SIDEBAR_CHANGE_EVENT = "liqaa:sidebar-change";
 
 function subscribeToSidebarPreference(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -237,10 +237,10 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className={cn(desktopCollapsed && "lg:hidden")}>
             <div className="app-sidebar-title text-xl font-medium text-foreground">
-              {user.companyName || tText("DeltCRM")}
+              {user.companyName || tText("Liqaa")}
             </div>
             <div className="app-sidebar-subtitle max-w-40 truncate text-sm text-muted-foreground">
-              {t("tenant.shell.workspace", "DeltCRM workspace")}
+              {t("tenant.shell.workspace", "Liqaa workspace")}
             </div>
           </div>
           <button

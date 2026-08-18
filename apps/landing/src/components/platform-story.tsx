@@ -15,7 +15,7 @@ export function PlatformStory() {
   return (
     <>
       <section className="story-section fragmentation" id="fragmentation">
-        <div className="section-index">01 / Before DeltCRM</div>
+        <div className="section-index">01 / Before Liqaa</div>
         <div className="fragment-copy">
           <p className="eyebrow">Work became fragmented</p>
           <h2>The business moved. Its software did not.</h2>
@@ -54,7 +54,7 @@ export function PlatformStory() {
         <div className="platform-core">
           <div className="core-label">
             <Network aria-hidden="true" size={22} />
-            <span>DeltCRM core</span>
+            <span>Liqaa core</span>
           </div>
           <div className="service-ring">
             {platformServices.map((service) => (
@@ -115,10 +115,10 @@ export function PlatformStory() {
           <p className="eyebrow">One intelligence layer</p>
           <h2>The system does more than store work. It understands it.</h2>
           <p>
-            Shared data lets DeltCRM surface patterns, automate routine work,
+            Shared data lets Liqaa surface patterns, automate routine work,
             and move every team with the same context.
           </p>
-          <a href="https://platform.blufield.cloud/signup">
+          <a href="https://platform.liqaahq.com/signup">
             Build your operating system
             <ArrowRight aria-hidden="true" size={18} />
           </a>

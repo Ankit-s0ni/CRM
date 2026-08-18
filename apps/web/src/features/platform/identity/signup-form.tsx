@@ -122,7 +122,7 @@ export function SignupForm() {
           Create your workspace
         </h2>
         <p className="text-[16px] leading-[1.55] text-muted-foreground">
-          Join DeltCRM and transform your workforce management.
+          Join Liqaa and transform your workforce management.
         </p>
       </div>
 

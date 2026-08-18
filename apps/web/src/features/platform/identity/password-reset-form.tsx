@@ -150,8 +150,8 @@ export function PasswordResetForm() {
           </h1>
           <p className="max-w-[320px] text-center text-[16px] leading-6 text-on-surface-variant">
             {isResetState
-              ? "Your identity is verified. Create a secure password for your DeltCRM Mumbai Hub account."
-              : "Enter your official DeltCRM email and we'll send you a secure link to reset your account."}
+              ? "Your identity is verified. Create a secure password for your Liqaa Mumbai Hub account."
+              : "Enter your official Liqaa email and we'll send you a secure link to reset your account."}
           </p>
         </div>
 
@@ -246,7 +246,7 @@ export function PasswordResetForm() {
                   id="email"
                   type="email"
                   className="h-11 w-full rounded-[8px] border border-border bg-card pl-10 pr-4 text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-ring/20"
-                  placeholder="name@DeltCRM.com"
+                  placeholder="name@Liqaa.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
@@ -284,7 +284,7 @@ export function PasswordResetForm() {
       </div>
 
       <div className="pointer-events-none fixed bottom-6 right-6 hidden select-none text-right opacity-20 lg:block">
-        <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-9 w-auto" />
+        <img src="/logo-horizontal.png" alt="Liqaa Logo" className="h-9 w-auto" />
         <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-outline">Mumbai Hub Systems</p>
       </div>
 

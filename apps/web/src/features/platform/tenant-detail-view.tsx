@@ -1063,7 +1063,7 @@ export function TenantDetailView({ tenantId }: { tenantId: string }) {
             </h2>
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">
               Access is suspended immediately. When any legal hold expires,
-              DeltCRM purges biometric evidence, raw routes, device tokens and
+              Liqaa purges biometric evidence, raw routes, device tokens and
               personal identity data. Billing and audit records remain under
               legal retention.
             </p>

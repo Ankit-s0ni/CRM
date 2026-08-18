@@ -11,7 +11,7 @@ export function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-copy">
-        <p className="eyebrow">DeltCRM business operating system</p>
+        <p className="eyebrow">Liqaa business operating system</p>
         <h1 id="hero-title">
           Your whole business,
           <span>moving as one.</span>
@@ -21,7 +21,7 @@ export function Hero() {
           layer, without forcing every team into the same tool.
         </p>
         <div className="hero-actions">
-          <a className="primary-action" href="https://platform.blufield.cloud/signup">
+          <a className="primary-action" href="https://platform.liqaahq.com/signup">
             Start your workspace
             <ArrowUpRight aria-hidden="true" size={17} />
           </a>
@@ -32,7 +32,7 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="hero-product" aria-label="DeltCRM connected workspace preview">
+      <div className="hero-product" aria-label="Liqaa connected workspace preview">
         <div className="product-bar">
           <span className="product-dots" aria-hidden="true"><i /><i /><i /></span>
           <span>Operations / Today</span>
@@ -90,7 +90,7 @@ export function Hero() {
           <BrandMark />
         </div>
         <p className="hero-transition-caption">
-          <span>DeltCRM</span>
+          <span>Liqaa</span>
           One connected operating system
         </p>
       </div>

@@ -65,7 +65,7 @@ export function PlatformBillingOverview() {
   return (
     <BillingPage
       title="Billing operations"
-      description="Authoritative recurring revenue, collections, outstanding balances and subscription movement across DeltCRM."
+      description="Authoritative recurring revenue, collections, outstanding balances and subscription movement across Liqaa."
       action={
         <Link
           className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-tone"

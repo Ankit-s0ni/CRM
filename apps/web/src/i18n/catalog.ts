@@ -105,7 +105,7 @@ async function resolveWorkspace() {
   }
 
   if (host === "localhost" || host === "127.0.0.1") {
-    const workspace = (await cookies()).get("deltcrm-workspace")?.value ?? "";
+    const workspace = (await cookies()).get("liqaa-workspace")?.value ?? "";
     return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(workspace)
       ? workspace
       : null;
@@ -220,7 +220,7 @@ const developmentBaseArabicMessages: Record<string, string> = {
   "common.action.save": "حفظ",
   "common.action.saveChanges": "حفظ التغييرات",
   "common.state.saving": "جار الحفظ...",
-  "tenant.shell.workspace": "مساحة عمل DeltCRM",
+  "tenant.shell.workspace": "مساحة عمل Liqaa",
   "tenant.shell.logout": "تسجيل الخروج",
   "tenant.shell.notifications": "الإشعارات",
   "tenant.shell.openNavigation": "فتح التنقل",

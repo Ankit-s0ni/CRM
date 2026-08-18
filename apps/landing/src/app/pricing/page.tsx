@@ -44,7 +44,7 @@ export default function PricingPage() {
         <span>Regional currency and applicable taxes are confirmed during workspace setup.</span>
       </section>
 
-      <section className="pricing-grid" aria-label="DeltCRM plans">
+      <section className="pricing-grid" aria-label="Liqaa plans">
         {plans.map((plan) => (
           <article className={`price-card${plan.featured ? " price-featured" : ""}`} key={plan.name}>
             {plan.featured && <span className="plan-badge">Most popular</span>}
@@ -54,7 +54,7 @@ export default function PricingPage() {
             <ul>
               {plan.features.map((feature) => <li key={feature}><Check aria-hidden="true" size={16} /> {feature}</li>)}
             </ul>
-            <Link href="https://platform.blufield.cloud/signup">{plan.action} <ArrowRight aria-hidden="true" size={17} /></Link>
+            <Link href="https://platform.liqaahq.com/signup">{plan.action} <ArrowRight aria-hidden="true" size={17} /></Link>
           </article>
         ))}
       </section>
@@ -71,7 +71,7 @@ export default function PricingPage() {
         <div><p className="eyebrow">Practical answers</p><h2>Before you choose a plan.</h2></div>
         <div>
           <article><h3>How is the final price calculated?</h3><p>By enabled services, active users, operating region and any implementation requirements.</p></article>
-          <article><h3>Can we start with only HRMS?</h3><p>Yes. DeltCRM is modular, so your team can begin with HRMS and add connected services later.</p></article>
+          <article><h3>Can we start with only HRMS?</h3><p>Yes. Liqaa is modular, so your team can begin with HRMS and add connected services later.</p></article>
           <article><h3>Is onboarding included?</h3><p>Every plan includes guided setup. Larger or more complex deployments can include dedicated onboarding.</p></article>
         </div>
       </section>

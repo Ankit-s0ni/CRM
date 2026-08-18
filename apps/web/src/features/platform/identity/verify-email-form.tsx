@@ -138,7 +138,7 @@ export function VerifyEmailForm() {
     <>
       <div className="rounded-[12px] border border-surface-variant bg-card px-6 pb-7 pt-7 text-center shadow-lg">
         <div className="mb-8 flex items-center justify-center gap-2">
-          <img src="/logo-horizontal.png" alt="DeltCRM Logo" className="h-7 w-auto" />
+          <img src="/logo-horizontal.png" alt="Liqaa Logo" className="h-7 w-auto" />
         </div>
 
         <div className="mb-6 flex justify-center">

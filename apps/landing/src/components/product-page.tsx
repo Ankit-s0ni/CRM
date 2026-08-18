@@ -79,8 +79,8 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
 
       <section className="cta-band">
         <p className="eyebrow">One business operating system</p>
-        <h2>Start with {product.name.replace("DeltCRM ", "")}. Keep room for everything next.</h2>
-        <Link href="https://platform.blufield.cloud/signup">Create your workspace <ArrowRight aria-hidden="true" size={18} /></Link>
+        <h2>Start with {product.name.replace("Liqaa ", "")}. Keep room for everything next.</h2>
+        <Link href="https://platform.liqaahq.com/signup">Create your workspace <ArrowRight aria-hidden="true" size={18} /></Link>
       </section>
       <MarketingFooter />
     </main>

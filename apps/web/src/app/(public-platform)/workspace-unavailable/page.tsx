@@ -45,7 +45,7 @@ export default async function WorkspaceUnavailablePage({
               hub
             </span>
             <h1 className="text-[24px] font-semibold leading-8 tracking-[-0.01em] text-foreground">
-              DeltCRM
+              Liqaa
             </h1>
           </div>
         </div>
@@ -128,7 +128,7 @@ export default async function WorkspaceUnavailablePage({
 
       <footer className="relative z-10 mt-auto py-6 text-center">
         <p className="text-[14px] leading-5 text-outline">
-          DeltCRM workspace services
+          Liqaa workspace services
         </p>
       </footer>
     </div>

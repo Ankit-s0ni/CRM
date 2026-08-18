@@ -7,7 +7,7 @@ export function MarketingFooter() {
       <div className="footer-brand">
         <BrandMark />
         <div>
-          <strong>DeltCRM</strong>
+          <strong>Liqaa</strong>
           <p>One connected system for the business you are becoming.</p>
         </div>
       </div>
@@ -16,7 +16,7 @@ export function MarketingFooter() {
         <Link href="/pos">POS</Link>
         <Link href="/pricing">Pricing</Link>
       </nav>
-      <span>© {new Date().getFullYear()} DeltCRM</span>
+      <span>© {new Date().getFullYear()} Liqaa</span>
     </footer>
   );
 }
