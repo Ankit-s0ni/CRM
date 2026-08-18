@@ -49,12 +49,12 @@
 }
 
 :root {
-  --theme-primary: #2563eb;
-  --theme-primary-container: #1d4ed8;
-  --theme-sidebar: #172554;
+  --theme-primary: #018074;
+  --theme-primary-container: #005c54;
+  --theme-sidebar: #002e2a;
   --theme-sidebar-foreground: #ffffff;
-  --theme-sidebar-muted: #bfdbfe;
-  --theme-sidebar-active: #1e3a8a;
+  --theme-sidebar-muted: #99f6e4;
+  --theme-sidebar-active: #016b61;
   --semantic-success: #047857;
   --semantic-warning: #b45309;
   --semantic-danger: var(--color-destructive);
