@@ -15,6 +15,8 @@ export function MarketingFooter() {
         <Link href="/hrms">HRMS</Link>
         <Link href="/pos">POS</Link>
         <Link href="/pricing">Pricing</Link>
+        <Link href="/privacy">Privacy Policy</Link>
+        <Link href="/terms">Terms of Service</Link>
       </nav>
       <span>© {new Date().getFullYear()} Liqaa</span>
     </footer>
