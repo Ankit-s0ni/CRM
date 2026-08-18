@@ -72,7 +72,7 @@ void main() {
     final event = service.availability.first;
 
     await expectLater(
-      service.post<void>('/attendance/punches'),
+      service.post<void>('/test/provider-unavailable'),
       throwsA(isA<DioException>()),
     );
     expect((await event).state, ApiAvailability.providerUnavailable);
@@ -87,7 +87,7 @@ void main() {
       final event = service.availability.first;
 
       await expectLater(
-        service.get<void>('/attendance/today'),
+        service.get<void>('/test/workspace-unavailable'),
         throwsA(isA<DioException>()),
       );
       final value = await event;
@@ -96,6 +96,29 @@ void main() {
     },
   );
 
+  for (final code in const [
+    'PRODUCT_NOT_ENTITLED',
+    'DEVICE_NOT_ACTIVE',
+    'DEVICE_BLOCKED',
+    'DEVICE_REPLACED',
+    'MEMBERSHIP_INACTIVE',
+    'IDENTITY_INACTIVE',
+  ]) {
+    test('$code fails closed and disables the HRMS workspace', () async {
+      final service = _service(_jsonError(403, code, 'Access revoked'));
+      final event = service.availability.first;
+
+      await expectLater(
+        service.get<void>('/api/hrms/v1/mobile/runtime-config'),
+        throwsA(isA<DioException>()),
+      );
+
+      final value = await event;
+      expect(value.state, ApiAvailability.workspaceUnavailable);
+      expect(value.code, code);
+    });
+  }
+
   test('publishes session expired when a 401 cannot be refreshed', () async {
     final dio = Dio()
       ..httpClientAdapter = _jsonError(401, 'UNAUTHORIZED', 'Expired');
@@ -103,7 +126,7 @@ void main() {
     final event = service.availability.first;
 
     await expectLater(
-      service.get<void>('/attendance/today'),
+      service.get<void>('/test/session-expired'),
       throwsA(isA<DioException>()),
     );
     expect((await event).state, ApiAvailability.sessionExpired);

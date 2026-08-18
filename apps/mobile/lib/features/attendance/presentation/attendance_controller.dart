@@ -19,7 +19,7 @@ import '../domain/monthly_attendance_history.dart';
 final attendanceRepositoryProvider = Provider<AttendanceRepository>(
   (ref) => AppConfig.localMode
       ? const LocalAttendanceRepository()
-      : AttendanceApiRepository(ref.watch(apiServiceProvider)),
+      : AttendanceApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 
 final attendanceControllerProvider =
@@ -94,7 +94,7 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
       capturedIdentity = await ref.read(deviceIdentityProvider).payload();
       capturedIntegrity = policy.integrityRequired
           ? await IntegrityTokenProvider(
-              ref.read(apiServiceProvider),
+              ref.read(hrmsApiClientProvider),
             ).evidence(capturedIdentity['deviceUuid']!)
           : IntegrityEvidence(
               token: 'integrity-not-required',
@@ -281,7 +281,7 @@ class AttendanceController extends AsyncNotifier<AttendanceState> {
     final position = await _position();
     final identity = await ref.read(deviceIdentityProvider).payload();
     final evidence = await IntegrityTokenProvider(
-      ref.read(apiServiceProvider),
+      ref.read(hrmsApiClientProvider),
     ).evidence(identity['deviceUuid']!, offline: true);
     final eventId =
         await (await ref.read(attendanceOfflineQueueProvider.future)).enqueue(

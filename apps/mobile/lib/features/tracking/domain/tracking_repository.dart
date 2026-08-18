@@ -36,7 +36,25 @@ class FieldPingCapture {
   final DateTime capturedAt;
 }
 
+class FieldTrackingConsent {
+  const FieldTrackingConsent({
+    required this.required,
+    required this.noticeVersion,
+    required this.granted,
+  });
+
+  final bool required;
+  final String noticeVersion;
+  final bool granted;
+}
+
 abstract interface class TrackingRepository {
+  Future<FieldTrackingConsent> consent();
+  Future<void> updateConsent({
+    required String deviceUuid,
+    required String noticeVersion,
+    required bool granted,
+  });
   Future<FieldTrackingSession?> active(String deviceUuid);
   Future<FieldTrackingSession> start({
     required String deviceUuid,

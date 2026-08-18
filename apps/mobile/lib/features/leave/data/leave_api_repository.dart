@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../../../core/network/network_providers.dart';
 import '../domain/leave_repository.dart';
 
 final leaveRepositoryProvider = Provider<LeaveRepository>(
-  (ref) => LeaveApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => LeaveApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 
 class LeaveApiRepository implements LeaveRepository {
   LeaveApiRepository(this._api);
 
-  final ApiService _api;
+  final HrmsApiClient _api;
 
   @override
   Future<List<Map<String, dynamic>>> balances() async =>

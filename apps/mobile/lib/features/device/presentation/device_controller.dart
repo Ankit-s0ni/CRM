@@ -6,7 +6,7 @@ import '../domain/device_repository.dart';
 
 final deviceRepositoryProvider = Provider<DeviceRepository>(
   (ref) => DeviceApiRepository(
-    ref.watch(apiServiceProvider),
+    ref.watch(hrmsApiClientProvider),
     ref.watch(deviceIdentityProvider),
   ),
 );

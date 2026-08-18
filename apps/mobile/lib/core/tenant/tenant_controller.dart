@@ -5,33 +5,41 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../background/mobile_background_tasks.dart';
 import '../config/app_config.dart';
 import '../network/network_providers.dart';
+import '../network/token_store.dart';
 import '../storage/mobile_queue_repository.dart';
 import 'tenant_config.dart';
 import 'tenant_runtime_repository.dart';
 
 final tenantRuntimeRepositoryProvider = Provider<TenantRuntimeRepository>(
   (ref) => TenantRuntimeRepository(
+    ref.watch(hrmsApiClientProvider),
     ref.watch(apiServiceProvider),
     const FlutterSecureStorage(),
   ),
 );
 
 final tenantLocalDataServiceProvider = Provider<TenantLocalDataService>(
-  (ref) => const TenantLocalDataService(),
+  (ref) => TenantLocalDataService(ref.watch(tokenStoreProvider)),
 );
 
 final tenantControllerProvider =
     NotifierProvider<TenantController, TenantConfig>(TenantController.new);
 
 class TenantLocalDataService {
-  const TenantLocalDataService();
+  const TenantLocalDataService(this._tokens);
+
+  final TokenStore _tokens;
 
   Future<void> clear() async {
-    await (await MobileQueueRepository.open()).clearTenantData();
+    final scope = await _tokens.readIdentityScope();
+    if (scope == null) return;
+    await (await MobileQueueRepository.open(scope: scope)).clearTenantData();
   }
 
   Future<void> stopFieldSession() async {
-    await (await MobileQueueRepository.open()).stopSession();
+    final scope = await _tokens.readIdentityScope();
+    if (scope == null) return;
+    await (await MobileQueueRepository.open(scope: scope)).stopSession();
   }
 }
 
@@ -58,7 +66,7 @@ class TenantController extends Notifier<TenantConfig> {
   Future<void> refreshRuntime() => loadRuntime(allowCachedFallback: false);
 
   Future<void> clearRuntime() async {
-    await MobileBackgroundTasks.cancelTracking();
+    await MobileBackgroundTasks.cancelSessionWork();
     await ref.read(tenantLocalDataServiceProvider).clear();
     await ref.read(tenantRuntimeRepositoryProvider).clear();
     state = _publicConfig();

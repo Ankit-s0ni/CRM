@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 660" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Left Ribbon Main Surface (Navy -> Royal Blue -> Azure) -->
+    <linearGradient id="left-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1D4ED8" />
+      <stop offset="30%" stop-color="#2563EB" />
+      <stop offset="70%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+
+    <!-- 3D Bevel Top Facet (Electric Cyan) -->
+    <linearGradient id="top-bevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <!-- Right Leg Downward Ribbon (Sky Blue -> Deep Blue) -->
+    <linearGradient id="right-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="40%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+
+    <!-- Inner Fold Light Gradient (Vibrant Cyan) -->
+    <linearGradient id="inner-cyan-fold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#67E8F9" />
+    </linearGradient>
+
+    <!-- Left Leg Dark Underlayer/Extrusion -->
+    <linearGradient id="left-extrusion" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+
+    <!-- Occlusion Shadow -->
+    <linearGradient id="crease-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- 3D Isometric Ribbon Monogram -->
+  <g id="monogram">
+    <!-- 1. Left Leg 3D Extrusion Side Wall -->
+    <path 
+      d="M 315 75 
+         L 135 410 
+         C 115 448 125 496 160 520 
+         C 178 532 200 538 222 534 
+         L 245 528 
+         L 182 505 
+         C 155 490 148 455 165 425 
+         L 332 105 
+         Z" 
+      fill="url(#left-extrusion)" 
+    />
+
+    <!-- 2. Left Leg Main Broad Ribbon Surface -->
+    <path 
+      d="M 332 105 
+         L 165 425 
+         C 148 455 155 490 182 505 
+         C 210 520 245 510 262 480 
+         L 375 270 
+         C 385 252 410 252 420 270 
+         L 485 390 
+         L 522 370 
+         L 440 220 
+         C 415 175 358 175 332 220 
+         L 260 350 
+         L 355 170 
+         Z" 
+      fill="url(#left-ribbon)" 
+    />
+
+    <!-- 3. 3D Isometric Top Bevel / Edge Facet -->
+    <path 
+      d="M 315 75 
+         L 355 75 
+         L 490 325 
+         L 460 325 
+         Z" 
+      fill="url(#top-bevel)" 
+    />
+
+    <!-- 4. Inner Cyan Folding Ribbon (Bottom loop to Right Apex) -->
+    <path 
+      d="M 182 505 
+         C 215 525 260 518 285 485 
+         L 375 350 
+         C 388 332 412 332 425 350 
+         L 505 490 
+         C 520 515 552 525 578 510 
+         C 602 495 610 465 595 440 
+         L 450 180 
+         C 430 145 385 145 365 180 
+         L 340 225 
+         L 365 180 
+         C 378 158 410 158 422 180 
+         L 565 435 
+         C 575 452 570 472 555 482 
+         C 538 492 518 485 508 468 
+         L 425 320 
+         C 405 285 355 285 335 320 
+         L 245 455 
+         C 232 475 208 482 188 472 
+         Z" 
+      fill="url(#inner-cyan-fold)" 
+    />
+
+    <!-- 5. Right Leg Downward Outer Ribbon -->
+    <path 
+      d="M 422 180 
+         L 565 435 
+         C 578 458 570 488 548 502 
+         C 525 515 495 508 482 485 
+         L 410 355 
+         L 385 398 
+         L 465 540 
+         C 498 560 542 550 565 520 
+         C 595 480 585 425 550 395 
+         L 455 225 
+         Z" 
+      fill="url(#right-ribbon)" 
+    />
+
+    <!-- 6. Soft Shadow at Intersection -->
+    <path 
+      d="M 345 320 
+         C 365 350 395 380 430 395 
+         L 405 415 
+         C 370 395 345 360 330 330 Z" 
+      fill="url(#crease-shadow)" 
+    />
+  </g>
+
+  <!-- Liqaa Vector Typography -->
+  <text 
+    x="300" 
+    y="615" 
+    text-anchor="middle" 
+    font-family="system-ui, -apple-system, 'Lexend', 'Plus Jakarta Sans', 'Inter', sans-serif" 
+    font-size="82" 
+    font-weight="800" 
+    letter-spacing="-0.03em" 
+    fill="#1E293B"
+  >
+    Liqaa
+  </text>
+</svg>

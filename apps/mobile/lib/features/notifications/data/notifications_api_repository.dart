@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../../../core/network/network_providers.dart';
 import '../domain/notifications_repository.dart';
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>(
-  (ref) => NotificationsApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => NotificationsApiRepository(ref.watch(platformApiClientProvider)),
 );
 
 class NotificationsApiRepository implements NotificationsRepository {
   NotificationsApiRepository(this._api);
-  final ApiService _api;
+  final PlatformApiClient _api;
   @override
   Future<List<Map<String, dynamic>>> list() async {
     final response = await _api.get<Map<String, dynamic>>(

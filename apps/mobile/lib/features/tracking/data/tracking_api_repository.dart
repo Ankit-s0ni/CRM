@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/logging/app_logger.dart';
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../../../core/storage/mobile_queue_models.dart';
 import '../../../core/storage/mobile_queue_repository.dart';
 import '../../../core/utils/uuid.dart';
@@ -13,8 +13,40 @@ import '../domain/tracking_repository.dart';
 class TrackingApiRepository implements TrackingRepository {
   TrackingApiRepository(this._api, this._queue);
 
-  final ApiService _api;
+  final HrmsApiClient _api;
   final MobileQueueRepository _queue;
+
+  @override
+  Future<FieldTrackingConsent> consent() async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiRoutes.fieldTrackingConsent,
+    );
+    final data = response.data?['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const FormatException('Invalid field consent response');
+    }
+    return FieldTrackingConsent(
+      required: data['required'] == true,
+      noticeVersion: data['noticeVersion'] as String? ?? '1.0',
+      granted: data['granted'] == true,
+    );
+  }
+
+  @override
+  Future<void> updateConsent({
+    required String deviceUuid,
+    required String noticeVersion,
+    required bool granted,
+  }) async {
+    await _api.post<void>(
+      ApiRoutes.fieldTrackingConsent,
+      data: {
+        'deviceUuid': deviceUuid,
+        'noticeVersion': noticeVersion,
+        'action': granted ? 'GRANTED' : 'WITHDRAWN',
+      },
+    );
+  }
 
   @override
   Future<FieldTrackingSession?> active(String deviceUuid) async {
@@ -86,8 +118,15 @@ class TrackingApiRepository implements TrackingRepository {
       'capturedAt': capture.capturedAt.toUtc().toIso8601String(),
       'isOfflineSync': false,
     };
+    final batchUuid = newUuid();
     final batch = PendingFieldPingBatch()
-      ..batchUuid = newUuid()
+      ..batchUuid = batchUuid
+      ..scopedBatchKey = '${_queue.scope.ownerKey}|$batchUuid'
+      ..tenantId = _queue.scope.tenantId
+      ..userId = _queue.scope.userId
+      ..membershipId = _queue.scope.membershipId
+      ..employeeId = _queue.scope.employeeId
+      ..contractVersion = _queue.scope.contractVersion
       ..sessionId = capture.sessionId
       ..deviceUuid = deviceUuid
       ..itemsJson = jsonEncode([item])
@@ -125,17 +164,16 @@ class TrackingApiRepository implements TrackingRepository {
           ApiRoutes.fieldPingsBatch,
           data: {'deviceUuid': batch.deviceUuid, 'items': items},
         );
-        final outcomes = (response.data?['data'] as List<dynamic>? ?? const [])
+        final envelope = response.data?['data'] as Map<String, dynamic>?;
+        final outcomes = (envelope?['outcomes'] as List<dynamic>? ?? const [])
             .whereType<Map<String, dynamic>>()
             .toList(growable: false);
-        if (outcomes.any((outcome) => outcome['status'] == 'REJECTED')) {
+        bool rejected(Map<String, dynamic> outcome) =>
+            outcome['status']?.toString().toUpperCase() == 'REJECTED';
+        if (outcomes.any(rejected)) {
           batch
             ..status = 'REJECTED'
-            ..errorCode =
-                outcomes.firstWhere(
-                      (outcome) => outcome['status'] == 'REJECTED',
-                    )['code']
-                    as String?;
+            ..errorCode = outcomes.firstWhere(rejected)['errorCode'] as String?;
           await _queue.savePingBatch(batch);
         } else {
           await _queue.deletePingBatch(batch.id);
@@ -182,6 +220,12 @@ class TrackingApiRepository implements TrackingRepository {
     final previous = await _queue.activeSession();
     await _queue.saveSession(
       LocalFieldSession()
+        ..ownerKey = _queue.scope.ownerKey
+        ..tenantId = _queue.scope.tenantId
+        ..userId = _queue.scope.userId
+        ..membershipId = _queue.scope.membershipId
+        ..employeeId = _queue.scope.employeeId
+        ..contractVersion = _queue.scope.contractVersion
         ..serverSessionId = session.id
         ..clientStartUuid = session.clientStartUuid
         ..deviceUuid = deviceUuid

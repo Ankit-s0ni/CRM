@@ -6,7 +6,7 @@ import '../data/profile_api_repository.dart';
 import '../domain/profile_repository.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
-  (ref) => ProfileApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => ProfileApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 
 final profileControllerProvider = FutureProvider<Map<String, dynamic>>((ref) {

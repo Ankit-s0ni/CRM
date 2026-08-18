@@ -104,6 +104,28 @@ class AttendancePolicyConfig {
   bool get requiresLocation => locationMode != AttendanceLocationMode.none;
 }
 
+class FieldTrackingPolicyConfig {
+  const FieldTrackingPolicyConfig({
+    this.noticeVersion = '1.0',
+    this.consentRequired = true,
+    this.consentComplete = false,
+    this.windowStart = '09:00',
+    this.windowEnd = '18:00',
+    this.allowOutsideWindow = false,
+    this.maxAccuracyMeters = 100,
+    this.retentionDays = 90,
+  });
+
+  final String noticeVersion;
+  final bool consentRequired;
+  final bool consentComplete;
+  final String windowStart;
+  final String windowEnd;
+  final bool allowOutsideWindow;
+  final int maxAccuracyMeters;
+  final int retentionDays;
+}
+
 class TenantOnboarding {
   const TenantOnboarding({
     this.deviceRegistrationRequired = false,
@@ -151,6 +173,7 @@ class TenantConfig {
     required this.employeeName,
     required this.onboarding,
     required this.release,
+    this.fieldTrackingPolicy = const FieldTrackingPolicyConfig(),
   });
 
   final String tenantId;
@@ -170,6 +193,7 @@ class TenantConfig {
   final String employeeName;
   final TenantOnboarding onboarding;
   final MobileReleasePolicy release;
+  final FieldTrackingPolicyConfig fieldTrackingPolicy;
 
   bool hasModule(TenantModule module) => modules.contains(module);
 
@@ -191,5 +215,6 @@ class TenantConfig {
     employeeName: employeeName,
     onboarding: onboarding,
     release: release,
+    fieldTrackingPolicy: fieldTrackingPolicy,
   );
 }

@@ -65,11 +65,11 @@ export function PlatformLoginForm() {
       <div className="mb-7 flex items-center gap-3">
         <img
           src="/logo-square.png"
-          alt="DeltCRM Logo"
+          alt="Liqaa Logo"
           className="size-11 object-contain"
         />
         <div>
-          <h1 className="text-xl font-bold">DeltCRM</h1>
+          <h1 className="text-xl font-bold">Liqaa</h1>
           <p className="text-xs font-semibold uppercase tracking-[.15em] text-outline">
             Platform administration
           </p>

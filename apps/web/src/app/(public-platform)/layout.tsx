@@ -10,8 +10,8 @@ import {
 import { ThemeProvider } from "@/shared/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "DELTCRM",
-  description: "Multi-tenant HRMS and attendance workspace",
+  title: "Liqaa",
+  description: "Liqaa Platform Control Plane",
 };
 
 export default function RootLayout({

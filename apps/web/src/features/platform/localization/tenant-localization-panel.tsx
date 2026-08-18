@@ -437,32 +437,34 @@ export function TenantLocalizationPanel({ tenantId }: { tenantId: string }) {
             dir={direction}
             lang={previewLocale}
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-foreground">
-              {preview["tenant.dashboard.header.eyebrow"] ??
-                "Workspace operations"}
-            </p>
-            <h4 className="mt-1 text-2xl font-bold">
-              {preview["tenant.dashboard.header.title"] ?? "HR operations"}
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold text-primary">
+                i18n Preview
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-outline">
+                {preview["tenant.dashboard.header.eyebrow"] ?? "Workspace"}
+              </p>
+            </div>
+            <h4 className="mt-2 text-xl font-bold">
+              {preview["tenant.dashboard.header.title"] ?? "Workspace Overview"}
             </h4>
-            <p className="mt-2 text-sm text-outline">
+            <p className="mt-1 text-xs text-outline">
               {preview["tenant.dashboard.workforce.scope"] ??
-                "Counts follow your employee reporting scope"}
+                "Live terminology resolution for this tenant"}
             </p>
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              {[
-                ["attendance.status.present", "Present", "18"],
-                ["attendance.status.late", "Late", "2"],
-              ].map(([key, fallback, value]) => (
-                <div
-                  className="rounded-xl border border-border p-3"
-                  key={key}
-                >
-                  <span className="text-xs text-outline">
-                    {preview[key] ?? fallback}
-                  </span>
-                  <strong className="mt-2 block text-xl">{value}</strong>
-                </div>
-              ))}
+            <div className="mt-4 space-y-2 border-t border-border pt-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-outline">Greeting:</span>
+                <span className="font-semibold">{previewLocale === "ar" || previewLocale.startsWith("ar-") ? "مرحباً بكم" : "Welcome"}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-outline">Direction:</span>
+                <span className="font-mono">{direction.toUpperCase()}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-outline">Active Dialect:</span>
+                <span className="font-semibold text-primary">{localeNames[previewLocale]}</span>
+              </div>
             </div>
           </div>
         </div>

@@ -5,8 +5,8 @@ import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "DeltCRM Pricing | Plans That Grow With Your Operation",
-  description: "Flexible DeltCRM plans for growing teams, multi-location businesses and enterprise operations.",
+  title: "Liqaa Pricing | Plans That Grow With Your Operation",
+  description: "Flexible Liqaa plans for growing teams, multi-location businesses and enterprise operations.",
 };
 
 const plans = [

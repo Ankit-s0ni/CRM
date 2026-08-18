@@ -9,7 +9,7 @@ import '../domain/home_repository.dart';
 import '../domain/home_summary.dart';
 
 final homeRepositoryProvider = Provider<HomeRepository>(
-  (ref) => HomeApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => HomeApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 
 final homeControllerProvider =
@@ -33,9 +33,10 @@ class HomeController extends AsyncNotifier<HomeSummary> {
       ).format(DateTime.now()),
       shiftLabel: (() {
         final name = policy.name;
-        final formattedTime = '${time(policy.shiftStart)}–${time(policy.shiftEnd)}';
+        final formattedTime =
+            '${time(policy.shiftStart)}–${time(policy.shiftEnd)}';
         final dashTime = '${time(policy.shiftStart)}-${time(policy.shiftEnd)}';
-        
+
         if (name.contains(formattedTime) || name.contains(dashTime)) {
           return name;
         }

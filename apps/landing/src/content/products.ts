@@ -15,7 +15,7 @@ export const marketingProducts: Record<MarketingProduct["slug"], MarketingProduc
   hrms: {
     slug: "hrms",
     eyebrow: "People operations",
-    name: "DeltCRM HRMS",
+    name: "Liqaa HRMS",
     status: "Available now",
     headline: "Every workday, connected from check-in to insight.",
     summary:
@@ -43,7 +43,7 @@ export const marketingProducts: Record<MarketingProduct["slug"], MarketingProduc
   pos: {
     slug: "pos",
     eyebrow: "Connected commerce",
-    name: "DeltCRM POS",
+    name: "Liqaa POS",
     status: "Early access",
     headline: "The counter, catalog and stock finally agree.",
     summary:

@@ -11,9 +11,9 @@ const navigation = [
 export function SiteHeader() {
   return (
     <header className="site-header">
-      <Link className="wordmark" href="/" aria-label="DeltCRM home">
-        <BrandMark />
-        <span>DeltCRM</span>
+      <Link className="wordmark" href="/" aria-label="Liqaa home">
+        <span className="brand-dot" aria-hidden="true" />
+        <span>Liqaa</span>
       </Link>
       <nav aria-label="Primary navigation">
         {navigation.map((item) => (

@@ -1,4 +1,4 @@
-// GENERATED FILE. Run `pnpm openapi:generate`; do not edit manually.
+// GENERATED FILE. Run `pnpm mobile:contracts:generate`; do not edit manually.
 class ApiRoutes {
   ApiRoutes._();
 
@@ -8,49 +8,46 @@ class ApiRoutes {
   static const logout = '/auth/logout';
   static const changePassword = '/auth/change-password';
   static const me = '/auth/me';
-  static const devices = '/devices';
-  static const registerDevice = '/devices/register';
-  static const myDevice = '/devices/me';
-  static const myConsent = '/biometric-consents/me';
-  static const biometricConsents = '/biometric-consents';
-  static const enrollmentPresign = '/face-enrollments/presign';
-  static const faceEnrollments = '/face-enrollments';
-  static const enrollmentStatus = '/face-enrollments/me/status';
-  static const punches = '/attendance/punches';
-  static const punchEvidencePresign = '/attendance/punch-evidence/presign';
-  static const integrityChallenge = '/attendance/integrity/challenges';
-  static const attendanceToday = '/attendance/me/today';
-  static const attendanceHistory = '/attendance/me/history';
-  static const breakStart = '/attendance/break-start';
-  static const breakEnd = '/attendance/break-end';
-  static const profile = '/employees/me';
-  static const verificationLogs = '/verification-logs';
-  static const securityAlerts = '/security-alerts';
-  static const fieldSessionStart = '/field-sessions/start';
-  static const fieldSessionActive = '/field-sessions/me/active';
-  static const fieldPingsBatch = '/field-pings/batch';
-  static const attendanceSync = '/attendance/sync';
-  static const mobileRuntimeConfig = '/mobile/runtime-config';
-  static const regularizations = '/regularizations';
-  static const myRegularizations = '/regularizations/me';
-  static const leavePolicies = '/leave-policies';
-  static const myLeaveBalances = '/leave-balances/me';
-  static const leaveRequests = '/leave-requests';
+  static const productToken = '/product-integration/token';
   static const notifications = '/notifications';
   static const notificationUnreadCount = '/notifications/unread-count';
   static const notificationReadAll = '/notifications/read-all';
-  static const preferences = '/employees/me/preferences';
+  static const registerDevice = '/api/hrms/v1/devices/register';
+  static const myDevice = '/api/hrms/v1/devices/me';
+  static const myConsent = '/api/hrms/v1/biometric-consents/me';
+  static const enrollmentPresign = '/api/hrms/v1/face-enrollments/me/presign';
+  static const faceEnrollments = '/api/hrms/v1/face-enrollments/me';
+  static const enrollmentStatus = '/api/hrms/v1/face-enrollments/me/status';
+  static const punches = '/api/hrms/v1/attendance/me/punch';
+  static const punchEvidencePresign = '/api/hrms/v1/attendance/evidence/presign';
+  static const integrityChallenge = '/api/hrms/v1/attendance/integrity/challenges';
+  static const attendanceToday = '/api/hrms/v1/attendance/me/today';
+  static const attendanceHistory = '/api/hrms/v1/attendance/me/history';
+  static const profile = '/api/hrms/v1/employees/me';
+  static const verificationLogs = '/api/hrms/v1/attendance/verification-logs/me';
+  static const securityAlerts = '/api/hrms/v1/security-alerts/me';
+  static const fieldSessionStart = '/api/hrms/v1/field-sessions';
+  static const fieldSessionActive = '/api/hrms/v1/field-sessions/me/active';
+  static const fieldPingsBatch = '/api/hrms/v1/field-pings/batch';
+  static const fieldTrackingConsent = '/api/hrms/v1/field-tracking/consent';
+  static const attendanceSync = '/api/hrms/v1/attendance/sync';
+  static const mobileRuntimeConfig = '/api/hrms/v1/mobile/runtime-config';
+  static const regularizations = '/api/hrms/v1/regularizations';
+  static const myRegularizations = '/api/hrms/v1/regularizations/me';
+  static const leavePolicies = '/api/hrms/v1/leave/policies';
+  static const myLeaveBalances = '/api/hrms/v1/leave/balances/me';
+  static const leaveRequests = '/api/hrms/v1/leave/requests';
+  static const preferences = '/api/hrms/v1/employees/me/preferences';
 
-  static String approveDevice(String id) => '/devices/$id/approve';
-  static String blockDevice(String id) => '/devices/$id/block';
-  static String replaceDevice(String id) => '/devices/$id/replace';
-  static String attendanceDay(String date) => '/attendance/me/day?date=$date';
-  static String securityAlert(String id) => '/security-alerts/$id';
-  static String fieldSessionStop(String id) => '/field-sessions/$id/stop';
-  static String attendanceSyncStatus(String clientEventUuid) =>
-      '/attendance/sync/$clientEventUuid';
-  static String cancelRegularization(String id) =>
-      '/regularizations/$id/cancel';
-  static String cancelLeaveRequest(String id) => '/leave-requests/$id/cancel';
+  static const devices = '/api/hrms/v1/devices';
+  static const biometricConsents = '/api/hrms/v1/biometric-consents/me';
+  static String approveDevice(String id) => '/api/hrms/v1/devices/$id/approve';
+  static String blockDevice(String id) => '/api/hrms/v1/devices/$id/block';
+  static String replaceDevice(String id) => '/api/hrms/v1/devices/$id/replace';
+  static String attendanceDay(String date) => '/api/hrms/v1/attendance/me/day?date=$date';
+  static String fieldSessionStop(String id) => '/api/hrms/v1/field-sessions/$id/stop';
+  static String attendanceSyncStatus(String id) => '/api/hrms/v1/attendance/sync/$id';
+  static String cancelRegularization(String id) => '/api/hrms/v1/regularizations/$id/cancel';
+  static String cancelLeaveRequest(String id) => '/api/hrms/v1/leave/requests/$id/cancel';
   static String markNotificationRead(String id) => '/notifications/$id/read';
 }

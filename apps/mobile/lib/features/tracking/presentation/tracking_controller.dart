@@ -29,6 +29,9 @@ class TrackingViewState {
     this.lastLongitude,
     this.updating = false,
     this.errorCode,
+    this.consentRequired = true,
+    this.consentGranted = false,
+    this.noticeVersion = '1.0',
   });
 
   final FieldTrackingSession? session;
@@ -41,6 +44,9 @@ class TrackingViewState {
   final double? lastLongitude;
   final bool updating;
   final String? errorCode;
+  final bool consentRequired;
+  final bool consentGranted;
+  final String noticeVersion;
 
   bool get active => session != null;
 
@@ -57,6 +63,9 @@ class TrackingViewState {
     bool? updating,
     String? errorCode,
     bool clearError = false,
+    bool? consentRequired,
+    bool? consentGranted,
+    String? noticeVersion,
   }) => TrackingViewState(
     session: clearSession ? null : session ?? this.session,
     locationPermission: locationPermission ?? this.locationPermission,
@@ -68,12 +77,15 @@ class TrackingViewState {
     lastLongitude: lastLongitude ?? this.lastLongitude,
     updating: updating ?? this.updating,
     errorCode: clearError ? null : errorCode ?? this.errorCode,
+    consentRequired: consentRequired ?? this.consentRequired,
+    consentGranted: consentGranted ?? this.consentGranted,
+    noticeVersion: noticeVersion ?? this.noticeVersion,
   );
 }
 
 final trackingRepositoryProvider = FutureProvider<TrackingRepository>(
   (ref) async => TrackingApiRepository(
-    ref.watch(apiServiceProvider),
+    ref.watch(hrmsApiClientProvider),
     await ref.watch(mobileQueueRepositoryProvider.future),
   ),
 );
@@ -102,9 +114,11 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
     final identity = await ref.read(deviceIdentityProvider).payload();
     final repository = await ref.watch(trackingRepositoryProvider.future);
     FieldTrackingSession? session;
+    FieldTrackingConsent? consent;
     String? errorCode;
     try {
       session = await repository.active(identity['deviceUuid']!);
+      consent = await repository.consent();
     } catch (error, stack) {
       AppLogger.warning('field_session_restore_failed', error, stack);
       errorCode = 'FIELD_SESSION_UNAVAILABLE';
@@ -113,7 +127,16 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
     final local = await (await ref.watch(
       mobileQueueRepositoryProvider.future,
     )).activeSession();
-    if (session != null) _startForegroundTimer();
+    if (session != null) {
+      _startForegroundTimer();
+      await MobileBackgroundTasks.scheduleTracking(
+        batteryLevel: capabilities.$3 ?? 100,
+        trackingIntervalMinutes: ref
+            .read(tenantControllerProvider)
+            .attendancePolicy
+            .trackingIntervalMinutes,
+      );
+    }
     return TrackingViewState(
       session: session,
       locationPermission: capabilities.$1,
@@ -122,10 +145,13 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
       pingCount: local?.capturedPingCount ?? 0,
       lastPingAt: local?.lastPingAt,
       errorCode: errorCode,
+      consentRequired: consent?.required ?? true,
+      consentGranted: consent?.granted ?? false,
+      noticeVersion: consent?.noticeVersion ?? '1.0',
     );
   }
 
-  Future<bool> start() async {
+  Future<bool> start({bool privacyAccepted = false}) async {
     final current = state.valueOrNull ?? const TrackingViewState();
     state = AsyncData(current.copyWith(updating: true, clearError: true));
     try {
@@ -137,6 +163,17 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
       await _requireLocationPermissions();
       final identity = await ref.read(deviceIdentityProvider).payload();
       final repository = await ref.read(trackingRepositoryProvider.future);
+      final consent = await repository.consent();
+      if (consent.required && !consent.granted) {
+        if (!privacyAccepted) {
+          throw const TrackingException('FIELD_TRACKING_CONSENT_REQUIRED');
+        }
+        await repository.updateConsent(
+          deviceUuid: identity['deviceUuid']!,
+          noticeVersion: consent.noticeVersion,
+          granted: true,
+        );
+      }
       final session = await repository.start(
         deviceUuid: identity['deviceUuid']!,
         clientStartUuid: newUuid(),
@@ -150,6 +187,9 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
           batteryLevel: capabilities.$3,
           updating: false,
           clearError: true,
+          consentRequired: consent.required,
+          consentGranted: true,
+          noticeVersion: consent.noticeVersion,
         ),
       );
       _startForegroundTimer();
@@ -168,6 +208,34 @@ class TrackingController extends AsyncNotifier<TrackingViewState> {
       state = AsyncData(
         current.copyWith(updating: false, errorCode: _trackingCode(error)),
       );
+      return false;
+    }
+  }
+
+  Future<bool> withdrawConsent() async {
+    final current = state.valueOrNull ?? const TrackingViewState();
+    try {
+      final identity = await ref.read(deviceIdentityProvider).payload();
+      final repository = await ref.read(trackingRepositoryProvider.future);
+      await repository.updateConsent(
+        deviceUuid: identity['deviceUuid']!,
+        noticeVersion: current.noticeVersion,
+        granted: false,
+      );
+      _foregroundTimer?.cancel();
+      await MobileBackgroundTasks.cancelTracking();
+      await (await ref.read(mobileQueueRepositoryProvider.future)).stopSession();
+      state = AsyncData(
+        current.copyWith(
+          clearSession: true,
+          consentGranted: false,
+          clearError: true,
+        ),
+      );
+      return true;
+    } catch (error, stack) {
+      AppLogger.error('field_tracking_consent_withdraw_failed', error, stack);
+      state = AsyncData(current.copyWith(errorCode: _trackingCode(error)));
       return false;
     }
   }
@@ -362,7 +430,12 @@ String _trackingCode(Object error) {
 
 bool _isAuthoritativeCapabilityDenial(Object error) => const {
   'CAPABILITY_NOT_ENABLED',
+  'FIELD_TRACKING_NOT_ENABLED',
   'FIELD_TRACKING_NOT_ELIGIBLE',
+  'FIELD_TRACKING_ENTITLEMENT_REQUIRED',
+  'FIELD_TRACKING_CONSENT_REQUIRED',
+  'FIELD_TRACKING_NOTICE_STALE',
+  'FIELD_TRACKING_OUTSIDE_WINDOW',
   'MODULE_ACCESS_DENIED',
   'RUNTIME_CONFIG_STALE',
 }.contains(_trackingCode(error));

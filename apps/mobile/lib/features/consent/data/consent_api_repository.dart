@@ -1,10 +1,10 @@
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../domain/consent_repository.dart';
 
 class ConsentApiRepository implements ConsentRepository {
   ConsentApiRepository(this._api);
-  final ApiService _api;
+  final HrmsApiClient _api;
   @override
   Future<Map<String, dynamic>?> current() async {
     final response = await _api.get<Map<String, dynamic>>(ApiRoutes.myConsent);

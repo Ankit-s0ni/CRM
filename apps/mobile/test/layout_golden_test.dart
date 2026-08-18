@@ -92,7 +92,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 700));
       }
       await tester.pumpWidget(const SizedBox.shrink());
-    });
+    }, tags: 'golden');
   }
 
   testWidgets('M8-verifying layout baseline', (tester) async {
@@ -120,7 +120,7 @@ void main() {
       find.byKey(boundaryKey),
       matchesGoldenFile('goldens/sprint5/M8-verifying.png'),
     );
-  });
+  }, tags: 'golden');
 }
 
 Future<void> _configureReferenceViewport(WidgetTester tester) async {

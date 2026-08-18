@@ -7,11 +7,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hrms_attendance/core/network/api_service.dart';
+import 'package:hrms_attendance/core/network/authority_clients.dart';
 import 'package:hrms_attendance/core/network/token_store.dart';
+import 'package:hrms_attendance/core/session/mobile_identity_scope.dart';
 import 'package:hrms_attendance/core/storage/mobile_queue_models.dart';
 import 'package:hrms_attendance/core/storage/mobile_queue_repository.dart';
 import 'package:hrms_attendance/core/storage/queue_secret_store.dart';
 import 'package:hrms_attendance/features/sync/data/sync_api_repository.dart';
+import 'package:hrms_attendance/features/tracking/data/tracking_api_repository.dart';
 import 'package:isar_community/isar.dart';
 
 void main() {
@@ -61,7 +64,7 @@ void main() {
       directory: directory.path,
       name: 'sprint6_${DateTime.now().microsecondsSinceEpoch}',
     );
-    queue = MobileQueueRepository(isar);
+    queue = MobileQueueRepository(isar, testScope);
   });
 
   tearDown(() async {
@@ -75,17 +78,23 @@ void main() {
       final eventId = '019f7089-5b52-7065-b8b4-cc840bcfce46';
       final record = attendanceRecord(eventId);
       await queue.enqueueAttendance(record);
-      await secrets.writeIntegrityToken(eventId, 'secret-attestation');
+      await secrets.writeIntegrityToken(
+        testScope.ownerKey,
+        eventId,
+        'secret-attestation',
+      );
       final repository = SyncApiRepository(
-        api(storage, {
-          'data': [
-            {
-              'clientEventUuid': eventId,
-              'status': 'ACCEPTED',
-              'code': 'SYNC_ACCEPTED',
-            },
-          ],
-        }),
+        HrmsApiClient(
+          api(storage, {
+            'data': [
+              {
+                'clientEventUuid': eventId,
+                'status': 'ACCEPTED',
+                'code': 'SYNC_ACCEPTED',
+              },
+            ],
+          }),
+        ),
         queue,
         secrets,
       );
@@ -96,7 +105,10 @@ void main() {
       expect(stored.status, 'SYNCED');
       expect(stored.syncedAt, isNotNull);
       expect(stored.evidencePath, isNull);
-      expect(await secrets.readIntegrityToken(eventId), isNull);
+      expect(
+        await secrets.readIntegrityToken(testScope.ownerKey, eventId),
+        isNull,
+      );
     },
   );
 
@@ -110,7 +122,7 @@ void main() {
       await queue.enqueueAttendance(record);
       // Missing secure evidence is a permanent outcome before any HTTP call.
       final repository = SyncApiRepository(
-        api(storage, const {'data': []}),
+        HrmsApiClient(api(storage, const {'data': []})),
         queue,
         secrets,
       );
@@ -122,7 +134,10 @@ void main() {
       expect(stored.errorCode, 'OFFLINE_INTEGRITY_MISSING');
       expect(stored.evidencePath, isNull);
       expect(await evidence.exists(), isFalse);
-      expect(await secrets.readIntegrityToken(eventId), isNull);
+      expect(
+        await secrets.readIntegrityToken(testScope.ownerKey, eventId),
+        isNull,
+      );
     },
   );
 
@@ -132,8 +147,16 @@ void main() {
       final eventId = '019f7089-5b52-7065-b8b4-cc840bcfce48';
       final record = attendanceRecord(eventId);
       await queue.enqueueAttendance(record);
-      await secrets.writeIntegrityToken(eventId, 'secret-attestation');
-      final repository = SyncApiRepository(api(storage, null), queue, secrets);
+      await secrets.writeIntegrityToken(
+        testScope.ownerKey,
+        eventId,
+        'secret-attestation',
+      );
+      final repository = SyncApiRepository(
+        HrmsApiClient(api(storage, null)),
+        queue,
+        secrets,
+      );
       final before = DateTime.now();
 
       await repository.replayPending();
@@ -143,7 +166,10 @@ void main() {
       expect(stored.attempts, 1);
       expect(stored.errorCode, 'SYNC_DEPENDENCY_UNAVAILABLE');
       expect(stored.nextAttemptAt.isAfter(before), isTrue);
-      expect(await secrets.readIntegrityToken(eventId), 'secret-attestation');
+      expect(
+        await secrets.readIntegrityToken(testScope.ownerKey, eventId),
+        'secret-attestation',
+      );
     },
   );
 
@@ -153,12 +179,108 @@ void main() {
     expect(queueBackoff(8), const Duration(seconds: 3600));
     expect(queueBackoff(50), const Duration(seconds: 3600));
   });
+
+  test('queue reads cannot cross tenant or account scope', () async {
+    final record = attendanceRecord('019f7089-5b52-7065-b8b4-cc840bcfce50');
+    await queue.enqueueAttendance(record);
+    final otherQueue = MobileQueueRepository(isar, otherScope);
+
+    expect(await queue.attendanceRecords(), hasLength(1));
+    expect(await otherQueue.attendanceRecords(), isEmpty);
+    expect(() => otherQueue.saveAttendance(record), throwsA(isA<StateError>()));
+  });
+
+  test('legacy unscoped rows are quarantined and never replayed', () async {
+    final now = DateTime.now().toUtc();
+    final legacy = PendingAttendanceRecord()
+      ..clientEventUuid = '019f7089-5b52-7065-b8b4-cc840bcfce51'
+      ..scopedEventKey = 'legacy'
+      ..tenantId = ''
+      ..userId = ''
+      ..membershipId = ''
+      ..employeeId = ''
+      ..deviceUuid = ''
+      ..contractVersion = ''
+      ..eventType = 'CHECKIN'
+      ..payloadJson = '{}'
+      ..createdAt = now
+      ..nextAttemptAt = now;
+    await isar.writeTxn(() => isar.pendingAttendanceRecords.put(legacy));
+
+    await queue.quarantineLegacyRecords();
+
+    final stored = await isar.pendingAttendanceRecords.get(legacy.id);
+    expect(stored?.status, 'QUARANTINED');
+    expect(stored?.errorCode, 'LEGACY_UNSCOPED_RECORD');
+    expect(await queue.dueAttendance(), isEmpty);
+  });
+
+  test(
+    'field ping flush reads outcomes from the response data envelope',
+    () async {
+      final batch = pingBatch('019f7089-5b52-7065-b8b4-cc840bcfce61');
+      await queue.savePingBatch(batch);
+      final repository = TrackingApiRepository(
+        HrmsApiClient(
+          api(storage, {
+            'data': {
+              'outcomes': [
+                {
+                  'clientPingUuid': '019f7089-5b52-7065-b8b4-cc840bcfce62',
+                  'status': 'accepted',
+                },
+              ],
+            },
+          }),
+        ),
+        queue,
+      );
+
+      await repository.flushPending();
+
+      expect(await queue.duePingBatches(), isEmpty);
+    },
+  );
+
+  test('field ping flush preserves lower-case rejected outcomes', () async {
+    final batch = pingBatch('019f7089-5b52-7065-b8b4-cc840bcfce63');
+    await queue.savePingBatch(batch);
+    final repository = TrackingApiRepository(
+      HrmsApiClient(
+        api(storage, {
+          'data': {
+            'outcomes': [
+              {
+                'clientPingUuid': '019f7089-5b52-7065-b8b4-cc840bcfce62',
+                'status': 'rejected',
+                'errorCode': 'FIELD_PING_INVALID',
+              },
+            ],
+          },
+        }),
+      ),
+      queue,
+    );
+
+    await repository.flushPending();
+
+    final stored = await isar.pendingFieldPingBatchs.get(batch.id);
+    expect(stored?.status, 'REJECTED');
+    expect(stored?.errorCode, 'FIELD_PING_INVALID');
+  });
 }
 
 PendingAttendanceRecord attendanceRecord(String eventId) {
   final now = DateTime.now().toUtc();
   return PendingAttendanceRecord()
     ..clientEventUuid = eventId
+    ..scopedEventKey = '${testScope.ownerKey}|$eventId'
+    ..tenantId = testScope.tenantId
+    ..userId = testScope.userId
+    ..membershipId = testScope.membershipId
+    ..employeeId = testScope.employeeId
+    ..deviceUuid = testScope.deviceUuid
+    ..contractVersion = testScope.contractVersion
     ..eventType = 'CHECKIN'
     ..createdAt = now
     ..nextAttemptAt = now
@@ -180,9 +302,59 @@ PendingAttendanceRecord attendanceRecord(String eventId) {
     });
 }
 
+PendingFieldPingBatch pingBatch(String batchId) {
+  final now = DateTime.now().toUtc();
+  return PendingFieldPingBatch()
+    ..batchUuid = batchId
+    ..scopedBatchKey = '${testScope.ownerKey}|$batchId'
+    ..tenantId = testScope.tenantId
+    ..userId = testScope.userId
+    ..membershipId = testScope.membershipId
+    ..employeeId = testScope.employeeId
+    ..contractVersion = testScope.contractVersion
+    ..sessionId = '019f7089-5b52-7065-b8b4-cc840bcfce60'
+    ..deviceUuid = testScope.deviceUuid
+    ..itemsJson = jsonEncode([
+      {
+        'clientPingUuid': '019f7089-5b52-7065-b8b4-cc840bcfce62',
+        'sessionId': '019f7089-5b52-7065-b8b4-cc840bcfce60',
+        'latitude': 23.588,
+        'longitude': 58.382,
+        'accuracyM': 8,
+        'isMock': false,
+        'capturedAt': now.toIso8601String(),
+        'isOfflineSync': false,
+      },
+    ])
+    ..createdAt = now
+    ..nextAttemptAt = now;
+}
+
+const testScope = MobileIdentityScope(
+  tenantId: '10000000-0000-4000-8000-000000000001',
+  userId: '20000000-0000-4000-8000-000000000001',
+  membershipId: '20000000-0000-4000-8000-000000000002',
+  employeeId: '30000000-0000-4000-8000-000000000001',
+  deviceUuid: '019f7089-5b52-7065-b8b4-cc840bcfce49',
+  contractVersion: '1.1.0',
+);
+
+const otherScope = MobileIdentityScope(
+  tenantId: '10000000-0000-4000-8000-000000000099',
+  userId: '20000000-0000-4000-8000-000000000099',
+  membershipId: '20000000-0000-4000-8000-000000000098',
+  employeeId: '30000000-0000-4000-8000-000000000099',
+  deviceUuid: '019f7089-5b52-7065-b8b4-cc840bcfce99',
+  contractVersion: '1.1.0',
+);
+
 ApiService api(FlutterSecureStorage storage, Map<String, dynamic>? response) {
   final dio = Dio()..httpClientAdapter = _SyncAdapter(response);
-  return ApiService(TokenStore(storage), dio: dio);
+  return ApiService(
+    TokenStore(storage),
+    dio: dio,
+    initialHrmsProductToken: 'test-hrms-product-token',
+  );
 }
 
 class _SyncAdapter implements HttpClientAdapter {

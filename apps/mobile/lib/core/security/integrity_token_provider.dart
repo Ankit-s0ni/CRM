@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 
 import '../config/app_config.dart';
 import '../network/api_routes.dart';
-import '../network/api_service.dart';
+import '../network/authority_clients.dart';
 
 class IntegrityTokenProvider {
   IntegrityTokenProvider(this._api, {IntegrityNativeClient? native})
     : _native = native ?? const IntegrityNativeClient();
 
-  final ApiService _api;
+  final HrmsApiClient _api;
   final IntegrityNativeClient _native;
 
   Future<IntegrityEvidence> evidence(

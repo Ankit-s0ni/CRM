@@ -1,17 +1,20 @@
-# hrms_attendance
+# DeltCRM HRMS Mobile — Transitional Read-Only Copy
 
-A new Flutter project.
+This directory is not the canonical mobile source.
 
-## Getting Started
+The canonical Flutter employee application is:
 
-This project is a starting point for a Flutter application.
+```text
+deltcrm-hrms/apps/mobile
+```
 
-A few resources to get you started if this is your first Flutter project:
+Do not implement mobile features, API migrations, native signing changes, or
+releases in this Platform copy. Make every change in HRMS first. This copy is
+retained only for temporary parity and rollback traceability until the removal
+gates in `HRMS-MOBILE-OWNERSHIP-AND-API-MIGRATION-IMPLEMENTATION-PLAN.md` pass.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+From the Platform repository, verify source parity with:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+pnpm mobile:parity:check
+```

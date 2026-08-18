@@ -9,7 +9,7 @@ import {
 export class ProductSigningKeyService {
   readonly keyId = process.env.PRODUCT_TOKEN_KEY_ID ?? 'deltcrm-local-v1';
   readonly issuer =
-    process.env.PRODUCT_TOKEN_ISSUER ?? 'https://auth.blufield.cloud';
+    process.env.PRODUCT_TOKEN_ISSUER ?? 'https://auth.liqaahq.com';
   readonly privateKey: string;
   readonly publicKey: string;
 

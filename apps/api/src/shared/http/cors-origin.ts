@@ -9,8 +9,8 @@ export function isTrustedApplicationOrigin(origin: string): boolean {
   try {
     const url = new URL(origin);
     return (
-      url.hostname === 'blufield.cloud' ||
-      url.hostname.endsWith('.blufield.cloud') ||
+      url.hostname === 'liqaahq.com' ||
+      url.hostname.endsWith('.liqaahq.com') ||
       LOCAL_APPLICATION_HOSTS.has(url.hostname)
     );
   } catch {

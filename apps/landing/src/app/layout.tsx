@@ -15,9 +15,9 @@ const displayFont = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "DeltCRM | The Business Operating System",
+  title: "Liqaa | The Business Operating System",
   description:
-    "Connect HRMS, CRM, POS, communication, finance, projects, and AI in one modular business operating system.",
+    "Liqaa unites workforce, commerce, operations and identity into one composable enterprise platform.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

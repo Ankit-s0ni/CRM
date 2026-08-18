@@ -14,8 +14,8 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/shared/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "DELTCRM",
-  description: "Multi-tenant HRMS and attendance workspace",
+  title: "Liqaa",
+  description: "Liqaa Multi-Product Operating Suite",
 };
 
 export function generateStaticParams() {

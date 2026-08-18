@@ -6,8 +6,18 @@ part 'mobile_queue_models_native.g.dart';
 class PendingAttendanceRecord {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String clientEventUuid;
+
+  @Index(unique: true, replace: true)
+  late String scopedEventKey;
+
+  late String tenantId;
+  late String userId;
+  late String membershipId;
+  late String employeeId;
+  late String deviceUuid;
+  late String contractVersion;
 
   late String eventType;
   late String payloadJson;
@@ -25,8 +35,17 @@ class PendingAttendanceRecord {
 class PendingFieldPingBatch {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String batchUuid;
+
+  @Index(unique: true, replace: true)
+  late String scopedBatchKey;
+
+  late String tenantId;
+  late String userId;
+  late String membershipId;
+  late String employeeId;
+  late String contractVersion;
 
   late String sessionId;
   late String deviceUuid;
@@ -41,7 +60,14 @@ class PendingFieldPingBatch {
 
 @collection
 class LocalFieldSession {
-  Id id = 1;
+  Id id = Isar.autoIncrement;
+  @Index(unique: true, replace: true)
+  late String ownerKey;
+  late String tenantId;
+  late String userId;
+  late String membershipId;
+  late String employeeId;
+  late String contractVersion;
   late String serverSessionId;
   late String clientStartUuid;
   late String deviceUuid;

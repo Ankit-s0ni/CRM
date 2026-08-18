@@ -5,14 +5,18 @@ class QueueSecretStore {
 
   final FlutterSecureStorage _storage;
 
-  Future<void> writeIntegrityToken(String eventId, String token) =>
-      _storage.write(key: _key(eventId), value: token);
+  Future<void> writeIntegrityToken(
+    String ownerKey,
+    String eventId,
+    String token,
+  ) => _storage.write(key: _key(ownerKey, eventId), value: token);
 
-  Future<String?> readIntegrityToken(String eventId) =>
-      _storage.read(key: _key(eventId));
+  Future<String?> readIntegrityToken(String ownerKey, String eventId) =>
+      _storage.read(key: _key(ownerKey, eventId));
 
-  Future<void> deleteIntegrityToken(String eventId) =>
-      _storage.delete(key: _key(eventId));
+  Future<void> deleteIntegrityToken(String ownerKey, String eventId) =>
+      _storage.delete(key: _key(ownerKey, eventId));
 
-  String _key(String eventId) => 'offline_integrity_$eventId';
+  String _key(String ownerKey, String eventId) =>
+      'offline_integrity_v2_${ownerKey.hashCode}_$eventId';
 }

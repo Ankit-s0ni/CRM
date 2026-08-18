@@ -4,7 +4,7 @@ import '../data/consent_api_repository.dart';
 import '../domain/consent_repository.dart';
 
 final consentRepositoryProvider = Provider<ConsentRepository>(
-  (ref) => ConsentApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => ConsentApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 final consentControllerProvider =
     AsyncNotifierProvider<ConsentController, Map<String, dynamic>?>(

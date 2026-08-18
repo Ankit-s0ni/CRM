@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +19,15 @@ class AppAvailabilityGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(apiAvailabilityProvider, (previous, next) {
+      final event = next.asData?.value;
+      final wasUnavailable =
+          previous?.asData?.value.state == ApiAvailability.workspaceUnavailable;
+      if (event?.state == ApiAvailability.workspaceUnavailable &&
+          !wasUnavailable) {
+        unawaited(_failClosed(ref));
+      }
+    });
     final event = ref.watch(apiAvailabilityProvider).asData?.value;
     final release = ref.watch(tenantControllerProvider).release;
     if (release.updateRequired) {
@@ -71,6 +82,15 @@ class AppAvailabilityGate extends ConsumerWidget {
       ),
       _ => child,
     };
+  }
+
+  Future<void> _failClosed(WidgetRef ref) async {
+    // Purge while the identity scope is still available, then revoke all local
+    // authority state. The blocking availability event remains visible.
+    await ref.read(tenantControllerProvider.notifier).clearRuntime();
+    await ref
+        .read(apiServiceProvider)
+        .clearSession(resetAvailability: false);
   }
 }
 

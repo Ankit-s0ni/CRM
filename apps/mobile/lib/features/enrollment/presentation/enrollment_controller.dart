@@ -6,7 +6,7 @@ import '../data/enrollment_api_repository.dart';
 import '../domain/enrollment_repository.dart';
 
 final enrollmentRepositoryProvider = Provider<EnrollmentRepository>(
-  (ref) => EnrollmentApiRepository(ref.watch(apiServiceProvider)),
+  (ref) => EnrollmentApiRepository(ref.watch(hrmsApiClientProvider)),
 );
 final enrollmentControllerProvider =
     AsyncNotifierProvider<EnrollmentController, Map<String, dynamic>>(

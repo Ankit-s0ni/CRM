@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/logging/app_logger.dart';
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../../../core/storage/mobile_queue_models.dart';
 import '../../../core/storage/mobile_queue_repository.dart';
 import '../../../core/storage/queue_secret_store.dart';
@@ -14,7 +14,7 @@ import '../domain/sync_repository.dart';
 class SyncApiRepository implements SyncRepository {
   SyncApiRepository(this._api, this._queue, this._secrets);
 
-  final ApiService _api;
+  final HrmsApiClient _api;
   final MobileQueueRepository _queue;
   final QueueSecretStore _secrets;
 
@@ -54,7 +54,10 @@ class SyncApiRepository implements SyncRepository {
     final payloads = <Map<String, dynamic>>[];
     for (final record in records) {
       final payload = jsonDecode(record.payloadJson) as Map<String, dynamic>;
-      final token = await _secrets.readIntegrityToken(record.clientEventUuid);
+      final token = await _secrets.readIntegrityToken(
+        _queue.scope.ownerKey,
+        record.clientEventUuid,
+      );
       if (token == null) {
         await _reject(record, 'OFFLINE_INTEGRITY_MISSING');
         continue;
@@ -62,9 +65,19 @@ class SyncApiRepository implements SyncRepository {
       try {
         final selfieKey = await _uploadEvidence(record);
         payloads.add({
-          ...payload,
-          'attestationToken': token,
-          'selfieKey': ?selfieKey,
+          'clientEventUuid': payload['clientEventUuid'],
+          'eventType': payload['type'],
+          'source': 'MOBILE',
+          'eventTime': payload['clientTime'],
+          'deviceUuid': payload['deviceUuid'],
+          'integrityToken': token,
+          'evidenceKey': ?selfieKey,
+          'latitude': payload['latitude'],
+          'longitude': payload['longitude'],
+          'accuracyM': payload['accuracyMeters'],
+          'mockLocation': payload['mockLocation'],
+          'appVersion': payload['appVersion'],
+          'osVersion': payload['osVersion'],
         });
         prepared.add(record);
       } catch (error, stack) {
@@ -78,9 +91,15 @@ class SyncApiRepository implements SyncRepository {
         ApiRoutes.attendanceSync,
         data: {'items': payloads},
       );
-      final outcomes = (response.data?['data'] as List<dynamic>? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .toList(growable: false);
+      final responseData = response.data?['data'];
+      final outcomes =
+          ((responseData is Map<String, dynamic>
+                          ? responseData['outcomes']
+                          : responseData)
+                      as List<dynamic>? ??
+                  const [])
+              .whereType<Map<String, dynamic>>()
+              .toList(growable: false);
       final byId = {
         for (final outcome in outcomes)
           if (outcome['clientEventUuid'] is String)
@@ -134,14 +153,18 @@ class SyncApiRepository implements SyncRepository {
     PendingAttendanceRecord record,
     Map<String, dynamic> outcome,
   ) async {
-    final status = outcome['status'] as String? ?? 'RETRYABLE';
-    record.errorCode = outcome['code'] as String?;
+    final status = (outcome['status'] as String? ?? 'retryable').toUpperCase();
+    record.errorCode =
+        outcome['errorCode'] as String? ?? outcome['code'] as String?;
     record.regularizationSuggested =
         outcome['regularizationSuggested'] as bool? ?? false;
     if (status == 'ACCEPTED' || status == 'DUPLICATE') {
       record.status = 'SYNCED';
       record.syncedAt = DateTime.now().toUtc();
-      await _secrets.deleteIntegrityToken(record.clientEventUuid);
+      await _secrets.deleteIntegrityToken(
+        _queue.scope.ownerKey,
+        record.clientEventUuid,
+      );
       final path = record.evidencePath;
       if (path != null) await _deleteIfPresent(path);
       record.evidencePath = null;
@@ -169,7 +192,10 @@ class SyncApiRepository implements SyncRepository {
       ..status = 'REJECTED'
       ..attempts += 1
       ..errorCode = code;
-    await _secrets.deleteIntegrityToken(record.clientEventUuid);
+    await _secrets.deleteIntegrityToken(
+      _queue.scope.ownerKey,
+      record.clientEventUuid,
+    );
     final path = record.evidencePath;
     if (path != null) await _deleteIfPresent(path);
     record.evidencePath = null;

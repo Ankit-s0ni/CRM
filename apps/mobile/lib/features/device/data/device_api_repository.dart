@@ -1,11 +1,11 @@
 import '../../../core/device/device_identity.dart';
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../domain/device_repository.dart';
 
 class DeviceApiRepository implements DeviceRepository {
   DeviceApiRepository(this._api, this._identity);
-  final ApiService _api;
+  final HrmsApiClient _api;
   final DeviceIdentity _identity;
   @override
   Future<void> register(Map<String, dynamic> device) async =>

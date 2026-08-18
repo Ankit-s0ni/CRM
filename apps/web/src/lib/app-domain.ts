@@ -8,7 +8,7 @@
  * changing the domain in the future only requires updating the env var.
  */
 export const APP_DOMAIN: string =
-  process.env.NEXT_PUBLIC_APP_DOMAIN || 'your-domain.com';
+  process.env.NEXT_PUBLIC_APP_DOMAIN || 'liqaahq.com';
 
 interface WorkspaceLoginUrlInput {
   workspace: string;
@@ -18,6 +18,21 @@ interface WorkspaceLoginUrlInput {
 }
 
 const NON_TENANT_SUBDOMAINS = new Set(["api", "app", "platform", "www"]);
+
+export function isPlatformAdminHostname(
+  hostname: string,
+  appDomain = APP_DOMAIN,
+) {
+  const normalizedHostname = hostname.trim().toLowerCase().replace(/\.$/, "");
+  const hostWithoutPort = normalizedHostname.includes(":")
+    ? normalizedHostname.split(":")[0]
+    : normalizedHostname;
+
+  return (
+    hostWithoutPort === `platform.${appDomain.toLowerCase()}` ||
+    hostWithoutPort.startsWith("platform.")
+  );
+}
 
 export function resolveWorkspaceFromHostname(
   hostname: string,

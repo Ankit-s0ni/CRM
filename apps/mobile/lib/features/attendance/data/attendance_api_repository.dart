@@ -2,14 +2,15 @@ import 'package:dio/dio.dart';
 
 import '../../../core/media/evidence_image_processor.dart';
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
+import '../../../core/utils/uuid.dart';
 import '../domain/attendance_repository.dart';
 import '../domain/monthly_attendance_history.dart';
 
 class AttendanceApiRepository implements AttendanceRepository {
   AttendanceApiRepository(this._api, {EvidenceImageProcessor? imageProcessor})
     : _imageProcessor = imageProcessor ?? EvidenceImageProcessor();
-  final ApiService _api;
+  final HrmsApiClient _api;
   final EvidenceImageProcessor _imageProcessor;
   @override
   Future<PunchResult> punch({
@@ -53,16 +54,17 @@ class AttendanceApiRepository implements AttendanceRepository {
       final response = await _api.post<Map<String, dynamic>>(
         ApiRoutes.punches,
         data: {
-          'type': type,
+          'eventType': type,
+          'clientEventUuid': newUuid(),
+          'source': 'MOBILE',
+          'eventTime': DateTime.now().toUtc().toIso8601String(),
           'deviceUuid': device['deviceUuid'],
-          'attestationToken': attestationToken,
-          'clientTime': DateTime.now().toUtc().toIso8601String(),
-          'requestId': _requestId(),
+          'integrityToken': attestationToken,
           'latitude': ?latitude,
           'longitude': ?longitude,
-          'accuracyMeters': ?accuracyMeters,
+          'accuracyM': ?accuracyMeters,
           'mockLocation': ?mockLocation,
-          'selfieKey': ?objectKey,
+          'evidenceKey': ?objectKey,
           'appVersion': device['appVersion'],
           'osVersion': device['osVersion'],
         },
@@ -77,7 +79,10 @@ class AttendanceApiRepository implements AttendanceRepository {
       return PunchResult(
         verificationId: verification?['id'] as String? ?? '',
         checks: checks,
-        attendance: body['data'] as Map<String, dynamic>? ?? body,
+        attendance:
+            body['log'] as Map<String, dynamic>? ??
+            body['data'] as Map<String, dynamic>? ??
+            body,
       );
     } on DioException catch (error) {
       final body = error.response?.data;
@@ -106,14 +111,28 @@ class AttendanceApiRepository implements AttendanceRepository {
 
   @override
   Future<void> toggleBreak(String action) async => _api.post(
-    action == 'START' ? ApiRoutes.breakStart : ApiRoutes.breakEnd,
-    data: {'requestId': _requestId()},
+    ApiRoutes.punches,
+    data: {
+      'eventType': action == 'START' ? 'BREAK_START' : 'BREAK_END',
+      'clientEventUuid': newUuid(),
+      'source': 'MOBILE',
+      'eventTime': DateTime.now().toUtc().toIso8601String(),
+    },
   );
   @override
   Future<MonthlyAttendanceHistory> history({required String month}) async {
+    final parts = month.split('-');
+    if (parts.length != 2) {
+      throw const FormatException('Attendance month must use YYYY-MM');
+    }
+    final year = int.parse(parts[0]);
+    final monthNumber = int.parse(parts[1]);
+    final from = DateTime.utc(year, monthNumber, 1);
+    final to = DateTime.utc(year, monthNumber + 1, 0);
+    String date(DateTime value) => value.toIso8601String().substring(0, 10);
     final response = await _api.get<Map<String, dynamic>>(
       ApiRoutes.attendanceHistory,
-      query: {'month': month},
+      query: {'from': date(from), 'to': date(to), 'limit': 31},
     );
     return MonthlyAttendanceHistory.fromJson(
       response.data ?? const {},
@@ -128,11 +147,4 @@ class AttendanceApiRepository implements AttendanceRepository {
           )).data?['data']
           as Map<String, dynamic>? ??
       {};
-}
-
-String _requestId() {
-  final value = DateTime.now().microsecondsSinceEpoch
-      .toRadixString(16)
-      .padLeft(12, '0');
-  return '00000000-0000-4000-8000-${value.substring(value.length - 12)}';
 }

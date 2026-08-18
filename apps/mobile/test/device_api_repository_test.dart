@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hrms_attendance/core/device/device_identity.dart';
 import 'package:hrms_attendance/core/network/api_service.dart';
+import 'package:hrms_attendance/core/network/authority_clients.dart';
 import 'package:hrms_attendance/core/network/token_store.dart';
 import 'package:hrms_attendance/features/device/data/device_api_repository.dart';
 
@@ -15,7 +16,13 @@ void main() {
     final adapter = _DeviceAdapter();
     final dio = Dio()..httpClientAdapter = adapter;
     final repository = DeviceApiRepository(
-      ApiService(TokenStore(const FlutterSecureStorage()), dio: dio),
+      HrmsApiClient(
+        ApiService(
+          TokenStore(const FlutterSecureStorage()),
+          dio: dio,
+          initialHrmsProductToken: 'test-hrms-product-token',
+        ),
+      ),
       _DeviceIdentity(deviceUuid),
     );
 

@@ -33,11 +33,19 @@ void main() {
   });
 
   test('Sprint 5 API paths are centralized', () {
-    expect(ApiRoutes.registerDevice, '/devices/register');
-    expect(ApiRoutes.myConsent, '/biometric-consents/me');
-    expect(ApiRoutes.enrollmentStatus, '/face-enrollments/me/status');
-    expect(ApiRoutes.verificationLogs, '/verification-logs');
-    expect(ApiRoutes.securityAlerts, '/security-alerts');
+    expect(ApiRoutes.registerDevice, '/api/hrms/v1/devices/register');
+    expect(ApiRoutes.myConsent, '/api/hrms/v1/biometric-consents/me');
+    expect(
+      ApiRoutes.enrollmentStatus,
+      '/api/hrms/v1/face-enrollments/me/status',
+    );
+    expect(
+      ApiRoutes.verificationLogs,
+      '/api/hrms/v1/attendance/verification-logs/me',
+    );
+    expect(ApiRoutes.securityAlerts, '/api/hrms/v1/security-alerts/me');
+    expect(ApiRoutes.login, isNot(startsWith('/api/hrms/v1/')));
+    expect(ApiRoutes.productToken, isNot(startsWith('/api/hrms/v1/')));
   });
 
   test('every mobile feature owns screens and widgets folders', () {

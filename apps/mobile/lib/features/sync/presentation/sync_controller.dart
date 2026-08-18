@@ -10,9 +10,12 @@ import '../data/attendance_offline_queue.dart';
 import '../data/sync_api_repository.dart';
 import '../domain/sync_repository.dart';
 
-final mobileQueueRepositoryProvider = FutureProvider<MobileQueueRepository>(
-  (ref) => MobileQueueRepository.open(),
-);
+final mobileQueueRepositoryProvider = FutureProvider<MobileQueueRepository>((
+  ref,
+) async {
+  final scope = await ref.watch(tokenStoreProvider).readIdentityScope();
+  return MobileQueueRepository.open(scope: scope);
+});
 
 final queueSecretStoreProvider = Provider<QueueSecretStore>(
   (ref) => const QueueSecretStore(FlutterSecureStorage()),
@@ -27,7 +30,7 @@ final attendanceOfflineQueueProvider = FutureProvider<AttendanceOfflineQueue>(
 
 final syncRepositoryProvider = FutureProvider<SyncRepository>((ref) async {
   return SyncApiRepository(
-    ref.watch(apiServiceProvider),
+    ref.watch(hrmsApiClientProvider),
     await ref.watch(mobileQueueRepositoryProvider.future),
     ref.watch(queueSecretStoreProvider),
   );

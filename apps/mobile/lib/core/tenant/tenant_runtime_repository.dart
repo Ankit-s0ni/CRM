@@ -6,17 +6,19 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
 import '../network/api_routes.dart';
 import '../network/api_service.dart';
+import '../network/authority_clients.dart';
 import 'tenant_config.dart';
 
 class TenantRuntimeRepository {
-  TenantRuntimeRepository(this._api, this._storage);
+  TenantRuntimeRepository(this._api, this._session, this._storage);
 
   static const fieldRuntimeKey = 'deltcrm.runtime.field-enabled';
-  final ApiService _api;
+  final HrmsApiClient _api;
+  final ApiService _session;
   final FlutterSecureStorage _storage;
 
   String get _cacheIndexKey =>
-      'deltcrm.runtime.${_api.workspaceSubdomain}.current';
+      'deltcrm.runtime.${_session.workspaceSubdomain}.current';
 
   Future<TenantConfig> fetch() async {
     final response = await _api.get<Map<String, dynamic>>(
@@ -25,6 +27,10 @@ class TenantRuntimeRepository {
     final envelope = response.data ?? const <String, dynamic>{};
     final raw = envelope['data'] as Map<String, dynamic>? ?? envelope;
     final config = _parse(raw);
+    await _session.bindEmployeeScope(
+      employeeId: config.employeeId,
+      contractVersion: '1.1.0',
+    );
     final cacheKey = _scopedCacheKey(config);
     final previousKey = await _storage.read(key: _cacheIndexKey);
     if (previousKey != null && previousKey != cacheKey) {
@@ -63,11 +69,11 @@ class TenantRuntimeRepository {
 
   String _scopedCacheKey(TenantConfig config) {
     final scope = '${config.tenantId}.${config.employeeId}';
-    return 'deltcrm.runtime.${_api.workspaceSubdomain}.$scope.${config.configVersion}';
+    return 'deltcrm.runtime.${_session.workspaceSubdomain}.$scope.${config.configVersion}';
   }
 
   bool _isScopedCacheKey(String key) =>
-      key.startsWith('deltcrm.runtime.${_api.workspaceSubdomain}.') &&
+      key.startsWith('deltcrm.runtime.${_session.workspaceSubdomain}.') &&
       key != _cacheIndexKey;
 
   TenantConfig _parse(Map<String, dynamic> raw) {
@@ -123,6 +129,21 @@ class TenantRuntimeRepository {
         canPunch: attendance['canPunch'] == true,
         trackingIntervalMinutes:
             (fieldTracking['intervalMinutes'] as num?)?.toInt() ?? 15,
+      ),
+      fieldTrackingPolicy: FieldTrackingPolicyConfig(
+        noticeVersion: _string(
+          fieldTracking['noticeVersion'],
+          fallback: '1.0',
+        ),
+        consentRequired: fieldTracking['consentRequired'] != false,
+        consentComplete: fieldTracking['consentComplete'] == true,
+        windowStart: _string(fieldTracking['windowStart'], fallback: '09:00'),
+        windowEnd: _string(fieldTracking['windowEnd'], fallback: '18:00'),
+        allowOutsideWindow: fieldTracking['allowOutsideWindow'] == true,
+        maxAccuracyMeters:
+            (fieldTracking['maxAccuracyMeters'] as num?)?.toInt() ?? 100,
+        retentionDays:
+            (fieldTracking['retentionDays'] as num?)?.toInt() ?? 90,
       ),
       supportEmail: AppConfig.supportEmail,
       configVersion: (raw['configVersion'] as num?)?.toInt() ?? 1,

@@ -3,8 +3,9 @@ import { ProductPage } from "@/components/product-page";
 import { marketingProducts } from "@/content/products";
 
 export const metadata: Metadata = {
-  title: "DeltCRM HRMS | Connected People Operations",
-  description: "Employee records, attendance, shifts, leave and workforce controls in one connected HRMS.",
+  title: "Liqaa HRMS | Connected People Operations",
+  description:
+    "Attendance, leave, payroll, document compliance and field staff operations in one modular product.",
 };
 
 export default function HrmsPage() {

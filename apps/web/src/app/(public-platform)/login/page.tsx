@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, ShieldCheck, UsersRound } from "lucide-react";
 import { LoginForm } from "@/features/platform/identity/login-form";
-import { resolveWorkspaceFromHostname } from "@/lib/app-domain";
+import { isPlatformAdminHostname, resolveWorkspaceFromHostname } from "@/lib/app-domain";
 import { publicLinks } from "@/lib/public-links";
 
 type LoginPageProps = {
@@ -15,9 +16,45 @@ function firstValue(value: string | string[] | undefined) {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const [requestHeaders, params] = await Promise.all([headers(), searchParams]);
   const hostname = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "";
+
+  if (isPlatformAdminHostname(hostname)) {
+    redirect("/platform/login");
+  }
+
   const hostnameWorkspace = resolveWorkspaceFromHostname(hostname);
   const initialWorkspace = hostnameWorkspace ?? firstValue(params.workspace) ?? null;
   const initialNextPath = firstValue(params.next) ?? null;
+
+  if (hostnameWorkspace) {
+    try {
+      const apiUrl =
+        process.env.INTERNAL_API_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:4011";
+      const res = await fetch(
+        `${apiUrl}/workspace/status?subdomain=${encodeURIComponent(hostnameWorkspace)}`,
+        { cache: "no-store" },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.available) {
+          const errorCode = data.errorCode || "WORKSPACE_NOT_FOUND";
+          redirect(
+            `/workspace-unavailable?code=${encodeURIComponent(errorCode)}&workspace=${encodeURIComponent(hostnameWorkspace)}`,
+          );
+        }
+      }
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "digest" in err &&
+        String((err as Record<string, unknown>).digest).startsWith("NEXT_REDIRECT")
+      ) {
+        throw err;
+      }
+    }
+  }
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f7fb] px-4 py-6 sm:px-8 sm:py-10">

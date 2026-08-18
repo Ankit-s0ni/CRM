@@ -39,7 +39,7 @@ services:
       MINIO_ROOT_PASSWORD: local-platform-minio-secret
     ports:
       - "9100:9000"
-      - "9101:9001"
+      - "9105:9001"
     volumes:
       - platform_minio_data:/data
     healthcheck:

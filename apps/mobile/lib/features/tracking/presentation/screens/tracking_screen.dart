@@ -23,14 +23,14 @@ class TrackingScreen extends ConsumerWidget {
       context: context,
       title: starting ? 'Start field tracking?' : 'Stop field tracking?',
       message: starting
-          ? 'Your work location will be recorded at policy intervals until check-out or until you stop tracking.'
+          ? 'By continuing, you accept field-tracking notice ${state.noticeVersion}. Your location is recorded only during ${ref.read(tenantControllerProvider).fieldTrackingPolicy.windowStart}–${ref.read(tenantControllerProvider).fieldTrackingPolicy.windowEnd}, retained for ${ref.read(tenantControllerProvider).fieldTrackingPolicy.retentionDays} days, and visible only to authorized HR managers. You can stop or withdraw consent at any time.'
           : 'No further field locations will be recorded after tracking stops.',
-      confirmLabel: starting ? 'Start tracking' : 'Stop tracking',
+      confirmLabel: starting ? 'Accept & start' : 'Stop tracking',
     );
     if (!confirmed || !context.mounted) return;
     final controller = ref.read(trackingControllerProvider.notifier);
     final success = starting
-        ? await controller.start()
+        ? await controller.start(privacyAccepted: true)
         : await controller.stop();
     if (!context.mounted) return;
     if (success) {
@@ -95,16 +95,32 @@ class TrackingScreen extends ConsumerWidget {
           ],
           const SizedBox(height: 12),
           AppCard(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.policy_outlined),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Policy interval: every $interval minutes\nBackground jobs adapt when battery is low · stops at check-out',
-                    style: const TextStyle(fontSize: 12),
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.policy_outlined),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Every $interval minutes · ${ref.watch(tenantControllerProvider).fieldTrackingPolicy.windowStart}–${ref.watch(tenantControllerProvider).fieldTrackingPolicy.windowEnd}\nRetained ${ref.watch(tenantControllerProvider).fieldTrackingPolicy.retentionDays} days · stops at check-out or consent withdrawal',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
+                if (state.consentGranted) ...[
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: state.updating
+                        ? null
+                        : () => ref
+                              .read(trackingControllerProvider.notifier)
+                              .withdrawConsent(),
+                    child: const Text('Withdraw tracking consent'),
+                  ),
+                ],
               ],
             ),
           ),
@@ -149,6 +165,10 @@ String _message(String code) => switch (code) {
     'Location permission is required for field tracking.',
   'BACKGROUND_LOCATION_REQUIRED' =>
     'Allow background location so scheduled captures continue when the app is minimized.',
+  'FIELD_TRACKING_CONSENT_REQUIRED' =>
+    'Review and accept the field-tracking privacy notice before starting.',
+  'FIELD_TRACKING_OUTSIDE_WINDOW' =>
+    'Tracking can only start during your organization’s approved tracking hours.',
   'FIELD_TRACKING_NOT_ALLOWED' =>
     'Field tracking is not enabled for this employee or device.',
   _ =>

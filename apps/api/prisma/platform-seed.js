@@ -546,13 +546,19 @@ async function seedPlatformIdentity() {
   const defaultsAllowed = process.env.NODE_ENV !== 'production';
   const users = [
     {
-      email: process.env.PLATFORM_ADMIN_EMAIL ?? 'owner@deltcrm.local',
+      email: process.env.PLATFORM_ADMIN_EMAIL ?? 'owner@liqaahq.com',
       password: process.env.PLATFORM_ADMIN_PASSWORD ?? (defaultsAllowed ? 'PlatformAdmin123!' : ''),
       mfaSecret: process.env.PLATFORM_ADMIN_MFA_SECRET ?? (defaultsAllowed ? 'JBSWY3DPEHPK3PXP' : ''),
       role: 'SUPER_ADMIN',
     },
     {
-      email: process.env.PLATFORM_SUPPORT_EMAIL ?? 'support@deltcrm.local',
+      email: 'owner@liqaa.local',
+      password: defaultsAllowed ? 'PlatformAdmin123!' : '',
+      mfaSecret: defaultsAllowed ? 'JBSWY3DPEHPK3PXP' : '',
+      role: 'SUPER_ADMIN',
+    },
+    {
+      email: process.env.PLATFORM_SUPPORT_EMAIL ?? 'support@liqaahq.com',
       password: process.env.PLATFORM_SUPPORT_PASSWORD ?? (defaultsAllowed ? 'PlatformSupport123!' : ''),
       mfaSecret: process.env.PLATFORM_SUPPORT_MFA_SECRET ?? (defaultsAllowed ? 'JBSWY3DPEHPK3PXP' : ''),
       role: 'SUPPORT',

@@ -9,7 +9,7 @@ class TestTrackingController extends TrackingController {
   Future<TrackingViewState> build() async => _state(active: false);
 
   @override
-  Future<bool> start() async {
+  Future<bool> start({bool privacyAccepted = false}) async {
     state = AsyncData(_state(active: true));
     return true;
   }

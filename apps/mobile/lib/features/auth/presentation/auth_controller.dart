@@ -36,8 +36,8 @@ class AuthController extends AsyncNotifier<void> {
       resetAccountSession(ref);
     });
     if (state.hasError) {
-      await ref.read(apiServiceProvider).clearSession();
       await ref.read(tenantControllerProvider.notifier).clearRuntime();
+      await ref.read(apiServiceProvider).clearSession();
       resetAccountSession(ref);
     }
     return !state.hasError;
@@ -67,8 +67,8 @@ class AuthController extends AsyncNotifier<void> {
       resetAccountSession(ref);
     });
     if (state.hasError) {
-      await api.clearSession();
       await ref.read(tenantControllerProvider.notifier).clearRuntime();
+      await api.clearSession();
       resetAccountSession(ref);
     }
     return !state.hasError;
@@ -76,9 +76,9 @@ class AuthController extends AsyncNotifier<void> {
 
   Future<void> logout() async {
     try {
+      await ref.read(tenantControllerProvider.notifier).clearRuntime();
       await _repository.logout();
     } finally {
-      await ref.read(tenantControllerProvider.notifier).clearRuntime();
       resetAccountSession(ref);
     }
   }

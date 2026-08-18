@@ -67,21 +67,21 @@ const updates = {
   NODE_ENV: "production",
   PORT: "4011",
   PLATFORM_API_PORT: "4011",
-  CORS_ORIGIN: "https://platform.blufield.cloud",
-  PUBLIC_BASE_DOMAIN: "blufield.cloud",
-  AUTH_CSRF_COOKIE_DOMAIN: ".blufield.cloud",
-  PRODUCT_TOKEN_ISSUER: "https://platformapi.blufield.cloud",
+  CORS_ORIGIN: "https://platform.liqaahq.com",
+  PUBLIC_BASE_DOMAIN: "liqaahq.com",
+  AUTH_CSRF_COOKIE_DOMAIN: ".liqaahq.com",
+  PRODUCT_TOKEN_ISSUER: "https://platformapi.liqaahq.com",
   PRODUCT_TOKEN_KEY_ID:
     parsed.PRODUCT_TOKEN_KEY_ID || "platform-prod-2026-08",
   PLATFORM_ADMIN_EMAIL:
-    parsed.PLATFORM_ADMIN_EMAIL || "owner@deltcrm.local",
+    parsed.PLATFORM_ADMIN_EMAIL || "owner@liqaahq.com",
   PLATFORM_ADMIN_PASSWORD: stable("PLATFORM_ADMIN_PASSWORD", randomPassword),
   PLATFORM_ADMIN_MFA_SECRET: stable(
     "PLATFORM_ADMIN_MFA_SECRET",
     randomBase32,
   ),
   PLATFORM_SUPPORT_EMAIL:
-    parsed.PLATFORM_SUPPORT_EMAIL || "support@deltcrm.local",
+    parsed.PLATFORM_SUPPORT_EMAIL || "support@liqaahq.com",
   PLATFORM_SUPPORT_PASSWORD: stable(
     "PLATFORM_SUPPORT_PASSWORD",
     randomPassword,

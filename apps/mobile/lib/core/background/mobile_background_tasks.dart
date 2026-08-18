@@ -11,14 +11,15 @@ import '../../features/tracking/data/tracking_api_repository.dart';
 import '../../features/tracking/domain/tracking_repository.dart';
 import '../logging/app_logger.dart';
 import '../network/api_service.dart';
+import '../network/authority_clients.dart';
 import '../network/token_store.dart';
 import '../storage/mobile_queue_repository.dart';
 import '../storage/queue_secret_store.dart';
 import '../tenant/tenant_runtime_repository.dart';
 
-const _trackingUniqueName = 'hrms-field-tracking';
+const _trackingUniqueName = 'com.deltcrm.hrms.fieldTracking';
 const _trackingTaskName = 'field-tracking-capture';
-const _syncUniqueName = 'hrms-offline-sync';
+const _syncUniqueName = 'com.deltcrm.hrms.offlineSync';
 const _syncTaskName = 'attendance-offline-replay';
 
 class MobileBackgroundTasks {
@@ -32,6 +33,10 @@ class MobileBackgroundTasks {
   static Future<void> initialize() async {
     if (!supported) return;
     await Workmanager().initialize(backgroundTaskDispatcher);
+    // Remove identifiers used before the product-separation release. They are
+    // not valid BGTaskScheduler identifiers and can otherwise survive upgrades.
+    await Workmanager().cancelByUniqueName('hrms-field-tracking');
+    await Workmanager().cancelByUniqueName('hrms-offline-sync');
     await Workmanager().registerPeriodicTask(
       _syncUniqueName,
       _syncTaskName,
@@ -85,6 +90,19 @@ class MobileBackgroundTasks {
     AppLogger.info('background_tracking_cancelled');
   }
 
+  static Future<void> cancelSessionWork() async {
+    if (!supported) return;
+    try {
+      await Workmanager().cancelByUniqueName(_trackingUniqueName);
+      await Workmanager().cancelByUniqueName(_syncUniqueName);
+      await Workmanager().cancelByUniqueName('$_syncUniqueName-now');
+    } on UnimplementedError catch (error, stack) {
+      AppLogger.warning('background_cancel_unsupported', error, stack);
+      return;
+    }
+    AppLogger.info('background_session_work_cancelled');
+  }
+
   static Future<void> requestSync() async {
     if (!supported) return;
     await Workmanager().registerOneOffTask(
@@ -130,12 +148,14 @@ Future<bool> _captureFieldPing() async {
     await MobileBackgroundTasks.cancelTracking();
     return true;
   }
-  final queue = await MobileQueueRepository.open();
+  final tokenStore = TokenStore(storage);
+  final scope = await tokenStore.readIdentityScope();
+  if (scope == null) return false;
+  final queue = await MobileQueueRepository.open(scope: scope);
   final local = await queue.activeSession();
   if (local == null) return true;
   final permission = await Geolocator.checkPermission();
-  if (permission != LocationPermission.always &&
-      permission != LocationPermission.whileInUse) {
+  if (permission != LocationPermission.always) {
     AppLogger.warning('background_tracking_permission_unavailable');
     return true;
   }
@@ -151,8 +171,12 @@ Future<bool> _captureFieldPing() async {
   } catch (_) {
     batteryLevel = null;
   }
-  final api = ApiService(TokenStore(storage));
-  final repository = TrackingApiRepository(api, queue);
+  final api = ApiService(tokenStore);
+  if (!await api.bootstrapBackgroundSession()) {
+    AppLogger.warning('background_session_unavailable');
+    return false;
+  }
+  final repository = TrackingApiRepository(HrmsApiClient(api), queue);
   await repository.queuePing(
     local.deviceUuid,
     FieldPingCapture(
@@ -173,9 +197,17 @@ Future<bool> _captureFieldPing() async {
 
 Future<bool> _replayAttendance() async {
   final storage = const FlutterSecureStorage();
+  final tokenStore = TokenStore(storage);
+  final scope = await tokenStore.readIdentityScope();
+  if (scope == null) return false;
+  final api = ApiService(tokenStore);
+  if (!await api.bootstrapBackgroundSession()) {
+    AppLogger.warning('background_session_unavailable');
+    return false;
+  }
   final repository = SyncApiRepository(
-    ApiService(TokenStore(storage)),
-    await MobileQueueRepository.open(),
+    HrmsApiClient(api),
+    await MobileQueueRepository.open(scope: scope),
     QueueSecretStore(storage),
   );
   await repository.replayPending();

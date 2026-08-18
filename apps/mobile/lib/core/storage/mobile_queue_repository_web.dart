@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'mobile_queue_models_web.dart';
+import '../session/mobile_identity_scope.dart';
 
 class MobileQueueRepository {
-  MobileQueueRepository();
+  MobileQueueRepository(this.scope);
+
+  final MobileIdentityScope scope;
 
   final _attendance = <PendingAttendanceRecord>[];
   final _pingBatches = <PendingFieldPingBatch>[];
@@ -11,9 +14,20 @@ class MobileQueueRepository {
   LocalFieldSession? _session;
   int _nextId = 1;
 
-  static Future<MobileQueueRepository> open() async => MobileQueueRepository();
+  static Future<MobileQueueRepository> open({
+    MobileIdentityScope? scope,
+  }) async {
+    if (scope == null || !scope.isComplete) {
+      throw StateError('A complete mobile identity scope is required.');
+    }
+    return MobileQueueRepository(scope);
+  }
 
   Future<void> enqueueAttendance(PendingAttendanceRecord record) async {
+    if (record.scopedEventKey !=
+        '${scope.ownerKey}|${record.clientEventUuid}') {
+      throw StateError('Attendance record identity scope mismatch.');
+    }
     record.id = record.id == 0 ? _nextId++ : record.id;
     _attendance.removeWhere(
       (item) => item.clientEventUuid == record.clientEventUuid,
@@ -23,7 +37,8 @@ class MobileQueueRepository {
   }
 
   Future<List<PendingAttendanceRecord>> attendanceRecords() async =>
-      [..._attendance]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _attendance.where(_ownsAttendance).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   Stream<List<PendingAttendanceRecord>> watchAttendance() async* {
     yield await attendanceRecords();
@@ -38,6 +53,7 @@ class MobileQueueRepository {
         _attendance
             .where(
               (record) =>
+                  _ownsAttendance(record) &&
                   (record.status == 'PENDING' ||
                       record.status == 'RETRYABLE') &&
                   !record.nextAttemptAt.isAfter(now),
@@ -51,6 +67,9 @@ class MobileQueueRepository {
       enqueueAttendance(record);
 
   Future<void> savePingBatch(PendingFieldPingBatch batch) async {
+    if (batch.scopedBatchKey != '${scope.ownerKey}|${batch.batchUuid}') {
+      throw StateError('Field ping identity scope mismatch.');
+    }
     batch.id = batch.id == 0 ? _nextId++ : batch.id;
     _pingBatches.removeWhere((item) => item.batchUuid == batch.batchUuid);
     _pingBatches.add(batch);
@@ -65,6 +84,7 @@ class MobileQueueRepository {
         _pingBatches
             .where(
               (batch) =>
+                  _ownsPing(batch) &&
                   (batch.status == 'PENDING' || batch.status == 'RETRYABLE') &&
                   !batch.nextAttemptAt.isAfter(now),
             )
@@ -73,10 +93,17 @@ class MobileQueueRepository {
     return batches.take(limit).toList(growable: false);
   }
 
-  Future<void> saveSession(LocalFieldSession session) async =>
-      _session = session;
+  Future<void> saveSession(LocalFieldSession session) async {
+    if (session.ownerKey != scope.ownerKey) {
+      throw StateError('Field session identity scope mismatch.');
+    }
+    _session = session;
+  }
+
   Future<LocalFieldSession?> activeSession() async =>
-      _session?.active == true ? _session : null;
+      _session?.active == true && _session?.ownerKey == scope.ownerKey
+      ? _session
+      : null;
   Future<void> stopSession() async => _session?.active = false;
 
   Future<void> clearCompleted({Duration age = const Duration(days: 7)}) async {
@@ -91,9 +118,14 @@ class MobileQueueRepository {
   }
 
   Future<void> clearTenantData() async {
-    _attendance.clear();
-    _pingBatches.clear();
-    _session = null;
+    _attendance.removeWhere(_ownsAttendance);
+    _pingBatches.removeWhere(_ownsPing);
+    if (_session?.ownerKey == scope.ownerKey) _session = null;
     _changes.add(null);
   }
+
+  bool _ownsAttendance(PendingAttendanceRecord record) =>
+      record.scopedEventKey.startsWith('${scope.ownerKey}|');
+  bool _ownsPing(PendingFieldPingBatch record) =>
+      record.scopedBatchKey.startsWith('${scope.ownerKey}|');
 }

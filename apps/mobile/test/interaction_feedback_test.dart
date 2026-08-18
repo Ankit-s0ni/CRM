@@ -43,9 +43,13 @@ void main() {
   testWidgets('regularization blocks incomplete submissions', (tester) async {
     await tester.pumpWidget(_host(RegularizationScreen(onSubmit: () {})));
 
+    await tester.ensureVisible(find.text('Send to manager'));
     await tester.tap(find.text('Send to manager'));
     await tester.pump();
-    expect(find.text('Select the requested check-out time.'), findsOneWidget);
+    expect(
+      find.text('Select a corrected check-in or checkout time.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('field tracking requires confirmation and updates status', (
@@ -65,7 +69,7 @@ void main() {
     await tester.tap(find.text('Start field tracking'));
     await tester.pumpAndSettle();
     expect(find.text('Start field tracking?'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Start tracking'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Accept & start'));
     await tester.pumpAndSettle();
     expect(find.text('Field tracking is active'), findsOneWidget);
   });

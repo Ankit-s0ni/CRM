@@ -3,8 +3,9 @@ import { ProductPage } from "@/components/product-page";
 import { marketingProducts } from "@/content/products";
 
 export const metadata: Metadata = {
-  title: "DeltCRM POS | Connected Commerce Operations",
-  description: "Connect checkout, products, stores and inventory in one dependable commerce system.",
+  title: "Liqaa POS | Connected Commerce Operations",
+  description:
+    "Point of sale, catalog control and inventory visibility built on the Liqaa platform.",
 };
 
 export default function PosPage() {

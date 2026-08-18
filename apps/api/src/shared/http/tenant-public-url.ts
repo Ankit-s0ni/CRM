@@ -6,7 +6,7 @@ type TenantPublicUrlInput = {
 
 export function buildTenantPublicUrl(input: TenantPublicUrlInput) {
   const configuredOrigin = process.env.PUBLIC_APP_ORIGIN?.trim();
-  const baseDomain = process.env.PUBLIC_BASE_DOMAIN?.trim() || 'blufield.cloud';
+  const baseDomain = process.env.PUBLIC_BASE_DOMAIN?.trim() || 'liqaahq.com';
   const origin =
     configuredOrigin ||
     `https://${input.subdomain.trim().toLowerCase()}.${baseDomain}`;

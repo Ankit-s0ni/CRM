@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hrms_attendance/core/device/device_identity.dart';
 import 'package:hrms_attendance/core/network/api_service.dart';
+import 'package:hrms_attendance/core/network/api_routes.dart';
 import 'package:hrms_attendance/core/network/token_store.dart';
 
 ApiService createTestApiService({Map<String, dynamic>? runtime}) {
@@ -12,7 +14,26 @@ ApiService createTestApiService({Map<String, dynamic>? runtime}) {
     TokenStore(const FlutterSecureStorage()),
     dio: dio,
     refreshDio: dio,
+    deviceIdentity: _TestDeviceIdentity(),
+    initialHrmsProductToken: _testProductToken,
   );
+}
+
+const _testProductToken =
+    'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.'
+    'eyJzdWIiOiIyMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VySWQiOiIyMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJ0ZW5hbnRJZCI6IjEwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSIsIm1lbWJlcnNoaXBJZCI6IjIwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMiJ9.';
+
+class _TestDeviceIdentity extends DeviceIdentity {
+  _TestDeviceIdentity() : super(const FlutterSecureStorage());
+
+  @override
+  Future<Map<String, String>> payload() async => const {
+    'deviceUuid': '40000000-0000-4000-8000-000000000001',
+    'platform': 'ANDROID',
+    'deviceModel': 'Test device',
+    'osVersion': '15',
+    'appVersion': '1.0.0',
+  };
 }
 
 class _ImmediateAdapter implements HttpClientAdapter {
@@ -38,16 +59,19 @@ class _ImmediateAdapter implements HttpClientAdapter {
 }
 
 Object _payload(String path, Map<String, dynamic>? runtime) {
-  if (path == '/auth/refresh') {
+  if (path == ApiRoutes.refresh) {
     return {
       'accessToken': 'restored-access-token',
       'refreshToken': 'rotated-refresh-token',
     };
   }
-  if (path == '/mobile/runtime-config') {
+  if (path == ApiRoutes.productToken) {
+    return {'accessToken': _testProductToken, 'expiresIn': 3600};
+  }
+  if (path == ApiRoutes.mobileRuntimeConfig) {
     return {'data': runtime ?? testRuntimeConfig()};
   }
-  if (path == '/employees/me') {
+  if (path == ApiRoutes.profile) {
     return {
       'data': {
         'fullName': 'Priya Sharma',
@@ -64,7 +88,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       },
     };
   }
-  if (path == '/attendance/me/today') {
+  if (path == ApiRoutes.attendanceToday) {
     return {
       'data': {
         'attendanceDate': '2026-07-19',
@@ -95,7 +119,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       },
     };
   }
-  if (path == '/attendance/me/history') {
+  if (path == ApiRoutes.attendanceHistory) {
     return {
       'data': [
         _history('2026-07-01', 'PRESENT', 480),
@@ -106,7 +130,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       ],
     };
   }
-  if (path.startsWith('/attendance/me/day')) {
+  if (path.startsWith('/api/hrms/v1/attendance/me/day')) {
     return {
       'data': {
         'id': '40000000-0000-4000-8000-000000000001',
@@ -128,7 +152,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       },
     };
   }
-  if (path == '/devices/me') {
+  if (path == ApiRoutes.myDevice) {
     return {
       'data': [
         {
@@ -141,8 +165,8 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       ],
     };
   }
-  if (path == '/biometric-consents/me') return {'data': null};
-  if (path == '/face-enrollments/me/status') {
+  if (path == ApiRoutes.myConsent) return {'data': null};
+  if (path == ApiRoutes.enrollmentStatus) {
     return {
       'data': {
         'consentActive': true,
@@ -153,7 +177,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       },
     };
   }
-  if (path == '/notifications') {
+  if (path == ApiRoutes.notifications) {
     return {
       'data': [
         {
@@ -167,7 +191,7 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       ],
     };
   }
-  if (path == '/regularizations/me') {
+  if (path == ApiRoutes.myRegularizations) {
     return {
       'data': [
         {
@@ -180,9 +204,9 @@ Object _payload(String path, Map<String, dynamic>? runtime) {
       ],
     };
   }
-  if (path == '/leave-policies') return {'data': <Object>[]};
-  if (path == '/leave-balances/me') return {'data': <Object>[]};
-  if (path == '/leave-requests') return {'data': <Object>[]};
+  if (path == ApiRoutes.leavePolicies) return {'data': <Object>[]};
+  if (path == ApiRoutes.myLeaveBalances) return {'data': <Object>[]};
+  if (path == ApiRoutes.leaveRequests) return {'data': <Object>[]};
   return <String, dynamic>{};
 }
 

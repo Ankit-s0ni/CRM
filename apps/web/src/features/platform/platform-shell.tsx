@@ -96,8 +96,8 @@ export function PlatformShell({ children }: { children: React.ReactNode }) {
       )}
       <aside className={cn("platform-sidebar fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col shadow-xl transition-transform lg:translate-x-0", mobileOpen ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex h-20 items-center gap-3 px-6">
-          <img src="/logo-square.png" alt="DeltCRM Logo" className="size-10 object-contain" />
-          <div><div className="text-lg font-bold leading-5">DeltCRM</div><div className="platform-sidebar-muted text-[10px] font-semibold uppercase tracking-[.16em]">Super Admin</div></div>
+          <img src="/logo-square.png" alt="Liqaa Logo" className="size-10 object-contain" />
+          <div><div className="text-lg font-bold leading-5">Liqaa</div><div className="platform-sidebar-muted text-[10px] font-semibold uppercase tracking-[.16em]">Super Admin</div></div>
           <button className="ml-auto lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X /></button>
         </div>
         <nav className="space-y-1 px-3 pt-5">

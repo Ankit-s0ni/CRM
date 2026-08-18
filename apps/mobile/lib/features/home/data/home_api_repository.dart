@@ -1,12 +1,12 @@
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import 'package:intl/intl.dart';
 import '../domain/home_repository.dart';
 import '../domain/home_summary.dart';
 
 class HomeApiRepository implements HomeRepository {
   HomeApiRepository(this._api);
-  final ApiService _api;
+  final HrmsApiClient _api;
 
   @override
   Future<HomeSummary> loadToday() async {
@@ -88,16 +88,16 @@ String _shiftLabel(Map<String, dynamic>? shift) {
   final name = shift['name'] as String? ?? 'Assigned shift';
   final start = shift['startTime'] as String?;
   final end = shift['endTime'] as String?;
-  
+
   if (start == null || end == null) return name;
-  
+
   final timeDash = '$start-$end';
   final timeEnDash = '$start–$end';
-  
+
   if (name.contains(timeDash) || name.contains(timeEnDash)) {
     return name;
   }
-  
+
   return '$name · $timeEnDash';
 }
 

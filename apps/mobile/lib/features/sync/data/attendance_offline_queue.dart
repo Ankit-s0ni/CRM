@@ -39,6 +39,13 @@ class AttendanceOfflineQueue {
         : await _persistEvidence(clientEventUuid, evidenceSourcePath);
     final record = PendingAttendanceRecord()
       ..clientEventUuid = clientEventUuid
+      ..scopedEventKey = '${_queue.scope.ownerKey}|$clientEventUuid'
+      ..tenantId = _queue.scope.tenantId
+      ..userId = _queue.scope.userId
+      ..membershipId = _queue.scope.membershipId
+      ..employeeId = _queue.scope.employeeId
+      ..deviceUuid = _queue.scope.deviceUuid
+      ..contractVersion = _queue.scope.contractVersion
       ..eventType = type
       ..createdAt = DateTime.now().toUtc()
       ..nextAttemptAt = DateTime.now().toUtc()
@@ -59,11 +66,18 @@ class AttendanceOfflineQueue {
         'osVersion': device['osVersion'],
       });
     try {
-      await _secrets.writeIntegrityToken(clientEventUuid, integrity.token);
+      await _secrets.writeIntegrityToken(
+        _queue.scope.ownerKey,
+        clientEventUuid,
+        integrity.token,
+      );
       await _queue.enqueueAttendance(record);
       return clientEventUuid;
     } catch (_) {
-      await _secrets.deleteIntegrityToken(clientEventUuid);
+      await _secrets.deleteIntegrityToken(
+        _queue.scope.ownerKey,
+        clientEventUuid,
+      );
       if (evidencePath != null) await _deleteIfPresent(evidencePath);
       rethrow;
     }

@@ -1,12 +1,12 @@
 import '../../../core/media/evidence_image_processor.dart';
 import '../../../core/network/api_routes.dart';
-import '../../../core/network/api_service.dart';
+import '../../../core/network/authority_clients.dart';
 import '../domain/enrollment_repository.dart';
 
 class EnrollmentApiRepository implements EnrollmentRepository {
   EnrollmentApiRepository(this._api, {EvidenceImageProcessor? imageProcessor})
     : _imageProcessor = imageProcessor ?? EvidenceImageProcessor();
-  final ApiService _api;
+  final HrmsApiClient _api;
   final EvidenceImageProcessor _imageProcessor;
 
   @override
@@ -39,12 +39,6 @@ class EnrollmentApiRepository implements EnrollmentRepository {
       throw const FormatException('The enrollment upload response is invalid.');
     }
     await _api.putBytes(uploadUrl, bytes, 'image/jpeg');
-    await _api.post(
-      ApiRoutes.faceEnrollments,
-      data: {
-        'privateObjectKey': objectKey,
-        'livenessProofToken': 'dev-live:$objectKey',
-      },
-    );
+    await _api.post(ApiRoutes.faceEnrollments, data: {'objectKey': objectKey});
   }
 }
