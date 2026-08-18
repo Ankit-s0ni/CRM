@@ -58,7 +58,7 @@ export default async function LocalizedRootLayout({
         <Script id="tenant-theme-bootstrap" strategy="beforeInteractive">
           {`
               try {
-                var theme = localStorage.getItem('deltcrm-ui-theme');
+                var theme = localStorage.getItem('liqaa-ui-theme');
                 if (theme === 'current') theme = 'editorial';
                 var themes = ['editorial', 'charcoal', 'navy', 'emerald', 'teal', 'crimson', 'monochrome'];
                 if (themes.indexOf(theme) >= 0) {

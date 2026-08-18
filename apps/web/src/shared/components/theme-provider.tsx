@@ -66,7 +66,7 @@ function applyTheme(theme: Theme) {
 export function ThemeProvider({
   children,
   defaultTheme = "default",
-  storageKey = "deltcrm-ui-theme",
+  storageKey = "liqaa-ui-theme",
 }: {
   children: React.ReactNode;
   defaultTheme?: Theme;
