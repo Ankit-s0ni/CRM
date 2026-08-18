@@ -138,16 +138,22 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
       icon: LayoutDashboard,
       product: false,
     },
-    ...productItems.map((item) => ({
-      key: item.key,
-      label:
-        item.requiredProduct === "HRMS"
-          ? t("tenant.navigation.hrms", "HRMS")
-          : item.requiredProduct ?? item.key,
-      href: resolvePlatformNavigationHref(item.hrefTemplate, locale),
-      icon: Boxes,
-      product: true,
-    })),
+    ...productItems.map((item) => {
+      const isOnboardingPending =
+        item.requiredProduct === "HRMS" && !user?.onboardingCompletedAt;
+      return {
+        key: item.key,
+        label:
+          item.requiredProduct === "HRMS"
+            ? t("tenant.navigation.hrms", "HRMS")
+            : item.requiredProduct ?? item.key,
+        href: isOnboardingPending
+          ? `/${locale}/app/hrms/onboarding`
+          : resolvePlatformNavigationHref(item.hrefTemplate, locale),
+        icon: Boxes,
+        product: true,
+      };
+    }),
     ...(canOpenSettings
       ? [
           {
