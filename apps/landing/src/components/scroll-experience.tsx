@@ -119,6 +119,8 @@ export function ScrollExperience() {
       // Preserve spatial continuity: the workspace becomes the DeltCRM mark,
       // then the mark becomes the next section rather than fading between scenes.
       hero
+        .set(".hero-transition-mark", { opacity: 0 }, 0)
+        .set(".hero-transition-caption", { opacity: 0 }, 0)
         .to(".scroll-cue", { opacity: 0, y: 12 }, 0.06)
         .to(".site-header", { yPercent: -150 }, 0.08)
         .to(".hero-copy", { opacity: 0, yPercent: -14 }, 0.12)
@@ -137,17 +139,13 @@ export function ScrollExperience() {
         .fromTo(
           ".hero-transition-mark",
           {
-            "--mark-inner": "#2947f2",
-            "--mark-outer": "#191d1a",
-            opacity: 1,
+            opacity: 0,
             rotation: 1.5,
             scale: productMarkScale,
             x: productMarkX,
             y: productMarkY,
           },
           {
-            "--mark-inner": "#2947f2",
-            "--mark-outer": "#191d1a",
             duration: 0.5,
             opacity: 1,
             rotation: 0,
