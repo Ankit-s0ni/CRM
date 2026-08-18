@@ -64,7 +64,7 @@ export function NotificationPreferencesView() {
   const events = preferences ? [...new Set(preferences.map(({ eventKey }) => eventKey))] : [];
   return (
     <AdminPage
-      description={tText("Choose how DeltCRM sends optional notices to your account. Mandatory security notices remain enabled.")}
+      description={tText("Choose how Liqaa sends optional notices to your account. Mandatory security notices remain enabled.")}
       title={tText("My notification preferences")}
     >
       {error && <ErrorState message={error} />}
