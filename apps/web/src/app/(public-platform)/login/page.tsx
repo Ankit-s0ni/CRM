@@ -64,8 +64,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#eef4ff] via-white to-[#f5f3ff] p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
           <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full border-[36px] border-blue-100/70" />
           <div>
-            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary text-on-tone shadow-lg shadow-primary/25">
-              <Building2 className="size-6" />
+            <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white p-2 shadow-lg shadow-primary/10 border border-slate-100">
+              <img src="/logo-square.png" alt="Liqaa Logo" className="size-full object-contain" />
             </div>
             <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Liqaa workspace
@@ -117,8 +117,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <section className="flex flex-col justify-center p-6 sm:p-12 lg:p-14">
           <div className="mb-9">
-            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary text-on-tone shadow-lg shadow-primary/20">
-              <Building2 className="size-7" />
+            <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-white p-2 shadow-lg shadow-primary/10 border border-slate-100">
+              <img src="/logo-square.png" alt="Liqaa Logo" className="size-full object-contain" />
             </div>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-primary">
               Welcome back

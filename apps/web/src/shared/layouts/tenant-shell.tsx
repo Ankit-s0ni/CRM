@@ -232,7 +232,7 @@ export function TenantShell({ children }: { children: React.ReactNode }) {
                 width={40}
               />
             ) : (
-              <Building2 className="size-5" />
+              <img src="/logo-square.png" alt="Liqaa Logo" className="size-full object-contain p-1" />
             )}
           </div>
           <div className={cn(desktopCollapsed && "lg:hidden")}>
