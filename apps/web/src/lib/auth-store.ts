@@ -10,6 +10,7 @@ export interface User {
   permissions?: string[];
   companyName?: string;
   logoUrl?: string | null;
+  onboardingCompletedAt?: string | null;
   localization?: {
     defaultLanguage: "en" | "ar";
     enabledLanguages: Array<"en" | "ar">;
