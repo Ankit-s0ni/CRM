@@ -68,10 +68,7 @@ export function PlatformStory() {
         <div className="domain-atlas">
           <div className="domain-stack">
             {productDomains.map((domain, index) => (
-              <article
-                className={`domain-card ${domain.status === "available" ? "domain-available" : ""}`}
-                key={domain.id}
-              >
+              <article className="domain-card" key={domain.id}>
                 <div className="domain-card-top">
                   <span className="domain-number">0{index + 1}</span>
                   <span className="domain-status">{domain.status}</span>

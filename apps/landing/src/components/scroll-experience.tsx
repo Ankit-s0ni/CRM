@@ -172,7 +172,7 @@ export function ScrollExperience() {
         .to(".hero-transition-wipe", { scale: 24 }, 0.73)
         .to(".hero-transition-mark", { opacity: 0, scale: 15 }, 0.75)
         .to(".site-header", { yPercent: 0 }, 0.9)
-        .set(".hero", { backgroundColor: "#f26444" }, 1.22)
+        .set(".hero", { backgroundColor: "var(--paper)" }, 1.22)
         .set(".hero-transition", { autoAlpha: 0 }, 1.24);
 
       const fragments = gsap.utils.toArray<HTMLElement>(".fragment");
