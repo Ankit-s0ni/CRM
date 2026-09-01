@@ -497,13 +497,9 @@ h1 span { color: var(--cobalt); display: block; font-size: 0.68em; margin-top: 0
 .mobile-app-copy .eyebrow { color: var(--primary); }
 .mobile-app-copy h2 { font-size: clamp(2.2rem, 4vw, 4.5rem); letter-spacing: -0.05em; line-height: 1; margin: 0.8rem 0 1rem; max-width: 12ch; }
 .mobile-app-copy > p:last-child { color: var(--muted); font-size: 1.05rem; line-height: 1.65; margin: 0; max-width: 36rem; }
-.mobile-app-action { align-items: center; background: var(--ink); border: 1px solid var(--ink); border-radius: 0.8rem; color: white; display: inline-flex; flex-shrink: 0; gap: 0.8rem; min-height: 4.5rem; padding: 0.7rem 1rem; transition: background 180ms ease, transform 180ms ease; }
-.mobile-app-action:hover { background: var(--primary); transform: translateY(-2px); }
-.mobile-app-icon { align-items: center; background: var(--primary); border-radius: 0.55rem; display: flex; height: 2.8rem; justify-content: center; width: 2.8rem; }
-.mobile-app-action small, .mobile-app-action strong { display: block; }
-.mobile-app-action small { color: rgb(255 255 255 / 60%); font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.mobile-app-action strong { font-size: 1rem; margin-top: 0.2rem; }
-.mobile-app-action > svg { margin-left: 0.7rem; }
+.mobile-app-action { display: inline-flex; flex-shrink: 0; transition: transform 180ms ease; }
+.mobile-app-action:hover { transform: translateY(-2px); }
+.google-play-badge { display: block; height: auto; width: min(15rem, 42vw); }
 .cta-band { background: var(--ink); color: white; padding: 7rem 5vw; text-align: center; }
 .cta-band .eyebrow { color: #5ed6ca; }
 .cta-band h2 { margin-left: auto; margin-right: auto; max-width: 18ch; color: white; }

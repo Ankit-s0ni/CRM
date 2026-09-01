@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Layers3, Smartphone } from "lucide-react";
+import { ArrowRight, Check, Layers3 } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
 import type { MarketingProduct } from "@/content/products";
@@ -93,9 +93,11 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
             target="_blank"
             rel="noreferrer"
           >
-            <span className="mobile-app-icon"><Smartphone aria-hidden="true" size={22} /></span>
-            <span><small>Available on</small><strong>Google Play</strong></span>
-            <ArrowRight aria-hidden="true" size={18} />
+            <img
+              className="google-play-badge"
+              src="https://raw.githubusercontent.com/pioug/google-play-badges/main/svg/en.svg"
+              alt="Get it on Google Play"
+            />
           </a>
         </section>
       )}
