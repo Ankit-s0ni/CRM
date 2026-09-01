@@ -50,7 +50,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
 
   useEffect(() => {
     if (!workspace || APP_DOMAIN === "your-domain.com") return;

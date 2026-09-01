@@ -3,7 +3,7 @@ import { usePlatformAuthStore } from "./platform-auth-store";
 import type { PlatformSessionResponse } from "./platform-types";
 
 export const platformApiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

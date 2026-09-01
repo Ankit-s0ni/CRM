@@ -44,7 +44,7 @@ export async function getTenantLocalizationBootstrap(
   const baseUrl =
     process.env.API_INTERNAL_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:4001";
+    "http://localhost:4011";
   const url = new URL("/public/localization/bootstrap", baseUrl);
   url.searchParams.set("subdomain", workspace);
   url.searchParams.set("language", language);

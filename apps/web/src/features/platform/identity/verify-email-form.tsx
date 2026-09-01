@@ -35,7 +35,7 @@ export function VerifyEmailForm() {
     initialDelivery === "FAILED" ? 0 : 42,
   );
 
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
   const digits = useMemo(() => {
     const padded = `${code}${" ".repeat(6)}`.slice(0, 6);
     return padded.split("");

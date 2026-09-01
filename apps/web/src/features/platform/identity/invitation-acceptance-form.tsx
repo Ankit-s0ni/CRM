@@ -18,7 +18,7 @@ export function InvitationAcceptanceForm() {
   const [busy, setBusy] = useState(false);
   const [complete, setComplete] = useState(false);
   const [error, setError] = useState("");
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
   const loginQuery = new URLSearchParams({
     ...(workspace ? { workspace } : {}),
     ...(email ? { email } : {}),

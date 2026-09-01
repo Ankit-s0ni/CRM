@@ -39,7 +39,7 @@ export function PasswordResetForm() {
   const [toastVisible, setToastVisible] = useState(false);
 
   const strength = useMemo(() => getStrength(password), [password]);
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
   const backToLoginHref = `/login?tenantId=${encodeURIComponent(tenantId)}&workspace=${encodeURIComponent(workspace)}&email=${encodeURIComponent(email)}`;
 
   function getStrengthTone() {
