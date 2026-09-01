@@ -130,6 +130,19 @@ export class ProductIntegrationController {
     });
   }
 
+  @Get('internal/platform/v1/products/:productKey/tenants/:tenantId/members')
+  @UseGuards(InternalProductServiceGuard)
+  @ApiOperation({ summary: 'List safe tenant members for a product' })
+  tenantMembers(
+    @Param('tenantId') tenantId: string,
+    @Query('query') query?: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: 'ACTIVE' | 'SUSPENDED' | 'UNAVAILABLE',
+  ) {
+    return this.integration.listTenantMembers(tenantId, { query, cursor, status, limit: limit ? Number(limit) : undefined });
+  }
+
   @Get(
     'internal/platform/v1/products/:productKey/tenants/:tenantId/entitlements',
   )

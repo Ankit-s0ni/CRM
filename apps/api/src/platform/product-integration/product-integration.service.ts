@@ -16,6 +16,8 @@ import {
   type ProductProvisioningStatus,
   type ProductTokenRequest,
   type ProductTokenResponse,
+  type TenantDirectoryPage,
+  type TenantDirectoryQuery,
   type StableIdentifiers,
 } from '@mariya-abdul/deltcrm-product-contracts';
 import { PlatformDatabaseService } from '../../shared/database/platform-database.service';
@@ -246,6 +248,29 @@ export class ProductIntegrationService implements ProductPlatformPort {
         userStatus,
         membershipStatus,
         effectiveAt: new Date().toISOString(),
+      };
+    });
+  }
+
+  async listTenantMembers(tenantId: string, query: TenantDirectoryQuery = {}): Promise<TenantDirectoryPage> {
+    return this.database.transaction(async (tx) => {
+      const limit = Math.min(100, Math.max(1, query.limit ?? 50));
+      const users = await tx.user.findMany({
+        where: {
+          tenantId,
+          ...(query.status ? { status: query.status === 'ACTIVE' ? 'ACTIVE' : { not: 'ACTIVE' } } : {}),
+          ...(query.query ? { email: { contains: query.query.trim(), mode: 'insensitive' } } : {}),
+        },
+        orderBy: { email: 'asc' },
+        take: limit + 1,
+        ...(query.cursor ? { skip: 1, cursor: { id: query.cursor } } : {}),
+        select: { id: true, email: true, status: true },
+      });
+      const hasNext = users.length > limit;
+      const page = users.slice(0, limit);
+      return {
+        data: page.map((user) => ({ userId: user.id, membershipId: user.id, displayName: user.email, email: user.email, status: user.status === 'ACTIVE' ? 'ACTIVE' : 'SUSPENDED' })),
+        nextCursor: hasNext ? page.at(-1)?.id ?? null : null,
       };
     });
   }
