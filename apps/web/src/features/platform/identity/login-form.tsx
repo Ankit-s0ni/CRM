@@ -20,11 +20,13 @@ function resolveHostnameWorkspace() {
 interface LoginFormProps {
   initialWorkspace?: string | null;
   initialNextPath?: string | null;
+  initialReturnTo?: string | null;
 }
 
 export function LoginForm({
   initialWorkspace = null,
   initialNextPath = null,
+  initialReturnTo = null,
 }: LoginFormProps) {
   const pendingAuth = useAuthStore((state) => state.pendingAuth);
   const setPendingAuth = useAuthStore((state) => state.setPendingAuth);
@@ -65,6 +67,7 @@ export function LoginForm({
         currentUrl.pathname = "/login";
         currentUrl.search = "";
         if (initialNextPath) currentUrl.searchParams.set("next", initialNextPath);
+        if (initialReturnTo) currentUrl.searchParams.set("returnTo", initialReturnTo);
         window.history.replaceState({}, "", currentUrl.toString());
       }
       return;
@@ -76,8 +79,25 @@ export function LoginForm({
     currentUrl.pathname = "/login";
     currentUrl.search = "";
     if (initialNextPath) currentUrl.searchParams.set("next", initialNextPath);
+    if (initialReturnTo) currentUrl.searchParams.set("returnTo", initialReturnTo);
     window.location.replace(currentUrl.toString());
-  }, [initialNextPath, workspace]);
+  }, [initialNextPath, initialReturnTo, workspace]);
+
+  function safeReturnTo(value: string | null) {
+    if (!value || typeof window === "undefined") return null;
+    try {
+      const target = new URL(value);
+      const allowedOrigins = new Set([
+        window.location.origin,
+        "http://localhost:4032",
+        "http://127.0.0.1:4032",
+        process.env.NEXT_PUBLIC_TMS_WEB_ORIGIN,
+      ].filter(Boolean));
+      return allowedOrigins.has(target.origin) && /^\/(en|ar)\/app\/tms(?:\/|$)/.test(target.pathname)
+        ? target.toString()
+        : null;
+    } catch { return null; }
+  }
 
   const forgotPasswordHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -167,6 +187,11 @@ export function LoginForm({
         .split("; ")
         .find((item) => item.startsWith("deltcrm-language="))
         ?.split("=")[1];
+      const externalReturn = safeReturnTo(initialReturnTo);
+      if (externalReturn) {
+        window.location.assign(externalReturn);
+        return;
+      }
       router.push(
         resolveTenantLoginDestination({
           nextPath: initialNextPath,

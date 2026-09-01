@@ -24,6 +24,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const hostnameWorkspace = resolveWorkspaceFromHostname(hostname);
   const initialWorkspace = hostnameWorkspace ?? firstValue(params.workspace) ?? null;
   const initialNextPath = firstValue(params.next) ?? null;
+  const initialReturnTo = firstValue(params.returnTo) ?? null;
 
   if (hostnameWorkspace) {
     try {
@@ -133,6 +134,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <LoginForm
             initialNextPath={initialNextPath}
+            initialReturnTo={initialReturnTo}
             initialWorkspace={initialWorkspace}
           />
 
