@@ -13,7 +13,12 @@ export function resolvePlatformNavigationHref(
   hrefTemplate: PlatformNavigationItem["hrefTemplate"],
   locale: "en" | "ar",
 ) {
-  return hrefTemplate.replace("{locale}", locale);
+  const path = hrefTemplate.replace("{locale}", locale);
+  if (path === `/${locale}/app/tms` || path.startsWith(`/${locale}/app/tms/`)) {
+    const origin = process.env.NEXT_PUBLIC_TMS_WEB_ORIGIN || "http://localhost:4032";
+    return new URL(path, origin).toString();
+  }
+  return path;
 }
 
 export function usePlatformProductNavigation(enabled = true) {
