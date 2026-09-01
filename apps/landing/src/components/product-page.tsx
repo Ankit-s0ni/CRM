@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Layers3 } from "lucide-react";
+import { ArrowRight, Check, Layers3, Smartphone } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
 import type { MarketingProduct } from "@/content/products";
@@ -76,6 +76,29 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
           ))}
         </ol>
       </section>
+
+      {product.slug === "hrms" && (
+        <section className="mobile-app-section" aria-labelledby="mobile-app-title">
+          <div className="mobile-app-copy">
+            <p className="eyebrow">Liqaa HRMS mobile</p>
+            <h2 id="mobile-app-title">Your workforce, in the flow of the day.</h2>
+            <p>
+              Give employees secure check-in, leave requests and daily updates
+              from the Liqaa HRMS mobile app—connected to the same workspace.
+            </p>
+          </div>
+          <a
+            className="mobile-app-action"
+            href="https://play.google.com/store/apps/details?id=com.liqaa.hrms"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span className="mobile-app-icon"><Smartphone aria-hidden="true" size={22} /></span>
+            <span><small>Available on</small><strong>Google Play</strong></span>
+            <ArrowRight aria-hidden="true" size={18} />
+          </a>
+        </section>
+      )}
 
       <section className="cta-band">
         <p className="eyebrow">One business operating system</p>
