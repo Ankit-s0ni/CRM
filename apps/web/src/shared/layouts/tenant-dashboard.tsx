@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAuthStore } from "@/lib/auth-store";
+import { useEffect } from "react";
 import {
   resolvePlatformNavigationHref,
   usePlatformProductNavigation,
@@ -22,6 +23,12 @@ export function TenantDashboard() {
   const { t, locale } = useTenantLocalization();
   const { items, loaded } = usePlatformProductNavigation(Boolean(user));
   const products = items.filter(({ requiredProduct }) => requiredProduct);
+
+  useEffect(() => {
+    if (user?.workspace) {
+      document.cookie = `deltcrm-workspace=${encodeURIComponent(user.workspace)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    }
+  }, [user?.workspace]);
 
   if (!user || !loaded) {
     return (
