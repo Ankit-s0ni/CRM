@@ -42,12 +42,13 @@ export class InvitationsService {
     private readonly transactionalEmail: TransactionalEmailPort,
   ) {}
 
-  async createForProduct(tenantId: string, dto: CreateInvitationDto, inviterId: string) {
+  async createForProduct(tenantId: string, dto: CreateInvitationDto, inviterId: string, productKey = 'TMS') {
     return TenantContextService.run({ tenantId, userId: inviterId }, async () => {
-      await this.create(dto, inviterId, true);
+      const roleIds = dto.roleIds.length ? dto.roleIds : await this.prisma.forTenant((tx) => tx.role.findMany({ where: { tenantId, name: 'EMPLOYEE' }, select: { id: true }, take: 1 }).then((roles) => roles.map((role) => role.id)));
+      await this.create({ ...dto, roleIds }, inviterId, true);
       const invitation = await this.prisma.forAdmin((tx) => tx.verificationToken.findFirst({ where: { tenantId, email: dto.email.trim().toLowerCase(), purpose: TokenPurpose.USER_INVITE, consumedAt: null }, orderBy: { createdAt: 'desc' } }));
       if (!invitation) throw new BadRequestException({ code: 'INVITATION_NOT_CREATED' });
-      return { invitationId: invitation.id, tenantId, productKey: 'TMS', email: invitation.email, status: 'PENDING' as const, expiresAt: invitation.expiresAt.toISOString() };
+      return { invitationId: invitation.id, tenantId, productKey, email: invitation.email, status: 'PENDING' as const, expiresAt: invitation.expiresAt.toISOString() };
     });
   }
 

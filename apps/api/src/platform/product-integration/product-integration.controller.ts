@@ -12,7 +12,7 @@ import {
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { ProductKey } from '@mariya-abdul/deltcrm-product-contracts';
 import type { Request } from 'express';
 import { CurrentUser } from '../../shared/http/current-user.decorator';
@@ -219,6 +219,9 @@ export class ProductIntegrationController {
 
   @Post('internal/platform/v1/products/:productKey/tenants/:tenantId/invitations')
   @UseGuards(InternalProductServiceGuard)
+  @ApiOperation({ summary: 'Create a product-scoped tenant invitation' })
+  @ApiBody({ schema: { type: 'object', required: ['email'], properties: { email: { type: 'string', format: 'email' }, displayName: { type: 'string' }, roleIds: { type: 'array', items: { type: 'string', format: 'uuid' } }, employeeId: { type: 'string', format: 'uuid' } } } })
+  @ApiCreatedResponse({ description: 'Invitation created' })
   inviteProductUser(
     @Req() request: Request & { [AUTHENTICATED_PRODUCT_SERVICE]: ProductKey },
     @Param('productKey') productKey: string,
@@ -227,12 +230,15 @@ export class ProductIntegrationController {
     @Headers('x-product-inviter-id') inviterId?: string,
   ) {
     if (productKey.toUpperCase() !== 'TMS' || request[AUTHENTICATED_PRODUCT_SERVICE] !== 'TMS') throw new UnauthorizedException({ code: 'PRODUCT_SCOPE_REQUIRED' });
-    if (!inviterId) throw new UnauthorizedException({ code: 'INVITER_ID_REQUIRED' });
-    return TenantContextService.run({ tenantId, userId: inviterId }, () => this.invitations.createForProduct(tenantId, { email: dto.email, roleIds: dto.roleIds ?? [] , employeeId: dto.employeeId }, inviterId));
+    const actorId = inviterId ?? tenantId;
+    return TenantContextService.run({ tenantId, userId: actorId }, () => this.invitations.createForProduct(tenantId, { email: dto.email, roleIds: dto.roleIds ?? [] , employeeId: dto.employeeId }, actorId, productKey.toUpperCase()));
   }
 
   @Post('internal/platform/v1/products/:productKey/tenants/:tenantId/invitations/:invitationId/revoke')
   @UseGuards(InternalProductServiceGuard)
+  @ApiOperation({ summary: 'Revoke a product-scoped tenant invitation' })
+  @ApiBody({ schema: { type: 'object', additionalProperties: false } })
+  @ApiOkResponse({ description: 'Invitation revoked' })
   revokeProductInvitation(@Param('productKey') productKey: string, @Param('tenantId') tenantId: string, @Param('invitationId') invitationId: string) {
     if (productKey.toUpperCase() !== 'TMS') throw new UnauthorizedException({ code: 'PRODUCT_SCOPE_REQUIRED' });
     return this.invitations.revokeForProduct(tenantId, invitationId);
