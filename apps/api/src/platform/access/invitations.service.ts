@@ -42,6 +42,21 @@ export class InvitationsService {
     private readonly transactionalEmail: TransactionalEmailPort,
   ) {}
 
+  async createForProduct(tenantId: string, dto: CreateInvitationDto, inviterId: string) {
+    return TenantContextService.run({ tenantId, userId: inviterId }, async () => {
+      await this.create(dto, inviterId, true);
+      const invitation = await this.prisma.forAdmin((tx) => tx.verificationToken.findFirst({ where: { tenantId, email: dto.email.trim().toLowerCase(), purpose: TokenPurpose.USER_INVITE, consumedAt: null }, orderBy: { createdAt: 'desc' } }));
+      if (!invitation) throw new BadRequestException({ code: 'INVITATION_NOT_CREATED' });
+      return { invitationId: invitation.id, tenantId, productKey: 'TMS', email: invitation.email, status: 'PENDING' as const, expiresAt: invitation.expiresAt.toISOString() };
+    });
+  }
+
+  async revokeForProduct(tenantId: string, invitationId: string) {
+    const result = await this.prisma.forAdmin((tx) => tx.verificationToken.updateMany({ where: { id: invitationId, tenantId, purpose: TokenPurpose.USER_INVITE, consumedAt: null }, data: { consumedAt: new Date() } }));
+    if (!result.count) throw new BadRequestException({ code: 'INVITATION_NOT_FOUND' });
+    return { invitationId, tenantId, productKey: 'TMS', status: 'REVOKED' as const };
+  }
+
   async create(
     dto: CreateInvitationDto,
     inviterId: string,

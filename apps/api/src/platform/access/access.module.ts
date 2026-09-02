@@ -19,5 +19,6 @@ import { NotificationsModule } from '../notifications/public';
     InvitationAcceptanceController,
   ],
   providers: [RolesService, UsersService, InvitationsService],
+  exports: [InvitationsService],
 })
 export class AccessModule {}

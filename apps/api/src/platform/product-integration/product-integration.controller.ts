@@ -10,12 +10,16 @@ import {
   Query,
   Req,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { ProductKey } from '@mariya-abdul/deltcrm-product-contracts';
 import type { Request } from 'express';
 import { CurrentUser } from '../../shared/http/current-user.decorator';
 import type { AuthenticatedUser } from '../../shared/http/authenticated-user';
+import { InvitationsService } from '../access/invitations.service';
+import type { ProductInvitationRequest } from '@mariya-abdul/deltcrm-product-contracts';
+import { TenantContextService } from '../tenancy/tenant-context.service';
 import { JwtTenantGuard } from '../identity/public';
 import {
   AUTHENTICATED_PRODUCT_SERVICE,
@@ -35,6 +39,7 @@ export class ProductIntegrationController {
   constructor(
     private readonly integration: ProductIntegrationService,
     private readonly operations: ProductOperationsService,
+    private readonly invitations: InvitationsService,
   ) {}
 
   @Get('.well-known/jwks.json')
@@ -210,6 +215,27 @@ export class ProductIntegrationController {
       productKey,
       dto,
     );
+  }
+
+  @Post('internal/platform/v1/products/:productKey/tenants/:tenantId/invitations')
+  @UseGuards(InternalProductServiceGuard)
+  inviteProductUser(
+    @Req() request: Request & { [AUTHENTICATED_PRODUCT_SERVICE]: ProductKey },
+    @Param('productKey') productKey: string,
+    @Param('tenantId') tenantId: string,
+    @Body() dto: ProductInvitationRequest,
+    @Headers('x-product-inviter-id') inviterId?: string,
+  ) {
+    if (productKey.toUpperCase() !== 'TMS' || request[AUTHENTICATED_PRODUCT_SERVICE] !== 'TMS') throw new UnauthorizedException({ code: 'PRODUCT_SCOPE_REQUIRED' });
+    if (!inviterId) throw new UnauthorizedException({ code: 'INVITER_ID_REQUIRED' });
+    return TenantContextService.run({ tenantId, userId: inviterId }, () => this.invitations.createForProduct(tenantId, { email: dto.email, roleIds: dto.roleIds ?? [] , employeeId: dto.employeeId }, inviterId));
+  }
+
+  @Post('internal/platform/v1/products/:productKey/tenants/:tenantId/invitations/:invitationId/revoke')
+  @UseGuards(InternalProductServiceGuard)
+  revokeProductInvitation(@Param('productKey') productKey: string, @Param('tenantId') tenantId: string, @Param('invitationId') invitationId: string) {
+    if (productKey.toUpperCase() !== 'TMS') throw new UnauthorizedException({ code: 'PRODUCT_SCOPE_REQUIRED' });
+    return this.invitations.revokeForProduct(tenantId, invitationId);
   }
 
   @Get('internal/v1/tenants/:tenantId/entitlements')

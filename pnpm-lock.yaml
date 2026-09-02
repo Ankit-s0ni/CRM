@@ -34,8 +34,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2(@casl/ability@7.0.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))
       '@mariya-abdul/deltcrm-product-contracts':
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.2.0
+        version: 2.2.0
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -377,12 +377,6 @@ importers:
         version: 5.9.3
 
   packages/contracts: {}
-
-  packages/product-contracts:
-    devDependencies:
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
 
   packages/ui: {}
 
@@ -1342,8 +1336,8 @@ packages:
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
 
-  '@mariya-abdul/deltcrm-product-contracts@2.1.1':
-    resolution: {integrity: sha512-aKwzmNie4AQ1JAUwac/6gwxFPliidoffNmyO0VGFtLxXKAZgkKkVozrBeGj8YSFOqmR4pV+oFHSn/PNDtMhCuQ==}
+  '@mariya-abdul/deltcrm-product-contracts@2.2.0':
+    resolution: {integrity: sha512-J9Zmdtn8jzJm0ZVbZXudUIcJWpuPLHH+gK/w8z4+pX3w/RqwtaF3bMJ/+9iVNVluUBuTPxyRyv4dZ0YJzMScTw==}
     hasBin: true
 
   '@microsoft/tsdoc@0.16.0':
@@ -7979,7 +7973,7 @@ snapshots:
 
   '@lukeed/csprng@1.1.0': {}
 
-  '@mariya-abdul/deltcrm-product-contracts@2.1.1': {}
+  '@mariya-abdul/deltcrm-product-contracts@2.2.0': {}
 
   '@microsoft/tsdoc@0.16.0': {}
 

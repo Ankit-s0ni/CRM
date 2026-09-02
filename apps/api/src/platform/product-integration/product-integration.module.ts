@@ -8,10 +8,11 @@ import { PlatformAuthModule } from '../control-plane/public';
 import { ProductCommercialController } from './product-commercial.controller';
 import { ProductRegistrationCiController } from './product-registration-ci.controller';
 import { ProductRegistrationCiGuard } from './product-registration-ci.guard';
+import { AccessModule } from '../access/public';
 
 @Global()
 @Module({
-  imports: [IdentityModule, PlatformAuthModule, ProductPlatformAdapterModule],
+  imports: [IdentityModule, PlatformAuthModule, ProductPlatformAdapterModule, AccessModule],
   controllers: [
     ProductIntegrationController,
     ProductRegistryController,
