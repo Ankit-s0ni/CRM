@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Layers3 } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TmsKanbanHeroMockup } from "@/components/tms-kanban-hero-mockup";
 import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 import type { MarketingProduct } from "@/content/products";
 
@@ -25,25 +26,29 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
             </Link>
           </div>
         </div>
-        <div className="product-signal" aria-label={`${product.name} overview`}>
-          <div className="signal-head">
-            <span>{product.name}</span>
-            <i>Live system</i>
+        {product.slug === "tms" ? (
+          <TmsKanbanHeroMockup />
+        ) : (
+          <div className="product-signal" aria-label={`${product.name} overview`}>
+            <div className="signal-head">
+              <span>{product.name}</span>
+              <i>Live system</i>
+            </div>
+            <div className="signal-grid">
+              {product.metrics.map((metric) => (
+                <div key={metric.label}>
+                  <strong>{metric.value}</strong>
+                  <span>{metric.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="signal-flow">
+              {product.workflow.map((step) => (
+                <span key={step.title}><Check aria-hidden="true" size={14} /> {step.title}</span>
+              ))}
+            </div>
           </div>
-          <div className="signal-grid">
-            {product.metrics.map((metric) => (
-              <div key={metric.label}>
-                <strong>{metric.value}</strong>
-                <span>{metric.label}</span>
-              </div>
-            ))}
-          </div>
-          <div className="signal-flow">
-            {product.workflow.map((step) => (
-              <span key={step.title}><Check aria-hidden="true" size={14} /> {step.title}</span>
-            ))}
-          </div>
-        </div>
+        )}
       </section>
 
       <section className="feature-section">

@@ -70,12 +70,12 @@ export const marketingProducts: Record<MarketingProduct["slug"], MarketingProduc
   },
   tms: {
     slug: "tms",
-    eyebrow: "Task & ticket operations",
+    eyebrow: "Task & ticket management",
     name: "Liqaa TMS",
     status: "Available now",
-    headline: "Turn team coordination into clear, dependable delivery.",
+    headline: "Team tasks, tickets, and delivery in sync.",
     summary:
-      "Manage projects, agile tickets, visual Kanban pipelines and spreadsheet imports on the same shared foundation as your company directory.",
+      "Run projects, visual Kanban boards, and spreadsheet migrations on the same dependable operating foundation as your company directory.",
     accent: "cyan",
     metrics: [
       { value: "Live", label: "card & table sync" },
