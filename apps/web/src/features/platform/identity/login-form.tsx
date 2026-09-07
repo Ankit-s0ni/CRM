@@ -189,7 +189,9 @@ export function LoginForm({
         ?.split("=")[1];
       const externalReturn = safeReturnTo(initialReturnTo);
       if (externalReturn) {
-        window.location.assign(externalReturn);
+        // Replace the transient login document so browser Back returns to the
+        // tenant dashboard, not the login form used to establish the session.
+        window.location.replace(externalReturn);
         return;
       }
       router.push(

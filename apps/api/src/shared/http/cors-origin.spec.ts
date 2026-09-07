@@ -2,9 +2,9 @@ import { isTrustedApplicationOrigin } from './cors-origin';
 
 describe('isTrustedApplicationOrigin', () => {
   it.each([
-    'https://blufield.cloud',
-    'https://acme.blufield.cloud',
-    'https://api.blufield.cloud',
+    'https://liqaahq.com',
+    'https://acme.liqaahq.com',
+    'https://api.liqaahq.com',
     'http://localhost:4002',
     'http://127.0.0.1:4002',
     'http://[::1]:4002',
@@ -13,8 +13,8 @@ describe('isTrustedApplicationOrigin', () => {
   });
 
   it.each([
-    'https://evilblufield.cloud',
-    'https://blufield.cloud.attacker.example',
+    'https://evilliqaahq.com',
+    'https://liqaahq.com.attacker.example',
     'https://attacker.example',
     'not-a-url',
   ])('rejects an untrusted origin: %s', (origin) => {

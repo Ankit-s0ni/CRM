@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Layers3 } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 import type { MarketingProduct } from "@/content/products";
 
 export function ProductPage({ product }: { product: MarketingProduct }) {
@@ -16,9 +17,9 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
           <h1>{product.headline}</h1>
           <p>{product.summary}</p>
           <div className="page-actions">
-            <Link className="primary-action" href="https://platform.blufield.cloud/signup">
+            <a className="primary-action" href={PLATFORM_SIGNUP_URL}>
               Start your workspace <ArrowRight aria-hidden="true" size={17} />
-            </Link>
+            </a>
             <Link className="text-action" href="/pricing">
               View pricing <ArrowRight aria-hidden="true" size={17} />
             </Link>
@@ -105,7 +106,7 @@ export function ProductPage({ product }: { product: MarketingProduct }) {
       <section className="cta-band">
         <p className="eyebrow">One business operating system</p>
         <h2>Start with {product.name.replace("Liqaa ", "")}. Keep room for everything next.</h2>
-        <Link href="https://platform.liqaahq.com/signup">Create your workspace <ArrowRight aria-hidden="true" size={18} /></Link>
+        <a href={PLATFORM_SIGNUP_URL}>Create your workspace <ArrowRight aria-hidden="true" size={18} /></a>
       </section>
       <MarketingFooter />
     </main>

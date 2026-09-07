@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 export default function LoginRedirectPage() {
-  redirect("https://platform.blufield.cloud/signup");
+  redirect(PLATFORM_SIGNUP_URL);
 }

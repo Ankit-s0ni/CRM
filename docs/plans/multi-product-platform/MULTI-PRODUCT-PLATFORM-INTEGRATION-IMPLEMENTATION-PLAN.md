@@ -12,7 +12,7 @@ DeltCRM will operate as a multi-product SaaS platform. The Platform is the contr
 ## 2. Confirmed Decisions
 
 1. Platform, HRMS, POS and Mail are separate full-stack repositories with independent teams, pipelines and deployments.
-2. A customer continues to use one tenant URL such as `acme.blufield.cloud`.
+2. A customer continues to use one tenant URL such as `acme.liqaahq.com`.
 3. Authentication, tenant identity, subscriptions, product entitlements, global roles, localization and platform audit remain centralized.
 4. Products connect through signed identity tokens, versioned APIs and versioned events, never through another service's database.
 5. Public product routes are composed at the gateway by URL path. Iframes and runtime module federation are not part of the initial implementation.
@@ -39,22 +39,22 @@ The existing CRM repository should not be split by copying files without ownersh
 For a tenant named Acme, the public experience remains:
 
 ```text
-https://acme.blufield.cloud/login
-https://acme.blufield.cloud/app
+https://acme.liqaahq.com/login
+https://acme.liqaahq.com/app
 ```
 
 Product routes remain on the same host:
 
 ```text
-acme.blufield.cloud/app                 -> Platform dashboard
-acme.blufield.cloud/app/hrms/*          -> HRMS frontend
-acme.blufield.cloud/app/mail/*          -> Mail frontend
-acme.blufield.cloud/app/pos/*           -> POS frontend
+acme.liqaahq.com/app                 -> Platform dashboard
+acme.liqaahq.com/app/hrms/*          -> HRMS frontend
+acme.liqaahq.com/app/mail/*          -> Mail frontend
+acme.liqaahq.com/app/pos/*           -> POS frontend
 
-acme.blufield.cloud/api/platform/*      -> Platform API
-acme.blufield.cloud/api/hrms/*          -> HRMS API
-acme.blufield.cloud/api/mail/*          -> Mail API
-acme.blufield.cloud/api/pos/*           -> POS API
+acme.liqaahq.com/api/platform/*      -> Platform API
+acme.liqaahq.com/api/hrms/*          -> HRMS API
+acme.liqaahq.com/api/mail/*          -> Mail API
+acme.liqaahq.com/api/pos/*           -> POS API
 ```
 
 The gateway resolves `acme` to an immutable tenant UUID. Product records use that UUID; they do not use the subdomain as their permanent foreign identifier. A later subdomain change therefore does not disconnect product data.
@@ -64,7 +64,7 @@ The gateway resolves `acme` to an immutable tenant UUID. Product records use tha
 Nginx or a managed API gateway is the only public entry point:
 
 ```text
-                         acme.blufield.cloud
+                         acme.liqaahq.com
                                   |
                            Gateway / WAF
                                   |
@@ -144,7 +144,7 @@ The signed product token contains at least:
   "roles": ["BUSINESS_ADMIN"],
   "products": ["HRMS", "MAIL"],
   "permissions": ["hrms.employees.read", "mail.messages.read"],
-  "iss": "https://auth.blufield.cloud",
+  "iss": "https://auth.liqaahq.com",
   "aud": ["hrms-api", "mail-api"],
   "exp": 1780000000
 }

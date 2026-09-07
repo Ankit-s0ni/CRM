@@ -144,7 +144,7 @@ describe('ProductIntegrationService', () => {
     const jwt = { sign: jest.fn().mockReturnValue('signed-token') };
     const signingKeys = {
       keyId: 'test-key',
-      issuer: 'https://auth.blufield.cloud',
+      issuer: 'https://auth.liqaahq.com',
       privateKey: 'private-key',
       jwks: jest.fn().mockReturnValue({ keys: [] }),
     };

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { SiteHeader } from "@/components/site-header";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Liqaa Pricing | Plans That Grow With Your Operation",
@@ -54,7 +55,7 @@ export default function PricingPage() {
             <ul>
               {plan.features.map((feature) => <li key={feature}><Check aria-hidden="true" size={16} /> {feature}</li>)}
             </ul>
-            <Link href="https://platform.liqaahq.com/signup">{plan.action} <ArrowRight aria-hidden="true" size={17} /></Link>
+            <a href={PLATFORM_SIGNUP_URL}>{plan.action} <ArrowRight aria-hidden="true" size={17} /></a>
           </article>
         ))}
       </section>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Network, Sparkles } from "lucide-react";
 import { platformServices, productDomains } from "@/content/platform";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 export function PlatformStory() {
   return (
@@ -109,7 +110,7 @@ export function PlatformStory() {
             Shared data lets Liqaa surface patterns, automate routine work,
             and move every team with the same context.
           </p>
-          <a href="https://platform.liqaahq.com/signup">
+          <a href={PLATFORM_SIGNUP_URL}>
             Build your operating system
             <ArrowRight aria-hidden="true" size={18} />
           </a>

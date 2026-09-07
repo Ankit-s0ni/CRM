@@ -2,7 +2,7 @@
  * Single source of truth for the application domain.
  *
  * Set NEXT_PUBLIC_APP_DOMAIN in your .env file:
- *   NEXT_PUBLIC_APP_DOMAIN=blufield.cloud
+ *   NEXT_PUBLIC_APP_DOMAIN=liqaahq.com
  *
  * This intentionally has NO hardcoded brand-specific fallback so that
  * changing the domain in the future only requires updating the env var.

@@ -39,10 +39,10 @@ Multiple independently owned and deployed products
 Example:
 
 ```text
-https://acme.blufield.cloud/en/app             Platform home
-https://acme.blufield.cloud/en/app/hrms        HRMS
-https://acme.blufield.cloud/en/app/mail        Mail
-https://acme.blufield.cloud/en/app/pos         POS
+https://acme.liqaahq.com/en/app             Platform home
+https://acme.liqaahq.com/en/app/hrms        HRMS
+https://acme.liqaahq.com/en/app/mail        Mail
+https://acme.liqaahq.com/en/app/pos         POS
 ```
 
 This standard implements the architecture defined by:
@@ -345,7 +345,7 @@ subscriptionId
 
 Products store the Platform identifiers as opaque strings. They MUST NOT derive meaning from their format or replace them with email addresses, subdomains, or local numeric sequences.
 
-The workspace slug is mutable. The `tenantId` is immutable. Renaming `acme.blufield.cloud` must not disconnect Acme's product data.
+The workspace slug is mutable. The `tenantId` is immutable. Renaming `acme.liqaahq.com` must not disconnect Acme's product data.
 
 ### 10.2 One customer login
 
@@ -389,7 +389,7 @@ The Platform issues a short-lived, signed, audience-specific product token. Mini
   "products": ["MAIL"],
   "capabilities": ["MAIL_MAILBOXES", "MAIL_MESSAGES"],
   "permissions": ["mail.messages.read", "mail.messages.send"],
-  "iss": "https://auth.blufield.cloud",
+  "iss": "https://auth.liqaahq.com",
   "aud": "mail-api",
   "iat": 1780000000,
   "exp": 1780000900,

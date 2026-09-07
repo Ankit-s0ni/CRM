@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUpRight, Check, MoveRight } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 const activity = [
   ["Attendance", "96%", "Live"],
@@ -21,7 +22,7 @@ export function Hero() {
           layer, without forcing every team into the same tool.
         </p>
         <div className="hero-actions">
-          <a className="primary-action" href="https://platform.liqaahq.com/signup">
+          <a className="primary-action" href={PLATFORM_SIGNUP_URL}>
             Start your workspace
             <ArrowUpRight aria-hidden="true" size={17} />
           </a>

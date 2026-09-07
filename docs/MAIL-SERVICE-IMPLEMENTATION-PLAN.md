@@ -47,17 +47,17 @@ Suggested application configuration:
 ```env
 MAIL_ENABLED=true
 MAIL_PROVIDER=smtp
-SMTP_HOST=mail.blufield.cloud
+SMTP_HOST=mail.liqaahq.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_REQUIRE_TLS=true
-SMTP_USERNAME=crm-system@blufield.cloud
+SMTP_USERNAME=crm-system@liqaahq.com
 SMTP_PASSWORD=<mailcow-app-password>
-MAIL_FROM_ADDRESS=no-reply@blufield.cloud
+MAIL_FROM_ADDRESS=no-reply@liqaahq.com
 MAIL_FROM_NAME=DeltCRM
-MAIL_REPLY_TO=support@blufield.cloud
-MAIL_BOUNCE_ADDRESS=bounces@blufield.cloud
-PUBLIC_BASE_DOMAIN=blufield.cloud
+MAIL_REPLY_TO=support@liqaahq.com
+MAIL_BOUNCE_ADDRESS=bounces@liqaahq.com
+PUBLIC_BASE_DOMAIN=liqaahq.com
 ```
 
 `SMTP_SECURE=false` with port `587` means the connection starts normally and is upgraded using STARTTLS. Port `465` with implicit TLS is an acceptable alternative, but the project must use one documented configuration consistently.
@@ -76,13 +76,13 @@ Reasons:
 Recommended host:
 
 ```text
-mail.blufield.cloud -> dedicated mail server public IP
+mail.liqaahq.com -> dedicated mail server public IP
 ```
 
 If the existing CRM server must be used temporarily:
 
 - Confirm at least 8 GiB available RAM after the CRM workload.
-- Bind Mailcow HTTP/HTTPS to non-conflicting local ports and proxy `mail.blufield.cloud` through the existing Nginx.
+- Bind Mailcow HTTP/HTTPS to non-conflicting local ports and proxy `mail.liqaahq.com` through the existing Nginx.
 - Keep SMTP submission and inbound SMTP ports dedicated to Mailcow.
 - Verify Docker networks do not overlap with existing services.
 - Test CPU, memory, disk I/O, and restart behavior under load.
@@ -100,14 +100,14 @@ If the existing CRM server must be used temporarily:
 Every email link must use the intended tenant host:
 
 ```text
-https://{tenant-subdomain}.blufield.cloud/reset-password?token=...
-https://{tenant-subdomain}.blufield.cloud/invitation/accept?token=...
+https://{tenant-subdomain}.liqaahq.com/reset-password?token=...
+https://{tenant-subdomain}.liqaahq.com/invitation/accept?token=...
 ```
 
 Rules:
 
 - Resolve the tenant subdomain on the server from `tenantId`; never trust a host supplied by the client.
-- Use one canonical `PUBLIC_BASE_DOMAIN=blufield.cloud`.
+- Use one canonical `PUBLIC_BASE_DOMAIN=liqaahq.com`.
 - Use HTTPS in production.
 - Preserve locale in links where appropriate: `/en/...` or `/ar/...`.
 - Never generate production links using `localhost`, `app.your-domain.com`, or a query-only workspace fallback.
@@ -123,16 +123,16 @@ The business/DevOps owner must provide:
 - Root/administrative access to install and maintain Mailcow.
 - A supported Linux host, Docker, and Docker Compose.
 - At least the Mailcow minimum resources, with additional disk for mailbox growth and backups.
-- DNS access for `blufield.cloud`.
-- The mail hostname `mail.blufield.cloud`.
-- Provider-controlled reverse DNS/PTR for the public IP pointing to `mail.blufield.cloud`.
+- DNS access for `liqaahq.com`.
+- The mail hostname `mail.liqaahq.com`.
+- Provider-controlled reverse DNS/PTR for the public IP pointing to `mail.liqaahq.com`.
 - Confirmation that inbound and outbound SMTP traffic is permitted by the hosting provider.
 - A valid TLS certificate for the mail hostname.
-- The mail domain `blufield.cloud` configured in Mailcow.
+- The mail domain `liqaahq.com` configured in Mailcow.
 - A dedicated CRM SMTP mailbox/service account and app password.
-- A sender such as `no-reply@blufield.cloud`.
-- A monitored reply/support address such as `support@blufield.cloud`.
-- A monitored `postmaster@blufield.cloud` mailbox.
+- A sender such as `no-reply@liqaahq.com`.
+- A monitored reply/support address such as `support@liqaahq.com`.
+- A monitored `postmaster@liqaahq.com` mailbox.
 - A monitored DMARC-report mailbox.
 - A dedicated bounce mailbox or documented bounce-processing route.
 - Off-server encrypted backups and restore-test ownership.
@@ -142,8 +142,8 @@ The business/DevOps owner must provide:
 
 Configure:
 
-- `A` record for `mail.blufield.cloud`.
-- `MX` record for `blufield.cloud` pointing to `mail.blufield.cloud`.
+- `A` record for `mail.liqaahq.com`.
+- `MX` record for `liqaahq.com` pointing to `mail.liqaahq.com`.
 - Matching PTR/reverse DNS for the server IP.
 - SPF authorizing the Mailcow host/IP.
 - DKIM generated in Mailcow and published in DNS.
@@ -480,7 +480,7 @@ The mail service is ready only when:
 - Hard bounces and complaints are recorded and suppressed.
 - Delivery metadata is visible to authorized platform administrators.
 - DKIM, SPF, and DMARC alignment pass.
-- The server is not an open relay and its PTR matches `mail.blufield.cloud`.
+- The server is not an open relay and its PTR matches `mail.liqaahq.com`.
 - Off-server backups, restore verification, queue monitoring, and alarms are active.
 - The API, web app, and relevant end-to-end tests pass in CI.
 

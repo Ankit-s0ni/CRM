@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Menu } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 const navigation = [
   { href: "/hrms", label: "HRMS" },
@@ -20,10 +21,10 @@ export function SiteHeader() {
           <Link href={item.href} key={item.href}>{item.label}</Link>
         ))}
       </nav>
-      <Link className="header-cta" href="https://platform.blufield.cloud/signup">
+      <a className="header-cta" href={PLATFORM_SIGNUP_URL}>
         Start workspace
         <ArrowUpRight aria-hidden="true" size={16} />
-      </Link>
+      </a>
       <details className="mobile-nav">
         <summary aria-label="Open navigation">
           <Menu aria-hidden="true" size={20} />
@@ -32,7 +33,7 @@ export function SiteHeader() {
           {navigation.map((item) => (
             <Link href={item.href} key={item.href}>{item.label}</Link>
           ))}
-          <Link href="https://platform.blufield.cloud/signup">Start workspace</Link>
+          <a href={PLATFORM_SIGNUP_URL}>Start workspace</a>
         </nav>
       </details>
     </header>

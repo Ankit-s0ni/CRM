@@ -21,9 +21,9 @@ The short version is:
 Each customer uses one workspace subdomain. For example:
 
 ```text
-https://acme.blufield.cloud/login
-https://acme.blufield.cloud/en/app
-https://acme.blufield.cloud/en/app/hrms
+https://acme.liqaahq.com/login
+https://acme.liqaahq.com/en/app
+https://acme.liqaahq.com/en/app/hrms
 ```
 
 This is one shared multi-tenant deployment, not one application deployment per
@@ -32,8 +32,8 @@ tokens and product records use that tenant ID.
 
 Production requires:
 
-- wildcard DNS `*.blufield.cloud` pointing to the public edge
-- a wildcard TLS certificate for `*.blufield.cloud`
+- wildcard DNS `*.liqaahq.com` pointing to the public edge
+- a wildcard TLS certificate for `*.liqaahq.com`
 - `nginx` preserving the original `Host` and forwarded scheme/IP headers
 - a reserved-subdomain list for `www`, `api`, `platform`, `platformapi`,
   `hrmsapi`, and future infrastructure names
@@ -265,7 +265,7 @@ For deployment, we should treat the server work in this order:
    - HRMS launch from Platform
    - product API routing
    - localized routes
-   - workspace wildcard routing (`acme.blufield.cloud`)
+   - workspace wildcard routing (`acme.liqaahq.com`)
    - report moves from `PENDING` to `COMPLETED` and downloads via signed URL
    - HRMS outbox backlog drains and failed jobs remain visible
 

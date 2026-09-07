@@ -174,7 +174,7 @@ Required claims:
   "products": ["HRMS", "MAIL"],
   "capabilities": ["HRMS_ATTENDANCE", "HRMS_PAYROLL"],
   "permissions": ["hrms.attendance.manage"],
-  "iss": "https://auth.blufield.cloud",
+  "iss": "https://auth.liqaahq.com",
   "aud": "hrms-api",
   "iat": 1780000000,
   "exp": 1780000900,

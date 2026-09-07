@@ -92,7 +92,7 @@ services:
       S3_FORCE_PATH_STYLE: "true"
       CORS_ORIGIN: http://localhost:4080,http://localhost:4022,http://localhost:4023,http://localhost:4032
       JWT_SECRET: local-platform-jwt-secret-change-before-production
-      PRODUCT_TOKEN_ISSUER: https://auth.local.blufield.test
+      PRODUCT_TOKEN_ISSUER: https://auth.local.liqaahq.test
       PRODUCT_TOKEN_KEY_ID: local-platform-product-token-v1
       PRODUCT_SERVICE_CREDENTIALS_JSON: '{"HRMS":["local-product-service-key"],"TMS":["local-tms-product-service-key"]}'
       PRODUCT_REGISTRATION_CI_KEY: local-product-registration-key

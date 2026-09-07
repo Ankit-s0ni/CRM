@@ -57,7 +57,7 @@ describe('browser auth cookies', () => {
 
   it('issues secure production cookies and keeps only CSRF readable', () => {
     process.env.NODE_ENV = 'production';
-    process.env.AUTH_CSRF_COOKIE_DOMAIN = '.blufield.cloud';
+    process.env.AUTH_CSRF_COOKIE_DOMAIN = '.liqaahq.com';
     const response = responseRecorder();
 
     setBrowserSessionCookies(
@@ -95,7 +95,7 @@ describe('browser auth cookies', () => {
     expect(csrfCookie?.options).toMatchObject({
       httpOnly: false,
       secure: true,
-      domain: '.blufield.cloud',
+      domain: '.liqaahq.com',
     });
   });
 
