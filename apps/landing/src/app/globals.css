@@ -466,7 +466,7 @@ h1 span { color: var(--cobalt); display: block; font-size: 0.68em; margin-top: 0
 .page-actions { align-items: center; display: flex; gap: 1.4rem; margin-top: 2.2rem; }
 
 .tms-mockup-window { transition: transform 300ms ease, box-shadow 300ms ease; }
-.tms-mockup-window:hover { transform: translateY(-4px); box-shadow: 0 3rem 6rem rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(1, 128, 116, 0.35); }
+.tms-mockup-window:hover { transform: translateY(-4px); box-shadow: 0 25px 50px -12px rgba(17, 23, 21, 0.16), 0 2px 6px rgba(17, 23, 21, 0.06); }
 
 .product-signal { background: var(--ink); border-radius: 1.25rem; box-shadow: 0 2rem 5rem rgb(25 29 26 / 20%); color: white; overflow: hidden; padding: clamp(1.25rem, 3vw, 2.5rem); transform: rotate(1.5deg); }
 .product-signal { border-bottom: 0.75rem solid var(--primary); }
