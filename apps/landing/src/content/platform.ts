@@ -49,12 +49,12 @@ export const productDomains: readonly ProductDomain[] = [
     tone: "violet",
   },
   {
-    id: "projects",
-    name: "Projects",
-    statement: "Plans, ownership, delivery, and outcomes in one shared rhythm.",
-    modules: ["Projects", "Tasks", "Time", "Resources"],
-    status: "planned",
-    tone: "slate",
+    id: "tms",
+    name: "TMS",
+    statement: "Plans, tickets, ownership, and delivery in one shared rhythm.",
+    modules: ["Kanban Board", "Spreadsheet Import", "Workflows", "Custom Fields", "Audit Trail"],
+    status: "available",
+    tone: "blue",
   },
 ];
 

@@ -1,11 +1,11 @@
 export type MarketingProduct = {
-  slug: "hrms" | "pos";
+  slug: "hrms" | "pos" | "tms";
   eyebrow: string;
   name: string;
   status: string;
   headline: string;
   summary: string;
-  accent: "lime" | "amber";
+  accent: "lime" | "amber" | "cyan";
   metrics: readonly { value: string; label: string }[];
   features: readonly { title: string; description: string }[];
   workflow: readonly { title: string; description: string }[];
@@ -66,6 +66,34 @@ export const marketingProducts: Record<MarketingProduct["slug"], MarketingProduc
       { title: "Configure the catalog", description: "Set products, taxes, prices, stores and stock rules." },
       { title: "Trade in real time", description: "Process orders while inventory stays synchronized." },
       { title: "Close with confidence", description: "Review sales, exceptions and store-level performance." },
+    ],
+  },
+  tms: {
+    slug: "tms",
+    eyebrow: "Task & ticket operations",
+    name: "Liqaa TMS",
+    status: "Available now",
+    headline: "Turn team coordination into clear, dependable delivery.",
+    summary:
+      "Manage projects, agile tickets, visual Kanban pipelines and spreadsheet imports on the same shared foundation as your company directory.",
+    accent: "cyan",
+    metrics: [
+      { value: "Live", label: "card & table sync" },
+      { value: "Smart", label: "spreadsheet import" },
+      { value: "Unified", label: "employee directory" },
+    ],
+    features: [
+      { title: "Visual Kanban & table views", description: "Switch between drag-and-drop boards and dense spreadsheet tables in real time." },
+      { title: "Instant spreadsheet migration", description: "Upload Excel (.xlsx) and CSV files with automatic column mapping and validation." },
+      { title: "Custom workflow pipelines", description: "Define stages, status categories, colors and allowed transitions for any team." },
+      { title: "Integrated company directory", description: "Assign tasks and collaborate with team members already synchronized from Liqaa HRMS." },
+      { title: "Custom fields & estimates", description: "Track client references, component modules, priorities and estimated effort hours." },
+      { title: "Immutable audit history", description: "Every transition, comment, update and attachment is tracked with a full audit trail." },
+    ],
+    workflow: [
+      { title: "Choose your workflow", description: "Start with General Operations, Bug Tracker, or Client Services templates." },
+      { title: "Populate & collaborate", description: "Add team members from your directory or upload an existing spreadsheet." },
+      { title: "Track & deliver", description: "Move tickets across stages, resolve blockers, and view real-time delivery status." },
     ],
   },
 };

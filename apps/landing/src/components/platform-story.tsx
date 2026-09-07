@@ -78,7 +78,7 @@ export function PlatformStory() {
                   <div>
                     <h3>{domain.name}</h3>
                     <p>{domain.statement}</p>
-                    {(domain.id === "hrms" || domain.id === "pos") && (
+                    {(domain.id === "hrms" || domain.id === "pos" || domain.id === "tms") && (
                       <Link className="domain-link" href={`/${domain.id}`}>
                         Explore {domain.name} <ArrowRight aria-hidden="true" size={17} />
                       </Link>

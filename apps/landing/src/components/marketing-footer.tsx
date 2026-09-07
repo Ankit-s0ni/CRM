@@ -13,6 +13,7 @@ export function MarketingFooter() {
       </div>
       <nav aria-label="Footer navigation">
         <Link href="/hrms">HRMS</Link>
+        <Link href="/tms">TMS</Link>
         <Link href="/pos">POS</Link>
         <Link href="/pricing">Pricing</Link>
         <Link href="/privacy">Privacy Policy</Link>

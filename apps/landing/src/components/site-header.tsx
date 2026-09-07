@@ -5,6 +5,7 @@ import { PLATFORM_SIGNUP_URL } from "@/lib/config";
 
 const navigation = [
   { href: "/hrms", label: "HRMS" },
+  { href: "/tms", label: "TMS" },
   { href: "/pos", label: "POS" },
   { href: "/pricing", label: "Pricing" },
 ] as const;

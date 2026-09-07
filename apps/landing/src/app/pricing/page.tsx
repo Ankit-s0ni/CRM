@@ -64,6 +64,7 @@ export default function PricingPage() {
         <div><p className="eyebrow">Modular by design</p><h2>Only add the services your business is ready to use.</h2></div>
         <div className="service-pricing-links">
           <Link href="/hrms"><span>Available now</span><strong>HRMS</strong><ArrowRight size={19} /></Link>
+          <Link href="/tms"><span>Available now</span><strong>TMS</strong><ArrowRight size={19} /></Link>
           <Link href="/pos"><span>Early access</span><strong>POS</strong><ArrowRight size={19} /></Link>
         </div>
       </section>
