@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiBaseUrl } from "@/lib/app-domain";
 
 function getStrength(password: string) {
   const checks = [
@@ -39,7 +40,7 @@ export function PasswordResetForm() {
   const [toastVisible, setToastVisible] = useState(false);
 
   const strength = useMemo(() => getStrength(password), [password]);
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
+  const baseURL = getApiBaseUrl();
   const backToLoginHref = `/login?tenantId=${encodeURIComponent(tenantId)}&workspace=${encodeURIComponent(workspace)}&email=${encodeURIComponent(email)}`;
 
   function getStrengthTone() {

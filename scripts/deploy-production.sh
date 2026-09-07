@@ -22,6 +22,15 @@ cd "${ROOT_DIR}"
 # rerunning a deployment can never desynchronize seeded password hashes.
 node scripts/configure-platform-production-env.mjs apps/api/.env
 
+if [[ ! -f "${ROOT_DIR}/apps/web/.env.production" ]]; then
+  cat << 'EOF' > "${ROOT_DIR}/apps/web/.env.production"
+NEXT_PUBLIC_API_URL="https://api.liqaahq.com"
+NEXT_PUBLIC_APP_DOMAIN="liqaahq.com"
+INTERNAL_API_URL="http://127.0.0.1:4011"
+API_INTERNAL_URL="http://127.0.0.1:4011"
+EOF
+fi
+
 # Build before restarting so a failed build leaves the current release online.
 pnpm install --frozen-lockfile
 

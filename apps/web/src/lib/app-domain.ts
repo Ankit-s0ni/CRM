@@ -10,6 +10,25 @@
 export const APP_DOMAIN: string =
   process.env.NEXT_PUBLIC_APP_DOMAIN || 'liqaahq.com';
 
+export function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL?.trim()) {
+    return process.env.NEXT_PUBLIC_API_URL.trim();
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isLocal =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname.endsWith('.localhost') ||
+      hostname.endsWith('.test');
+    if (!isLocal) {
+      return `${window.location.protocol}//api.${APP_DOMAIN}`;
+    }
+  }
+  return 'http://localhost:4011';
+}
+
 interface WorkspaceLoginUrlInput {
   workspace: string;
   origin: string;

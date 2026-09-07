@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { APP_DOMAIN, resolveWorkspaceFromHostname } from "@/lib/app-domain";
+import { APP_DOMAIN, getApiBaseUrl, resolveWorkspaceFromHostname } from "@/lib/app-domain";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { isAppLanguage } from "@/i18n/routing";
@@ -50,7 +50,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
+  const baseURL = getApiBaseUrl();
 
   useEffect(() => {
     if (!workspace || APP_DOMAIN === "your-domain.com") return;

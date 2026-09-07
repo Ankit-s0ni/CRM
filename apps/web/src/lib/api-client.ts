@@ -1,11 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from './auth-store';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4011';
+import { getApiBaseUrl } from './app-domain';
 
 // Public identity requests must never inherit a previously signed-in tenant.
 export const publicApiClient = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -13,8 +12,13 @@ export const publicApiClient = axios.create({
   },
 });
 
+publicApiClient.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
+  return config;
+});
+
 export const apiClient = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -26,6 +30,7 @@ let refreshRequest: Promise<void> | null = null;
 
 apiClient.interceptors.request.use(
   (config) => {
+    config.baseURL = getApiBaseUrl();
     const { user, pendingAuth } = useAuthStore.getState();
     if (user?.tenantId) {
       config.headers['x-tenant-id'] = user.tenantId;
@@ -112,7 +117,7 @@ apiClient.interceptors.response.use(
 async function refreshBrowserSession(user: NonNullable<ReturnType<typeof useAuthStore.getState>['user']>) {
   const csrfToken = readCookie('deltcrm_csrf');
   const response = await axios.post(
-    `${apiBaseUrl}/auth/refresh`,
+    `${getApiBaseUrl()}/auth/refresh`,
     {},
     {
       withCredentials: true,

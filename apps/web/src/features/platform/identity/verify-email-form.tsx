@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAuthStore } from "@/lib/auth-store";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiBaseUrl } from "@/lib/app-domain";
 
 function sanitizeCode(value: string) {
   return value.replace(/\D/g, "").slice(0, 6);
@@ -35,7 +36,7 @@ export function VerifyEmailForm() {
     initialDelivery === "FAILED" ? 0 : 42,
   );
 
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
+  const baseURL = getApiBaseUrl();
   const digits = useMemo(() => {
     const padded = `${code}${" ".repeat(6)}`.slice(0, 6);
     return padded.split("");

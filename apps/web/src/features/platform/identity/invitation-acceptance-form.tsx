@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiBaseUrl } from "@/lib/app-domain";
 
 export function InvitationAcceptanceForm() {
   const searchParams = useSearchParams();
@@ -18,7 +19,7 @@ export function InvitationAcceptanceForm() {
   const [busy, setBusy] = useState(false);
   const [complete, setComplete] = useState(false);
   const [error, setError] = useState("");
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011";
+  const baseURL = getApiBaseUrl();
   const loginQuery = new URLSearchParams({
     ...(workspace ? { workspace } : {}),
     ...(email ? { email } : {}),

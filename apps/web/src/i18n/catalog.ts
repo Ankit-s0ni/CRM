@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cookies, headers } from "next/headers";
 import type { AppLanguage } from "./routing";
+import { getApiBaseUrl } from "@/lib/app-domain";
 
 const NAMESPACES = [
   "common",
@@ -43,8 +44,8 @@ export async function getTenantLocalizationBootstrap(
 
   const baseUrl =
     process.env.API_INTERNAL_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:4011";
+    process.env.INTERNAL_API_URL ??
+    getApiBaseUrl();
   const url = new URL("/public/localization/bootstrap", baseUrl);
   url.searchParams.set("subdomain", workspace);
   url.searchParams.set("language", language);

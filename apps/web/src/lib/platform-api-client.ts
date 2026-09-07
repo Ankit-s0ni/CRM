@@ -1,9 +1,10 @@
 import axios from "axios";
 import { usePlatformAuthStore } from "./platform-auth-store";
 import type { PlatformSessionResponse } from "./platform-types";
+import { getApiBaseUrl } from "./app-domain";
 
 export const platformApiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4011",
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -14,6 +15,7 @@ export const platformApiClient = axios.create({
 let refreshRequest: Promise<void> | null = null;
 
 platformApiClient.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
   if (isUnsafeMethod(config.method)) {
     const csrfToken = readCookie("deltcrm_csrf");
     if (csrfToken) config.headers["x-csrf-token"] = csrfToken;

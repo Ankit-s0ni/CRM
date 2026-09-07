@@ -2,7 +2,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, ShieldCheck, UsersRound } from "lucide-react";
 import { LoginForm } from "@/features/platform/identity/login-form";
-import { isPlatformAdminHostname, resolveWorkspaceFromHostname } from "@/lib/app-domain";
+import {
+  getApiBaseUrl,
+  isPlatformAdminHostname,
+  resolveWorkspaceFromHostname,
+} from "@/lib/app-domain";
 import { publicLinks } from "@/lib/public-links";
 
 type LoginPageProps = {
@@ -30,8 +34,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     try {
       const apiUrl =
         process.env.INTERNAL_API_URL ||
-        process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:4011";
+        process.env.API_INTERNAL_URL ||
+        getApiBaseUrl();
       const res = await fetch(
         `${apiUrl}/workspace/status?subdomain=${encodeURIComponent(hostnameWorkspace)}`,
         { cache: "no-store" },

@@ -1,7 +1,7 @@
 {
   "APP_ENV": "production",
   "APP_VERSION": "1.0.0",
-  "API_BASE_URL": "https://api.blufield.cloud",
+  "API_BASE_URL": "https://api.liqaahq.com",
   "LOCAL_MODE": "false",
   "TENANT_ID": "delttech",
   "WORKSPACE_SUBDOMAIN": "delttech",
