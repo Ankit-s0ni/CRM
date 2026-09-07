@@ -70,7 +70,7 @@ const updates = {
   CORS_ORIGIN: "https://platform.liqaahq.com",
   PUBLIC_BASE_DOMAIN: "liqaahq.com",
   AUTH_CSRF_COOKIE_DOMAIN: ".liqaahq.com",
-  PRODUCT_TOKEN_ISSUER: "https://platformapi.liqaahq.com",
+  PRODUCT_TOKEN_ISSUER: "https://api.liqaahq.com",
   PRODUCT_TOKEN_KEY_ID:
     parsed.PRODUCT_TOKEN_KEY_ID || "platform-prod-2026-08",
   PLATFORM_ADMIN_EMAIL:
