@@ -56,6 +56,15 @@ export function LoginForm({
     if (!workspace || APP_DOMAIN === "your-domain.com") return;
 
     const currentUrl = new URL(window.location.href);
+    const isLocalDevelopment =
+      currentUrl.hostname === "localhost" ||
+      currentUrl.hostname === "127.0.0.1" ||
+      currentUrl.hostname === "::1" ||
+      currentUrl.hostname.endsWith(".localhost") ||
+      currentUrl.hostname.endsWith(".test");
+
+    if (isLocalDevelopment) return;
+
     const sharedLoginHosts = new Set([
       APP_DOMAIN,
       `www.${APP_DOMAIN}`,
