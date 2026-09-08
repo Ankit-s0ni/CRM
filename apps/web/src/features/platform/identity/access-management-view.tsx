@@ -53,6 +53,9 @@ function permissionLabel(key: string) {
 export function UsersRolesView() {
   const { tText } = useTenantLocalization();
   const router = useRouter();
+  const currentUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const setPendingAuth = useAuthStore((state) => state.setPendingAuth);
   const permissions = useAuthStore((state) => state.user?.permissions ?? []);
   const [users, setUsers] = useState<User[] | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -61,6 +64,8 @@ export function UsersRolesView() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRoleIds, setInviteRoleIds] = useState<string[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingEmail, setEditingEmail] = useState("");
+  const [editingEmailError, setEditingEmailError] = useState("");
   const [editingRoleIds, setEditingRoleIds] = useState<string[]>([]);
   const [editingStatus, setEditingStatus] = useState("");
   const [createRoleOpen, setCreateRoleOpen] = useState(false);
@@ -104,8 +109,14 @@ export function UsersRolesView() {
 
   async function saveUserAccess() {
     if (!editingUser) return;
+    const email = editingEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEditingEmailError(tText("Enter a valid email address."));
+      return;
+    }
     setBusy(true);
     setError("");
+    setEditingEmailError("");
     try {
       const retainedSystemRoleIds = editingUser.roles
         .filter(({ name }) => name === "EMPLOYEE")
@@ -113,6 +124,13 @@ export function UsersRolesView() {
       await apiClient.patch(`/users/${editingUser.id}/roles`, {
         roleIds: [...new Set([...retainedSystemRoleIds, ...editingRoleIds])],
       });
+      if (email !== editingUser.email.toLowerCase()) {
+        const response = await apiClient.patch<{ data: User }>(`/users/${editingUser.id}/email`, { email });
+        if (currentUser?.id === editingUser.id) {
+          setUser({ ...currentUser, email: response.data.data.email });
+          setPendingAuth({ email: response.data.data.email });
+        }
+      }
       if (editingStatus !== editingUser.status) {
         await apiClient.patch(`/users/${editingUser.id}/status`, {
           status: editingStatus,
@@ -184,6 +202,8 @@ export function UsersRolesView() {
                 key={user.id}
                 onClick={() => {
                   setEditingUser(user);
+                  setEditingEmail(user.email);
+                  setEditingEmailError("");
                   setEditingRoleIds(user.roles.filter(({ name }) => name !== "EMPLOYEE").map(({ id }) => id));
                   setEditingStatus(user.status);
                 }}
@@ -242,7 +262,24 @@ export function UsersRolesView() {
       {editingUser && (
         <AccessDialog onClose={() => setEditingUser(null)} title={tText("Manage account access")}>
           <div className="grid gap-4">
-            <p className="text-sm font-semibold">{editingUser.email}</p>
+            <Field label={tText("Login email")}>
+              <input
+                aria-describedby={editingEmailError ? "editing-email-error" : undefined}
+                aria-invalid={Boolean(editingEmailError)}
+                className={inputClass}
+                onBlur={() => {
+                  const value = editingEmail.trim();
+                  setEditingEmailError(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : tText("Enter a valid email address."));
+                }}
+                onChange={(event) => {
+                  setEditingEmail(event.target.value);
+                  if (editingEmailError) setEditingEmailError("");
+                }}
+                type="email"
+                value={editingEmail}
+              />
+              {editingEmailError && <p className="mt-1 text-sm text-destructive" id="editing-email-error">{editingEmailError}</p>}
+            </Field>
             <RoleChoices roles={assignableRoles} selected={editingRoleIds} setSelected={setEditingRoleIds} />
             <Field label={tText("Account status")}>
               <select className={inputClass} onChange={(event) => setEditingStatus(event.target.value)} value={editingStatus}>

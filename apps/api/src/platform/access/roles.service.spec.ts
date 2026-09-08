@@ -39,7 +39,7 @@ describe('RolesService', () => {
     } as unknown as PrismaService;
     const service = new RolesService(
       prisma,
-      {} as TenantContextService,
+      { tenantId: 'tenant-id' } as TenantContextService,
       {} as AuditService,
     );
 
@@ -72,7 +72,7 @@ describe('RolesService', () => {
   it('does not allow system role permissions to be replaced', async () => {
     const transaction = {
       role: {
-        findUnique: jest.fn().mockResolvedValue({
+        findFirst: jest.fn().mockResolvedValue({
           id: 'role-id',
           tenantId: 'tenant-id',
           name: 'HR_ADMIN',
@@ -85,7 +85,7 @@ describe('RolesService', () => {
     } as unknown as PrismaService;
     const service = new RolesService(
       prisma,
-      {} as TenantContextService,
+      { tenantId: 'tenant-id' } as TenantContextService,
       {} as AuditService,
     );
 

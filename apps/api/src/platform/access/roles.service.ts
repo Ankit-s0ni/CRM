@@ -38,9 +38,10 @@ export class RolesService {
   }
 
   async list() {
+    const tenantId = this.requireTenantId();
     const data = await this.prisma.forTenant((tx) =>
       tx.role.findMany({
-        where: { tenantId: { not: null } },
+        where: { tenantId },
         include: {
           permissions: { include: { permission: true } },
           _count: { select: { users: true } },
@@ -63,9 +64,10 @@ export class RolesService {
   }
 
   async getById(id: string) {
+    const tenantId = this.requireTenantId();
     const role = await this.prisma.forTenant((tx) =>
-      tx.role.findUnique({
-        where: { id },
+      tx.role.findFirst({
+        where: { id, tenantId },
         include: {
           permissions: { include: { permission: true } },
           _count: { select: { users: true } },
@@ -219,7 +221,9 @@ export class RolesService {
   }
 
   private async findTenantRole(tx: PrismaTransaction, id: string) {
-    const role = await tx.role.findUnique({ where: { id } });
+    const role = await tx.role.findFirst({
+      where: { id, tenantId: this.requireTenantId() },
+    });
     if (!role || !role.tenantId) this.throwNotFound();
     return role;
   }
@@ -250,7 +254,7 @@ export class RolesService {
   ) {
     const duplicate = await tx.role.findFirst({
       where: {
-        tenantId: { not: null },
+        tenantId: this.requireTenantId(),
         id: excludeId ? { not: excludeId } : undefined,
         name: { equals: name, mode: 'insensitive' },
       },

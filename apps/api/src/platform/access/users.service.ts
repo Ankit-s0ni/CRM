@@ -9,6 +9,7 @@ import * as argon2 from 'argon2';
 import type { PrismaTransaction } from '../../shared/database/prisma.service';
 import { PrismaService } from '../../shared/database/prisma.service';
 import { AuditService } from '../audit/public';
+import { TenantContextService } from '../tenancy/public';
 import {
   CreateEmployeeAccountDto,
   ListUsersQueryDto,
@@ -22,13 +23,16 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly tenantContextService: TenantContextService,
   ) {}
 
   async list(query: ListUsersQueryDto) {
+    const tenantId = this.requireTenantId();
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
     const search = query.search?.trim();
     const where = {
+      tenantId,
       status: query.status,
       ...(search
         ? { email: { contains: search, mode: 'insensitive' as const } }
@@ -58,9 +62,10 @@ export class UsersService {
   }
 
   async get(id: string) {
+    const tenantId = this.requireTenantId();
     return this.prisma.forTenant(async (tx) => {
-      const user = await tx.user.findUnique({
-        where: { id },
+      const user = await tx.user.findFirst({
+        where: { id, tenantId },
         include: { roles: { include: { role: true } } },
       });
       if (!user) {
@@ -87,7 +92,10 @@ export class UsersService {
     return this.prisma.forTenant(async (tx) => {
       const actor = await this.findUser(tx, actorUserId);
       const existing = await tx.user.findFirst({
-        where: { email: { equals: email, mode: 'insensitive' } },
+        where: {
+          tenantId: actor.tenantId,
+          email: { equals: email, mode: 'insensitive' },
+        },
         select: { id: true },
       });
       if (existing) {
@@ -155,7 +163,7 @@ export class UsersService {
     return this.prisma.forTenant(async (tx) => {
       const user = await this.findUser(tx, id);
       const roles = await tx.role.findMany({
-        where: { id: { in: dto.roleIds }, tenantId: { not: null } },
+        where: { id: { in: dto.roleIds }, tenantId: user.tenantId },
       });
       if (roles.length !== dto.roleIds.length) {
         throw new BadRequestException({
@@ -237,6 +245,7 @@ export class UsersService {
       const duplicate = await tx.user.findFirst({
         where: {
           id: { not: id },
+          tenantId: user.tenantId,
           email: { equals: email, mode: 'insensitive' },
         },
         select: { id: true },
@@ -302,8 +311,9 @@ export class UsersService {
   }
 
   private async findUser(tx: PrismaTransaction, id: string) {
-    const user = await tx.user.findUnique({
-      where: { id },
+    const tenantId = this.requireTenantId();
+    const user = await tx.user.findFirst({
+      where: { id, tenantId },
       include: { roles: true },
     });
     if (!user) {
@@ -313,6 +323,17 @@ export class UsersService {
       });
     }
     return user;
+  }
+
+  private requireTenantId() {
+    const tenantId = this.tenantContextService.tenantId;
+    if (!tenantId) {
+      throw new BadRequestException({
+        code: 'TENANT_CONTEXT_REQUIRED',
+        message: 'Tenant context is required',
+      });
+    }
+    return tenantId;
   }
 
   private serializeUser(user: {
